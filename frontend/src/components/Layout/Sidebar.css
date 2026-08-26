@@ -1,0 +1,177 @@
+.sidebar {
+
+  width:260px;
+
+  height:100vh;
+
+  background:#1B2A4A;
+
+  color:#FFFFFF;
+
+  display:flex;
+
+  flex-direction:column;
+
+  position:fixed;
+
+  top:0;
+
+  left:0;
+
+  overflow-y:auto;
+
+}
+
+
+/* LOGO SECTION */
+
+.logo {
+
+  padding:30px 24px;
+
+  border-bottom:1px solid rgba(255,255,255,0.12);
+
+}
+
+
+.logo h2 {
+
+  margin:0;
+
+  font-size:34px;
+
+  font-family:"Fraunces",serif;
+
+  letter-spacing:2px;
+
+}
+
+
+.logo p {
+
+  margin:8px 0 0;
+
+  font-size:14px;
+
+  color:#DCD5C2;
+
+  opacity:.9;
+
+}
+
+
+
+
+
+/* NAVIGATION */
+
+.sidebar nav {
+
+  display:flex;
+
+  flex-direction:column;
+
+  padding:20px 12px;
+
+  gap:6px;
+
+}
+
+
+
+.sidebar nav a {
+
+
+  display:flex;
+
+  align-items:center;
+
+  gap:14px;
+
+
+  padding:13px 18px;
+
+
+  color:#FFFFFF;
+
+
+  text-decoration:none;
+
+
+  font-size:14px;
+
+
+  font-weight:500;
+
+
+  border-radius:8px;
+
+
+  transition:.25s ease;
+
+
+}
+
+
+
+.sidebar nav a svg {
+
+  font-size:21px;
+
+}
+
+
+
+/* HOVER */
+
+.sidebar nav a:hover {
+
+
+  background:rgba(255,255,255,0.08);
+
+
+  transform:translateX(4px);
+
+
+}
+
+
+
+/* ACTIVE */
+
+.sidebar nav a.active {
+
+
+  background:#B78A34;
+
+
+  color:white;
+
+
+  box-shadow:
+
+  0 5px 15px rgba(183,138,52,.25);
+
+
+}
+
+
+
+
+
+/* SCROLLBAR */
+
+.sidebar::-webkit-scrollbar {
+
+  width:5px;
+
+}
+
+
+.sidebar::-webkit-scrollbar-thumb {
+
+  background:#B78A34;
+
+  border-radius:10px;
+
+}

@@ -1,0 +1,51 @@
+.filters-card {
+
+border-radius:18px;
+
+}
+
+
+.filters-header {
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+margin-bottom:25px;
+
+}
+
+
+.filters-header p {
+
+margin-top:5px;
+
+font-size:13px;
+
+color:#6b7280;
+
+}
+
+
+.filter-actions {
+
+display:flex;
+
+justify-content:flex-end;
+
+gap:15px;
+
+margin-top:25px;
+
+}
+
+
+.filter-actions button {
+
+text-transform:none;
+
+border-radius:10px;
+
+}

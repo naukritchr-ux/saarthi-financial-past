@@ -1,0 +1,421 @@
+/* =====================================================
+   CLIENT STATUS PERFORMANCE
+===================================================== */
+
+.client-status-performance {
+
+  padding: 30px;
+
+  background: #F7F4EC;
+
+  min-height: 100%;
+
+}
+
+
+/* =====================================================
+   PAGE HEADING
+===================================================== */
+
+.client-status-performance h1 {
+
+  font-family: "Fraunces", serif;
+
+  color: #1B2A4A;
+
+  font-size: 28px;
+
+  margin: 0 0 25px 0;
+
+}
+
+
+/* =====================================================
+   SUMMARY CARDS
+===================================================== */
+
+.status-cards {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 18px;
+
+  margin-bottom: 25px;
+
+}
+
+
+/* =====================================================
+   SUMMARY CARD
+===================================================== */
+
+.status-card {
+
+  background: white;
+
+  border: 1px solid #DCD5C2;
+
+  border-radius: 16px;
+
+  padding: 20px;
+
+  min-width: 0;
+
+  box-shadow:
+    0 8px 24px
+    rgba(
+      27,
+      42,
+      74,
+      .08
+    );
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+
+}
+
+
+/* Hover */
+
+.status-card:hover {
+
+  transform:
+    translateY(-3px);
+
+  box-shadow:
+    0 12px 30px
+    rgba(
+      27,
+      42,
+      74,
+      .13
+    );
+
+}
+
+
+/* =====================================================
+   CARD TITLE
+===================================================== */
+
+.status-card h3 {
+
+  margin: 0 0 12px;
+
+  color: #8A806C;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+}
+
+
+/* =====================================================
+   CARD MAIN VALUE
+===================================================== */
+
+.status-card strong {
+
+  display: block;
+
+  color: #1B2A4A;
+
+  font-family:
+    "Fraunces",
+    serif;
+
+  font-size: 23px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+}
+
+
+/* =====================================================
+   CARD SECONDARY VALUE
+===================================================== */
+
+.status-card p {
+
+  margin: 8px 0 0;
+
+  color: #8A806C;
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+}
+
+
+/* =====================================================
+   FINANCIAL PERFORMANCE TABLE
+===================================================== */
+
+.status-table {
+
+  background: white;
+
+  border: 1px solid #DCD5C2;
+
+  border-radius: 12px;
+
+  padding: 20px;
+
+  overflow-x: auto;
+
+  box-shadow:
+    0 8px 20px
+    rgba(
+      27,
+      42,
+      74,
+      .08
+    );
+
+}
+
+
+/* =====================================================
+   TABLE HEADING
+===================================================== */
+
+.status-table h2 {
+
+  font-family:
+    "Fraunces",
+    serif;
+
+  color: #1B2A4A;
+
+  margin: 0 0 20px;
+
+}
+
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.status-table table {
+
+  width: 100%;
+
+  min-width: 900px;
+
+  border-collapse: collapse;
+
+}
+
+
+/* =====================================================
+   TABLE HEADER
+===================================================== */
+
+.status-table th {
+
+  background: #1B2A4A;
+
+  color: white;
+
+  padding: 14px;
+
+  text-align: left;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  letter-spacing: .3px;
+
+}
+
+
+/* =====================================================
+   TABLE CELLS
+===================================================== */
+
+.status-table td {
+
+  padding: 14px;
+
+  border-bottom:
+    1px solid #E8E1D2;
+
+  color: #1B2A4A;
+
+  font-size: 14px;
+
+}
+
+
+/* =====================================================
+   RANK
+===================================================== */
+
+.status-table td:first-child {
+
+  color: #B78A34;
+
+  font-weight: 700;
+
+}
+
+
+/* =====================================================
+   STATUS NAME
+===================================================== */
+
+.status-table td:nth-child(2) {
+
+  font-weight: 600;
+
+}
+
+
+/* =====================================================
+   FINANCIAL COLUMNS
+===================================================== */
+
+.status-table td:nth-child(5),
+.status-table td:nth-child(6),
+.status-table td:nth-child(7) {
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+}
+
+
+/* =====================================================
+   MARGIN
+===================================================== */
+
+.status-table td:nth-child(8) {
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+  font-weight: 600;
+
+}
+
+
+/* =====================================================
+   ROW HOVER
+===================================================== */
+
+.status-table tbody tr {
+
+  transition:
+    background .2s ease,
+    transform .2s ease;
+
+}
+
+
+.status-table tbody tr:hover {
+
+  background: #F7F4EC;
+
+}
+
+
+/* =====================================================
+   LAST ROW
+===================================================== */
+
+.status-table tbody tr:last-child td {
+
+  border-bottom: none;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width: 1100px) {
+
+  .status-cards {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+  }
+
+}
+
+
+@media(max-width: 700px) {
+
+  .client-status-performance {
+
+    padding: 15px;
+
+  }
+
+
+  .client-status-performance h1 {
+
+    font-size: 22px;
+
+  }
+
+
+  .status-cards {
+
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+
+  }
+
+
+  .status-card {
+
+    padding: 18px;
+
+  }
+
+
+  .status-card strong {
+
+    font-size: 21px;
+
+  }
+
+
+  .status-table {
+
+    padding: 15px;
+
+  }
+
+
+  .status-table h2 {
+
+    font-size: 20px;
+
+  }
+
+}

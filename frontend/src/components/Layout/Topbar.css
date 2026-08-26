@@ -1,0 +1,272 @@
+.ledger-topbar {
+
+  height:90px;
+
+  background:#F7F4EC;
+
+  border-bottom:1px solid #DCD5C2;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  padding:0 35px;
+
+  box-sizing:border-box;
+
+}
+
+
+/* LEFT HEADER */
+
+.ledger-header-info h1 {
+
+  font-family:"Fraunces",serif;
+
+  font-size:28px;
+
+  color:#1B2A4A;
+
+  margin:0 0 8px 0;
+
+  letter-spacing:.5px;
+
+}
+
+
+
+/* META INFORMATION */
+
+.ledger-meta {
+
+  display:flex;
+
+  gap:25px;
+
+  font-size:13px;
+
+  color:#5B6472;
+
+  align-items:center;
+
+}
+
+
+
+.ledger-meta span {
+
+  display:flex;
+
+  align-items:center;
+
+}
+
+
+
+.ledger-meta strong {
+
+  margin-left:5px;
+
+  color:#1B2A4A;
+
+  font-weight:600;
+
+}
+
+
+
+/* RIGHT ACTION AREA */
+
+.ledger-header-actions {
+
+  display:flex;
+
+  align-items:center;
+
+  gap:18px;
+
+}
+
+
+
+/* UPLOAD BUTTON */
+
+.ledger-header-actions button {
+
+  background:#B78A34 !important;
+
+  color:white !important;
+
+  text-transform:none !important;
+
+  border-radius:8px !important;
+
+  padding:10px 20px !important;
+
+  font-weight:600 !important;
+
+  box-shadow:none !important;
+
+  transition:.25s ease;
+
+}
+
+
+
+.ledger-header-actions button:hover {
+
+  background:#9f742b !important;
+
+  transform:translateY(-2px);
+
+}
+
+
+
+/* PROFILE ICON BUTTON */
+
+.ledger-header-actions .MuiIconButton-root {
+
+  width:45px;
+
+  height:45px;
+
+  background:white;
+
+  border:1px solid #DCD5C2;
+
+  transition:.25s ease;
+
+}
+
+
+
+.ledger-header-actions .MuiIconButton-root:hover {
+
+  background:#EFE7D5;
+
+  transform:translateY(-2px);
+
+}
+
+
+
+/* PROFILE ICON */
+
+.ledger-header-actions svg {
+
+  color:#1B2A4A;
+
+  font-size:34px;
+
+}
+
+
+
+
+
+/* PROFILE MENU */
+
+.MuiMenu-paper {
+
+  margin-top:10px !important;
+
+  min-width:220px !important;
+
+  border-radius:10px !important;
+
+  border:1px solid #DCD5C2;
+
+  box-shadow:
+
+  0 15px 35px rgba(27,42,74,.18) !important;
+
+}
+
+
+
+/* MENU ITEMS */
+
+.MuiMenuItem-root {
+
+  font-family:"Inter",sans-serif !important;
+
+  color:#1B2A4A !important;
+
+  font-size:14px !important;
+
+}
+
+
+
+.MuiMenuItem-root:hover {
+
+  background:#F7F4EC !important;
+
+}
+
+
+
+/* ROLE TEXT */
+
+.MuiTypography-root {
+
+  font-family:"Inter",sans-serif !important;
+
+  font-size:14px !important;
+
+  color:#5B6472 !important;
+
+}
+
+
+
+.MuiTypography-root strong {
+
+  color:#1B2A4A;
+
+}
+
+
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+
+  .ledger-topbar {
+
+    height:auto;
+
+    padding:20px;
+
+    flex-direction:column;
+
+    gap:20px;
+
+    align-items:flex-start;
+
+  }
+
+
+  .ledger-meta {
+
+    flex-wrap:wrap;
+
+    gap:12px;
+
+  }
+
+
+  .ledger-header-actions {
+
+    width:100%;
+
+    justify-content:flex-end;
+
+  }
+
+
+}

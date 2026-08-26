@@ -1,0 +1,23 @@
+.layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.main-content {
+  margin-left: 260px;          /* Same as sidebar width */
+  width: calc(100% - 260px);
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 100vh;
+  background: #F7F4EC;
+}
+
+.page-content {
+  flex: 1;
+  padding: 25px 30px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

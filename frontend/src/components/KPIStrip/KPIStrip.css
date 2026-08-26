@@ -1,0 +1,370 @@
+.kpi-ledger {
+
+  margin-top:20px;
+
+  border:1px solid #DCD5C2;
+
+  background:#ffffff;
+
+  overflow:visible;
+
+  width:100%;
+
+}
+
+
+
+/* =========================
+   KPI GRID
+========================= */
+
+.kpi-grid {
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  gap:15px;
+
+  width:100%;
+
+}
+
+
+
+/* =========================
+   KPI ITEM
+========================= */
+
+.kpi-item {
+
+  min-width:0;
+
+  width:100%;
+
+}
+
+
+
+/* =========================
+   KPI CARD
+========================= */
+
+.kpi-cell {
+
+  height:110px;
+
+  border:1px solid #DCD5C2;
+
+  border-radius:10px !important;
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:center;
+
+  padding:16px;
+
+  background:#F7F4EC !important;
+
+  position:relative;
+
+  overflow:hidden;
+
+  cursor:pointer;
+
+  transition:all 0.3s ease;
+
+  box-sizing:border-box;
+
+}
+
+
+
+/* =========================
+   Animated Gold Top Line
+========================= */
+
+.kpi-cell::before {
+
+  content:"";
+
+  position:absolute;
+
+  left:0;
+
+  top:0;
+
+  width:0%;
+
+  height:4px;
+
+  background:#B78A34;
+
+  transition:width .3s ease;
+
+}
+
+
+
+.kpi-cell:hover::before {
+
+  width:100%;
+
+}
+
+
+
+.kpi-cell:hover {
+
+  background:#ffffff !important;
+
+  transform:translateY(-5px);
+
+  box-shadow:
+
+    0 10px 20px rgba(27,42,74,0.15);
+
+}
+
+
+
+/* =========================
+   ICON
+========================= */
+
+.kpi-icon {
+
+  color:#B78A34;
+
+  margin-bottom:5px;
+
+}
+
+
+
+.kpi-icon svg {
+
+  font-size:24px;
+
+}
+
+
+
+/* =========================
+   LABEL
+========================= */
+
+.kpi-label {
+
+  font-family:"Inter",sans-serif;
+
+  font-size:11px;
+
+  letter-spacing:1px;
+
+  text-transform:uppercase;
+
+  color:#5B6472;
+
+  font-weight:700;
+
+  margin-bottom:4px;
+
+}
+
+
+
+/* =========================
+   VALUE
+========================= */
+
+.kpi-value {
+
+  font-family:"IBM Plex Mono",monospace;
+
+  font-size:22px;
+
+  font-weight:700;
+
+  color:#1B2A4A;
+
+  line-height:1.2;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+}
+
+
+
+/* =========================
+   DESCRIPTION
+========================= */
+
+.kpi-note {
+
+  display:none;
+
+}
+
+
+
+/* =========================
+   Background Decoration
+========================= */
+
+.kpi-cell::after {
+
+  content:"";
+
+  position:absolute;
+
+  right:-25px;
+
+  bottom:-25px;
+
+  width:70px;
+
+  height:70px;
+
+  border-radius:50%;
+
+  background:#EFE7D5;
+
+  opacity:.5;
+
+}
+
+
+
+/* =========================
+   CARD COLORS
+========================= */
+
+/* Outstanding */
+
+.kpi-item:nth-child(6) .kpi-value {
+
+  color:#B54747;
+
+}
+
+
+
+/* Gross Profit */
+
+.kpi-item:nth-child(7) .kpi-value {
+
+  color:#26734D;
+
+}
+
+
+
+/* Gross Margin */
+
+.kpi-item:nth-child(8) .kpi-value {
+
+  color:#B78A34;
+
+}
+
+
+
+/* Net Amount */
+
+.kpi-item:nth-child(9) .kpi-value {
+
+  color:#1B2A4A;
+
+}
+
+
+
+/* =========================
+   TABLET
+========================= */
+
+@media(max-width:1100px){
+
+  .kpi-grid {
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap:15px;
+
+  }
+
+}
+
+
+
+/* =========================
+   SMALL TABLET
+========================= */
+
+@media(max-width:750px){
+
+  .kpi-grid {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+  }
+
+
+  .kpi-cell {
+
+    height:105px;
+
+  }
+
+}
+
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px){
+
+  .kpi-ledger {
+
+    margin-top:15px;
+
+  }
+
+
+  .kpi-grid {
+
+    grid-template-columns:1fr;
+
+    gap:12px;
+
+  }
+
+
+  .kpi-cell {
+
+    height:100px;
+
+    padding:14px;
+
+  }
+
+
+  .kpi-value {
+
+    font-size:20px;
+
+  }
+
+}

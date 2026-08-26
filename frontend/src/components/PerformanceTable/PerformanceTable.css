@@ -1,0 +1,167 @@
+.performance-table {
+
+    margin-top:25px;
+    background:white;
+    border:1px solid #DCD5C2;
+    padding:20px;
+    height:650px;
+    box-sizing:border-box;
+
+}
+
+
+.table-toolbar {
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+
+}
+
+
+.table-toolbar h2 {
+
+    margin:0;
+    color:#1B2A4A;
+    font-size:22px;
+    font-weight:600;
+
+}
+
+
+.table-toolbar input {
+
+    width:300px;
+    height:40px;
+    padding:0 12px;
+    border:1px solid #DCD5C2;
+    border-radius:6px;
+    font-size:14px;
+    outline:none;
+
+}
+
+
+.table-toolbar input:focus {
+
+    border-color:#B78A34;
+
+}
+
+
+/* Remove default MUI border */
+
+.MuiDataGrid-root {
+
+    border:none !important;
+
+}
+
+
+/* Header background */
+
+.MuiDataGrid-columnHeaders {
+
+    background:#1B2A4A !important;
+    min-height:56px !important;
+    max-height:56px !important;
+    border-bottom:1px solid #DCD5C2 !important;
+
+}
+
+
+/* Header text */
+
+.MuiDataGrid-columnHeaderTitle {
+
+    color:rgb(9, 9, 9) !important;
+    font-size:14px !important;
+    font-weight:600 !important;
+
+}
+
+
+/* Header alignment */
+
+.MuiDataGrid-columnHeader {
+
+    outline:none !important;
+
+}
+
+
+/* Table cells */
+
+.MuiDataGrid-cell {
+
+    font-size:14px;
+    color:#1B2A4A;
+    border-bottom:1px solid #EEE8D8 !important;
+
+}
+
+
+/* Rows */
+
+.MuiDataGrid-row:nth-child(even) {
+
+    background:#FAF8F2;
+
+}
+
+
+.MuiDataGrid-row:hover {
+
+    background:#F4EBD8 !important;
+
+}
+
+
+/* Footer pagination */
+
+.MuiDataGrid-footerContainer {
+
+    border-top:1px solid #DCD5C2 !important;
+
+}
+
+
+/* Scrollbar */
+
+.MuiDataGrid-virtualScroller::-webkit-scrollbar {
+
+    width:8px;
+    height:8px;
+
+}
+
+
+.MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb {
+
+    background:#DCD5C2;
+    border-radius:10px;
+
+}
+
+
+/* Mobile */
+
+@media(max-width:900px){
+
+    .table-toolbar {
+
+        flex-direction:column;
+        gap:15px;
+        align-items:flex-start;
+
+    }
+
+
+    .table-toolbar input {
+
+        width:100%;
+
+    }
+
+}

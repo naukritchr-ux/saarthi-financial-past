@@ -1,0 +1,565 @@
+/* =====================================================
+   TEAM LEADER PERFORMANCE
+===================================================== */
+
+.team-performance {
+
+  padding: 30px;
+
+  background: #F7F4EC;
+
+  min-height: 100%;
+
+}
+
+
+/* =====================================================
+   PAGE HEADING
+===================================================== */
+
+.team-performance h1 {
+
+  font-family: "Fraunces", serif;
+
+  color: #1B2A4A;
+
+  font-size: 30px;
+
+  margin: 0 0 25px;
+
+}
+
+
+/* =====================================================
+   EXISTING TABLE
+===================================================== */
+
+.team-performance table {
+
+  width: 100%;
+
+  background: white;
+
+  border-collapse: separate;
+
+  border-spacing: 0;
+
+  border: 1px solid #DCD5C2;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 8px 24px rgba(
+      27,
+      42,
+      74,
+      0.10
+    );
+
+}
+
+
+.team-performance th {
+
+  background: #1B2A4A;
+
+  color: white;
+
+  padding: 16px 18px;
+
+  text-align: left;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  letter-spacing: .4px;
+
+}
+
+
+.team-performance td {
+
+  padding: 15px 18px;
+
+  color: #1B2A4A;
+
+  font-size: 14px;
+
+  border-bottom:
+    1px solid #E8E1D2;
+
+}
+
+
+.team-performance td:first-child {
+
+  font-weight: 700;
+
+  color: #B78A34;
+
+}
+
+
+.team-performance td:nth-child(2) {
+
+  font-weight: 600;
+
+}
+
+
+.team-performance td:nth-child(3),
+.team-performance td:nth-child(4),
+.team-performance td:nth-child(5) {
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+}
+
+
+.team-performance tbody tr {
+
+  transition:
+    background .2s ease,
+    transform .2s ease;
+
+}
+
+
+.team-performance tbody tr:hover {
+
+  background: #F7F4EC;
+
+  transform: scale(1.005);
+
+}
+
+
+.team-performance tr:last-child td {
+
+  border-bottom: none;
+
+}
+
+
+/* =====================================================
+   SELECTED LEADER HEADER
+===================================================== */
+
+.selected-leader-header {
+
+  margin-top: 25px;
+
+  margin-bottom: 22px;
+
+  padding: 24px 26px;
+
+  background: white;
+
+  border: 1px solid #E1DAC8;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 8px 25px rgba(
+      27,
+      42,
+      74,
+      .08
+    );
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 25px;
+
+}
+
+
+.selected-leader-header span {
+
+  display: block;
+
+  color: #8A806C;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+}
+
+
+.selected-leader-header h2 {
+
+  margin: 6px 0 0;
+
+  color: #1B2A4A;
+
+  font-size: 24px;
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+.leader-summary {
+
+  display: flex;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+
+}
+
+
+.summary-item {
+
+  min-width: 125px;
+
+  padding: 12px 16px;
+
+  background: #F7F4EC;
+
+  border-radius: 10px;
+
+  border:
+    1px solid #E4DDCB;
+
+}
+
+
+.summary-item span {
+
+  font-size: 10px;
+
+  margin-bottom: 5px;
+
+}
+
+
+.summary-item strong {
+
+  display: block;
+
+  color: #1B2A4A;
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+  font-size: 16px;
+
+}
+
+
+/* =====================================================
+   CHART GRID
+===================================================== */
+
+.team-chart-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 22px;
+
+}
+
+
+/* =====================================================
+   CHART CARD
+===================================================== */
+
+.team-chart-card {
+
+  background: white;
+
+  border:
+    1px solid #E1DAC8;
+
+  border-radius: 18px;
+
+  padding: 22px;
+
+  min-width: 0;
+
+  box-shadow:
+    0 10px 30px
+    rgba(
+      27,
+      42,
+      74,
+      .08
+    );
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+
+}
+
+
+.team-chart-card:hover {
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 14px 34px
+    rgba(
+      27,
+      42,
+      74,
+      .12
+    );
+
+}
+
+
+/* =====================================================
+   CHART HEADER
+===================================================== */
+
+.chart-card-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 5px;
+
+}
+
+
+.chart-label {
+
+  color: #B78A34 !important;
+
+  font-size: 10px !important;
+
+  font-weight: 700 !important;
+
+  letter-spacing: 1.2px;
+
+}
+
+
+.chart-card-header h3 {
+
+  margin: 5px 0 0;
+
+  color: #1B2A4A;
+
+  font-size: 19px;
+
+  font-weight: 700;
+
+}
+
+
+/* =====================================================
+   BAR TOOLTIP
+===================================================== */
+
+.team-bar-tooltip {
+
+  background: #1B2A4A;
+
+  border-radius: 9px;
+
+  padding: 10px 14px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(
+      27,
+      42,
+      74,
+      .25
+    );
+
+}
+
+
+.team-bar-tooltip strong {
+
+  display: block;
+
+  color: white;
+
+  font-size: 13px;
+
+  margin-bottom: 4px;
+
+}
+
+
+.team-bar-tooltip span {
+
+  color: #F2D68A;
+
+  font-size: 12px;
+
+}
+
+
+/* =====================================================
+   PIE TOOLTIP
+===================================================== */
+
+.team-pie-tooltip {
+
+  background: #1B2A4A;
+
+  border-radius: 9px;
+
+  padding: 10px 14px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(
+      27,
+      42,
+      74,
+      .25
+    );
+
+}
+
+
+.team-pie-tooltip strong {
+
+  display: block;
+
+  color: white;
+
+  font-size: 13px;
+
+  margin-bottom: 4px;
+
+}
+
+
+.team-pie-tooltip span {
+
+  color: #F2D68A;
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+  font-size: 12px;
+
+}
+
+
+/* =====================================================
+   NO DATA
+===================================================== */
+
+.no-financial-data {
+
+  height: 350px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #8A806C;
+
+  font-size: 14px;
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 1100px) {
+
+  .selected-leader-header {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+  }
+
+
+  .team-chart-grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .team-performance {
+
+    padding: 15px;
+
+  }
+
+
+  .team-performance h1 {
+
+    font-size: 23px;
+
+  }
+
+
+  .team-chart-card {
+
+    padding: 15px;
+
+  }
+
+
+  .leader-summary {
+
+    width: 100%;
+
+  }
+
+
+  .summary-item {
+
+    flex: 1;
+
+  }
+
+
+  .team-performance table {
+
+    display: block;
+
+    overflow-x: auto;
+
+  }
+
+}

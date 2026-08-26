@@ -1,0 +1,571 @@
+/* =====================================================
+   FRANCHISE PERFORMANCE
+===================================================== */
+
+.franchise-performance {
+
+  padding: 30px;
+
+  background: #F7F4EC;
+
+  min-height: 100%;
+
+}
+
+
+/* =====================================================
+   PAGE HEADING
+===================================================== */
+
+.franchise-performance h1 {
+
+  font-family: "Fraunces", serif;
+
+  color: #1B2A4A;
+
+  font-size: 30px;
+
+  margin: 0 0 25px;
+
+}
+
+
+/* =====================================================
+   EXISTING TABLE
+===================================================== */
+
+.franchise-performance-table {
+
+  width: 100%;
+
+  overflow-x: auto;
+
+  background: white;
+
+  border: 1px solid #DCD5C2;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 8px 24px
+    rgba(
+      27,
+      42,
+      74,
+      0.10
+    );
+
+}
+
+
+.franchise-performance-table table {
+
+  width: 100%;
+
+  min-width: 850px;
+
+  border-collapse: collapse;
+
+}
+
+
+.franchise-performance-table th {
+
+  background: #1B2A4A;
+
+  color: white;
+
+  padding: 16px 18px;
+
+  text-align: left;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  letter-spacing: .4px;
+
+}
+
+
+.franchise-performance-table td {
+
+  padding: 15px 18px;
+
+  color: #1B2A4A;
+
+  font-size: 14px;
+
+  border-bottom:
+    1px solid #E8E1D2;
+
+}
+
+
+.franchise-performance-table td:first-child {
+
+  font-weight: 700;
+
+  color: #B78A34;
+
+}
+
+
+.franchise-performance-table td:nth-child(2) {
+
+  font-weight: 600;
+
+}
+
+
+.franchise-performance-table td:nth-child(3),
+.franchise-performance-table td:nth-child(4),
+.franchise-performance-table td:nth-child(5) {
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+}
+
+
+.franchise-performance-table tbody tr {
+
+  transition:
+    background .2s ease,
+    transform .2s ease;
+
+}
+
+
+.franchise-performance-table tbody tr:hover {
+
+  background: #F7F4EC;
+
+  transform: scale(1.005);
+
+}
+
+
+.franchise-performance-table tr:last-child td {
+
+  border-bottom: none;
+
+}
+
+
+/* =====================================================
+   SELECTED FRANCHISE HEADER
+===================================================== */
+
+.selected-franchise-header {
+
+  margin-top: 25px;
+
+  margin-bottom: 22px;
+
+  padding: 24px 26px;
+
+  background: white;
+
+  border: 1px solid #E1DAC8;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 8px 25px
+    rgba(
+      27,
+      42,
+      74,
+      .08
+    );
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 25px;
+
+}
+
+
+.selected-franchise-header span {
+
+  display: block;
+
+  color: #8A806C;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+}
+
+
+.selected-franchise-header h2 {
+
+  margin: 6px 0 0;
+
+  color: #1B2A4A;
+
+  font-size: 24px;
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+.franchise-summary {
+
+  display: flex;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+
+}
+
+
+.summary-item {
+
+  min-width: 125px;
+
+  padding: 12px 16px;
+
+  background: #F7F4EC;
+
+  border-radius: 10px;
+
+  border:
+    1px solid #E4DDCB;
+
+}
+
+
+.summary-item span {
+
+  font-size: 10px;
+
+  margin-bottom: 5px;
+
+}
+
+
+.summary-item strong {
+
+  display: block;
+
+  color: #1B2A4A;
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+  font-size: 16px;
+
+}
+
+
+/* =====================================================
+   CHART GRID
+===================================================== */
+
+.franchise-chart-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 22px;
+
+}
+
+
+/* =====================================================
+   CHART CARD
+===================================================== */
+
+.franchise-chart-card {
+
+  background: white;
+
+  border:
+    1px solid #E1DAC8;
+
+  border-radius: 18px;
+
+  padding: 22px;
+
+  min-width: 0;
+
+  box-shadow:
+    0 10px 30px
+    rgba(
+      27,
+      42,
+      74,
+      .08
+    );
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+
+}
+
+
+.franchise-chart-card:hover {
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 14px 34px
+    rgba(
+      27,
+      42,
+      74,
+      .12
+    );
+
+}
+
+
+/* =====================================================
+   CHART HEADER
+===================================================== */
+
+.chart-card-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 5px;
+
+}
+
+
+.chart-label {
+
+  color: #B78A34 !important;
+
+  font-size: 10px !important;
+
+  font-weight: 700 !important;
+
+  letter-spacing: 1.2px;
+
+}
+
+
+.chart-card-header h3 {
+
+  margin: 5px 0 0;
+
+  color: #1B2A4A;
+
+  font-size: 19px;
+
+  font-weight: 700;
+
+}
+
+
+/* =====================================================
+   BAR TOOLTIP
+===================================================== */
+
+.franchise-bar-tooltip {
+
+  background: #1B2A4A;
+
+  border-radius: 9px;
+
+  padding: 10px 14px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(
+      27,
+      42,
+      74,
+      .25
+    );
+
+}
+
+
+.franchise-bar-tooltip strong {
+
+  display: block;
+
+  color: white;
+
+  font-size: 13px;
+
+  margin-bottom: 4px;
+
+}
+
+
+.franchise-bar-tooltip span {
+
+  color: #F2D68A;
+
+  font-size: 12px;
+
+}
+
+
+/* =====================================================
+   PIE TOOLTIP
+===================================================== */
+
+.franchise-pie-tooltip {
+
+  background: #1B2A4A;
+
+  border-radius: 9px;
+
+  padding: 10px 14px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(
+      27,
+      42,
+      74,
+      .25
+    );
+
+}
+
+
+.franchise-pie-tooltip strong {
+
+  display: block;
+
+  color: white;
+
+  font-size: 13px;
+
+  margin-bottom: 4px;
+
+}
+
+
+.franchise-pie-tooltip span {
+
+  color: #F2D68A;
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
+
+  font-size: 12px;
+
+}
+
+
+/* =====================================================
+   NO DATA
+===================================================== */
+
+.no-financial-data {
+
+  height: 350px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #8A806C;
+
+  font-size: 14px;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1100px) {
+
+  .selected-franchise-header {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+  }
+
+
+  .franchise-chart-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .franchise-performance {
+
+    padding: 15px;
+
+  }
+
+
+  .franchise-performance h1 {
+
+    font-size: 23px;
+
+  }
+
+
+  .franchise-chart-card {
+
+    padding: 15px;
+
+  }
+
+
+  .franchise-summary {
+
+    width: 100%;
+
+  }
+
+
+  .summary-item {
+
+    flex: 1;
+
+  }
+
+
+  .franchise-performance-table {
+
+    overflow-x: auto;
+
+  }
+
+}
