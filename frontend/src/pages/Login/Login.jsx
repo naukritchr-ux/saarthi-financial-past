@@ -3,75 +3,69 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../auth/AuthContext";
 
-import {
-  ROLE_PASSWORDS,
-  ROLES
-} from "../../auth/roles";
-
 import "./Login.css";
 
 
 function Login() {
 
-
   const navigate = useNavigate();
 
   const { login } = useAuth();
 
-
-  const [role, setRole] = useState("");
-
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
 
 
-  function handleRoleChange(e){
+  function handleLogin() {
 
-    setRole(e.target.value);
+    if (!username.trim()) {
 
-    setPassword("");
-
-  }
-
-
-
-  function handleLogin(){
-
-
-    if(!role){
-
-      alert("Please select user type");
+      alert("Please enter username");
 
       return;
 
     }
 
 
-    const correctPassword =
-      ROLE_PASSWORDS[role];
+    if (!password) {
+
+      alert("Please enter password");
+
+      return;
+
+    }
 
 
-    if(password === correctPassword){
+    if (
+      username === "Admin" &&
+      password === "Admin@26"
+    ) {
 
-
-      login(role);
-
+      login("Admin");
 
       navigate("/dashboard");
-
 
     }
     else {
 
-
-      alert("Invalid Password");
-
+      alert("Invalid username or password");
 
     }
 
-
   }
 
+
+  function handleKeyDown(e) {
+
+    if (e.key === "Enter") {
+
+      handleLogin();
+
+    }
+
+  }
 
 
   return (
@@ -92,107 +86,88 @@ function Login() {
         </h2>
 
 
+        {/* Username */}
 
-        <label>
-          Select User Type
-        </label>
+        <div className="login-field">
+
+          <label htmlFor="username">
+            Username
+          </label>
 
 
+          <input
+            id="username"
+            type="text"
+            placeholder="Enter Username"
+            value={username}
+            onChange={(e) =>
+              setUsername(e.target.value)
+            }
+            onKeyDown={handleKeyDown}
+            autoComplete="username"
+          />
 
-        <select
+        </div>
 
-          value={role}
 
-          onChange={handleRoleChange}
+        {/* Password */}
 
+        <div className="login-field">
+
+          <label htmlFor="password">
+            Password
+          </label>
+
+
+          <div className="password-wrapper">
+
+
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) =>
+                setPassword(e.target.value)
+              }
+              onKeyDown={handleKeyDown}
+              autoComplete="current-password"
+            />
+
+
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+              aria-label={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+            >
+
+              {showPassword ? "🙈" : "👁"}
+
+            </button>
+
+
+          </div>
+
+        </div>
+
+
+        {/* Login Button */}
+
+        <button
+          className="login-button"
+          onClick={handleLogin}
         >
 
-          <option value="" disabled>
+          Login
 
-            Select User Type
-
-          </option>
-
-
-          <option value={ROLES.HEAD_OFFICE}>
-
-            Head Office
-
-          </option>
-
-
-          <option value={ROLES.TEAM_LEADER}>
-
-            Team Leader
-
-          </option>
-
-
-          <option value={ROLES.FRANCHISE_PARTNER}>
-
-            Franchise Partner
-
-          </option>
-
-
-        </select>
-
-
-
-
-        {
-
-          role && (
-
-            <>
-
-
-              <div className="password-info">
-
-                Password:
-
-                <strong>
-
-                  {ROLE_PASSWORDS[role]}
-
-                </strong>
-
-              </div>
-
-
-
-
-              <input
-
-                type="password"
-
-                placeholder="Enter Password"
-
-                value={password}
-
-                onChange={(e)=>
-                  setPassword(e.target.value)
-                }
-
-              />
-
-
-
-              <button
-                onClick={handleLogin}
-              >
-
-                Login
-
-              </button>
-
-
-            </>
-
-          )
-
-        }
-
+        </button>
 
 
       </div>
@@ -201,7 +176,6 @@ function Login() {
     </div>
 
   );
-
 
 }
 
