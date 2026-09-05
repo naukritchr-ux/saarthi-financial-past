@@ -4,31 +4,19 @@ import {
   useState
 } from "react";
 
-
 const AuthContext = createContext();
-
-
 
 export function AuthProvider({ children }) {
 
-
   const [user, setUser] = useState(null);
-
-
 
   function login(role) {
 
-
     setUser({
-
       role
-
     });
 
-
   }
-
-
 
   function logout() {
 
@@ -36,24 +24,15 @@ export function AuthProvider({ children }) {
 
   }
 
-
-
   return (
 
     <AuthContext.Provider
-
       value={{
-
         user,
-
         role: user?.role || null,
-
         login,
-
         logout
-
       }}
-
     >
 
       {children}
@@ -62,12 +41,9 @@ export function AuthProvider({ children }) {
 
   );
 
-
 }
 
-
-
-export function useAuth(){
+export function useAuth() {
 
   return useContext(AuthContext);
 
