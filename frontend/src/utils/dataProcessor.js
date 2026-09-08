@@ -47,10 +47,12 @@ export function processDashboardData(rows) {
   // --------------------------------------------------
 
   const normalizeCompanyName = (value) => {
+
     return String(value || "")
       .trim()
       .toLowerCase()
       .replace(/\s+/g, " ");
+
   };
 
 
@@ -59,11 +61,13 @@ export function processDashboardData(rows) {
   // --------------------------------------------------
 
   const normalizeStatus = (value) => {
+
     return String(value || "")
       .trim()
       .toLowerCase()
       .replace(/[_-]+/g, " ")
       .replace(/\s+/g, " ");
+
   };
 
 
@@ -72,7 +76,11 @@ export function processDashboardData(rows) {
   // --------------------------------------------------
 
   const getCompanyName = (row) => {
-    return normalizeCompanyName(row["Company Name"]);
+
+    return normalizeCompanyName(
+      row["Company Name"]
+    );
+
   };
 
 
@@ -103,7 +111,11 @@ export function processDashboardData(rows) {
   // ==================================================
 
   const totalEnquiries = rows.filter((row) => {
-    return Boolean(getCompanyName(row));
+
+    return Boolean(
+      getCompanyName(row)
+    );
+
   }).length;
 
 
@@ -136,11 +148,13 @@ export function processDashboardData(rows) {
 
   rows.forEach((row) => {
 
-    const companyName = getCompanyName(row);
+    const companyName =
+      getCompanyName(row);
 
-    const status = normalizeStatus(
-      row["Client Status"]
-    );
+    const status =
+      normalizeStatus(
+        row["Client Status"]
+      );
 
 
     // Ignore rows without company name
@@ -150,49 +164,67 @@ export function processDashboardData(rows) {
     }
 
 
-    // Active
+    // --------------------------------------------------
+    // ACTIVE
+    // --------------------------------------------------
 
     if (status === "active") {
 
-      statusClients.active.add(companyName);
+      statusClients.active.add(
+        companyName
+      );
 
     }
 
 
-    // Deleted
+    // --------------------------------------------------
+    // DELETED
+    // --------------------------------------------------
 
     else if (status === "deleted") {
 
-      statusClients.deleted.add(companyName);
+      statusClients.deleted.add(
+        companyName
+      );
 
     }
 
 
-    // Non Active
+    // --------------------------------------------------
+    // NON ACTIVE
+    // --------------------------------------------------
 
     else if (
       status === "non active" ||
       status === "nonactive"
     ) {
 
-      statusClients.nonActive.add(companyName);
+      statusClients.nonActive.add(
+        companyName
+      );
 
     }
 
 
-    // Blacklisted
+    // --------------------------------------------------
+    // BLACKLISTED
+    // --------------------------------------------------
 
     else if (
       status === "blacklisted" ||
       status === "blacklist"
     ) {
 
-      statusClients.blacklisted.add(companyName);
+      statusClients.blacklisted.add(
+        companyName
+      );
 
     }
 
 
-    // No Hiring
+    // --------------------------------------------------
+    // NO HIRING
+    // --------------------------------------------------
 
     else if (
       status === "no hiring" ||
@@ -200,39 +232,61 @@ export function processDashboardData(rows) {
       status === "no hiring clients"
     ) {
 
-      statusClients.noHiring.add(companyName);
+      statusClients.noHiring.add(
+        companyName
+      );
 
     }
 
 
-    // Revival
+    // --------------------------------------------------
+    // REVIVAL
+    // --------------------------------------------------
 
-    else if (status === "revival") {
+    else if (
+      status === "revival"
+    ) {
 
-      statusClients.revival.add(companyName);
-
-    }
-
-
-    // Reallocation
-
-    else if (status === "reallocation") {
-
-      statusClients.reallocation.add(companyName);
+      statusClients.revival.add(
+        companyName
+      );
 
     }
 
 
-    // Prospect
+    // --------------------------------------------------
+    // REALLOCATION
+    // --------------------------------------------------
 
-    else if (status === "prospect") {
+    else if (
+      status === "reallocation"
+    ) {
 
-      statusClients.prospect.add(companyName);
+      statusClients.reallocation.add(
+        companyName
+      );
 
     }
 
 
-    // Permanently Closed
+    // --------------------------------------------------
+    // PROSPECT
+    // --------------------------------------------------
+
+    else if (
+      status === "prospect"
+    ) {
+
+      statusClients.prospect.add(
+        companyName
+      );
+
+    }
+
+
+    // --------------------------------------------------
+    // PERMANENTLY CLOSED
+    // --------------------------------------------------
 
     else if (
       status === "permanently closed" ||
@@ -240,7 +294,9 @@ export function processDashboardData(rows) {
       status === "permanently close"
     ) {
 
-      statusClients.permanentlyClosed.add(companyName);
+      statusClients.permanentlyClosed.add(
+        companyName
+      );
 
     }
 
@@ -285,9 +341,10 @@ export function processDashboardData(rows) {
 
   const openEnquiries = rows.filter((row) => {
 
-    const status = normalizeStatus(
-      row["Client Status"]
-    );
+    const status =
+      normalizeStatus(
+        row["Client Status"]
+      );
 
     return (
       status === "open" ||
@@ -304,9 +361,10 @@ export function processDashboardData(rows) {
 
   const closedEnquiries = rows.filter((row) => {
 
-    const status = normalizeStatus(
-      row["Client Status"]
-    );
+    const status =
+      normalizeStatus(
+        row["Client Status"]
+      );
 
     return (
       status === "closed" ||
@@ -334,42 +392,29 @@ export function processDashboardData(rows) {
   // ==================================================
   // TOTAL BILLING
   //
-  // Formula:
+  // CORRECT FORMULA:
   //
-  // Salary Offered × Service Charge
+  // SUM(Total Bill Amount)
   //
-  // If Service Charge is entered as:
-  // 10     → treated as 10%
-  // 10%    → Number("10%") becomes 0, so preferably
-  //           Excel should store it as 10 or 0.10
-  // 0.10   → treated as 10%
+  // We DO NOT calculate billing using:
+  // Salary Offered × Service Charges
   // ==================================================
 
   const totalBilling = rows.reduce(
     (sum, row) => {
 
-      const salaryOffered =
-        Number(row["Salary Offered"] || 0);
-
-
-      let serviceCharge =
-        Number(row["Service Charge"] || 0);
-
-
-      // If value is greater than 1,
-      // assume it is percentage.
-
-      if (serviceCharge > 1) {
-
-        serviceCharge =
-          serviceCharge / 100;
-
-      }
-
+      const billAmount =
+        Number(
+          row["Total Bill Amount"] || 0
+        );
 
       return (
         sum +
-        salaryOffered * serviceCharge
+        (
+          Number.isFinite(billAmount)
+            ? billAmount
+            : 0
+        )
       );
 
     },
@@ -379,14 +424,25 @@ export function processDashboardData(rows) {
 
   // ==================================================
   // AMOUNT RECEIVED
+  //
+  // SUM(Amount Received)
   // ==================================================
 
   const amountReceived = rows.reduce(
     (sum, row) => {
 
+      const received =
+        Number(
+          row["Amount Received"] || 0
+        );
+
       return (
         sum +
-        Number(row["Amount Received"] || 0)
+        (
+          Number.isFinite(received)
+            ? received
+            : 0
+        )
       );
 
     },
@@ -396,14 +452,25 @@ export function processDashboardData(rows) {
 
   // ==================================================
   // FRANCHISEE SHARE
+  //
+  // SUM(Franchisee Share)
   // ==================================================
 
   const franchiseeShare = rows.reduce(
     (sum, row) => {
 
+      const share =
+        Number(
+          row["Franchisee Share"] || 0
+        );
+
       return (
         sum +
-        Number(row["Franchisee Share"] || 0)
+        (
+          Number.isFinite(share)
+            ? share
+            : 0
+        )
       );
 
     },
@@ -413,6 +480,9 @@ export function processDashboardData(rows) {
 
   // ==================================================
   // OUTSTANDING
+  //
+  // Outstanding =
+  // Total Billing - Amount Received
   // ==================================================
 
   const outstandingAmount =
@@ -436,12 +506,18 @@ export function processDashboardData(rows) {
 
   const grossMargin =
     totalBilling > 0
-      ? (grossProfit / totalBilling) * 100
+      ? (
+          grossProfit /
+          totalBilling
+        ) * 100
       : 0;
 
 
   // ==================================================
   // NET AMOUNT
+  //
+  // Net Amount =
+  // Total Billing - Franchisee Share
   // ==================================================
 
   const netAmount =
@@ -454,7 +530,10 @@ export function processDashboardData(rows) {
 
   const conversionRate =
     totalClients > 0
-      ? (totalPlacements / totalClients) * 100
+      ? (
+          totalPlacements /
+          totalClients
+        ) * 100
       : 0;
 
 
@@ -464,14 +543,18 @@ export function processDashboardData(rows) {
 
   return {
 
-    // Clients
+    // --------------------------------------------------
+    // CLIENTS
+    // --------------------------------------------------
 
     totalClients,
 
     totalEnquiries,
 
 
-    // Client Status
+    // --------------------------------------------------
+    // CLIENT STATUS
+    // --------------------------------------------------
 
     activeClients,
 
@@ -492,19 +575,25 @@ export function processDashboardData(rows) {
     permanentlyClosedClients,
 
 
-    // Enquiries
+    // --------------------------------------------------
+    // ENQUIRIES
+    // --------------------------------------------------
 
     openEnquiries,
 
     closedEnquiries,
 
 
-    // Placements
+    // --------------------------------------------------
+    // PLACEMENTS
+    // --------------------------------------------------
 
     totalPlacements,
 
 
-    // Billing
+    // --------------------------------------------------
+    // BILLING
+    // --------------------------------------------------
 
     totalBilling,
 
@@ -515,23 +604,33 @@ export function processDashboardData(rows) {
     franchiseeShare,
 
 
-    // Profit
+    // --------------------------------------------------
+    // PROFIT
+    // --------------------------------------------------
 
     grossProfit,
 
     grossMargin:
-      Number(grossMargin.toFixed(2)),
+      Number(
+        grossMargin.toFixed(2)
+      ),
 
     netAmount,
 
 
-    // Conversion
+    // --------------------------------------------------
+    // CONVERSION
+    // --------------------------------------------------
 
     conversionRate:
-      Number(conversionRate.toFixed(2)),
+      Number(
+        conversionRate.toFixed(2)
+      ),
 
 
-    // Performance
+    // --------------------------------------------------
+    // PERFORMANCE
+    // --------------------------------------------------
 
     teamLeaderPerformance:
       groupPerformance(
@@ -560,16 +659,20 @@ export function processDashboardData(rows) {
 // GROUP PERFORMANCE
 // ====================================================
 
-function groupPerformance(rows, column) {
+function groupPerformance(
+  rows,
+  column
+) {
 
   const result = {};
 
 
   rows.forEach((row) => {
 
-    const value = String(
-      row[column] || "Unknown"
-    ).trim();
+    const value =
+      String(
+        row[column] || "Unknown"
+      ).trim();
 
 
     const key =
@@ -591,12 +694,16 @@ function groupPerformance(rows, column) {
   return Object.entries(result)
 
     .map(([name, value]) => ({
+
       name,
+
       value
+
     }))
 
     .sort(
-      (a, b) => b.value - a.value
+      (a, b) =>
+        b.value - a.value
     );
 
 }
