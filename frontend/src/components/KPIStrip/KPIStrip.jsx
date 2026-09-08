@@ -41,7 +41,10 @@ function KPIStrip() {
 
     return `₹${Number(
       value || 0
-    ).toLocaleString("en-IN")}`;
+    ).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
 
   };
 
@@ -77,7 +80,7 @@ function KPIStrip() {
         dashboardData.totalBilling
       ),
       icon: <CurrencyRupee />,
-      note: "Salary × Service Charges",
+      note: "Sum of Total Bill Amount",
       clickable: true
     },
 
@@ -122,6 +125,7 @@ function KPIStrip() {
 
   // ==================================================
   // CLIENT STATUS KPIs
+  // These are used ONLY inside the popup
   // ==================================================
 
   const clientStatusKPIs = [
@@ -204,6 +208,7 @@ function KPIStrip() {
 
   // ==================================================
   // ENQUIRY KPIs
+  // These are used ONLY inside the popup
   // ==================================================
 
   const enquiryKPIs = [
@@ -229,6 +234,7 @@ function KPIStrip() {
 
   // ==================================================
   // BILLING KPIs
+  // These are used ONLY inside the popup
   // ==================================================
 
   const billingKPIs = [
@@ -351,7 +357,9 @@ function KPIStrip() {
 
           if (metric.clickable) {
 
-            setSelectedKPI(metric.id);
+            setSelectedKPI(
+              metric.id
+            );
 
           }
 
@@ -360,7 +368,6 @@ function KPIStrip() {
       >
 
         <div className="kpi-cell">
-
 
           <div
             className={`kpi-icon ${
@@ -374,7 +381,6 @@ function KPIStrip() {
 
 
           <div className="kpi-content">
-
 
             <div className="kpi-label">
 
@@ -396,9 +402,7 @@ function KPIStrip() {
 
             </div>
 
-
           </div>
-
 
         </div>
 
@@ -428,12 +432,11 @@ function KPIStrip() {
 
     <>
 
+      {/* =================================================
+          MAIN KPI SECTION ONLY
+      ================================================= */}
+
       <div className="kpi-ledger">
-
-
-        {/* ==========================================
-            PERFORMANCE OVERVIEW
-        ========================================== */}
 
         <section className="kpi-section">
 
@@ -459,13 +462,9 @@ function KPIStrip() {
             {mainKPIs.map((metric) => (
 
               <KPICard
-
                 key={metric.id}
-
                 metric={metric}
-
                 section="main"
-
               />
 
             ))}
@@ -473,145 +472,8 @@ function KPIStrip() {
           </div>
 
         </section>
-
-
-
-        {/* ==========================================
-            CLIENT STATUS
-        ========================================== */}
-
-        <section className="kpi-section">
-
-          <div className="kpi-section-header">
-
-            <div>
-
-              <h3>
-                Client Status
-              </h3>
-
-              <p>
-                Unique clients by current status
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div className="kpi-grid client-kpi-grid">
-
-            {clientStatusKPIs.map((metric) => (
-
-              <KPICard
-
-                key={metric.id}
-
-                metric={metric}
-
-                section="client"
-
-              />
-
-            ))}
-
-          </div>
-
-        </section>
-
-
-
-        {/* ==========================================
-            ENQUIRY STATUS
-        ========================================== */}
-
-        <section className="kpi-section">
-
-          <div className="kpi-section-header">
-
-            <div>
-
-              <h3>
-                Enquiry Status
-              </h3>
-
-              <p>
-                Current enquiry pipeline
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div className="kpi-grid enquiry-kpi-grid">
-
-            {enquiryKPIs.map((metric) => (
-
-              <KPICard
-
-                key={metric.id}
-
-                metric={metric}
-
-                section="enquiry"
-
-              />
-
-            ))}
-
-          </div>
-
-        </section>
-
-
-
-        {/* ==========================================
-            BILLING & COLLECTION
-        ========================================== */}
-
-        <section className="kpi-section">
-
-          <div className="kpi-section-header">
-
-            <div>
-
-              <h3>
-                Billing & Collection
-              </h3>
-
-              <p>
-                Revenue collection breakdown
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div className="kpi-grid billing-kpi-grid">
-
-            {billingKPIs.map((metric) => (
-
-              <KPICard
-
-                key={metric.id}
-
-                metric={metric}
-
-                section="billing"
-
-              />
-
-            ))}
-
-          </div>
-
-        </section>
-
 
       </div>
-
 
 
       {/* =================================================
@@ -633,7 +495,9 @@ function KPIStrip() {
           >
 
 
-            {/* MODAL HEADER */}
+            {/* ==========================================
+                MODAL HEADER
+            ========================================== */}
 
             <div className="kpi-modal-header">
 
@@ -651,15 +515,10 @@ function KPIStrip() {
 
 
               <button
-
                 type="button"
-
                 className="kpi-modal-close"
-
                 onClick={closeModal}
-
                 aria-label="Close"
-
               >
 
                 <Close />
@@ -669,8 +528,9 @@ function KPIStrip() {
             </div>
 
 
-
-            {/* MODAL KPI CARDS */}
+            {/* ==========================================
+                MODAL KPI CARDS
+            ========================================== */}
 
             <div
               className={`kpi-sub-grid ${
@@ -725,19 +585,16 @@ function KPIStrip() {
             </div>
 
 
-
-            {/* MODAL FOOTER */}
+            {/* ==========================================
+                MODAL FOOTER
+            ========================================== */}
 
             <div className="kpi-modal-footer">
 
               <button
-
                 type="button"
-
                 className="kpi-modal-button"
-
                 onClick={closeModal}
-
               >
 
                 Close
