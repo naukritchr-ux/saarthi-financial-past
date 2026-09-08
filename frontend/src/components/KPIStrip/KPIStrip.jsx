@@ -7,7 +7,9 @@ import {
   TrendingUp,
   Warning,
   Percent,
-  Payments
+  Payments,
+  Lock,
+  LockOpen
 } from "@mui/icons-material";
 
 import {
@@ -24,6 +26,10 @@ function KPIStrip() {
   } = useData();
 
 
+  // =====================================================
+  // FORMAT CURRENCY
+  // =====================================================
+
   const formatCurrency = (value) => {
 
     return `₹${Number(value || 0).toLocaleString("en-IN")}`;
@@ -31,23 +37,63 @@ function KPIStrip() {
   };
 
 
+  // =====================================================
+  // KPI METRICS
+  // =====================================================
+
   const metrics = [
+
+    // ---------------------------------------------------
+    // 1. CLIENTS
+    // ---------------------------------------------------
 
     {
       label: "Clients",
       value: dashboardData.totalClients || 0,
       icon: <Business />,
-      note: "Total enquiries"
+      note: "Unique clients"
     },
 
+
+    // ---------------------------------------------------
+    // 2. ACTIVE CLIENTS
+    // ---------------------------------------------------
 
     {
       label: "Active Clients",
       value: dashboardData.activeClients || 0,
       icon: <CheckCircle />,
-      note: "Currently active"
+      note: "Unique active clients"
     },
 
+
+    // ---------------------------------------------------
+    // 3. OPEN CLIENT ENQUIRY
+    // ---------------------------------------------------
+
+    {
+      label: "Open Client Enquiry",
+      value: dashboardData.openClientEnquiries || 0,
+      icon: <LockOpen />,
+      note: "Unique open clients"
+    },
+
+
+    // ---------------------------------------------------
+    // 4. CLOSED CLIENT ENQUIRY
+    // ---------------------------------------------------
+
+    {
+      label: "Closed Client Enquiry",
+      value: dashboardData.closedClientEnquiries || 0,
+      icon: <Lock />,
+      note: "Unique closed clients"
+    },
+
+
+    // ---------------------------------------------------
+    // 5. PLACEMENTS
+    // ---------------------------------------------------
 
     {
       label: "Placements",
@@ -56,6 +102,10 @@ function KPIStrip() {
       note: "Successful placements"
     },
 
+
+    // ---------------------------------------------------
+    // 6. TOTAL BILLING
+    // ---------------------------------------------------
 
     {
       label: "Total Billing",
@@ -67,6 +117,10 @@ function KPIStrip() {
     },
 
 
+    // ---------------------------------------------------
+    // 7. RECEIVED
+    // ---------------------------------------------------
+
     {
       label: "Received",
       value: formatCurrency(
@@ -76,6 +130,10 @@ function KPIStrip() {
       note: "Collected amount"
     },
 
+
+    // ---------------------------------------------------
+    // 8. OUTSTANDING
+    // ---------------------------------------------------
 
     {
       label: "Outstanding",
@@ -87,6 +145,10 @@ function KPIStrip() {
     },
 
 
+    // ---------------------------------------------------
+    // 9. GROSS PROFIT
+    // ---------------------------------------------------
+
     {
       label: "Gross Profit",
       value: formatCurrency(
@@ -97,6 +159,10 @@ function KPIStrip() {
     },
 
 
+    // ---------------------------------------------------
+    // 10. GROSS MARGIN
+    // ---------------------------------------------------
+
     {
       label: "Gross Margin",
       value: `${dashboardData.grossMargin || 0}%`,
@@ -104,6 +170,10 @@ function KPIStrip() {
       note: "Profit percentage"
     },
 
+
+    // ---------------------------------------------------
+    // 11. NET AMOUNT
+    // ---------------------------------------------------
 
     {
       label: "Net Amount",
@@ -116,6 +186,10 @@ function KPIStrip() {
 
   ];
 
+
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   return (
 
