@@ -1,3 +1,4 @@
+console.log("🔥 NEW KPIStrip.jsx IS RUNNING");
 import React, { useState } from "react";
 
 import {
