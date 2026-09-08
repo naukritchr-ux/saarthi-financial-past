@@ -47,14 +47,21 @@ function Filters() {
 
 
   // ======================================================
-  // TEMPORARY FILTERS
+  // FILTER STATE
   // ======================================================
 
   const [
     selectedFilters,
     setSelectedFilters
   ] = useState({
-    ...filters
+
+    ...filters,
+
+    // Base Filters
+    viewBy: filters.viewBy || "",
+    allTime: filters.allTime || "all",
+    sortBy: filters.sortBy || ""
+
   });
 
 
@@ -65,7 +72,13 @@ function Filters() {
   useEffect(() => {
 
     setSelectedFilters({
-      ...filters
+
+      ...filters,
+
+      viewBy: filters.viewBy || "",
+      allTime: filters.allTime || "all",
+      sortBy: filters.sortBy || ""
+
     });
 
   }, [filters]);
@@ -78,29 +91,37 @@ function Filters() {
   function getUniqueValues(column) {
 
     return [
+
       ...new Set(
 
         rows
+
           .map(
             row =>
               row[column]
           )
+
           .filter(
             value =>
               value !== undefined &&
               value !== null &&
               String(value).trim() !== ""
           )
+
           .map(
             value =>
               String(value).trim()
           )
 
       )
+
     ].sort(
+
       (a, b) =>
         a.localeCompare(b)
+
     );
+
   }
 
 
@@ -111,19 +132,25 @@ function Filters() {
   function getFinancialYears() {
 
     const years = [
+
       ...new Set(
 
         rows
+
           .map(
             row =>
               getFinancialYearFromRow(row)
           )
+
           .filter(Boolean)
 
       )
+
     ];
 
+
     return years.sort(
+
       (a, b) => {
 
         const yearA =
@@ -139,7 +166,9 @@ function Filters() {
         return yearA - yearB;
 
       }
+
     );
+
   }
 
 
@@ -201,11 +230,14 @@ function Filters() {
 
 
     return financialMonths.filter(
+
       month =>
         availableMonths.has(
           month
         )
+
     );
+
   }
 
 
@@ -245,6 +277,7 @@ function Filters() {
 
       }
     );
+
   }
 
 
@@ -255,8 +288,11 @@ function Filters() {
   function applyFilters() {
 
     setFilters({
+
       ...selectedFilters
+
     });
+
   }
 
 
@@ -267,6 +303,17 @@ function Filters() {
   function resetFilters() {
 
     const emptyFilters = {
+
+      // Base Filters
+
+      viewBy: "",
+
+      allTime: "all",
+
+      sortBy: "",
+
+
+      // Existing Filters
 
       company: "",
 
@@ -297,14 +344,115 @@ function Filters() {
       emptyFilters
     );
 
+
     setFilters(
       emptyFilters
     );
+
   }
 
 
   // ======================================================
-  // CONFIGURATION
+  // BASE FILTER OPTIONS
+  // ======================================================
+
+  const baseFilterConfig = [
+
+    {
+      label: "View By",
+
+      field: "viewBy",
+
+      options: [
+
+        {
+          label: "None",
+          value: ""
+        },
+
+        {
+          label: "Client Performance",
+          value: "client"
+        },
+
+        {
+          label: "Enquiry Performance",
+          value: "enquiry"
+        }
+
+      ]
+
+    },
+
+
+    {
+      label: "All Time",
+
+      field: "allTime",
+
+      options: [
+
+        {
+          label: "All Time",
+          value: "all"
+        },
+
+        {
+          label: "Yearly",
+          value: "yearly"
+        },
+
+        {
+          label: "Monthly",
+          value: "monthly"
+        },
+
+        {
+          label: "Quarterly",
+          value: "quarterly"
+        }
+
+      ]
+
+    },
+
+
+    {
+      label: "Sort By",
+
+      field: "sortBy",
+
+      options: [
+
+        {
+          label: "None",
+          value: ""
+        },
+
+        {
+          label: "FRANCHISEE NAME",
+          value: "franchise"
+        },
+
+        {
+          label: "BD MEMBER",
+          value: "bdMember"
+        },
+
+        {
+          label: "TEAM LEADER",
+          value: "teamLeader"
+        }
+
+      ]
+
+    }
+
+  ];
+
+
+  // ======================================================
+  // EXISTING FILTER CONFIGURATION
   // ======================================================
 
   const filterConfig = [
@@ -405,6 +553,7 @@ function Filters() {
     return getUniqueValues(
       filter.column
     );
+
   }
 
 
@@ -421,7 +570,9 @@ function Filters() {
       <CardContent>
 
 
-        {/* HEADER */}
+        {/* ==================================================
+            HEADER
+        ================================================== */}
 
         <div
           className="filters-header"
@@ -436,6 +587,7 @@ function Filters() {
               Filter & Segmentation
 
             </Typography>
+
 
             <p>
 
@@ -452,46 +604,43 @@ function Filters() {
         </div>
 
 
-        {/* FILTER GRID */}
+        {/* ==================================================
+            BASE FILTERS
+        ================================================== */}
 
-        <Grid
-          container
-          spacing={2}
+        <div
+          className="base-filters-section"
         >
 
-          {
-            filterConfig.map(
-              filter => {
+          <Typography
+            variant="subtitle1"
+            className="base-filters-title"
+          >
 
-                const options =
-                  getOptions(
-                    filter
-                  );
+            Base Filters
 
-
-                const isMonth =
-                  filter.type ===
-                  "month";
+          </Typography>
 
 
-                const disabled =
-                  isMonth &&
-                  !selectedFilters.year;
+          <Grid
+            container
+            spacing={2}
+          >
 
-
-                return (
+            {
+              baseFilterConfig.map(
+                filter => (
 
                   <Grid
                     item
                     xs={12}
                     sm={6}
-                    md={3}
+                    md={4}
                     key={filter.field}
                   >
 
                     <FormControl
                       fullWidth
-                      disabled={disabled}
                     >
 
                       <InputLabel>
@@ -523,29 +672,21 @@ function Filters() {
 
                       >
 
-                        <MenuItem
-                          value=""
-                        >
-
-                          {
-                            isMonth
-                              ? "All Months"
-                              : `All ${filter.label}`
-                          }
-
-                        </MenuItem>
-
-
                         {
-                          options.map(
+                          filter.options.map(
                             option => (
 
                               <MenuItem
-                                key={option}
-                                value={option}
+                                key={
+                                  option.value ||
+                                  option.label
+                                }
+                                value={
+                                  option.value
+                                }
                               >
 
-                                {option}
+                                {option.label}
 
                               </MenuItem>
 
@@ -559,16 +700,152 @@ function Filters() {
 
                   </Grid>
 
-                );
+                )
+              )
+            }
 
-              }
-            )
-          }
+          </Grid>
 
-        </Grid>
+        </div>
 
 
-        {/* ACTIONS */}
+        {/* ==================================================
+            VIEW PERFORMANCE BY
+        ================================================== */}
+
+        <div
+          className="view-performance-section"
+        >
+
+          <Typography
+            variant="subtitle1"
+            className="view-performance-title"
+          >
+
+            View Performance By
+
+          </Typography>
+
+
+          <Grid
+            container
+            spacing={2}
+          >
+
+            {
+              filterConfig.map(
+                filter => {
+
+                  const options =
+                    getOptions(
+                      filter
+                    );
+
+
+                  const isMonth =
+                    filter.type ===
+                    "month";
+
+
+                  const disabled =
+                    isMonth &&
+                    !selectedFilters.year;
+
+
+                  return (
+
+                    <Grid
+                      item
+                      xs={12}
+                      sm={6}
+                      md={3}
+                      key={filter.field}
+                    >
+
+                      <FormControl
+                        fullWidth
+                        disabled={disabled}
+                      >
+
+                        <InputLabel>
+
+                          {filter.label}
+
+                        </InputLabel>
+
+
+                        <Select
+
+                          label={
+                            filter.label
+                          }
+
+                          value={
+                            selectedFilters[
+                              filter.field
+                            ] || ""
+                          }
+
+                          onChange={
+                            event =>
+                              handleChange(
+                                filter.field,
+                                event.target.value
+                              )
+                          }
+
+                        >
+
+                          <MenuItem
+                            value=""
+                          >
+
+                            {
+                              isMonth
+                                ? "All Months"
+                                : `All ${filter.label}`
+                            }
+
+                          </MenuItem>
+
+
+                          {
+                            options.map(
+                              option => (
+
+                                <MenuItem
+                                  key={option}
+                                  value={option}
+                                >
+
+                                  {option}
+
+                                </MenuItem>
+
+                              )
+                            )
+                          }
+
+                        </Select>
+
+                      </FormControl>
+
+                    </Grid>
+
+                  );
+
+                }
+              )
+            }
+
+          </Grid>
+
+        </div>
+
+
+        {/* ==================================================
+            ACTIONS
+        ================================================== */}
 
         <div
           className="filter-actions"
@@ -619,6 +896,7 @@ function Filters() {
     </Card>
 
   );
+
 }
 
 

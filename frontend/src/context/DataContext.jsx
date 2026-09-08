@@ -124,7 +124,9 @@ function mapBackendRow(record) {
 
     updated_at:
       record.updated_at
+
   };
+
 }
 
 
@@ -150,6 +152,7 @@ function parseDate(value) {
   }
 
   return date;
+
 }
 
 
@@ -186,6 +189,7 @@ function getFinancialYearFromDate(value) {
   }
 
   return `${year - 1}-${year}`;
+
 }
 
 
@@ -224,9 +228,11 @@ function getFinancialYearFromRow(row) {
       return `${year}-${year + 1}`;
 
     }
+
   }
 
   return "";
+
 }
 
 
@@ -249,6 +255,69 @@ function getMonthFromDate(value) {
       month: "long"
     }
   );
+
+}
+
+
+// ======================================================
+// FINANCIAL QUARTER
+// ======================================================
+//
+// Q1 = April - June
+// Q2 = July - September
+// Q3 = October - December
+// Q4 = January - March
+// ======================================================
+
+function getFinancialQuarter(value) {
+
+  const date =
+    parseDate(value);
+
+  if (!date) {
+    return "";
+  }
+
+  const month =
+    date.getMonth() + 1;
+
+
+  // April - June
+  if (
+    month >= 4 &&
+    month <= 6
+  ) {
+
+    return "Q1";
+
+  }
+
+
+  // July - September
+  if (
+    month >= 7 &&
+    month <= 9
+  ) {
+
+    return "Q2";
+
+  }
+
+
+  // October - December
+  if (
+    month >= 10 &&
+    month <= 12
+  ) {
+
+    return "Q3";
+
+  }
+
+
+  // January - March
+  return "Q4";
+
 }
 
 
@@ -261,15 +330,32 @@ const FINANCIAL_MONTHS = [
   "April",
   "May",
   "June",
+
   "July",
   "August",
   "September",
+
   "October",
   "November",
   "December",
+
   "January",
   "February",
   "March"
+
+];
+
+
+// ======================================================
+// FINANCIAL QUARTERS
+// ======================================================
+
+const FINANCIAL_QUARTERS = [
+
+  "Q1",
+  "Q2",
+  "Q3",
+  "Q4"
 
 ];
 
@@ -281,6 +367,7 @@ const FINANCIAL_MONTHS = [
 export function DataProvider({
   children
 }) {
+
 
   // ====================================================
   // DATA
@@ -329,6 +416,21 @@ export function DataProvider({
   const [filters, setFilters] =
     useState({
 
+      // ----------------------------------------------
+      // BASE FILTERS
+      // ----------------------------------------------
+
+      viewBy: "",
+
+      allTime: "all",
+
+      sortBy: "",
+
+
+      // ----------------------------------------------
+      // EXISTING FILTERS
+      // ----------------------------------------------
+
       company: "",
 
       year: "",
@@ -366,8 +468,10 @@ export function DataProvider({
 
       setError(null);
 
+
       const response =
         await fetch(API_URL);
+
 
       if (!response.ok) {
 
@@ -377,8 +481,10 @@ export function DataProvider({
 
       }
 
+
       const result =
         await response.json();
+
 
       if (!result.success) {
 
@@ -389,20 +495,27 @@ export function DataProvider({
 
       }
 
+
       const mappedRows =
         (result.data || []).map(
           mapBackendRow
         );
 
-      setRows(mappedRows);
+
+      setRows(
+        mappedRows
+      );
+
 
       setFileName(
         "MySQL Database"
       );
 
+
       setLastRefresh(
         new Date()
       );
+
 
     } catch (err) {
 
@@ -411,18 +524,22 @@ export function DataProvider({
         err
       );
 
+
       setError(
         err.message ||
         "Failed to load ledger data"
       );
 
+
       setRows([]);
+
 
     } finally {
 
       setLoading(false);
 
     }
+
   }
 
 
@@ -450,7 +567,9 @@ export function DataProvider({
       return;
     }
 
+
     setRows(data);
+
 
     if (file) {
 
@@ -461,9 +580,11 @@ export function DataProvider({
 
     }
 
+
     setLastRefresh(
       new Date()
     );
+
   }
 
 
@@ -476,6 +597,7 @@ export function DataProvider({
 
       return rows.filter(
         row => {
+
 
           // --------------------------------------------
           // COMPANY
@@ -505,6 +627,7 @@ export function DataProvider({
                 row
               );
 
+
             if (
               rowFinancialYear !==
               filters.year
@@ -513,6 +636,7 @@ export function DataProvider({
               return false;
 
             }
+
           }
 
 
@@ -529,6 +653,7 @@ export function DataProvider({
                 row["Date Client Acquired"]
               );
 
+
             if (
               rowMonth !==
               filters.month
@@ -537,6 +662,7 @@ export function DataProvider({
               return false;
 
             }
+
           }
 
 
@@ -660,6 +786,10 @@ export function DataProvider({
           }
 
 
+          // --------------------------------------------
+          // KEEP ROW
+          // --------------------------------------------
+
           return true;
 
         }
@@ -696,37 +826,85 @@ export function DataProvider({
     <DataContext.Provider
       value={{
 
-        // Data
+        // --------------------------------------------
+        // DATA
+        // --------------------------------------------
+
         rows,
+
         filteredRows,
 
-        // Database
+
+        // --------------------------------------------
+        // DATABASE
+        // --------------------------------------------
+
         loading,
+
         error,
 
-        // Metadata
+
+        // --------------------------------------------
+        // METADATA
+        // --------------------------------------------
+
         fileName,
+
         lastRefresh,
 
-        // Filters
+
+        // --------------------------------------------
+        // FILTERS
+        // --------------------------------------------
+
         filters,
+
         setFilters,
 
-        // Dashboard
+
+        // --------------------------------------------
+        // DASHBOARD
+        // --------------------------------------------
+
         dashboardData,
 
-        // Functions
+
+        // --------------------------------------------
+        // FUNCTIONS
+        // --------------------------------------------
+
         loadExcelData,
+
         fetchLedgerData,
 
-        // Helpers
+
+        // --------------------------------------------
+        // DATE HELPERS
+        // --------------------------------------------
+
         getFinancialYearFromRow,
+
         getFinancialYearFromDate,
+
         getMonthFromDate,
 
-        // Month order
+        getFinancialQuarter,
+
+
+        // --------------------------------------------
+        // MONTH ORDER
+        // --------------------------------------------
+
         financialMonths:
-          FINANCIAL_MONTHS
+          FINANCIAL_MONTHS,
+
+
+        // --------------------------------------------
+        // QUARTER ORDER
+        // --------------------------------------------
+
+        financialQuarters:
+          FINANCIAL_QUARTERS
 
       }}
     >
@@ -734,7 +912,9 @@ export function DataProvider({
       {children}
 
     </DataContext.Provider>
+
   );
+
 }
 
 
@@ -747,4 +927,5 @@ export function useData() {
   return useContext(
     DataContext
   );
+
 }
