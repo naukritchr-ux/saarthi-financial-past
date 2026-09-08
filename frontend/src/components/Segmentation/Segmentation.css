@@ -1,35 +1,42 @@
 .segmentation-card {
-
-margin-top:25px;
-
-border-radius:18px;
-
+  border-radius: 18px;
 }
 
 
-
-.segmentation-card h3 {
-
-font-size:18px;
-
-margin-bottom:15px;
-
-color:#1f2937;
-
+.segmentation-title {
+  font-weight: 600 !important;
+  margin-bottom: 20px !important;
 }
 
+
+.performance-filters {
+  margin-bottom: 25px;
+}
+
+
+.performance-filters .MuiFormControl-root {
+  background: #ffffff;
+}
+
+
+.segmentation-subtitle {
+  font-weight: 600 !important;
+  margin-top: 10px !important;
+  margin-bottom: 12px !important;
+  color: #374151;
+}
 
 
 .segment-result {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 14px;
+  color: #6b7280;
+}
 
-margin-top:20px;
 
-padding:15px;
-
-background:#f8f8fc;
-
-border-radius:10px;
-
-font-size:14px;
-
+.segment-result strong {
+  margin-left: 5px;
+  color: #111827;
 }

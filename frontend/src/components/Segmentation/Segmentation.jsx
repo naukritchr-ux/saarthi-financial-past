@@ -1,113 +1,289 @@
 import {
-  Tabs,
-  Tab,
   Card,
-  CardContent
+  CardContent,
+  Typography,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from "@mui/material";
 
-import { useState } from "react";
+import {
+  useData
+} from "../../context/DataContext";
 
 import "./Segmentation.css";
 
 
-function Segmentation(){
+function Segmentation() {
+
+  const {
+    filters,
+    setFilters
+  } = useData();
 
 
-const [selected,setSelected]=useState(0);
+  // ======================================================
+  // HANDLE FILTER CHANGE
+  // ======================================================
+
+  function handleChange(field, value) {
+
+    setFilters(previous => ({
+
+      ...previous,
+
+      [field]: value
+
+    }));
+
+  }
 
 
+  // ======================================================
+  // UI
+  // ======================================================
 
-const segments=[
+  return (
 
-"BD Member",
+    <Card className="segmentation-card">
 
-"Team Leader",
-
-"Franchise",
-
-"Industry",
-
-"Client Status",
-
-"City",
-
-"Position"
-
-];
+      <CardContent>
 
 
+        {/* ==================================================
+            TITLE
+        ================================================== */}
 
-return(
+        <Typography
+          variant="h6"
+          className="segmentation-title"
+        >
 
-<Card className="segmentation-card">
+          View Performance By
 
-
-<CardContent>
-
-
-<h3>
-View Performance By
-</h3>
-
-
-
-<Tabs
-
-value={selected}
-
-onChange={(e,value)=>setSelected(value)}
-
-variant="scrollable"
-
-scrollButtons="auto"
-
->
+        </Typography>
 
 
-{
-segments.map((segment,index)=>(
+        {/* ==================================================
+            BASE FILTERS
+        ================================================== */}
+
+        <Grid
+          container
+          spacing={2}
+          className="performance-filters"
+        >
 
 
-<Tab
+          {/* ==================================================
+              VIEW BY
+          ================================================== */}
 
-key={segment}
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+          >
 
-label={segment}
+            <FormControl fullWidth>
 
-/>
+              <InputLabel>
+                View By
+              </InputLabel>
+
+              <Select
+
+                label="View By"
+
+                value={
+                  filters.viewBy || ""
+                }
+
+                onChange={event =>
+                  handleChange(
+                    "viewBy",
+                    event.target.value
+                  )
+                }
+
+              >
+
+                <MenuItem value="">
+                  None
+                </MenuItem>
+
+                <MenuItem value="client">
+                  Client Performance
+                </MenuItem>
+
+                <MenuItem value="enquiry">
+                  Enquiry Performance
+                </MenuItem>
+
+              </Select>
+
+            </FormControl>
+
+          </Grid>
 
 
-))
+          {/* ==================================================
+              ALL TIME
+          ================================================== */}
 
-}
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+          >
+
+            <FormControl fullWidth>
+
+              <InputLabel>
+                All Time
+              </InputLabel>
+
+              <Select
+
+                label="All Time"
+
+                value={
+                  filters.allTime || "all"
+                }
+
+                onChange={event =>
+                  handleChange(
+                    "allTime",
+                    event.target.value
+                  )
+                }
+
+              >
+
+                <MenuItem value="all">
+                  All Time
+                </MenuItem>
+
+                <MenuItem value="yearly">
+                  Yearly
+                </MenuItem>
+
+                <MenuItem value="monthly">
+                  Monthly
+                </MenuItem>
+
+                <MenuItem value="quarterly">
+                  Quarterly
+                </MenuItem>
+
+              </Select>
+
+            </FormControl>
+
+          </Grid>
 
 
-</Tabs>
+          {/* ==================================================
+              SORT BY
+          ================================================== */}
+
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+          >
+
+            <FormControl fullWidth>
+
+              <InputLabel>
+                Sort By
+              </InputLabel>
+
+              <Select
+
+                label="Sort By"
+
+                value={
+                  filters.sortBy || ""
+                }
+
+                onChange={event =>
+                  handleChange(
+                    "sortBy",
+                    event.target.value
+                  )
+                }
+
+              >
+
+                <MenuItem value="">
+                  None
+                </MenuItem>
+
+                <MenuItem value="franchise">
+                  FRANCHISEE NAME
+                </MenuItem>
+
+                <MenuItem value="bdMember">
+                  BD MEMBER
+                </MenuItem>
+
+                <MenuItem value="teamLeader">
+                  TEAM LEADER
+                </MenuItem>
+
+              </Select>
+
+            </FormControl>
+
+          </Grid>
+
+        </Grid>
 
 
+        {/* ==================================================
+            EXISTING PERFORMANCE TABS
+        ================================================== */}
 
-<div className="segment-result">
+        <Typography
+          variant="subtitle1"
+          className="segmentation-subtitle"
+        >
 
+          Performance Segmentation
 
-Selected:
-
-<strong>
- {segments[selected]}
-</strong>
-
-
-</div>
-
-
-
-</CardContent>
+        </Typography>
 
 
-</Card>
+        <div className="segment-result">
+
+          Performance view:
+
+          <strong>
+
+            {
+              filters.viewBy === "client"
+                ? " Client Performance"
+                : filters.viewBy === "enquiry"
+                  ? " Enquiry Performance"
+                  : " None"
+            }
+
+          </strong>
+
+        </div>
 
 
-)
+      </CardContent>
 
+    </Card>
+
+  );
 
 }
 
