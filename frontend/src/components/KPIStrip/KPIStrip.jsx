@@ -1,4 +1,3 @@
-console.log("🔥 NEW KPIStrip.jsx IS RUNNING");
 import React, { useState } from "react";
 
 import {
@@ -17,7 +16,6 @@ import {
   PersonSearch,
   Lock,
   MarkEmailRead,
-  MailOutline,
   AccountBalanceWallet,
   Warning,
   Close
@@ -32,8 +30,7 @@ function KPIStrip() {
 
   const { dashboardData } = useData();
 
-  const [selectedKPI, setSelectedKPI] =
-    useState(null);
+  const [selectedKPI, setSelectedKPI] = useState(null);
 
 
   // ==================================================
@@ -80,7 +77,7 @@ function KPIStrip() {
         dashboardData.totalBilling
       ),
       icon: <CurrencyRupee />,
-      note: "Salary × Service Charge",
+      note: "Salary × Service Charges",
       clickable: true
     },
 
@@ -105,9 +102,7 @@ function KPIStrip() {
     {
       id: "gross-margin",
       label: "Gross Margin",
-      value: `${
-        dashboardData.grossMargin || 0
-      }%`,
+      value: `${dashboardData.grossMargin || 0}%`,
       icon: <Percent />,
       note: "Profit percentage"
     },
@@ -217,7 +212,7 @@ function KPIStrip() {
       id: "open-enquiries",
       label: "Open Enquiries",
       value: dashboardData.openEnquiries || 0,
-      icon: <MailOutline />,
+      icon: <Groups />,
       note: "Currently open"
     },
 
@@ -330,8 +325,7 @@ function KPIStrip() {
   };
 
 
-  const modalData =
-    getModalData();
+  const modalData = getModalData();
 
 
   // ==================================================
@@ -357,9 +351,7 @@ function KPIStrip() {
 
           if (metric.clickable) {
 
-            setSelectedKPI(
-              metric.id
-            );
+            setSelectedKPI(metric.id);
 
           }
 
@@ -575,7 +567,7 @@ function KPIStrip() {
 
 
         {/* ==========================================
-            BILLING
+            BILLING & COLLECTION
         ========================================== */}
 
         <section className="kpi-section">
