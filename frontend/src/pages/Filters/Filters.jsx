@@ -30,19 +30,12 @@ import "./Filters.css";
 function Filters() {
 
   const {
-
     rows,
-
     filters,
-
     setFilters,
-
     getFinancialYearFromRow,
-
     getMonthFromDate,
-
     financialMonths
-
   } = useData();
 
 
@@ -57,7 +50,6 @@ function Filters() {
 
     ...filters,
 
-    // Base Filters
     viewBy: filters.viewBy || "",
     allTime: filters.allTime || "all",
     sortBy: filters.sortBy || ""
@@ -66,7 +58,7 @@ function Filters() {
 
 
   // ======================================================
-  // KEEP LOCAL FILTERS IN SYNC
+  // KEEP FILTERS IN SYNC
   // ======================================================
 
   useEffect(() => {
@@ -96,10 +88,7 @@ function Filters() {
 
         rows
 
-          .map(
-            row =>
-              row[column]
-          )
+          .map(row => row[column])
 
           .filter(
             value =>
@@ -108,19 +97,11 @@ function Filters() {
               String(value).trim() !== ""
           )
 
-          .map(
-            value =>
-              String(value).trim()
-          )
+          .map(value => String(value).trim())
 
       )
 
-    ].sort(
-
-      (a, b) =>
-        a.localeCompare(b)
-
-    );
+    ].sort((a, b) => a.localeCompare(b));
 
   }
 
@@ -137,10 +118,7 @@ function Filters() {
 
         rows
 
-          .map(
-            row =>
-              getFinancialYearFromRow(row)
-          )
+          .map(row => getFinancialYearFromRow(row))
 
           .filter(Boolean)
 
@@ -149,25 +127,17 @@ function Filters() {
     ];
 
 
-    return years.sort(
+    return years.sort((a, b) => {
 
-      (a, b) => {
+      const yearA =
+        Number(a.split("-")[0]);
 
-        const yearA =
-          Number(
-            a.split("-")[0]
-          );
+      const yearB =
+        Number(b.split("-")[0]);
 
-        const yearB =
-          Number(
-            b.split("-")[0]
-          );
+      return yearA - yearB;
 
-        return yearA - yearB;
-
-      }
-
-    );
+    });
 
   }
 
@@ -178,118 +148,77 @@ function Filters() {
 
   function getAvailableMonths() {
 
-    // No year selected
-    if (
-      !selectedFilters.year
-    ) {
-
+    if (!selectedFilters.year) {
       return [];
-
     }
 
 
-    const availableMonths =
-      new Set();
+    const availableMonths = new Set();
 
 
-    rows.forEach(
-      row => {
+    rows.forEach(row => {
 
-        const financialYear =
-          getFinancialYearFromRow(
-            row
-          );
+      const financialYear =
+        getFinancialYearFromRow(row);
 
 
-        if (
-          financialYear !==
-          selectedFilters.year
-        ) {
-
-          return;
-
-        }
-
-
-        const month =
-          getMonthFromDate(
-            row["Date Client Acquired"]
-          );
-
-
-        if (month) {
-
-          availableMonths.add(
-            month
-          );
-
-        }
-
+      if (
+        financialYear !==
+        selectedFilters.year
+      ) {
+        return;
       }
-    );
+
+
+      const month =
+        getMonthFromDate(
+          row["Date Client Acquired"]
+        );
+
+
+      if (month) {
+        availableMonths.add(month);
+      }
+
+    });
 
 
     return financialMonths.filter(
-
       month =>
-        availableMonths.has(
-          month
-        )
-
+        availableMonths.has(month)
     );
 
   }
 
 
   // ======================================================
-  // CHANGE
+  // CHANGE FILTER
   // ======================================================
 
-  function handleChange(
-    field,
-    value
-  ) {
+  function handleChange(field, value) {
 
-    setSelectedFilters(
-      previous => {
+    setSelectedFilters(previous => {
 
-        const updated = {
+      const updated = {
 
-          ...previous,
+        ...previous,
 
-          [field]: value
+        [field]: value
 
-        };
+      };
 
 
-        // Changing year resets month
+      // Changing financial year
+      // resets selected month
 
-        if (
-          field === "year"
-        ) {
+      if (field === "year") {
 
-          updated.month = "";
-
-        }
-
-
-        return updated;
+        updated.month = "";
 
       }
-    );
-
-  }
 
 
-  // ======================================================
-  // APPLY
-  // ======================================================
-
-  function applyFilters() {
-
-    setFilters({
-
-      ...selectedFilters
+      return updated;
 
     });
 
@@ -297,14 +226,29 @@ function Filters() {
 
 
   // ======================================================
-  // RESET
+  // APPLY FILTERS
+  // ======================================================
+
+  function applyFilters() {
+
+    setFilters({
+      ...selectedFilters
+    });
+
+  }
+
+
+  // ======================================================
+  // RESET FILTERS
   // ======================================================
 
   function resetFilters() {
 
     const emptyFilters = {
 
-      // Base Filters
+      // ------------------------------------------
+      // VIEW PERFORMANCE FILTERS
+      // ------------------------------------------
 
       viewBy: "",
 
@@ -313,7 +257,9 @@ function Filters() {
       sortBy: "",
 
 
-      // Existing Filters
+      // ------------------------------------------
+      // EXISTING FILTERS
+      // ------------------------------------------
 
       company: "",
 
@@ -353,7 +299,7 @@ function Filters() {
 
 
   // ======================================================
-  // BASE FILTER OPTIONS
+  // VIEW PERFORMANCE FILTERS
   // ======================================================
 
   const baseFilterConfig = [
@@ -527,23 +473,19 @@ function Filters() {
 
 
   // ======================================================
-  // OPTIONS
+  // GET OPTIONS
   // ======================================================
 
   function getOptions(filter) {
 
-    if (
-      filter.type === "year"
-    ) {
+    if (filter.type === "year") {
 
       return getFinancialYears();
 
     }
 
 
-    if (
-      filter.type === "month"
-    ) {
+    if (filter.type === "month") {
 
       return getAvailableMonths();
 
@@ -563,9 +505,7 @@ function Filters() {
 
   return (
 
-    <Card
-      className="filters-card"
-    >
+    <Card className="filters-card">
 
       <CardContent>
 
@@ -574,15 +514,11 @@ function Filters() {
             HEADER
         ================================================== */}
 
-        <div
-          className="filters-header"
-        >
+        <div className="filters-header">
 
           <div>
 
-            <Typography
-              variant="h6"
-            >
+            <Typography variant="h6">
 
               Filter & Segmentation
 
@@ -605,19 +541,115 @@ function Filters() {
 
 
         {/* ==================================================
-            BASE FILTERS
+            VIEW PERFORMANCE BY
         ================================================== */}
 
-        <div
-          className="base-filters-section"
-        >
+        <div className="view-performance-section">
 
           <Typography
             variant="subtitle1"
-            className="base-filters-title"
+            className="view-performance-title"
           >
 
-            Base Filters
+            View Performance By
+
+          </Typography>
+
+
+          {/* ==================================================
+              BASE FILTERS
+          ================================================== */}
+
+          <Grid
+            container
+            spacing={2}
+            className="base-performance-filters"
+          >
+
+            {
+              baseFilterConfig.map(filter => (
+
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  key={filter.field}
+                >
+
+                  <FormControl fullWidth>
+
+                    <InputLabel>
+
+                      {filter.label}
+
+                    </InputLabel>
+
+
+                    <Select
+
+                      label={filter.label}
+
+                      value={
+                        selectedFilters[
+                          filter.field
+                        ] || ""
+                      }
+
+                      onChange={event =>
+                        handleChange(
+                          filter.field,
+                          event.target.value
+                        )
+                      }
+
+                    >
+
+                      {
+                        filter.options.map(
+                          option => (
+
+                            <MenuItem
+                              key={
+                                option.value ||
+                                option.label
+                              }
+                              value={
+                                option.value
+                              }
+                            >
+
+                              {option.label}
+
+                            </MenuItem>
+
+                          )
+                        )
+                      }
+
+                    </Select>
+
+                  </FormControl>
+
+                </Grid>
+
+              ))
+
+            }
+
+          </Grid>
+
+
+          {/* ==================================================
+              OTHER FILTERS
+          ================================================== */}
+
+          <Typography
+            variant="subtitle2"
+            className="additional-filters-title"
+          >
+
+            Additional Filters
 
           </Typography>
 
@@ -628,19 +660,34 @@ function Filters() {
           >
 
             {
-              baseFilterConfig.map(
-                filter => (
+              filterConfig.map(filter => {
+
+                const options =
+                  getOptions(filter);
+
+
+                const isMonth =
+                  filter.type === "month";
+
+
+                const disabled =
+                  isMonth &&
+                  !selectedFilters.year;
+
+
+                return (
 
                   <Grid
                     item
                     xs={12}
                     sm={6}
-                    md={4}
+                    md={3}
                     key={filter.field}
                   >
 
                     <FormControl
                       fullWidth
+                      disabled={disabled}
                     >
 
                       <InputLabel>
@@ -662,31 +709,36 @@ function Filters() {
                           ] || ""
                         }
 
-                        onChange={
-                          event =>
-                            handleChange(
-                              filter.field,
-                              event.target.value
-                            )
+                        onChange={event =>
+                          handleChange(
+                            filter.field,
+                            event.target.value
+                          )
                         }
 
                       >
 
+                        <MenuItem value="">
+
+                          {
+                            isMonth
+                              ? "All Months"
+                              : `All ${filter.label}`
+                          }
+
+                        </MenuItem>
+
+
                         {
-                          filter.options.map(
+                          options.map(
                             option => (
 
                               <MenuItem
-                                key={
-                                  option.value ||
-                                  option.label
-                                }
-                                value={
-                                  option.value
-                                }
+                                key={option}
+                                value={option}
                               >
 
-                                {option.label}
+                                {option}
 
                               </MenuItem>
 
@@ -700,8 +752,10 @@ function Filters() {
 
                   </Grid>
 
-                )
-              )
+                );
+
+              })
+
             }
 
           </Grid>
@@ -710,146 +764,10 @@ function Filters() {
 
 
         {/* ==================================================
-            VIEW PERFORMANCE BY
+            ACTION BUTTONS
         ================================================== */}
 
-        <div
-          className="view-performance-section"
-        >
-
-          <Typography
-            variant="subtitle1"
-            className="view-performance-title"
-          >
-
-            View Performance By
-
-          </Typography>
-
-
-          <Grid
-            container
-            spacing={2}
-          >
-
-            {
-              filterConfig.map(
-                filter => {
-
-                  const options =
-                    getOptions(
-                      filter
-                    );
-
-
-                  const isMonth =
-                    filter.type ===
-                    "month";
-
-
-                  const disabled =
-                    isMonth &&
-                    !selectedFilters.year;
-
-
-                  return (
-
-                    <Grid
-                      item
-                      xs={12}
-                      sm={6}
-                      md={3}
-                      key={filter.field}
-                    >
-
-                      <FormControl
-                        fullWidth
-                        disabled={disabled}
-                      >
-
-                        <InputLabel>
-
-                          {filter.label}
-
-                        </InputLabel>
-
-
-                        <Select
-
-                          label={
-                            filter.label
-                          }
-
-                          value={
-                            selectedFilters[
-                              filter.field
-                            ] || ""
-                          }
-
-                          onChange={
-                            event =>
-                              handleChange(
-                                filter.field,
-                                event.target.value
-                              )
-                          }
-
-                        >
-
-                          <MenuItem
-                            value=""
-                          >
-
-                            {
-                              isMonth
-                                ? "All Months"
-                                : `All ${filter.label}`
-                            }
-
-                          </MenuItem>
-
-
-                          {
-                            options.map(
-                              option => (
-
-                                <MenuItem
-                                  key={option}
-                                  value={option}
-                                >
-
-                                  {option}
-
-                                </MenuItem>
-
-                              )
-                            )
-                          }
-
-                        </Select>
-
-                      </FormControl>
-
-                    </Grid>
-
-                  );
-
-                }
-              )
-            }
-
-          </Grid>
-
-        </div>
-
-
-        {/* ==================================================
-            ACTIONS
-        ================================================== */}
-
-        <div
-          className="filter-actions"
-        >
+        <div className="filter-actions">
 
           <Button
 
