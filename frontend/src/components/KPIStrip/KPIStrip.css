@@ -1,369 +1,1022 @@
-/* =====================================================
+/* =========================================================
    KPI LEDGER
-===================================================== */
+========================================================= */
 
 .kpi-ledger {
-
-  margin-top:20px;
-
-  border:1px solid #DCD5C2;
-
-  background:#ffffff;
-
-  overflow:visible;
-
-  width:100%;
-
+  width: 100%;
+  padding: 8px 0 24px;
 }
 
 
-/* =====================================================
+/* =========================================================
+   KPI SECTION
+========================================================= */
+
+.kpi-section {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+.kpi-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+
+.kpi-section-header h3 {
+  margin: 0;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  color: #171717;
+}
+
+
+.kpi-section-header p {
+  margin: 2px 0 0;
+
+  font-size: 12px;
+  font-weight: 400;
+
+  color: #777;
+}
+
+
+/* =========================================================
    KPI GRID
-===================================================== */
+========================================================= */
 
 .kpi-grid {
+  display: grid;
 
-  display:grid;
+  width: 100%;
 
+  gap: 12px;
+}
+
+
+/* =========================================================
+   MAIN KPI GRID
+========================================================= */
+
+.main-kpi-grid {
   grid-template-columns:
     repeat(4, minmax(0, 1fr));
-
-  gap:15px;
-
-  width:100%;
-
 }
 
 
-/* =====================================================
+/* =========================================================
+   CLIENT STATUS GRID
+========================================================= */
+
+.client-kpi-grid {
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+}
+
+
+/* =========================================================
+   ENQUIRY GRID
+========================================================= */
+
+.enquiry-kpi-grid {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+
+/* =========================================================
+   BILLING GRID
+========================================================= */
+
+.billing-kpi-grid {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+}
+
+
+/* =========================================================
    KPI ITEM
-===================================================== */
+========================================================= */
 
 .kpi-item {
+  min-width: 0;
 
-  min-width:0;
+  cursor: default;
 
-  width:100%;
+  border-radius: 12px;
 
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 
-/* =====================================================
-   KPI CARD
-===================================================== */
+/* =========================================================
+   CLICKABLE KPI
+========================================================= */
+
+.kpi-clickable {
+  cursor: pointer;
+}
+
+
+.kpi-clickable:hover {
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   KPI CELL
+========================================================= */
 
 .kpi-cell {
+  min-height: 118px;
 
-  height:110px;
+  display: flex;
 
-  border:1px solid #DCD5C2;
+  align-items: flex-start;
 
-  border-radius:10px !important;
+  gap: 12px;
 
-  display:flex;
+  padding: 17px 16px;
 
-  flex-direction:column;
+  background: #ffffff;
 
-  justify-content:center;
+  border: 1px solid #e8e8e8;
 
-  padding:16px;
-
-  background:#F7F4EC !important;
-
-  position:relative;
-
-  overflow:hidden;
-
-  cursor:pointer;
-
-  transition:all 0.3s ease;
-
-  box-sizing:border-box;
-
-}
-
-
-/* =====================================================
-   ANIMATED GOLD TOP LINE
-===================================================== */
-
-.kpi-cell::before {
-
-  content:"";
-
-  position:absolute;
-
-  left:0;
-
-  top:0;
-
-  width:0%;
-
-  height:4px;
-
-  background:#B78A34;
-
-  transition:width .3s ease;
-
-}
-
-
-.kpi-cell:hover::before {
-
-  width:100%;
-
-}
-
-
-.kpi-cell:hover {
-
-  background:#ffffff !important;
-
-  transform:translateY(-5px);
+  border-radius: 12px;
 
   box-shadow:
-    0 10px 20px rgba(27,42,74,0.15);
+    0 2px 8px rgba(0, 0, 0, 0.04);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+
+/* =========================================================
+   CARD HOVER
+========================================================= */
+
+.kpi-item:hover .kpi-cell {
+
+  border-color: #d7d7d7;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.07);
 
 }
 
 
-/* =====================================================
-   ICON
-===================================================== */
+.kpi-clickable:hover .kpi-cell {
+
+  border-color: #cfcfcf;
+
+}
+
+
+/* =========================================================
+   KPI ICON
+========================================================= */
 
 .kpi-icon {
 
-  color:#B78A34;
+  width: 38px;
+  height: 38px;
 
-  margin-bottom:5px;
+  min-width: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #f5f5f5;
+
+  color: #333;
 
 }
 
 
 .kpi-icon svg {
 
-  font-size:24px;
+  font-size: 21px;
 
 }
 
 
-/* =====================================================
-   LABEL
-===================================================== */
+/* MAIN */
+
+.kpi-icon.main {
+
+  background: #f1f1f1;
+
+  color: #252525;
+
+}
+
+
+/* CLIENT */
+
+.kpi-icon.client {
+
+  background: #f4f4f4;
+
+  color: #333;
+
+}
+
+
+/* ENQUIRY */
+
+.kpi-icon.enquiry {
+
+  background: #f4f4f4;
+
+  color: #333;
+
+}
+
+
+/* BILLING */
+
+.kpi-icon.billing {
+
+  background: #f4f4f4;
+
+  color: #333;
+
+}
+
+
+/* =========================================================
+   KPI CONTENT
+========================================================= */
+
+.kpi-content {
+
+  min-width: 0;
+
+  flex: 1;
+
+}
+
 
 .kpi-label {
 
-  font-family:"Inter",sans-serif;
+  margin-bottom: 4px;
 
-  font-size:11px;
+  font-size: 12px;
 
-  letter-spacing:1px;
+  font-weight: 600;
 
-  text-transform:uppercase;
+  line-height: 1.25;
 
-  color:#5B6472;
-
-  font-weight:700;
-
-  margin-bottom:4px;
+  color: #686868;
 
 }
 
-
-/* =====================================================
-   VALUE
-===================================================== */
 
 .kpi-value {
 
-  font-family:"IBM Plex Mono",monospace;
+  margin-bottom: 3px;
 
-  font-size:22px;
+  font-size: 23px;
 
-  font-weight:700;
+  font-weight: 750;
 
-  color:#1B2A4A;
+  line-height: 1.2;
 
-  line-height:1.2;
+  color: #171717;
 
-  white-space:nowrap;
+  white-space: nowrap;
 
-  overflow:hidden;
+  overflow: hidden;
 
-  text-overflow:ellipsis;
+  text-overflow: ellipsis;
 
 }
 
-
-/* =====================================================
-   DESCRIPTION
-===================================================== */
 
 .kpi-note {
 
-  display:none;
+  font-size: 10px;
+
+  font-weight: 400;
+
+  line-height: 1.3;
+
+  color: #999;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
 
 }
 
 
-/* =====================================================
-   BACKGROUND DECORATION
-===================================================== */
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
 
-.kpi-cell::after {
+.kpi-modal-overlay {
 
-  content:"";
+  position: fixed;
 
-  position:absolute;
+  inset: 0;
 
-  right:-25px;
+  z-index: 9999;
 
-  bottom:-25px;
+  display: flex;
 
-  width:70px;
+  align-items: center;
 
-  height:70px;
+  justify-content: center;
 
-  border-radius:50%;
+  padding: 20px;
 
-  background:#EFE7D5;
+  background:
+    rgba(0, 0, 0, 0.42);
 
-  opacity:.5;
+  backdrop-filter: blur(3px);
 
-}
-
-
-/* =====================================================
-   CARD COLORS
-   11 KPI CARDS
-===================================================== */
-
-
-/* -----------------------------------------------------
-   Outstanding
-   Card 8
------------------------------------------------------ */
-
-.kpi-item:nth-child(8) .kpi-value {
-
-  color:#B54747;
+  animation:
+    kpiOverlayFade 0.18s ease;
 
 }
 
 
-/* -----------------------------------------------------
-   Gross Profit
-   Card 9
------------------------------------------------------ */
+/* =========================================================
+   MODAL
+========================================================= */
 
-.kpi-item:nth-child(9) .kpi-value {
+.kpi-modal {
 
-  color:#26734D;
+  width: min(760px, 95vw);
 
-}
+  max-height: 85vh;
 
+  display: flex;
 
-/* -----------------------------------------------------
-   Gross Margin
-   Card 10
------------------------------------------------------ */
+  flex-direction: column;
 
-.kpi-item:nth-child(10) .kpi-value {
+  overflow: hidden;
 
-  color:#B78A34;
+  background: #ffffff;
 
-}
+  border-radius: 16px;
 
+  box-shadow:
+    0 20px 60px
+    rgba(0, 0, 0, 0.22);
 
-/* -----------------------------------------------------
-   Net Amount
-   Card 11
------------------------------------------------------ */
-
-.kpi-item:nth-child(11) .kpi-value {
-
-  color:#1B2A4A;
+  animation:
+    kpiModalOpen 0.2s ease;
 
 }
 
 
-/* =====================================================
-   TABLET
-===================================================== */
+/* =========================================================
+   MODAL HEADER
+========================================================= */
 
-@media(max-width:1100px){
+.kpi-modal-header {
 
-  .kpi-grid {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 20px 22px 16px;
+
+  border-bottom:
+    1px solid #eeeeee;
+
+}
+
+
+.kpi-modal-header h2 {
+
+  margin: 0;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  color: #171717;
+
+}
+
+
+.kpi-modal-header p {
+
+  margin: 4px 0 0;
+
+  font-size: 12px;
+
+  color: #888;
+
+}
+
+
+/* =========================================================
+   CLOSE X
+========================================================= */
+
+.kpi-modal-close {
+
+  width: 34px;
+
+  height: 34px;
+
+  min-width: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #666;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+}
+
+
+.kpi-modal-close:hover {
+
+  background: #f1f1f1;
+
+  color: #111;
+
+}
+
+
+.kpi-modal-close svg {
+
+  font-size: 20px;
+
+}
+
+
+/* =========================================================
+   MODAL CONTENT
+========================================================= */
+
+.kpi-sub-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 12px;
+
+  padding: 20px 22px;
+
+  overflow-y: auto;
+
+}
+
+
+/* =========================================================
+   CLIENT MODAL GRID
+========================================================= */
+
+.client-sub-grid {
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+}
+
+
+/* =========================================================
+   SUB KPI CARD
+========================================================= */
+
+.kpi-sub-card {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 11px;
+
+  min-width: 0;
+
+  padding: 14px;
+
+  background: #fafafa;
+
+  border:
+    1px solid #e8e8e8;
+
+  border-radius: 11px;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+
+}
+
+
+.kpi-sub-card:hover {
+
+  background: #ffffff;
+
+  border-color: #d5d5d5;
+
+  transform: translateY(-1px);
+
+}
+
+
+/* =========================================================
+   SUB KPI ICON
+========================================================= */
+
+.kpi-sub-icon {
+
+  width: 34px;
+
+  height: 34px;
+
+  min-width: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background: #eeeeee;
+
+  color: #333;
+
+}
+
+
+.kpi-sub-icon svg {
+
+  font-size: 18px;
+
+}
+
+
+/* =========================================================
+   SUB KPI CONTENT
+========================================================= */
+
+.kpi-sub-content {
+
+  min-width: 0;
+
+  flex: 1;
+
+}
+
+
+.kpi-sub-label {
+
+  margin-bottom: 3px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  line-height: 1.3;
+
+  color: #666;
+
+}
+
+
+.kpi-sub-value {
+
+  font-size: 20px;
+
+  font-weight: 750;
+
+  line-height: 1.2;
+
+  color: #171717;
+
+}
+
+
+.kpi-sub-note {
+
+  margin-top: 2px;
+
+  font-size: 9px;
+
+  color: #999;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.kpi-modal-footer {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  padding: 14px 22px;
+
+  border-top:
+    1px solid #eeeeee;
+
+}
+
+
+.kpi-modal-button {
+
+  min-width: 82px;
+
+  padding: 8px 18px;
+
+  border:
+    1px solid #d9d9d9;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #333;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+
+}
+
+
+.kpi-modal-button:hover {
+
+  background: #f5f5f5;
+
+  border-color: #c8c8c8;
+
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.kpi-sub-grid::-webkit-scrollbar {
+
+  width: 6px;
+
+}
+
+
+.kpi-sub-grid::-webkit-scrollbar-track {
+
+  background: transparent;
+
+}
+
+
+.kpi-sub-grid::-webkit-scrollbar-thumb {
+
+  background: #d0d0d0;
+
+  border-radius: 10px;
+
+}
+
+
+.kpi-sub-grid::-webkit-scrollbar-thumb:hover {
+
+  background: #b5b5b5;
+
+}
+
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes kpiOverlayFade {
+
+  from {
+
+    opacity: 0;
+
+  }
+
+  to {
+
+    opacity: 1;
+
+  }
+
+}
+
+
+@keyframes kpiModalOpen {
+
+  from {
+
+    opacity: 0;
+
+    transform:
+      scale(0.96)
+      translateY(8px);
+
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0);
+
+  }
+
+}
+
+
+/* =========================================================
+   LARGE TABLET
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .main-kpi-grid {
 
     grid-template-columns:
       repeat(3, minmax(0, 1fr));
 
-    gap:15px;
+  }
+
+
+  .client-kpi-grid {
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
 
   }
 
 }
 
 
-/* =====================================================
-   SMALL TABLET
-===================================================== */
+/* =========================================================
+   TABLET
+========================================================= */
 
-@media(max-width:750px){
+@media (max-width: 900px) {
 
-  .kpi-grid {
+  .main-kpi-grid {
 
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
 
-    gap:15px;
+  }
+
+
+  .client-kpi-grid {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
 
   }
 
 
-  .kpi-cell {
+  .billing-kpi-grid {
 
-    height:105px;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+  }
+
+
+  .kpi-sub-grid,
+  .client-sub-grid {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
 
   }
 
 }
 
 
-/* =====================================================
+/* =========================================================
    MOBILE
-===================================================== */
+========================================================= */
 
-@media(max-width:600px){
+@media (max-width: 600px) {
 
   .kpi-ledger {
 
-    margin-top:15px;
+    padding-bottom: 18px;
 
   }
 
 
-  .kpi-grid {
+  .kpi-section {
 
-    grid-template-columns:1fr;
+    margin-bottom: 20px;
 
-    gap:12px;
+  }
+
+
+  .kpi-section-header {
+
+    margin-bottom: 10px;
+
+  }
+
+
+  .kpi-section-header h3 {
+
+    font-size: 14px;
+
+  }
+
+
+  .kpi-section-header p {
+
+    font-size: 11px;
+
+  }
+
+
+  .main-kpi-grid,
+  .client-kpi-grid,
+  .enquiry-kpi-grid,
+  .billing-kpi-grid {
+
+    grid-template-columns: 1fr;
 
   }
 
 
   .kpi-cell {
 
-    height:100px;
+    min-height: 105px;
 
-    padding:14px;
+    padding: 14px;
 
   }
 
 
   .kpi-value {
 
-    font-size:20px;
+    font-size: 21px;
+
+  }
+
+
+  .kpi-modal-overlay {
+
+    padding: 12px;
+
+  }
+
+
+  .kpi-modal {
+
+    width: 100%;
+
+    max-height: 90vh;
+
+    border-radius: 14px;
+
+  }
+
+
+  .kpi-modal-header {
+
+    padding: 16px;
+
+  }
+
+
+  .kpi-modal-header h2 {
+
+    font-size: 16px;
+
+  }
+
+
+  .kpi-sub-grid,
+  .client-sub-grid {
+
+    grid-template-columns: 1fr;
+
+    padding: 16px;
+
+  }
+
+
+  .kpi-modal-footer {
+
+    padding: 12px 16px;
+
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .kpi-cell {
+
+    gap: 9px;
+
+    padding: 12px;
+
+  }
+
+
+  .kpi-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    min-width: 34px;
+
+  }
+
+
+  .kpi-icon svg {
+
+    font-size: 18px;
+
+  }
+
+
+  .kpi-label {
+
+    font-size: 11px;
+
+  }
+
+
+  .kpi-value {
+
+    font-size: 19px;
 
   }
 
