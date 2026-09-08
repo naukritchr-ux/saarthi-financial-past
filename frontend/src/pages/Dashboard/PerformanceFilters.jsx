@@ -13,7 +13,6 @@ import "./PerformanceFilters.css";
 
 function PerformanceFilters() {
 
-
   const {
     rows,
     filters,
@@ -24,23 +23,31 @@ function PerformanceFilters() {
 
 
   // ======================================================
-  // Temporary filter values
+  // TEMPORARY FILTER VALUES
   // ======================================================
 
   const [selectedFilters, setSelectedFilters] =
     useState({
-      ...filters
+      ...filters,
+
+      viewBy: filters.viewBy || "",
+      allTime: filters.allTime || "all",
+      sortBy: filters.sortBy || ""
     });
 
 
   // ======================================================
-  // Keep local state synchronized
+  // KEEP LOCAL STATE SYNCHRONIZED
   // ======================================================
 
   useEffect(() => {
 
     setSelectedFilters({
-      ...filters
+      ...filters,
+
+      viewBy: filters.viewBy || "",
+      allTime: filters.allTime || "all",
+      sortBy: filters.sortBy || ""
     });
 
   }, [filters]);
@@ -57,16 +64,17 @@ function PerformanceFilters() {
 
         rows
 
-          .map(
-            row =>
-              row[column]
-          )
+          .map(row => row[column])
 
           .filter(
             value =>
               value !== undefined &&
               value !== null &&
-              value !== ""
+              String(value).trim() !== ""
+          )
+
+          .map(value =>
+            String(value).trim()
           )
 
       )
@@ -94,36 +102,29 @@ function PerformanceFilters() {
 
           rows
 
-            .map(
-              row =>
-                getFinancialYearFromRow(
-                  row
-                )
+            .map(row =>
+              getFinancialYearFromRow(row)
             )
 
-            .filter(
-              value => value
-            )
+            .filter(Boolean)
 
         )
 
-      ].sort(
-        (a, b) => {
+      ].sort((a, b) => {
 
-          const yearA =
-            Number(
-              String(a).split("-")[0]
-            );
+        const yearA =
+          Number(
+            String(a).split("-")[0]
+          );
 
-          const yearB =
-            Number(
-              String(b).split("-")[0]
-            );
+        const yearB =
+          Number(
+            String(b).split("-")[0]
+          );
 
-          return yearA - yearB;
+        return yearA - yearB;
 
-        }
-      );
+      });
 
     }, [
       rows,
@@ -138,38 +139,25 @@ function PerformanceFilters() {
   const months =
     useMemo(() => {
 
-      // No financial year selected
-      // means no month dropdown values.
-
-      if (
-        !selectedFilters.year
-      ) {
-
+      if (!selectedFilters.year) {
         return [];
-
       }
 
 
-      const monthSet =
-        new Set();
+      const monthSet = new Set();
 
 
       rows.forEach(row => {
 
-
         const financialYear =
-          getFinancialYearFromRow(
-            row
-          );
+          getFinancialYearFromRow(row);
 
 
         if (
           financialYear !==
           selectedFilters.year
         ) {
-
           return;
-
         }
 
 
@@ -180,39 +168,28 @@ function PerformanceFilters() {
 
 
         if (month) {
-
           monthSet.add(month);
-
         }
 
       });
 
 
-      // Financial year month order
       const monthOrder = [
 
         "April",
-
         "May",
-
         "June",
 
         "July",
-
         "August",
-
         "September",
 
         "October",
-
         "November",
-
         "December",
 
         "January",
-
         "February",
-
         "March"
 
       ];
@@ -222,7 +199,6 @@ function PerformanceFilters() {
         month =>
           monthSet.has(month)
       );
-
 
     }, [
       rows,
@@ -241,38 +217,23 @@ function PerformanceFilters() {
     value
   ) {
 
+    setSelectedFilters(previous => {
 
-    // -----------------------------------------------
-    // When financial year changes
-    // -----------------------------------------------
-
-    if (
-      field === "year"
-    ) {
-
-      setSelectedFilters({
-
-        ...selectedFilters,
-
-        year: value,
-
-        // Reset month because
-        // months depend on year.
-
-        month: ""
-
-      });
-
-      return;
-
-    }
+      const updated = {
+        ...previous,
+        [field]: value
+      };
 
 
-    setSelectedFilters({
+      // Changing financial year
+      // resets month
 
-      ...selectedFilters,
+      if (field === "year") {
+        updated.month = "";
+      }
 
-      [field]: value
+
+      return updated;
 
     });
 
@@ -286,9 +247,7 @@ function PerformanceFilters() {
   function applyFilters() {
 
     setFilters({
-
       ...selectedFilters
-
     });
 
   }
@@ -301,6 +260,21 @@ function PerformanceFilters() {
   function clearFilters() {
 
     const emptyFilters = {
+
+      // -----------------------------------------------
+      // NEW PERFORMANCE FILTERS
+      // -----------------------------------------------
+
+      viewBy: "",
+
+      allTime: "all",
+
+      sortBy: "",
+
+
+      // -----------------------------------------------
+      // EXISTING FILTERS
+      // -----------------------------------------------
 
       company: "",
 
@@ -340,7 +314,106 @@ function PerformanceFilters() {
 
 
   // ======================================================
-  // FILTER CONFIG
+  // BASE PERFORMANCE FILTERS
+  // ======================================================
+
+  const performanceFilters = [
+
+    {
+      label: "View By",
+
+      field: "viewBy",
+
+      options: [
+
+        {
+          label: "None",
+          value: ""
+        },
+
+        {
+          label: "Client Performance",
+          value: "client"
+        },
+
+        {
+          label: "Enquiry Performance",
+          value: "enquiry"
+        }
+
+      ]
+
+    },
+
+
+    {
+      label: "All Time",
+
+      field: "allTime",
+
+      options: [
+
+        {
+          label: "All Time",
+          value: "all"
+        },
+
+        {
+          label: "Yearly",
+          value: "yearly"
+        },
+
+        {
+          label: "Monthly",
+          value: "monthly"
+        },
+
+        {
+          label: "Quarterly",
+          value: "quarterly"
+        }
+
+      ]
+
+    },
+
+
+    {
+      label: "Sort By",
+
+      field: "sortBy",
+
+      options: [
+
+        {
+          label: "None",
+          value: ""
+        },
+
+        {
+          label: "FRANCHISEE NAME",
+          value: "franchise"
+        },
+
+        {
+          label: "BD MEMBER",
+          value: "bdMember"
+        },
+
+        {
+          label: "TEAM LEADER",
+          value: "teamLeader"
+        }
+
+      ]
+
+    }
+
+  ];
+
+
+  // ======================================================
+  // EXISTING FILTER CONFIG
   // ======================================================
 
   const filtersConfig = [
@@ -426,22 +499,13 @@ function PerformanceFilters() {
 
   function renderOptions(filter) {
 
-
-    if (
-      filter.type === "year"
-    ) {
-
+    if (filter.type === "year") {
       return financialYears;
-
     }
 
 
-    if (
-      filter.type === "month"
-    ) {
-
+    if (filter.type === "month") {
       return months;
-
     }
 
 
@@ -461,12 +525,11 @@ function PerformanceFilters() {
     <div className="performance-filter-panel">
 
 
-      {/* ================================================
+      {/* ==================================================
           HEADER
-      ================================================ */}
+      ================================================== */}
 
       <div className="filter-header">
-
 
         <h3>
           View Performance By
@@ -475,166 +538,190 @@ function PerformanceFilters() {
 
         <div className="filter-actions">
 
-
           <button
-
             type="button"
-
             className="filter-button"
-
-            onClick={
-              applyFilters
-            }
-
+            onClick={applyFilters}
           >
-
             Filter
-
           </button>
 
 
           <button
-
             type="button"
-
             className="clear-filter-button"
-
-            onClick={
-              clearFilters
-            }
-
+            onClick={clearFilters}
           >
-
             Clear Filter
-
           </button>
-
 
         </div>
-
 
       </div>
 
 
-      {/* ================================================
-          FILTER GRID
-      ================================================ */}
+      {/* ==================================================
+          NEW PERFORMANCE FILTERS
+      ================================================== */}
+
+      <div className="base-performance-grid">
+
+        {
+          performanceFilters.map(filter => (
+
+            <div
+              className="filter-box"
+              key={filter.field}
+            >
+
+              <label>
+                {filter.label}
+              </label>
+
+
+              <select
+
+                value={
+                  selectedFilters[
+                    filter.field
+                  ] || ""
+                }
+
+                onChange={e =>
+                  handleChange(
+                    filter.field,
+                    e.target.value
+                  )
+                }
+
+              >
+
+                {
+                  filter.options.map(option => (
+
+                    <option
+                      key={
+                        option.value ||
+                        option.label
+                      }
+                      value={
+                        option.value
+                      }
+                    >
+
+                      {option.label}
+
+                    </option>
+
+                  ))
+                }
+
+              </select>
+
+            </div>
+
+          ))
+        }
+
+      </div>
+
+
+      {/* ==================================================
+          EXISTING FILTERS
+      ================================================== */}
+
+      <div className="additional-filter-title">
+
+        Additional Filters
+
+      </div>
+
 
       <div className="filter-grid">
 
-
         {
 
-          filtersConfig.map(
-            filter => {
+          filtersConfig.map(filter => {
+
+            const options =
+              renderOptions(filter);
 
 
-              const options =
-                renderOptions(
-                  filter
-                );
+            const monthDisabled =
+              filter.type === "month" &&
+              !selectedFilters.year;
 
 
-              const monthDisabled =
-                filter.type === "month" &&
-                !selectedFilters.year;
+            return (
+
+              <div
+                className="filter-box"
+                key={filter.field}
+              >
+
+                <label>
+                  {filter.label}
+                </label>
 
 
-              return (
+                <select
 
-                <div
+                  value={
+                    selectedFilters[
+                      filter.field
+                    ] || ""
+                  }
 
-                  className="filter-box"
+                  disabled={
+                    monthDisabled
+                  }
 
-                  key={
-                    filter.field
+                  onChange={e =>
+                    handleChange(
+                      filter.field,
+                      e.target.value
+                    )
                   }
 
                 >
 
-
-                  <label>
-
-                    {filter.label}
-
-                  </label>
-
-
-                  <select
-
-                    value={
-
-                      selectedFilters[
-                        filter.field
-                      ] || ""
-
-                    }
-
-                    disabled={
-                      monthDisabled
-                    }
-
-                    onChange={
-                      e =>
-                        handleChange(
-                          filter.field,
-                          e.target.value
-                        )
-                    }
-
-                  >
-
-
-                    <option value="">
-
-                      {
-                        monthDisabled
-
-                          ? "Select Financial Year First"
-
-                          : `All ${filter.label}`
-
-                      }
-
-                    </option>
-
+                  <option value="">
 
                     {
-
-                      options.map(
-                        value => (
-
-                          <option
-
-                            key={value}
-
-                            value={value}
-
-                          >
-
-                            {value}
-
-                          </option>
-
-                        )
-                      )
-
+                      monthDisabled
+                        ? "Select Financial Year First"
+                        : `All ${filter.label}`
                     }
 
+                  </option>
 
-                  </select>
 
+                  {
 
-                </div>
+                    options.map(value => (
 
-              );
+                      <option
+                        key={value}
+                        value={value}
+                      >
 
-            }
+                        {value}
 
-          )
+                      </option>
+
+                    ))
+
+                  }
+
+                </select>
+
+              </div>
+
+            );
+
+          })
 
         }
-
 
       </div>
 
