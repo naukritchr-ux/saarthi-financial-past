@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Business,
@@ -28,9 +28,48 @@ import "./KPIStrip.css";
 
 function KPIStrip() {
 
-  const { dashboardData } = useData();
+  const {
+    dashboardData,
+    filters
+  } = useData();
 
-  const [selectedKPI, setSelectedKPI] = useState(null);
+  const [selectedKPI, setSelectedKPI] =
+    useState(null);
+
+
+  // ==================================================
+  // REPORT VIEW
+  // ==================================================
+
+  const reportView =
+    filters?.viewBy || "";
+
+
+  // ==================================================
+  // REPORT BY
+  // ==================================================
+
+  const reportBy =
+    filters?.reportBy || "";
+
+
+  // ==================================================
+  // METRIC VIEW
+  // ==================================================
+
+  const metricView =
+    filters?.metricView || "";
+
+
+  // ==================================================
+  // CLOSE POPUP WHEN REPORT VIEW CHANGES
+  // ==================================================
+
+  useEffect(() => {
+
+    setSelectedKPI(null);
+
+  }, [reportView]);
 
 
   // ==================================================
@@ -39,168 +78,554 @@ function KPIStrip() {
 
   const formatCurrency = (value) => {
 
-    return `₹${Number(
-      value || 0
-    ).toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })}`;
+    const amount =
+      Number(value || 0);
+
+    return `₹${amount.toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    )}`;
 
   };
 
 
   // ==================================================
-  // MAIN KPIs
+  // OVERALL BUSINESS KPIs
+  // Reports View = None
   // ==================================================
 
-  const mainKPIs = [
+  const overallKPIs = [
 
     {
       id: "clients",
+
       label: "Total Unique Clients",
-      value: dashboardData.totalClients || 0,
+
+      value:
+        dashboardData.totalClients || 0,
+
       icon: <Business />,
+
       note: "Unique Company Name",
+
       clickable: true
+
     },
+
 
     {
       id: "enquiries",
+
       label: "Total Enquiries",
-      value: dashboardData.totalEnquiries || 0,
+
+      value:
+        dashboardData.totalEnquiries || 0,
+
       icon: <Groups />,
+
       note: "Total enquiry records",
+
       clickable: true
+
     },
+
 
     {
       id: "billing",
+
       label: "Total Billing",
-      value: formatCurrency(
-        dashboardData.totalBilling
-      ),
+
+      value:
+        formatCurrency(
+          dashboardData.totalBilling
+        ),
+
       icon: <CurrencyRupee />,
+
       note: "Sum of Total Bill Amount",
+
       clickable: true
+
     },
+
 
     {
       id: "placements",
+
       label: "Placements",
-      value: dashboardData.totalPlacements || 0,
+
+      value:
+        dashboardData.totalPlacements || 0,
+
       icon: <Groups />,
+
       note: "Successful placements"
+
     },
+
 
     {
       id: "gross-profit",
+
       label: "Gross Profit",
-      value: formatCurrency(
-        dashboardData.grossProfit
-      ),
+
+      value:
+        formatCurrency(
+          dashboardData.grossProfit
+        ),
+
       icon: <TrendingUp />,
+
       note: "Billing − Franchisee Share"
+
     },
+
 
     {
       id: "gross-margin",
+
       label: "Gross Margin",
-      value: `${dashboardData.grossMargin || 0}%`,
+
+      value:
+        `${dashboardData.grossMargin || 0}%`,
+
       icon: <Percent />,
+
       note: "Profit percentage"
+
     },
+
 
     {
       id: "net-amount",
+
       label: "Net Amount",
-      value: formatCurrency(
-        dashboardData.netAmount
-      ),
+
+      value:
+        formatCurrency(
+          dashboardData.netAmount
+        ),
+
       icon: <Payments />,
+
       note: "Net business amount"
+
     }
 
   ];
 
 
   // ==================================================
+  // CLIENT PERFORMANCE KPIs
+  // ==================================================
+
+  const clientPerformanceKPIs = [
+
+    {
+      id: "clients",
+
+      label: "Total Unique Client",
+
+      value:
+        dashboardData.totalClients || 0,
+
+      icon: <Business />,
+
+      note: "Unique Company Name",
+
+      clickable: true
+
+    },
+
+
+    {
+      id: "billing",
+
+      label: "Total Billing",
+
+      value:
+        formatCurrency(
+          dashboardData.totalBilling
+        ),
+
+      icon: <CurrencyRupee />,
+
+      note: "Sum of Total Bill Amount",
+
+      clickable: true
+
+    },
+
+
+    {
+      id: "placements",
+
+      label: "Placement",
+
+      value:
+        dashboardData.totalPlacements || 0,
+
+      icon: <Groups />,
+
+      note: "Successful placements"
+
+    },
+
+
+    {
+      id: "profit",
+
+      label: "Profit",
+
+      value:
+        formatCurrency(
+          dashboardData.grossProfit
+        ),
+
+      icon: <TrendingUp />,
+
+      note: "Billing − Franchisee Share"
+
+    },
+
+
+    {
+      id: "net-amount",
+
+      label: "Net Amount",
+
+      value:
+        formatCurrency(
+          dashboardData.netAmount
+        ),
+
+      icon: <Payments />,
+
+      note: "Net business amount"
+
+    },
+
+
+    {
+      id: "gross-margin",
+
+      label: "Gross Margin",
+
+      value:
+        `${dashboardData.grossMargin || 0}%`,
+
+      icon: <Percent />,
+
+      note: "Profit percentage"
+
+    }
+
+  ];
+
+
+  // ==================================================
+  // ENQUIRY PERFORMANCE KPIs
+  // ==================================================
+
+  const enquiryPerformanceKPIs = [
+
+    {
+      id: "enquiries",
+
+      label: "Total Enquiries",
+
+      value:
+        dashboardData.totalEnquiries || 0,
+
+      icon: <Groups />,
+
+      note: "Total enquiry records",
+
+      clickable: true
+
+    },
+
+
+    {
+      id: "billing",
+
+      label: "Total Billing",
+
+      value:
+        formatCurrency(
+          dashboardData.totalBilling
+        ),
+
+      icon: <CurrencyRupee />,
+
+      note: "Sum of Total Bill Amount",
+
+      clickable: true
+
+    },
+
+
+    {
+      id: "placements",
+
+      label: "Placement",
+
+      value:
+        dashboardData.totalPlacements || 0,
+
+      icon: <Groups />,
+
+      note: "Successful placements"
+
+    },
+
+
+    {
+      id: "profit",
+
+      label: "Profit",
+
+      value:
+        formatCurrency(
+          dashboardData.grossProfit
+        ),
+
+      icon: <TrendingUp />,
+
+      note: "Billing − Franchisee Share"
+
+    },
+
+
+    {
+      id: "net-amount",
+
+      label: "Net Amount",
+
+      value:
+        formatCurrency(
+          dashboardData.netAmount
+        ),
+
+      icon: <Payments />,
+
+      note: "Net business amount"
+
+    },
+
+
+    {
+      id: "gross-margin",
+
+      label: "Gross Margin",
+
+      value:
+        `${dashboardData.grossMargin || 0}%`,
+
+      icon: <Percent />,
+
+      note: "Profit percentage"
+
+    }
+
+  ];
+
+
+  // ==================================================
+  // SELECT MAIN KPI SET
+  // ==================================================
+
+  let mainKPIs =
+    overallKPIs;
+
+  let performanceTitle =
+    "Performance Overview";
+
+  let performanceSubtitle =
+    "Overall business performance";
+
+
+  // ==================================================
+  // CLIENT PERFORMANCE
+  // ==================================================
+
+  if (
+    reportView === "client"
+  ) {
+
+    mainKPIs =
+      clientPerformanceKPIs;
+
+    performanceTitle =
+      "Client Performance";
+
+    performanceSubtitle =
+      "Client performance overview";
+
+  }
+
+
+  // ==================================================
+  // ENQUIRY PERFORMANCE
+  // ==================================================
+
+  if (
+    reportView === "enquiry"
+  ) {
+
+    mainKPIs =
+      enquiryPerformanceKPIs;
+
+    performanceTitle =
+      "Enquiry Performance";
+
+    performanceSubtitle =
+      "Enquiry performance overview";
+
+  }
+
+
+  // ==================================================
   // CLIENT STATUS KPIs
-  // These are used ONLY inside the popup
   // ==================================================
 
   const clientStatusKPIs = [
 
     {
       id: "active",
+
       label: "Active Clients",
-      value: dashboardData.activeClients || 0,
+
+      value:
+        dashboardData.activeClients || 0,
+
       icon: <CheckCircle />,
+
       note: "Currently active"
+
     },
+
 
     {
       id: "deleted",
+
       label: "Deleted Clients",
-      value: dashboardData.deletedClients || 0,
+
+      value:
+        dashboardData.deletedClients || 0,
+
       icon: <Delete />,
+
       note: "Deleted clients"
+
     },
+
 
     {
       id: "non-active",
+
       label: "Non Active Clients",
-      value: dashboardData.nonActiveClients || 0,
+
+      value:
+        dashboardData.nonActiveClients || 0,
+
       icon: <WorkOff />,
+
       note: "Currently non active"
+
     },
+
 
     {
       id: "blacklisted",
+
       label: "Blacklisted",
-      value: dashboardData.blacklistedClients || 0,
+
+      value:
+        dashboardData.blacklistedClients || 0,
+
       icon: <Block />,
+
       note: "Blacklisted clients"
+
     },
+
 
     {
       id: "no-hiring",
+
       label: "No Hiring Clients",
-      value: dashboardData.noHiringClients || 0,
+
+      value:
+        dashboardData.noHiringClients || 0,
+
       icon: <WorkOff />,
+
       note: "No hiring"
+
     },
+
 
     {
       id: "revival",
+
       label: "Revival",
-      value: dashboardData.revivalClients || 0,
+
+      value:
+        dashboardData.revivalClients || 0,
+
       icon: <Replay />,
+
       note: "Revival clients"
+
     },
+
 
     {
       id: "reallocation",
+
       label: "Reallocation",
-      value: dashboardData.reallocationClients || 0,
+
+      value:
+        dashboardData.reallocationClients || 0,
+
       icon: <SwapHoriz />,
+
       note: "Reallocated clients"
+
     },
+
 
     {
       id: "prospect",
+
       label: "Prospect",
-      value: dashboardData.prospectClients || 0,
+
+      value:
+        dashboardData.prospectClients || 0,
+
       icon: <PersonSearch />,
+
       note: "Prospective clients"
+
     },
+
 
     {
       id: "permanently-closed",
+
       label: "Permanently Closed",
+
       value:
         dashboardData.permanentlyClosedClients || 0,
+
       icon: <Lock />,
+
       note: "Permanently closed"
+
     }
 
   ];
@@ -208,25 +633,37 @@ function KPIStrip() {
 
   // ==================================================
   // ENQUIRY KPIs
-  // These are used ONLY inside the popup
   // ==================================================
 
   const enquiryKPIs = [
 
     {
       id: "open-enquiries",
+
       label: "Open Enquiries",
-      value: dashboardData.openEnquiries || 0,
+
+      value:
+        dashboardData.openEnquiries || 0,
+
       icon: <Groups />,
+
       note: "Currently open"
+
     },
+
 
     {
       id: "closed-enquiries",
+
       label: "Closed Enquiries",
-      value: dashboardData.closedEnquiries || 0,
+
+      value:
+        dashboardData.closedEnquiries || 0,
+
       icon: <MarkEmailRead />,
+
       note: "Successfully closed"
+
     }
 
   ];
@@ -234,39 +671,61 @@ function KPIStrip() {
 
   // ==================================================
   // BILLING KPIs
-  // These are used ONLY inside the popup
   // ==================================================
 
   const billingKPIs = [
 
     {
       id: "received",
+
       label: "Received",
-      value: formatCurrency(
-        dashboardData.amountReceived
-      ),
-      icon: <AccountBalanceWallet />,
+
+      value:
+        formatCurrency(
+          dashboardData.amountReceived
+        ),
+
+      icon:
+        <AccountBalanceWallet />,
+
       note: "Collected amount"
+
     },
+
 
     {
       id: "outstanding",
+
       label: "Outstanding",
-      value: formatCurrency(
-        dashboardData.outstandingAmount
-      ),
-      icon: <Warning />,
+
+      value:
+        formatCurrency(
+          dashboardData.outstandingAmount
+        ),
+
+      icon:
+        <Warning />,
+
       note: "Pending collection"
+
     },
+
 
     {
       id: "franchise-share",
+
       label: "Franchisee Share",
-      value: formatCurrency(
-        dashboardData.franchiseeShare
-      ),
-      icon: <Payments />,
+
+      value:
+        formatCurrency(
+          dashboardData.franchiseeShare
+        ),
+
+      icon:
+        <Payments />,
+
       note: "Franchisee share"
+
     }
 
   ];
@@ -278,48 +737,63 @@ function KPIStrip() {
 
   const getModalData = () => {
 
-    if (selectedKPI === "clients") {
+    if (
+      selectedKPI ===
+      "clients"
+    ) {
 
       return {
 
-        title: "Client Status Breakdown",
+        title:
+          "Client Status Breakdown",
 
         subtitle:
           "Unique Company Name count by client status",
 
-        items: clientStatusKPIs
+        items:
+          clientStatusKPIs
 
       };
 
     }
 
 
-    if (selectedKPI === "enquiries") {
+    if (
+      selectedKPI ===
+      "enquiries"
+    ) {
 
       return {
 
-        title: "Enquiry Breakdown",
+        title:
+          "Enquiry Breakdown",
 
         subtitle:
           "Open and closed enquiry records",
 
-        items: enquiryKPIs
+        items:
+          enquiryKPIs
 
       };
 
     }
 
 
-    if (selectedKPI === "billing") {
+    if (
+      selectedKPI ===
+      "billing"
+    ) {
 
       return {
 
-        title: "Billing Breakdown",
+        title:
+          "Billing Breakdown",
 
         subtitle:
           "Billing collection and franchisee share",
 
-        items: billingKPIs
+        items:
+          billingKPIs
 
       };
 
@@ -331,7 +805,8 @@ function KPIStrip() {
   };
 
 
-  const modalData = getModalData();
+  const modalData =
+    getModalData();
 
 
   // ==================================================
@@ -355,7 +830,9 @@ function KPIStrip() {
 
         onClick={() => {
 
-          if (metric.clickable) {
+          if (
+            metric.clickable
+          ) {
 
             setSelectedKPI(
               metric.id
@@ -432,10 +909,6 @@ function KPIStrip() {
 
     <>
 
-      {/* =================================================
-          MAIN KPI SECTION ONLY
-      ================================================= */}
-
       <div className="kpi-ledger">
 
         <section className="kpi-section">
@@ -445,11 +918,11 @@ function KPIStrip() {
             <div>
 
               <h3>
-                Performance Overview
+                {performanceTitle}
               </h3>
 
               <p>
-                Overall business performance
+                {performanceSubtitle}
               </p>
 
             </div>
@@ -459,15 +932,17 @@ function KPIStrip() {
 
           <div className="kpi-grid main-kpi-grid">
 
-            {mainKPIs.map((metric) => (
+            {mainKPIs.map(
+              (metric) => (
 
-              <KPICard
-                key={metric.id}
-                metric={metric}
-                section="main"
-              />
+                <KPICard
+                  key={metric.id}
+                  metric={metric}
+                  section="main"
+                />
 
-            ))}
+              )
+            )}
 
           </div>
 
@@ -477,7 +952,7 @@ function KPIStrip() {
 
 
       {/* =================================================
-          CENTERED POPUP
+          KPI POPUP
       ================================================= */}
 
       {modalData && (
@@ -493,11 +968,6 @@ function KPIStrip() {
               event.stopPropagation()
             }
           >
-
-
-            {/* ==========================================
-                MODAL HEADER
-            ========================================== */}
 
             <div className="kpi-modal-header">
 
@@ -528,10 +998,6 @@ function KPIStrip() {
             </div>
 
 
-            {/* ==========================================
-                MODAL KPI CARDS
-            ========================================== */}
-
             <div
               className={`kpi-sub-grid ${
                 selectedKPI === "clients"
@@ -540,54 +1006,52 @@ function KPIStrip() {
               }`}
             >
 
-              {modalData.items.map((item) => (
+              {modalData.items.map(
+                (item) => (
 
-                <div
-                  className="kpi-sub-card"
-                  key={item.id}
-                >
+                  <div
+                    className="kpi-sub-card"
+                    key={item.id}
+                  >
 
-                  <div className="kpi-sub-icon">
+                    <div className="kpi-sub-icon">
 
-                    {item.icon}
+                      {item.icon}
+
+                    </div>
+
+
+                    <div className="kpi-sub-content">
+
+                      <div className="kpi-sub-label">
+
+                        {item.label}
+
+                      </div>
+
+
+                      <div className="kpi-sub-value">
+
+                        {item.value}
+
+                      </div>
+
+
+                      <div className="kpi-sub-note">
+
+                        {item.note}
+
+                      </div>
+
+                    </div>
 
                   </div>
 
-
-                  <div className="kpi-sub-content">
-
-                    <div className="kpi-sub-label">
-
-                      {item.label}
-
-                    </div>
-
-
-                    <div className="kpi-sub-value">
-
-                      {item.value}
-
-                    </div>
-
-
-                    <div className="kpi-sub-note">
-
-                      {item.note}
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              ))}
+                )
+              )}
 
             </div>
 
-
-            {/* ==========================================
-                MODAL FOOTER
-            ========================================== */}
 
             <div className="kpi-modal-footer">
 
@@ -602,7 +1066,6 @@ function KPIStrip() {
               </button>
 
             </div>
-
 
           </div>
 

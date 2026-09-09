@@ -1,4 +1,4 @@
-export function processDashboardData(rows) {
+export function processDashboardData(rows, filters = {}) {
 
   // --------------------------------------------------
   // EMPTY DATA
@@ -37,7 +37,12 @@ export function processDashboardData(rows) {
 
       teamLeaderPerformance: [],
       franchisePerformance: [],
-      industryPerformance: []
+      industryPerformance: [],
+
+      reportPerformance: [],
+      reportView: filters.viewBy || "",
+      reportBy: filters.reportBy || "",
+      metricView: filters.metricView || ""
     };
   }
 
@@ -92,31 +97,35 @@ export function processDashboardData(rows) {
 
   rows.forEach((row) => {
 
-    const companyName = getCompanyName(row);
+    const companyName =
+      getCompanyName(row);
 
     if (companyName) {
-      uniqueClients.add(companyName);
+
+      uniqueClients.add(
+        companyName
+      );
+
     }
 
   });
 
-  const totalClients = uniqueClients.size;
+  const totalClients =
+    uniqueClients.size;
 
 
   // ==================================================
   // TOTAL ENQUIRIES
   // ==================================================
-  // Every valid Company Name row is considered
-  // an enquiry record.
-  // ==================================================
 
-  const totalEnquiries = rows.filter((row) => {
+  const totalEnquiries =
+    rows.filter((row) => {
 
-    return Boolean(
-      getCompanyName(row)
-    );
+      return Boolean(
+        getCompanyName(row)
+      );
 
-  }).length;
+    }).length;
 
 
   // ==================================================
@@ -156,8 +165,6 @@ export function processDashboardData(rows) {
         row["Client Status"]
       );
 
-
-    // Ignore rows without company name
 
     if (!companyName) {
       return;
@@ -339,165 +346,108 @@ export function processDashboardData(rows) {
   // OPEN ENQUIRIES
   // ==================================================
 
-  const openEnquiries = rows.filter((row) => {
+  const openEnquiries =
+    rows.filter((row) => {
 
-    const status =
-      normalizeStatus(
-        row["Client Status"]
+      const status =
+        normalizeStatus(
+          row["Client Status"]
+        );
+
+      return (
+        status === "open" ||
+        status === "open enquiry" ||
+        status === "open client enquiry"
       );
 
-    return (
-      status === "open" ||
-      status === "open enquiry" ||
-      status === "open client enquiry"
-    );
-
-  }).length;
+    }).length;
 
 
   // ==================================================
   // CLOSED ENQUIRIES
   // ==================================================
 
-  const closedEnquiries = rows.filter((row) => {
+  const closedEnquiries =
+    rows.filter((row) => {
 
-    const status =
-      normalizeStatus(
-        row["Client Status"]
+      const status =
+        normalizeStatus(
+          row["Client Status"]
+        );
+
+      return (
+        status === "closed" ||
+        status === "closed enquiry" ||
+        status === "closed client enquiry"
       );
 
-    return (
-      status === "closed" ||
-      status === "closed enquiry" ||
-      status === "closed client enquiry"
-    );
-
-  }).length;
+    }).length;
 
 
   // ==================================================
   // TOTAL PLACEMENTS
   // ==================================================
 
-  const totalPlacements = rows.filter((row) => {
+  const totalPlacements =
+    rows.filter((row) => {
 
-    return (
-      row["Date of Joining"] ||
-      row["Joining Date"]
-    );
+      return Boolean(
+        row["Date of Joining"] ||
+        row["Joining Date"]
+      );
 
-  }).length;
+    }).length;
 
 
   // ==================================================
   // TOTAL BILLING
-  //
-  // CORRECT FORMULA:
-  //
-  // SUM(Total Bill Amount)
-  //
-  // We DO NOT calculate billing using:
-  // Salary Offered × Service Charges
   // ==================================================
 
-  const totalBilling = rows.reduce(
-    (sum, row) => {
-
-      const billAmount =
-        Number(
-          row["Total Bill Amount"] || 0
-        );
-
-      return (
-        sum +
-        (
-          Number.isFinite(billAmount)
-            ? billAmount
-            : 0
-        )
-      );
-
-    },
-    0
-  );
+  const totalBilling =
+    sumNumericColumn(
+      rows,
+      "Total Bill Amount"
+    );
 
 
   // ==================================================
   // AMOUNT RECEIVED
-  //
-  // SUM(Amount Received)
   // ==================================================
 
-  const amountReceived = rows.reduce(
-    (sum, row) => {
-
-      const received =
-        Number(
-          row["Amount Received"] || 0
-        );
-
-      return (
-        sum +
-        (
-          Number.isFinite(received)
-            ? received
-            : 0
-        )
-      );
-
-    },
-    0
-  );
+  const amountReceived =
+    sumNumericColumn(
+      rows,
+      "Amount Received"
+    );
 
 
   // ==================================================
   // FRANCHISEE SHARE
-  //
-  // SUM(Franchisee Share)
   // ==================================================
 
-  const franchiseeShare = rows.reduce(
-    (sum, row) => {
-
-      const share =
-        Number(
-          row["Franchisee Share"] || 0
-        );
-
-      return (
-        sum +
-        (
-          Number.isFinite(share)
-            ? share
-            : 0
-        )
-      );
-
-    },
-    0
-  );
+  const franchiseeShare =
+    sumNumericColumn(
+      rows,
+      "Franchisee Share"
+    );
 
 
   // ==================================================
   // OUTSTANDING
-  //
-  // Outstanding =
-  // Total Billing - Amount Received
   // ==================================================
 
   const outstandingAmount =
-    totalBilling - amountReceived;
+    totalBilling -
+    amountReceived;
 
 
   // ==================================================
   // GROSS PROFIT
-  //
-  // Gross Profit =
-  // Total Billing - Franchisee Share
   // ==================================================
 
   const grossProfit =
-    totalBilling - franchiseeShare;
+    totalBilling -
+    franchiseeShare;
 
 
   // ==================================================
@@ -515,13 +465,11 @@ export function processDashboardData(rows) {
 
   // ==================================================
   // NET AMOUNT
-  //
-  // Net Amount =
-  // Total Billing - Franchisee Share
   // ==================================================
 
   const netAmount =
-    totalBilling - franchiseeShare;
+    totalBilling -
+    franchiseeShare;
 
 
   // ==================================================
@@ -535,6 +483,17 @@ export function processDashboardData(rows) {
           totalClients
         ) * 100
       : 0;
+
+
+  // ==================================================
+  // REPORT PERFORMANCE
+  // ==================================================
+
+  const reportPerformance =
+    buildReportPerformance(
+      rows,
+      filters
+    );
 
 
   // ==================================================
@@ -629,7 +588,7 @@ export function processDashboardData(rows) {
 
 
     // --------------------------------------------------
-    // PERFORMANCE
+    // EXISTING PERFORMANCE
     // --------------------------------------------------
 
     teamLeaderPerformance:
@@ -648,9 +607,96 @@ export function processDashboardData(rows) {
       groupPerformance(
         rows,
         "Industry"
-      )
+      ),
+
+
+    // --------------------------------------------------
+    // REPORT PERFORMANCE
+    // --------------------------------------------------
+
+    reportPerformance,
+
+    reportView:
+      filters.viewBy || "",
+
+    reportBy:
+      filters.reportBy || "",
+
+    metricView:
+      filters.metricView || ""
 
   };
+
+}
+
+
+// ====================================================
+// NUMERIC VALUE HELPER
+// ====================================================
+
+function getNumericValue(value) {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+
+    return 0;
+
+  }
+
+
+  if (typeof value === "number") {
+
+    return Number.isFinite(value)
+      ? value
+      : 0;
+
+  }
+
+
+  const cleaned =
+    String(value)
+      .replace(/₹/g, "")
+      .replace(/,/g, "")
+      .replace(/\s/g, "")
+      .trim();
+
+
+  const number =
+    Number(cleaned);
+
+
+  return Number.isFinite(number)
+    ? number
+    : 0;
+
+}
+
+
+// ====================================================
+// SUM NUMERIC COLUMN
+// ====================================================
+
+function sumNumericColumn(
+  rows,
+  column
+) {
+
+  return rows.reduce(
+    (sum, row) => {
+
+      return (
+        sum +
+        getNumericValue(
+          row[column]
+        )
+      );
+
+    },
+    0
+  );
 
 }
 
@@ -705,5 +751,402 @@ function groupPerformance(
       (a, b) =>
         b.value - a.value
     );
+
+}
+
+
+// ====================================================
+// REPORT GROUP COLUMN
+// ====================================================
+
+function getReportColumn(
+  reportBy
+) {
+
+  const columns = {
+
+    bdMember:
+      "BD Member",
+
+    teamLeader:
+      "Team Leader",
+
+    franchise:
+      "Franchise Name",
+
+    city:
+      "City",
+
+    industry:
+      "Industry",
+
+    subIndustry:
+      "Sub Industry"
+
+  };
+
+
+  return columns[
+    reportBy
+  ] || "";
+
+}
+
+
+// ====================================================
+// REPORT DISPLAY LABEL
+// ====================================================
+
+function getReportLabel(
+  reportBy
+) {
+
+  const labels = {
+
+    bdMember:
+      "Business Development Member",
+
+    teamLeader:
+      "Team Leader",
+
+    franchise:
+      "Franchisee",
+
+    city:
+      "City",
+
+    industry:
+      "Industry",
+
+    subIndustry:
+      "Sub Industry"
+
+  };
+
+
+  return labels[
+    reportBy
+  ] || "";
+
+}
+
+
+// ====================================================
+// BUILD REPORT PERFORMANCE
+// ====================================================
+
+function buildReportPerformance(
+  rows,
+  filters
+) {
+
+  const reportView =
+    filters?.viewBy || "";
+
+
+  const reportBy =
+    filters?.reportBy || "";
+
+
+  const metricView =
+    filters?.metricView || "count";
+
+
+  // --------------------------------------------------
+  // NO REPORT VIEW
+  // --------------------------------------------------
+
+  if (!reportView) {
+
+    return [];
+
+  }
+
+
+  // --------------------------------------------------
+  // NO REPORT BY
+  // --------------------------------------------------
+
+  if (!reportBy) {
+
+    return [];
+
+  }
+
+
+  const column =
+    getReportColumn(
+      reportBy
+    );
+
+
+  if (!column) {
+
+    return [];
+
+  }
+
+
+  const groups = {};
+
+
+  // ==================================================
+  // PROCESS ROWS
+  // ==================================================
+
+  rows.forEach((row) => {
+
+    const groupValue =
+      String(
+        row[column] ||
+        "Unknown"
+      ).trim();
+
+
+    const name =
+      groupValue ||
+      "Unknown";
+
+
+    if (!groups[name]) {
+
+      groups[name] = {
+
+        name,
+
+        count: 0,
+
+        revenue: 0,
+
+        placements: 0,
+
+        billing: 0,
+
+        franchiseeShare: 0,
+
+        profit: 0,
+
+        netAmount: 0,
+
+        amountReceived: 0
+
+      };
+
+    }
+
+
+    const group =
+      groups[name];
+
+
+    // ------------------------------------------------
+    // COUNT
+    // ------------------------------------------------
+
+    group.count++;
+
+
+    // ------------------------------------------------
+    // BILLING
+    // ------------------------------------------------
+
+    const billing =
+      getNumericValue(
+        row["Total Bill Amount"]
+      );
+
+
+    group.billing +=
+      billing;
+
+
+    // ------------------------------------------------
+    // FRANCHISEE SHARE
+    // ------------------------------------------------
+
+    const share =
+      getNumericValue(
+        row["Franchisee Share"]
+      );
+
+
+    group.franchiseeShare +=
+      share;
+
+
+    // ------------------------------------------------
+    // PROFIT
+    // ------------------------------------------------
+
+    group.profit +=
+      billing - share;
+
+
+    // ------------------------------------------------
+    // NET AMOUNT
+    // ------------------------------------------------
+
+    group.netAmount +=
+      billing - share;
+
+
+    // ------------------------------------------------
+    // RECEIVED
+    // ------------------------------------------------
+
+    group.amountReceived +=
+      getNumericValue(
+        row["Amount Received"]
+      );
+
+
+    // ------------------------------------------------
+    // PLACEMENTS
+    // ------------------------------------------------
+
+    if (
+      row["Date of Joining"] ||
+      row["Joining Date"]
+    ) {
+
+      group.placements++;
+
+    }
+
+  });
+
+
+  // ==================================================
+  // CONVERT GROUPS TO ARRAY
+  // ==================================================
+
+  const result =
+    Object.values(groups)
+      .map((group) => {
+
+        // ----------------------------------------------
+        // COUNT VIEW
+        // ----------------------------------------------
+
+        if (
+          metricView === "count"
+        ) {
+
+          return {
+
+            name:
+              group.name,
+
+            value:
+              group.count,
+
+            count:
+              group.count,
+
+            revenue:
+              group.billing,
+
+            billing:
+              group.billing,
+
+            placements:
+              group.placements,
+
+            profit:
+              group.profit,
+
+            netAmount:
+              group.netAmount,
+
+            franchiseeShare:
+              group.franchiseeShare,
+
+            amountReceived:
+              group.amountReceived
+
+          };
+
+        }
+
+
+        // ----------------------------------------------
+        // REVENUE VIEW
+        // ----------------------------------------------
+
+        return {
+
+          name:
+            group.name,
+
+          value:
+            group.billing,
+
+          count:
+            group.count,
+
+          revenue:
+            group.billing,
+
+          billing:
+            group.billing,
+
+          placements:
+            group.placements,
+
+          profit:
+            group.profit,
+
+          netAmount:
+            group.netAmount,
+
+          franchiseeShare:
+            group.franchiseeShare,
+
+          amountReceived:
+            group.amountReceived
+
+        };
+
+      });
+
+
+  // ==================================================
+  // SORT
+  // ==================================================
+
+  result.sort(
+    (a, b) =>
+      Number(b.value || 0) -
+      Number(a.value || 0)
+  );
+
+
+  // ==================================================
+  // RETURN
+  // ==================================================
+
+  return {
+
+    view:
+      reportView,
+
+    reportBy,
+
+    reportLabel:
+      getReportLabel(
+        reportBy
+      ),
+
+    metricView,
+
+    metricLabel:
+      metricView === "revenue"
+        ? "Revenue"
+        : "Count",
+
+    data:
+      result
+
+  };
 
 }

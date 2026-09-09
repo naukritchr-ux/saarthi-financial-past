@@ -34,7 +34,11 @@ const ENQUIRY_STATUS_CODES = {
    ========================================================= */
 
 function normalizeValue(value) {
-  if (value === null || value === undefined) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
   }
 
@@ -42,6 +46,7 @@ function normalizeValue(value) {
     .trim()
     .replace(/\s+/g, " ")
     .toLowerCase();
+
 }
 
 /* =========================================================
@@ -50,70 +55,127 @@ function normalizeValue(value) {
    ========================================================= */
 
 function mapBackendRow(record) {
+
   return {
+
     id: record.id,
 
-    "Company Name": record.company_name,
-    "TANN": record.tann,
-    "TDS": record.tds,
+    "Company Name":
+      record.company_name,
 
-    "Client Status": record.client_status,
+    "TANN":
+      record.tann,
 
-    "BD Member": record.bd_member,
-    "Team Leader": record.team_leader,
+    "TDS":
+      record.tds,
 
-    "Franchise Name": record.franchise_name,
+    "Client Status":
+      record.client_status,
 
-    "Industry": record.industry,
-    "Sub Industry": record.sub_industry,
+    "BD Member":
+      record.bd_member,
 
-    "City": record.city,
+    "Team Leader":
+      record.team_leader,
 
-    "GSTNumber": record.gst_number,
+    "Franchise Name":
+      record.franchise_name,
 
-    "No Of Employees": record.no_of_employees,
+    "Industry":
+      record.industry,
 
-    "Date Client Acquired": record.date_client_acquired,
-    "Date of Allocation": record.date_of_allocation,
-    "Date of Reallocation": record.date_of_reallocation,
-    "Date of Joining": record.date_of_joining,
+    "Sub Industry":
+      record.sub_industry,
 
-    "Placement Fees": record.placement_fees,
+    "City":
+      record.city,
 
-    "Salary From": record.salary_from,
-    "Salary Offered": record.salary_offered,
+    "GSTNumber":
+      record.gst_number,
 
-    "Bill Date": record.bill_date,
-    "Bill Number": record.bill_number,
+    "No Of Employees":
+      record.no_of_employees,
 
-    "Service Charges": record.service_charges,
-    "Total Bill Amount": record.total_bill_amount,
+    "Date Client Acquired":
+      record.date_client_acquired,
 
-    "Date Received": record.date_received,
-    "Amount Received": record.amount_received,
+    "Date of Allocation":
+      record.date_of_allocation,
 
-    "Franchisee Share": record.franchisee_share,
+    "Date of Reallocation":
+      record.date_of_reallocation,
 
-    "Paid On Date": record.paid_on_date,
+    "Date of Joining":
+      record.date_of_joining,
 
-    "SOA No": record.soa_no,
+    "Placement Fees":
+      record.placement_fees,
 
-    "Info": record.info,
+    "Salary From":
+      record.salary_from,
 
-    "Position Name": record.position_name,
+    "Salary Offered":
+      record.salary_offered,
 
-    "Aquired Year": record.acquired_year,
-    "Allotment Year": record.allotment_year,
+    "Bill Date":
+      record.bill_date,
 
-    "Joining Date": record.joining_year,
+    "Bill Number":
+      record.bill_number,
 
-    "Bill Date Year": record.bill_year,
-    "Recived Year": record.received_year,
-    "Paid Date": record.paid_year,
+    "Service Charges":
+      record.service_charges,
 
-    created_at: record.created_at,
-    updated_at: record.updated_at
+    "Total Bill Amount":
+      record.total_bill_amount,
+
+    "Date Received":
+      record.date_received,
+
+    "Amount Received":
+      record.amount_received,
+
+    "Franchisee Share":
+      record.franchisee_share,
+
+    "Paid On Date":
+      record.paid_on_date,
+
+    "SOA No":
+      record.soa_no,
+
+    "Info":
+      record.info,
+
+    "Position Name":
+      record.position_name,
+
+    "Aquired Year":
+      record.acquired_year,
+
+    "Allotment Year":
+      record.allotment_year,
+
+    "Joining Date":
+      record.joining_year,
+
+    "Bill Date Year":
+      record.bill_year,
+
+    "Recived Year":
+      record.received_year,
+
+    "Paid Date":
+      record.paid_year,
+
+    created_at:
+      record.created_at,
+
+    updated_at:
+      record.updated_at
+
   };
+
 }
 
 /* =========================================================
@@ -121,17 +183,24 @@ function mapBackendRow(record) {
    ========================================================= */
 
 function parseDate(value) {
+
   if (!value) {
     return null;
   }
 
-  const date = new Date(value);
+  const date =
+    new Date(value);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return null;
   }
 
   return date;
+
 }
 
 /* =========================================================
@@ -140,48 +209,71 @@ function parseDate(value) {
    ========================================================= */
 
 function getFinancialYearFromDate(value) {
-  const date = parseDate(value);
+
+  const date =
+    parseDate(value);
 
   if (!date) {
     return "";
   }
 
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
+  const year =
+    date.getFullYear();
+
+  const month =
+    date.getMonth() + 1;
 
   if (month >= 4) {
+
     return `${year}-${year + 1}`;
+
   }
 
   return `${year - 1}-${year}`;
+
 }
 
-function getFinancialYearFromRow(row) {
-  const acquiredDate = row["Date Client Acquired"];
 
-  const financialYear = getFinancialYearFromDate(
-    acquiredDate
-  );
+function getFinancialYearFromRow(row) {
+
+  const acquiredDate =
+    row["Date Client Acquired"];
+
+  const financialYear =
+    getFinancialYearFromDate(
+      acquiredDate
+    );
 
   if (financialYear) {
+
     return financialYear;
+
   }
 
-  const acquiredYear = row["Aquired Year"];
+  const acquiredYear =
+    row["Aquired Year"];
 
   if (
     acquiredYear !== undefined &&
     acquiredYear !== null &&
     acquiredYear !== ""
   ) {
-    const year = Number(acquiredYear);
 
-    if (!Number.isNaN(year)) {
+    const year =
+      Number(acquiredYear);
+
+    if (
+      !Number.isNaN(year)
+    ) {
+
       return `${year}-${year + 1}`;
+
     }
+
   }
 
   return "";
+
 }
 
 /* =========================================================
@@ -189,15 +281,21 @@ function getFinancialYearFromRow(row) {
    ========================================================= */
 
 function getMonthFromDate(value) {
-  const date = parseDate(value);
+
+  const date =
+    parseDate(value);
 
   if (!date) {
     return "";
   }
 
-  return date.toLocaleString("en-IN", {
-    month: "long"
-  });
+  return date.toLocaleString(
+    "en-IN",
+    {
+      month: "long"
+    }
+  );
+
 }
 
 /* =========================================================
@@ -205,27 +303,46 @@ function getMonthFromDate(value) {
    ========================================================= */
 
 function getFinancialQuarter(value) {
-  const date = parseDate(value);
+
+  const date =
+    parseDate(value);
 
   if (!date) {
     return "";
   }
 
-  const month = date.getMonth() + 1;
+  const month =
+    date.getMonth() + 1;
 
-  if (month >= 4 && month <= 6) {
+  if (
+    month >= 4 &&
+    month <= 6
+  ) {
+
     return "Q1";
+
   }
 
-  if (month >= 7 && month <= 9) {
+  if (
+    month >= 7 &&
+    month <= 9
+  ) {
+
     return "Q2";
+
   }
 
-  if (month >= 10 && month <= 12) {
+  if (
+    month >= 10 &&
+    month <= 12
+  ) {
+
     return "Q3";
+
   }
 
   return "Q4";
+
 }
 
 /* =========================================================
@@ -233,18 +350,23 @@ function getFinancialQuarter(value) {
    ========================================================= */
 
 const FINANCIAL_MONTHS = [
+
   "April",
   "May",
   "June",
+
   "July",
   "August",
   "September",
+
   "October",
   "November",
   "December",
+
   "January",
   "February",
   "March"
+
 ];
 
 /* =========================================================
@@ -252,27 +374,36 @@ const FINANCIAL_MONTHS = [
    ========================================================= */
 
 const FINANCIAL_QUARTERS = [
+
   "Q1",
   "Q2",
   "Q3",
   "Q4"
+
 ];
 
 /* =========================================================
    DATA PROVIDER
    ========================================================= */
 
-export function DataProvider({ children }) {
+export function DataProvider({
+  children
+}) {
 
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] =
+    useState([]);
 
-  const [fileName, setFileName] = useState("");
+  const [fileName, setFileName] =
+    useState("");
 
-  const [lastRefresh, setLastRefresh] = useState(null);
+  const [lastRefresh, setLastRefresh] =
+    useState(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [error, setError] = useState(null);
+  const [error, setError] =
+    useState(null);
 
   /* =======================================================
      FILTER STATE
@@ -281,36 +412,57 @@ export function DataProvider({ children }) {
   const [filters, setFilters] = useState({
 
     /* View */
+
     viewBy: "",
 
+    reportBy: "",
+
+    metricView: "",
+
     /* Time */
+
     allTime: "all",
+
     sortBy: "",
 
     /* Main filters */
+
     company: "",
+
     year: "",
+
     month: "",
+
     quarter: "",
 
     /* People */
+
     bdMember: "",
+
     teamLeader: "",
 
     /* Business */
+
     franchise: "",
+
     industry: "",
+
     subIndustry: "",
+
     city: "",
 
     /* Client */
+
     clientStatus: "",
 
     /* Position */
+
     position: "",
 
     /* Enquiry */
+
     enquiryStatus: ""
+
   });
 
   /* =========================================================
@@ -322,34 +474,46 @@ export function DataProvider({ children }) {
     try {
 
       setLoading(true);
+
       setError(null);
 
-      const response = await fetch(API_URL);
+      const response =
+        await fetch(API_URL);
 
       if (!response.ok) {
+
         throw new Error(
           `Server returned ${response.status}`
         );
+
       }
 
-      const result = await response.json();
+      const result =
+        await response.json();
 
       if (!result.success) {
+
         throw new Error(
           result.message ||
           "Failed to fetch ledger data"
         );
+
       }
 
-      const mappedRows = (result.data || []).map(
-        mapBackendRow
-      );
+      const mappedRows =
+        (result.data || []).map(
+          mapBackendRow
+        );
 
       setRows(mappedRows);
 
-      setFileName("MySQL Database");
+      setFileName(
+        "MySQL Database"
+      );
 
-      setLastRefresh(new Date());
+      setLastRefresh(
+        new Date()
+      );
 
     } catch (err) {
 
@@ -370,6 +534,7 @@ export function DataProvider({ children }) {
       setLoading(false);
 
     }
+
   }
 
   /* =========================================================
@@ -387,304 +552,438 @@ export function DataProvider({ children }) {
      Kept for compatibility with existing frontend
      ========================================================= */
 
-  function loadExcelData(data, file) {
+  function loadExcelData(
+    data,
+    file
+  ) {
 
-    if (!Array.isArray(data)) {
+    if (
+      !Array.isArray(data)
+    ) {
+
       return;
+
     }
 
     setRows(data);
 
     if (file) {
+
       setFileName(
         file.name ||
         "Imported File"
       );
+
     }
 
-    setLastRefresh(new Date());
+    setLastRefresh(
+      new Date()
+    );
+
   }
 
   /* =========================================================
      FILTER DATA
      ========================================================= */
 
-  const filteredRows = useMemo(() => {
+  const filteredRows =
+    useMemo(() => {
 
-    return rows.filter((row) => {
+      return rows.filter(
+        (row) => {
 
-      /* =====================================================
-         COMPANY
-         ===================================================== */
+          /* =================================================
+             COMPANY
+             ================================================= */
 
-      if (filters.company) {
+          if (
+            filters.company
+          ) {
 
-        if (
-          normalizeValue(row["Company Name"]) !==
-          normalizeValue(filters.company)
-        ) {
-          return false;
-        }
+            if (
+              normalizeValue(
+                row["Company Name"]
+              ) !==
+              normalizeValue(
+                filters.company
+              )
+            ) {
 
-      }
+              return false;
 
-      /* =====================================================
-         FINANCIAL YEAR
-         ===================================================== */
+            }
 
-      if (filters.year) {
+          }
 
-        const rowFinancialYear =
-          getFinancialYearFromRow(row);
+          /* =================================================
+             FINANCIAL YEAR
+             ================================================= */
 
-        if (
-          normalizeValue(rowFinancialYear) !==
-          normalizeValue(filters.year)
-        ) {
-          return false;
-        }
+          if (
+            filters.year
+          ) {
 
-      }
+            const rowFinancialYear =
+              getFinancialYearFromRow(
+                row
+              );
 
-      /* =====================================================
-         MONTH
-         ===================================================== */
+            if (
+              normalizeValue(
+                rowFinancialYear
+              ) !==
+              normalizeValue(
+                filters.year
+              )
+            ) {
 
-      if (filters.month) {
+              return false;
 
-        const rowMonth =
-          getMonthFromDate(
-            row["Date Client Acquired"]
-          );
+            }
 
-        if (
-          normalizeValue(rowMonth) !==
-          normalizeValue(filters.month)
-        ) {
-          return false;
-        }
+          }
 
-      }
+          /* =================================================
+             MONTH
+             ================================================= */
 
-      /* =====================================================
-         QUARTER
-         ===================================================== */
+          if (
+            filters.month
+          ) {
 
-      if (filters.quarter) {
+            const rowMonth =
+              getMonthFromDate(
+                row[
+                  "Date Client Acquired"
+                ]
+              );
 
-        const rowQuarter =
-          getFinancialQuarter(
-            row["Date Client Acquired"]
-          );
+            if (
+              normalizeValue(
+                rowMonth
+              ) !==
+              normalizeValue(
+                filters.month
+              )
+            ) {
 
-        if (
-          normalizeValue(rowQuarter) !==
-          normalizeValue(filters.quarter)
-        ) {
-          return false;
-        }
+              return false;
 
-      }
+            }
 
-      /* =====================================================
-         BD MEMBER
-         ===================================================== */
+          }
 
-      if (filters.bdMember) {
+          /* =================================================
+             QUARTER
+             ================================================= */
 
-        if (
-          normalizeValue(row["BD Member"]) !==
-          normalizeValue(filters.bdMember)
-        ) {
-          return false;
-        }
+          if (
+            filters.quarter
+          ) {
 
-      }
+            const rowQuarter =
+              getFinancialQuarter(
+                row[
+                  "Date Client Acquired"
+                ]
+              );
 
-      /* =====================================================
-         TEAM LEADER
-         ===================================================== */
+            if (
+              normalizeValue(
+                rowQuarter
+              ) !==
+              normalizeValue(
+                filters.quarter
+              )
+            ) {
 
-      if (filters.teamLeader) {
+              return false;
 
-        if (
-          normalizeValue(row["Team Leader"]) !==
-          normalizeValue(filters.teamLeader)
-        ) {
-          return false;
-        }
+            }
 
-      }
+          }
 
-      /* =====================================================
-         FRANCHISE
-         ===================================================== */
+          /* =================================================
+             BD MEMBER
+             ================================================= */
 
-      if (filters.franchise) {
+          if (
+            filters.bdMember
+          ) {
 
-        if (
-          normalizeValue(row["Franchise Name"]) !==
-          normalizeValue(filters.franchise)
-        ) {
-          return false;
-        }
+            if (
+              normalizeValue(
+                row["BD Member"]
+              ) !==
+              normalizeValue(
+                filters.bdMember
+              )
+            ) {
 
-      }
+              return false;
 
-      /* =====================================================
-         INDUSTRY
-         ===================================================== */
+            }
 
-      if (filters.industry) {
+          }
 
-        if (
-          normalizeValue(row["Industry"]) !==
-          normalizeValue(filters.industry)
-        ) {
-          return false;
-        }
+          /* =================================================
+             TEAM LEADER
+             ================================================= */
 
-      }
+          if (
+            filters.teamLeader
+          ) {
 
-      /* =====================================================
-         SUB INDUSTRY
-         ===================================================== */
+            if (
+              normalizeValue(
+                row["Team Leader"]
+              ) !==
+              normalizeValue(
+                filters.teamLeader
+              )
+            ) {
 
-      if (filters.subIndustry) {
+              return false;
 
-        if (
-          normalizeValue(row["Sub Industry"]) !==
-          normalizeValue(filters.subIndustry)
-        ) {
-          return false;
-        }
+            }
 
-      }
+          }
 
-      /* =====================================================
-         CITY
-         ===================================================== */
+          /* =================================================
+             FRANCHISE
+             ================================================= */
 
-      if (filters.city) {
+          if (
+            filters.franchise
+          ) {
 
-        if (
-          normalizeValue(row["City"]) !==
-          normalizeValue(filters.city)
-        ) {
-          return false;
-        }
+            if (
+              normalizeValue(
+                row["Franchise Name"]
+              ) !==
+              normalizeValue(
+                filters.franchise
+              )
+            ) {
 
-      }
+              return false;
 
-      /* =====================================================
-         CLIENT STATUS
-         ===================================================== */
+            }
 
-      if (filters.clientStatus) {
+          }
 
-        if (
-          normalizeValue(row["Client Status"]) !==
-          normalizeValue(filters.clientStatus)
-        ) {
-          return false;
-        }
+          /* =================================================
+             INDUSTRY
+             ================================================= */
 
-      }
+          if (
+            filters.industry
+          ) {
 
-      /* =====================================================
-         POSITION
-         ===================================================== */
+            if (
+              normalizeValue(
+                row["Industry"]
+              ) !==
+              normalizeValue(
+                filters.industry
+              )
+            ) {
 
-      if (filters.position) {
+              return false;
 
-        if (
-          normalizeValue(row["Position Name"]) !==
-          normalizeValue(filters.position)
-        ) {
-          return false;
-        }
+            }
 
-      }
+          }
 
-      /* =====================================================
-         ENQUIRY STATUS
-         
-         Frontend can send:
-         C
-         CN
-         IP
-         LEGAL
-         R
-         RV
+          /* =================================================
+             SUB INDUSTRY
+             ================================================= */
 
-         It can also send:
-         Closed
-         Credit Note
-         Inprogress
-         Legal
-         Reallocation
-         Revised
-         ===================================================== */
+          if (
+            filters.subIndustry
+          ) {
 
-      if (filters.enquiryStatus) {
+            if (
+              normalizeValue(
+                row["Sub Industry"]
+              ) !==
+              normalizeValue(
+                filters.subIndustry
+              )
+            ) {
 
-        const selectedStatus =
-          normalizeValue(
+              return false;
+
+            }
+
+          }
+
+          /* =================================================
+             CITY
+             ================================================= */
+
+          if (
+            filters.city
+          ) {
+
+            if (
+              normalizeValue(
+                row["City"]
+              ) !==
+              normalizeValue(
+                filters.city
+              )
+            ) {
+
+              return false;
+
+            }
+
+          }
+
+          /* =================================================
+             CLIENT STATUS
+             ================================================= */
+
+          if (
+            filters.clientStatus
+          ) {
+
+            if (
+              normalizeValue(
+                row["Client Status"]
+              ) !==
+              normalizeValue(
+                filters.clientStatus
+              )
+            ) {
+
+              return false;
+
+            }
+
+          }
+
+          /* =================================================
+             POSITION
+             ================================================= */
+
+          if (
+            filters.position
+          ) {
+
+            if (
+              normalizeValue(
+                row["Position Name"]
+              ) !==
+              normalizeValue(
+                filters.position
+              )
+            ) {
+
+              return false;
+
+            }
+
+          }
+
+          /* =================================================
+             ENQUIRY STATUS
+
+             Info column values:
+
+             C     = Closed
+             CN    = Credit Note
+             IP    = Inprogress
+             LEGAL = Legal
+             R     = Reallocation
+             RV    = Revised
+             ================================================= */
+
+          if (
             filters.enquiryStatus
-          );
+          ) {
 
-        const selectedCode =
-          ENQUIRY_STATUS_CODES[
-            selectedStatus
-          ] ||
-          String(
-            filters.enquiryStatus
-          )
-            .trim()
-            .toUpperCase();
+            const selectedStatus =
+              normalizeValue(
+                filters.enquiryStatus
+              );
 
-        const infoValue =
-          String(
-            row["Info"] ?? ""
-          )
-            .trim()
-            .toUpperCase();
+            const selectedCode =
+              ENQUIRY_STATUS_CODES[
+                selectedStatus
+              ] ||
+              String(
+                filters.enquiryStatus
+              )
+                .trim()
+                .toUpperCase();
 
-        if (
-          infoValue !==
-          String(selectedCode)
-            .trim()
-            .toUpperCase()
-        ) {
-          return false;
+            const infoValue =
+              String(
+                row["Info"] ?? ""
+              )
+                .trim()
+                .toUpperCase();
+
+            if (
+              infoValue !==
+              String(
+                selectedCode
+              )
+                .trim()
+                .toUpperCase()
+            ) {
+
+              return false;
+
+            }
+
+          }
+
+          /* =================================================
+             ALL FILTERS PASSED
+             ================================================= */
+
+          return true;
+
         }
+      );
 
-      }
-
-      /* =====================================================
-         ALL FILTERS PASSED
-         ===================================================== */
-
-      return true;
-
-    });
-
-  }, [rows, filters]);
+    }, [
+      rows,
+      filters
+    ]);
 
   /* =========================================================
      DASHBOARD DATA
+
+     IMPORTANT:
+     Pass BOTH filteredRows and filters.
+
+     This allows dataProcessor.js to calculate:
+     - Client Performance
+     - Enquiry Performance
+     - Report By
+     - Count
+     - Revenue
      ========================================================= */
 
-  const dashboardData = useMemo(
+  const dashboardData =
+    useMemo(
 
-    () =>
-      processDashboardData(
-        filteredRows
-      ),
+      () =>
+        processDashboardData(
+          filteredRows,
+          filters
+        ),
 
-    [filteredRows]
+      [
+        filteredRows,
+        filters
+      ]
 
-  );
+    );
 
   /* =========================================================
      PROVIDER
@@ -696,37 +995,53 @@ export function DataProvider({ children }) {
       value={{
 
         /* Raw data */
+
         rows,
 
         /* Filtered data */
+
         filteredRows,
 
         /* API state */
+
         loading,
+
         error,
 
         /* File information */
+
         fileName,
+
         lastRefresh,
 
         /* Filters */
+
         filters,
+
         setFilters,
 
         /* Dashboard */
+
         dashboardData,
 
         /* Data functions */
+
         loadExcelData,
+
         fetchLedgerData,
 
         /* Date helpers */
+
         getFinancialYearFromRow,
+
         getFinancialYearFromDate,
+
         getMonthFromDate,
+
         getFinancialQuarter,
 
         /* Financial filter options */
+
         financialMonths:
           FINANCIAL_MONTHS,
 
@@ -741,6 +1056,7 @@ export function DataProvider({ children }) {
     </DataContext.Provider>
 
   );
+
 }
 
 /* =========================================================
