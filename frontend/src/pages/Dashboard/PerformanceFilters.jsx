@@ -22,67 +22,97 @@ function PerformanceFilters() {
   } = useData();
 
 
-  // TEMPORARY FILTER VALUES
+  /* =========================================================
+     TEMPORARY FILTER VALUES
+     ========================================================= */
 
   const [selectedFilters, setSelectedFilters] =
     useState({
+
       ...filters,
 
-      viewBy: filters.viewBy || "",
+      viewBy:
+        filters.viewBy || "",
 
-      reportBy: filters.reportBy || "",
+      reportBy:
+        filters.reportBy || "",
 
-      metricView: filters.metricView || "",
+      metricView:
+        filters.metricView || "",
 
-      allTime: filters.allTime || "all",
+      allTime:
+        filters.allTime || "all",
 
-      sortBy: filters.sortBy || "",
+      sortBy:
+        filters.sortBy || "",
 
-      viewReportAs: filters.viewReportAs || "all",
+      viewReportAs:
+        filters.viewReportAs || "all",
 
-      clientStatus: filters.clientStatus || "",
+      clientStatus:
+        filters.clientStatus || "",
 
-      enquiryStatus: filters.enquiryStatus || ""
+      enquiryStatus:
+        filters.enquiryStatus || ""
+
     });
 
 
-  // KEEP LOCAL STATE SYNCHRONIZED
+  /* =========================================================
+     KEEP LOCAL STATE SYNCHRONIZED
+     ========================================================= */
 
   useEffect(() => {
 
     setSelectedFilters({
+
       ...filters,
 
-      viewBy: filters.viewBy || "",
+      viewBy:
+        filters.viewBy || "",
 
-      reportBy: filters.reportBy || "",
+      reportBy:
+        filters.reportBy || "",
 
-      metricView: filters.metricView || "",
+      metricView:
+        filters.metricView || "",
 
-      allTime: filters.allTime || "all",
+      allTime:
+        filters.allTime || "all",
 
-      sortBy: filters.sortBy || "",
+      sortBy:
+        filters.sortBy || "",
 
-      viewReportAs: filters.viewReportAs || "all",
+      viewReportAs:
+        filters.viewReportAs || "all",
 
-      clientStatus: filters.clientStatus || "",
+      clientStatus:
+        filters.clientStatus || "",
 
-      enquiryStatus: filters.enquiryStatus || ""
+      enquiryStatus:
+        filters.enquiryStatus || ""
+
     });
 
   }, [filters]);
 
 
-  // UNIQUE VALUES
+  /* =========================================================
+     UNIQUE VALUES
+     ========================================================= */
 
   function getUniqueValues(column) {
 
     return [
+
       ...new Set(
 
         rows
 
-          .map(row => row[column])
+          .map(
+            row =>
+              row[column]
+          )
 
           .filter(
             value =>
@@ -91,8 +121,9 @@ function PerformanceFilters() {
               String(value).trim() !== ""
           )
 
-          .map(value =>
-            String(value).trim()
+          .map(
+            value =>
+              String(value).trim()
           )
 
       )
@@ -107,7 +138,9 @@ function PerformanceFilters() {
   }
 
 
-  // FINANCIAL YEARS
+  /* =========================================================
+     FINANCIAL YEARS
+     ========================================================= */
 
   const financialYears =
     useMemo(() => {
@@ -118,29 +151,32 @@ function PerformanceFilters() {
 
           rows
 
-            .map(row =>
-              getFinancialYearFromRow(row)
+            .map(
+              row =>
+                getFinancialYearFromRow(row)
             )
 
             .filter(Boolean)
 
         )
 
-      ].sort((a, b) => {
+      ].sort(
+        (a, b) => {
 
-        const yearA =
-          Number(
-            String(a).split("-")[0]
-          );
+          const yearA =
+            Number(
+              String(a).split("-")[0]
+            );
 
-        const yearB =
-          Number(
-            String(b).split("-")[0]
-          );
+          const yearB =
+            Number(
+              String(b).split("-")[0]
+            );
 
-        return yearA - yearB;
+          return yearA - yearB;
 
-      });
+        }
+      );
 
     }, [
       rows,
@@ -148,44 +184,84 @@ function PerformanceFilters() {
     ]);
 
 
-  // MONTHS
+  /* =========================================================
+     MONTHS
+     
+     Existing Financial Year + Month dependency
+     is preserved.
+     ========================================================= */
 
   const months =
     useMemo(() => {
 
-      if (!selectedFilters.year) {
-        return [];
+      if (
+        !selectedFilters.year
+      ) {
+
+        return [
+
+          "April",
+          "May",
+          "June",
+
+          "July",
+          "August",
+          "September",
+
+          "October",
+          "November",
+          "December",
+
+          "January",
+          "February",
+          "March"
+
+        ];
+
       }
 
 
-      const monthSet = new Set();
+      const monthSet =
+        new Set();
 
 
-      rows.forEach(row => {
+      rows.forEach(
+        row => {
 
-        const financialYear =
-          getFinancialYearFromRow(row);
+          const financialYear =
+            getFinancialYearFromRow(
+              row
+            );
 
 
-        if (
-          financialYear !==
-          selectedFilters.year
-        ) {
-          return;
+          if (
+            financialYear !==
+            selectedFilters.year
+          ) {
+
+            return;
+
+          }
+
+
+          const month =
+            getMonthFromDate(
+              row[
+                "Date Client Acquired"
+              ]
+            );
+
+
+          if (month) {
+
+            monthSet.add(
+              month
+            );
+
+          }
+
         }
-
-
-        const month =
-          getMonthFromDate(
-            row["Date Client Acquired"]
-          );
-
-
-        if (month) {
-          monthSet.add(month);
-        }
-
-      });
+      );
 
 
       const monthOrder = [
@@ -222,40 +298,48 @@ function PerformanceFilters() {
     ]);
 
 
-  // QUARTERS
+  /* =========================================================
+     FINANCIAL QUARTERS
+     
+     Quarter label includes month range.
+     ========================================================= */
 
   const quarters = [
 
     {
-      label: "Q1",
+      label: "Q1 (Apr-Jun)",
       value: "Q1"
     },
 
     {
-      label: "Q2",
+      label: "Q2 (Jul-Sep)",
       value: "Q2"
     },
 
     {
-      label: "Q3",
+      label: "Q3 (Oct-Dec)",
       value: "Q3"
     },
 
     {
-      label: "Q4",
+      label: "Q4 (Jan-Mar)",
       value: "Q4"
     }
 
   ];
 
 
-  // REPORT VIEW
+  /* =========================================================
+     REPORT VIEW
+     ========================================================= */
 
   const reportView =
     selectedFilters.viewBy || "";
 
 
-  // VIEW BY OPTIONS
+  /* =========================================================
+     VIEW BY OPTIONS
+     ========================================================= */
 
   const metricViewOptions = [
 
@@ -272,7 +356,9 @@ function PerformanceFilters() {
   ];
 
 
-  // VIEW REPORT AS OPTIONS
+  /* =========================================================
+     VIEW REPORT AS OPTIONS
+     ========================================================= */
 
   const viewReportAsOptions = [
 
@@ -299,7 +385,9 @@ function PerformanceFilters() {
   ];
 
 
-  // SORT BY OPTIONS
+  /* =========================================================
+     SORT BY OPTIONS
+     ========================================================= */
 
   const sortByOptions = [
 
@@ -324,7 +412,9 @@ function PerformanceFilters() {
   ];
 
 
-  // SELECTED SORT OPTION
+  /* =========================================================
+     SELECTED SORT OPTION
+     ========================================================= */
 
   const selectedSortOption =
     sortByOptions.find(
@@ -334,13 +424,19 @@ function PerformanceFilters() {
     );
 
 
-  // SORT VALUE OPTIONS
+  /* =========================================================
+     SORT VALUE OPTIONS
+     ========================================================= */
 
   const sortValueOptions =
     useMemo(() => {
 
-      if (!selectedSortOption) {
+      if (
+        !selectedSortOption
+      ) {
+
         return [];
+
       }
 
 
@@ -354,7 +450,9 @@ function PerformanceFilters() {
     ]);
 
 
-  // CLIENT STATUS OPTIONS
+  /* =========================================================
+     CLIENT STATUS OPTIONS
+     ========================================================= */
 
   const clientStatusOptions =
     useMemo(() => {
@@ -366,7 +464,9 @@ function PerformanceFilters() {
     }, [rows]);
 
 
-  // ENQUIRY STATUS OPTIONS
+  /* =========================================================
+     ENQUIRY STATUS OPTIONS
+     ========================================================= */
 
   const enquiryStatusOptions = [
 
@@ -403,170 +503,267 @@ function PerformanceFilters() {
   ];
 
 
-  // HANDLE CHANGE
+  /* =========================================================
+     HANDLE SELECTION
+     ========================================================= */
 
   function handleChange(
     field,
     value
   ) {
 
-    setSelectedFilters(previous => {
+    setSelectedFilters(
+      previous => {
 
-      const updated = {
-        ...previous,
-        [field]: value
-      };
+        const updated = {
 
+          ...previous,
 
-      // REPORT VIEW CHANGED
+          [field]:
+            value
 
-      if (field === "viewBy") {
-
-        updated.reportBy = "";
-
-        updated.metricView = "";
-
-      }
+        };
 
 
-      // SORT BY CHANGED
-
-      if (field === "sortBy") {
-
-        updated.bdMember = "";
-        updated.teamLeader = "";
-        updated.franchise = "";
-
-      }
-
-
-      // VIEW REPORT AS CHANGED
-
-      if (field === "viewReportAs") {
-
-        if (value === "all") {
-
-          updated.year = "";
-          updated.month = "";
-          updated.quarter = "";
-
-        }
-
-
-        if (value === "yearly") {
-
-          updated.month = "";
-          updated.quarter = "";
-
-        }
-
-
-        if (value === "quarterly") {
-
-          updated.month = "";
-
-        }
-
-
-        if (value === "monthly") {
-
-          updated.quarter = "";
-
-        }
-
-      }
-
-
-      // FINANCIAL YEAR CHANGED
-
-      if (field === "year") {
-
-        updated.month = "";
+        /* ================================================
+           REPORT VIEW CHANGED
+           ================================================ */
 
         if (
-          updated.viewReportAs ===
-          "quarterly"
+          field ===
+          "viewBy"
         ) {
-          updated.quarter = "";
+
+          updated.reportBy =
+            "";
+
+          updated.metricView =
+            "";
+
         }
 
+
+        /* ================================================
+           SORT BY CHANGED
+           
+           Clear existing values so that the newly
+           selected Sort By field can be used.
+           ================================================ */
+
+        if (
+          field ===
+          "sortBy"
+        ) {
+
+          updated.bdMember =
+            "";
+
+          updated.teamLeader =
+            "";
+
+          updated.franchise =
+            "";
+
+        }
+
+
+        /* ================================================
+           VIEW REPORT AS CHANGED
+           
+           ALL TIME
+           No dependent period.
+
+           YEARLY
+           Only FY.
+
+           QUARTERLY
+           Only Quarter.
+
+           MONTHLY
+           Only Month.
+           ================================================ */
+
+        if (
+          field ===
+          "viewReportAs"
+        ) {
+
+
+          if (
+            value ===
+            "all"
+          ) {
+
+            updated.year =
+              "";
+
+            updated.month =
+              "";
+
+            updated.quarter =
+              "";
+
+          }
+
+
+          if (
+            value ===
+            "yearly"
+          ) {
+
+            updated.month =
+              "";
+
+            updated.quarter =
+              "";
+
+          }
+
+
+          if (
+            value ===
+            "quarterly"
+          ) {
+
+            updated.year =
+              "";
+
+            updated.month =
+              "";
+
+          }
+
+
+          if (
+            value ===
+            "monthly"
+          ) {
+
+            updated.year =
+              "";
+
+            updated.quarter =
+              "";
+
+          }
+
+        }
+
+
+        /* ================================================
+           FINANCIAL YEAR CHANGED
+           
+           Existing old filter behavior preserved.
+           ================================================ */
+
+        if (
+          field ===
+          "year"
+        ) {
+
+          updated.month =
+            "";
+
+          updated.quarter =
+            "";
+
+        }
+
+
+        return updated;
+
       }
-
-
-      return updated;
-
-    });
+    );
 
   }
 
 
-  // HANDLE SORT VALUE
+  /* =========================================================
+     HANDLE SORT VALUE
+     ========================================================= */
 
   function handleSortValueChange(
     value
   ) {
 
-    if (!selectedSortOption) {
+    if (
+      !selectedSortOption
+    ) {
+
       return;
+
     }
 
 
-    setSelectedFilters(previous => {
+    setSelectedFilters(
+      previous => {
 
-      const updated = {
-        ...previous
-      };
+        const updated = {
+
+          ...previous
+
+        };
 
 
-      if (
-        selectedSortOption.value ===
-        "bdMember"
-      ) {
+        if (
+          selectedSortOption.value ===
+          "bdMember"
+        ) {
 
-        updated.bdMember = value;
+          updated.bdMember =
+            value;
+
+        }
+
+
+        if (
+          selectedSortOption.value ===
+          "teamLeader"
+        ) {
+
+          updated.teamLeader =
+            value;
+
+        }
+
+
+        if (
+          selectedSortOption.value ===
+          "franchise"
+        ) {
+
+          updated.franchise =
+            value;
+
+        }
+
+
+        return updated;
 
       }
-
-
-      if (
-        selectedSortOption.value ===
-        "teamLeader"
-      ) {
-
-        updated.teamLeader = value;
-
-      }
-
-
-      if (
-        selectedSortOption.value ===
-        "franchise"
-      ) {
-
-        updated.franchise = value;
-
-      }
-
-
-      return updated;
-
-    });
+    );
 
   }
 
 
-  // APPLY FILTERS
+  /* =========================================================
+     APPLY FILTERS
+     ========================================================= */
 
   function applyFilters() {
 
     setFilters({
+
       ...selectedFilters
+
     });
 
   }
 
 
-  // CLEAR FILTERS
+  /* =========================================================
+     CLEAR FILTERS
+     ========================================================= */
 
   function clearFilters() {
 
@@ -580,9 +777,9 @@ function PerformanceFilters() {
 
       allTime: "all",
 
-      sortBy: "",
-
       viewReportAs: "all",
+
+      sortBy: "",
 
       company: "",
 
@@ -592,6 +789,7 @@ function PerformanceFilters() {
 
       bdMember: "",
       teamLeader: "",
+
       franchise: "",
 
       industry: "",
@@ -599,6 +797,7 @@ function PerformanceFilters() {
       city: "",
 
       clientStatus: "",
+
       enquiryStatus: "",
 
       position: ""
@@ -617,70 +816,82 @@ function PerformanceFilters() {
   }
 
 
-  // ADDITIONAL FILTERS
+  /* =========================================================
+     ADDITIONAL FILTERS
+     ========================================================= */
 
   const additionalFilters = [
 
     {
       label: "Team Leader",
       field: "teamLeader",
-      options: getUniqueValues(
-        "Team Leader"
-      )
+      options:
+        getUniqueValues(
+          "Team Leader"
+        )
     },
 
     {
       label: "BD Member",
       field: "bdMember",
-      options: getUniqueValues(
-        "BD Member"
-      )
+      options:
+        getUniqueValues(
+          "BD Member"
+        )
     },
 
     {
       label: "Franchise",
       field: "franchise",
-      options: getUniqueValues(
-        "Franchise Name"
-      )
+      options:
+        getUniqueValues(
+          "Franchise Name"
+        )
     },
 
     {
       label: "Industry",
       field: "industry",
-      options: getUniqueValues(
-        "Industry"
-      )
+      options:
+        getUniqueValues(
+          "Industry"
+        )
     },
 
     {
       label: "Sub Industry",
       field: "subIndustry",
-      options: getUniqueValues(
-        "Sub Industry"
-      )
+      options:
+        getUniqueValues(
+          "Sub Industry"
+        )
     },
 
     {
       label: "City",
       field: "city",
-      options: getUniqueValues(
-        "City"
-      )
+      options:
+        getUniqueValues(
+          "City"
+        )
     },
 
     {
       label: "Position",
       field: "position",
-      options: getUniqueValues(
-        "Position Name"
-      )
+      options:
+        getUniqueValues(
+          "Position Name"
+        )
     }
 
   ];
 
 
-  // REMOVE SORT FIELD FROM ADDITIONAL FILTERS
+  /* =========================================================
+     REMOVE SELECTED SORT FIELD
+     FROM ADDITIONAL FILTERS
+     ========================================================= */
 
   const visibleAdditionalFilters =
     additionalFilters.filter(
@@ -690,7 +901,9 @@ function PerformanceFilters() {
     );
 
 
-  // RENDER SELECT
+  /* =========================================================
+     RENDER SELECT
+     ========================================================= */
 
   function renderSelect(
     label,
@@ -712,13 +925,15 @@ function PerformanceFilters() {
 
         <select
           value={
-            selectedFilters[field] || ""
+            selectedFilters[field] ||
+            ""
           }
-          onChange={event =>
-            handleChange(
-              field,
-              event.target.value
-            )
+          onChange={
+            event =>
+              handleChange(
+                field,
+                event.target.value
+              )
           }
         >
 
@@ -726,30 +941,35 @@ function PerformanceFilters() {
             {placeholder}
           </option>
 
-          {options.map(option => {
+          {options.map(
+            option => {
 
-            const value =
-              typeof option === "object"
-                ? option.value
-                : option;
+              const value =
+                typeof option ===
+                "object"
+                  ? option.value
+                  : option;
 
-            const text =
-              typeof option === "object"
-                ? option.label
-                : option;
+              const text =
+                typeof option ===
+                "object"
+                  ? option.label
+                  : option;
 
-            return (
 
-              <option
-                key={value}
-                value={value}
-              >
-                {text}
-              </option>
+              return (
 
-            );
+                <option
+                  key={value}
+                  value={value}
+                >
+                  {text}
+                </option>
 
-          })}
+              );
+
+            }
+          )}
 
         </select>
 
@@ -760,16 +980,23 @@ function PerformanceFilters() {
   }
 
 
-  // RENDER SORT VALUE
+  /* =========================================================
+     RENDER SORT VALUE
+     ========================================================= */
 
   function renderSortValue() {
 
-    if (!selectedSortOption) {
+    if (
+      !selectedSortOption
+    ) {
+
       return null;
+
     }
 
 
-    let currentValue = "";
+    let currentValue =
+      "";
 
 
     if (
@@ -778,7 +1005,8 @@ function PerformanceFilters() {
     ) {
 
       currentValue =
-        selectedFilters.bdMember || "";
+        selectedFilters.bdMember ||
+        "";
 
     }
 
@@ -789,7 +1017,8 @@ function PerformanceFilters() {
     ) {
 
       currentValue =
-        selectedFilters.teamLeader || "";
+        selectedFilters.teamLeader ||
+        "";
 
     }
 
@@ -800,7 +1029,8 @@ function PerformanceFilters() {
     ) {
 
       currentValue =
-        selectedFilters.franchise || "";
+        selectedFilters.franchise ||
+        "";
 
     }
 
@@ -816,11 +1046,14 @@ function PerformanceFilters() {
         </label>
 
         <select
-          value={currentValue}
-          onChange={event =>
-            handleSortValueChange(
-              event.target.value
-            )
+          value={
+            currentValue
+          }
+          onChange={
+            event =>
+              handleSortValueChange(
+                event.target.value
+              )
           }
         >
 
@@ -850,9 +1083,32 @@ function PerformanceFilters() {
   }
 
 
-  // RENDER VIEW REPORT PERIOD FILTERS
+  /* =========================================================
+     VIEW REPORT PERIOD FILTERS
+     
+     IMPORTANT:
+     
+     All Time
+     → No dependent filter
+
+     Yearly
+     → FY only
+
+     Quarterly
+     → Quarter only
+
+     Monthly
+     → Month only
+
+     NO FY for Quarterly or Monthly.
+     ========================================================= */
 
   function renderViewReportPeriodFilters() {
+
+
+    /* =======================================================
+       ALL TIME
+       ======================================================= */
 
     if (
       selectedFilters.viewReportAs ===
@@ -863,6 +1119,12 @@ function PerformanceFilters() {
 
     }
 
+
+    /* =======================================================
+       YEARLY
+       
+       FY only.
+       ======================================================= */
 
     if (
       selectedFilters.viewReportAs ===
@@ -887,6 +1149,13 @@ function PerformanceFilters() {
     }
 
 
+    /* =======================================================
+       QUARTERLY
+       
+       Quarter only.
+       NO FY.
+       ======================================================= */
+
     if (
       selectedFilters.viewReportAs ===
       "quarterly"
@@ -895,13 +1164,6 @@ function PerformanceFilters() {
       return (
 
         <>
-
-          {renderSelect(
-            "FY",
-            "year",
-            financialYears,
-            "Select FY"
-          )}
 
           {renderSelect(
             "Quarter",
@@ -917,6 +1179,13 @@ function PerformanceFilters() {
     }
 
 
+    /* =======================================================
+       MONTHLY
+       
+       Month only.
+       NO FY.
+       ======================================================= */
+
     if (
       selectedFilters.viewReportAs ===
       "monthly"
@@ -927,16 +1196,25 @@ function PerformanceFilters() {
         <>
 
           {renderSelect(
-            "FY",
-            "year",
-            financialYears,
-            "Select FY"
-          )}
-
-          {renderSelect(
             "Month",
             "month",
-            months,
+            [
+              "April",
+              "May",
+              "June",
+
+              "July",
+              "August",
+              "September",
+
+              "October",
+              "November",
+              "December",
+
+              "January",
+              "February",
+              "March"
+            ],
             "Select Month"
           )}
 
@@ -952,33 +1230,51 @@ function PerformanceFilters() {
   }
 
 
+  /* =========================================================
+     JSX
+     ========================================================= */
+
   return (
 
-    <div className="performance-filter-panel">
+    <div
+      className="performance-filter-panel"
+    >
 
 
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+          ===================================================== */}
 
-      <div className="filter-header">
+      <div
+        className="filter-header"
+      >
 
         <h3>
           Performance Filters
         </h3>
 
-        <div className="filter-actions">
+
+        <div
+          className="filter-actions"
+        >
 
           <button
             type="button"
             className="filter-button"
-            onClick={applyFilters}
+            onClick={
+              applyFilters
+            }
           >
             Apply Filters
           </button>
 
+
           <button
             type="button"
             className="clear-filter-button"
-            onClick={clearFilters}
+            onClick={
+              clearFilters
+            }
           >
             Clear Filters
           </button>
@@ -988,42 +1284,60 @@ function PerformanceFilters() {
       </div>
 
 
-      {/* BASE FILTERS */}
+      {/* =====================================================
+          BASE FILTERS
+          ===================================================== */}
 
-      <div className="base-performance-section">
+      <div
+        className="base-performance-section"
+      >
 
-        <div className="base-performance-title">
+        <div
+          className="base-performance-title"
+        >
           Base Filters
         </div>
 
 
-        <div className="base-performance-grid">
+        <div
+          className="base-performance-grid"
+        >
 
 
-          {/* REPORTS VIEW */}
+          {/* =================================================
+              REPORTS VIEW
+              ================================================= */}
 
           {renderSelect(
             "Reports View",
             "viewBy",
             [
+
               {
                 label: "None",
                 value: ""
               },
+
               {
-                label: "Client Performance",
+                label:
+                  "Client Performance",
                 value: "client"
               },
+
               {
-                label: "Enquiry Performance",
+                label:
+                  "Enquiry Performance",
                 value: "enquiry"
               }
+
             ],
             "Select View"
           )}
 
 
-          {/* VIEW BY */}
+          {/* =================================================
+              VIEW BY
+              ================================================= */}
 
           {renderSelect(
             "View By",
@@ -1033,7 +1347,9 @@ function PerformanceFilters() {
           )}
 
 
-          {/* SORT BY */}
+          {/* =================================================
+              SORT BY
+              ================================================= */}
 
           {renderSelect(
             "Sort By",
@@ -1043,12 +1359,18 @@ function PerformanceFilters() {
           )}
 
 
-          {/* SORT VALUE */}
+          {/* =================================================
+              SELECT VALUE
+              ================================================= */}
 
           {renderSortValue()}
 
 
-          {/* FINANCIAL YEAR */}
+          {/* =================================================
+              FINANCIAL YEAR
+              
+              OLD BASE FILTER PRESERVED.
+              ================================================= */}
 
           {renderSelect(
             "Financial Year",
@@ -1058,7 +1380,11 @@ function PerformanceFilters() {
           )}
 
 
-          {/* MONTH */}
+          {/* =================================================
+              MONTH
+              
+              OLD BASE FILTER PRESERVED.
+              ================================================= */}
 
           {renderSelect(
             "Month",
@@ -1068,7 +1394,9 @@ function PerformanceFilters() {
           )}
 
 
-          {/* VIEW REPORT AS */}
+          {/* =================================================
+              VIEW REPORT AS
+              ================================================= */}
 
           {renderSelect(
             "View Report As:",
@@ -1078,7 +1406,9 @@ function PerformanceFilters() {
           )}
 
 
-          {/* DEPENDENT PERIOD FILTERS */}
+          {/* =================================================
+              DEPENDENT VIEW REPORT FILTER
+              ================================================= */}
 
           {renderViewReportPeriodFilters()}
 
@@ -1087,17 +1417,29 @@ function PerformanceFilters() {
       </div>
 
 
-      {/* ADDITIONAL FILTERS */}
+      {/* =====================================================
+          ADDITIONAL FILTERS
+          ===================================================== */}
 
-      <div className="additional-filter-section">
+      <div
+        className="additional-filter-section"
+      >
 
-        <div className="additional-filter-title">
+        <div
+          className="additional-filter-title"
+        >
           Additional Filters
         </div>
 
 
-        <div className="filter-grid">
+        <div
+          className="filter-grid"
+        >
 
+
+          {/* =================================================
+              NORMAL ADDITIONAL FILTERS
+              ================================================= */}
 
           {visibleAdditionalFilters.map(
             filter =>
@@ -1110,14 +1452,22 @@ function PerformanceFilters() {
           )}
 
 
-          {/* CLIENT STATUS */}
+          {/* =================================================
+              CLIENT STATUS
+              
+              Visible for:
+              - Overall Dashboard
+              - Client Performance
+              ================================================= */}
 
           {(
             reportView === "" ||
             reportView === "client"
           ) && (
 
-            <div className="filter-box">
+            <div
+              className="filter-box"
+            >
 
               <label>
                 Client Status
@@ -1128,11 +1478,12 @@ function PerformanceFilters() {
                   selectedFilters.clientStatus ||
                   ""
                 }
-                onChange={event =>
-                  handleChange(
-                    "clientStatus",
-                    event.target.value
-                  )
+                onChange={
+                  event =>
+                    handleChange(
+                      "clientStatus",
+                      event.target.value
+                    )
                 }
               >
 
@@ -1160,14 +1511,22 @@ function PerformanceFilters() {
           )}
 
 
-          {/* ENQUIRY STATUS */}
+          {/* =================================================
+              ENQUIRY STATUS
+              
+              Visible for:
+              - Overall Dashboard
+              - Enquiry Performance
+              ================================================= */}
 
           {(
             reportView === "" ||
             reportView === "enquiry"
           ) && (
 
-            <div className="filter-box">
+            <div
+              className="filter-box"
+            >
 
               <label>
                 Enquiry Status
@@ -1178,11 +1537,12 @@ function PerformanceFilters() {
                   selectedFilters.enquiryStatus ||
                   ""
                 }
-                onChange={event =>
-                  handleChange(
-                    "enquiryStatus",
-                    event.target.value
-                  )
+                onChange={
+                  event =>
+                    handleChange(
+                      "enquiryStatus",
+                      event.target.value
+                    )
                 }
               >
 
@@ -1194,10 +1554,16 @@ function PerformanceFilters() {
                   status => (
 
                     <option
-                      key={status.value}
-                      value={status.value}
+                      key={
+                        status.value
+                      }
+                      value={
+                        status.value
+                      }
                     >
-                      {status.label}
+                      {
+                        status.label
+                      }
                     </option>
 
                   )
