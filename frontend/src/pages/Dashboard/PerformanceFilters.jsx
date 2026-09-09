@@ -32,7 +32,8 @@ function PerformanceFilters() {
 
       viewBy: filters.viewBy || "",
       allTime: filters.allTime || "all",
-      sortBy: filters.sortBy || ""
+      sortBy: filters.sortBy || "",
+      enquiryStatus: filters.enquiryStatus || ""
     });
 
 
@@ -47,7 +48,8 @@ function PerformanceFilters() {
 
       viewBy: filters.viewBy || "",
       allTime: filters.allTime || "all",
-      sortBy: filters.sortBy || ""
+      sortBy: filters.sortBy || "",
+      enquiryStatus: filters.enquiryStatus || ""
     });
 
   }, [filters]);
@@ -296,6 +298,8 @@ function PerformanceFilters() {
 
       clientStatus: "",
 
+      enquiryStatus: "",
+
       position: ""
 
     };
@@ -413,6 +417,45 @@ function PerformanceFilters() {
 
 
   // ======================================================
+  // ENQUIRY STATUS OPTIONS
+  // ======================================================
+
+  const enquiryStatusOptions = [
+
+    {
+      label: "Closed",
+      value: "C"
+    },
+
+    {
+      label: "Credit Note",
+      value: "CN"
+    },
+
+    {
+      label: "Inprogress",
+      value: "IP"
+    },
+
+    {
+      label: "Legal",
+      value: "LEGAL"
+    },
+
+    {
+      label: "Reallocation",
+      value: "R"
+    },
+
+    {
+      label: "Revised",
+      value: "RV"
+    }
+
+  ];
+
+
+  // ======================================================
   // EXISTING FILTER CONFIG
   // ======================================================
 
@@ -488,6 +531,14 @@ function PerformanceFilters() {
       field: "position",
 
       column: "Position Name"
+    },
+
+    {
+      label: "Enquiry Status",
+
+      field: "enquiryStatus",
+
+      type: "enquiryStatus"
     }
 
   ];
@@ -500,12 +551,23 @@ function PerformanceFilters() {
   function renderOptions(filter) {
 
     if (filter.type === "year") {
+
       return financialYears;
+
     }
 
 
     if (filter.type === "month") {
+
       return months;
+
+    }
+
+
+    if (filter.type === "enquiryStatus") {
+
+      return enquiryStatusOptions;
+
     }
 
 
@@ -627,7 +689,7 @@ function PerformanceFilters() {
 
 
       {/* ==================================================
-          EXISTING FILTERS
+          ADDITIONAL FILTERS
       ================================================== */}
 
       <div className="additional-filter-title">
@@ -698,18 +760,51 @@ function PerformanceFilters() {
 
                   {
 
-                    options.map(value => (
+                    options.map(option => {
 
-                      <option
-                        key={value}
-                        value={value}
-                      >
+                      // ---------------------------------
+                      // ENQUIRY STATUS
+                      // ---------------------------------
 
-                        {value}
+                      if (
+                        filter.type ===
+                        "enquiryStatus"
+                      ) {
 
-                      </option>
+                        return (
 
-                    ))
+                          <option
+                            key={option.value}
+                            value={option.value}
+                          >
+
+                            {option.label}
+
+                          </option>
+
+                        );
+
+                      }
+
+
+                      // ---------------------------------
+                      // NORMAL FILTERS
+                      // ---------------------------------
+
+                      return (
+
+                        <option
+                          key={option}
+                          value={option}
+                        >
+
+                          {option}
+
+                        </option>
+
+                      );
+
+                    })
 
                   }
 
