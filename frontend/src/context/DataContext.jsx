@@ -30,7 +30,6 @@ const ENQUIRY_STATUS_CODES = {
 
 /* =========================================================
    NORMALIZE VALUE
-   Used for all filter comparisons
    ========================================================= */
 
 function normalizeValue(value) {
@@ -51,7 +50,6 @@ function normalizeValue(value) {
 
 /* =========================================================
    MAP BACKEND ROW
-   Converts MySQL column names to frontend column names
    ========================================================= */
 
 function mapBackendRow(record) {
@@ -411,7 +409,9 @@ export function DataProvider({
 
   const [filters, setFilters] = useState({
 
-    /* View */
+    /* =====================================================
+       VIEW
+       ===================================================== */
 
     viewBy: "",
 
@@ -419,15 +419,24 @@ export function DataProvider({
 
     metricView: "",
 
-    /* Time */
-
-    allTime: "all",
+    /* =====================================================
+       REPORT VIEW
+       ===================================================== */
 
     viewReportAs: "all",
 
+    /* =====================================================
+       SORT
+       ===================================================== */
+
     sortBy: "",
 
-    /* Main filters */
+    /* =====================================================
+       OLD BASE FILTERS
+       These remain unchanged
+       ===================================================== */
+
+    allTime: "all",
 
     company: "",
 
@@ -435,15 +444,24 @@ export function DataProvider({
 
     month: "",
 
+    /* =====================================================
+       NEW QUARTER FILTER
+       Only used when View Report As = Quarterly
+       ===================================================== */
+
     quarter: "",
 
-    /* People */
+    /* =====================================================
+       PEOPLE
+       ===================================================== */
 
     bdMember: "",
 
     teamLeader: "",
 
-    /* Business */
+    /* =====================================================
+       BUSINESS
+       ===================================================== */
 
     franchise: "",
 
@@ -453,15 +471,21 @@ export function DataProvider({
 
     city: "",
 
-    /* Client */
+    /* =====================================================
+       CLIENT
+       ===================================================== */
 
     clientStatus: "",
 
-    /* Position */
+    /* =====================================================
+       POSITION
+       ===================================================== */
 
     position: "",
 
-    /* Enquiry */
+    /* =====================================================
+       ENQUIRY
+       ===================================================== */
 
     enquiryStatus: ""
 
@@ -551,7 +575,7 @@ export function DataProvider({
 
   /* =========================================================
      LOAD EXCEL DATA
-     Kept for compatibility with existing frontend
+     Kept for compatibility
      ========================================================= */
 
   function loadExcelData(
@@ -618,179 +642,19 @@ export function DataProvider({
           }
 
           /* =================================================
-             VIEW REPORT AS
+             FINANCIAL YEAR
              
-             All Time
-             Yearly
-             Quarterly
-             Monthly
-
-             This works together with:
-             - year
-             - month
-             - quarter
-
-             Existing filters are preserved.
+             Existing Base Filter.
+             
+             Used directly when:
+             - Year is selected normally
+             - View Report As = Yearly
+             
+             No second FY filter is created.
              ================================================= */
 
           if (
-            filters.viewReportAs ===
-            "yearly"
-          ) {
-
-            if (
-              filters.year
-            ) {
-
-              const rowFinancialYear =
-                getFinancialYearFromRow(
-                  row
-                );
-
-              if (
-                normalizeValue(
-                  rowFinancialYear
-                ) !==
-                normalizeValue(
-                  filters.year
-                )
-              ) {
-
-                return false;
-
-              }
-
-            }
-
-          }
-
-          if (
-            filters.viewReportAs ===
-            "quarterly"
-          ) {
-
-            if (
-              filters.year
-            ) {
-
-              const rowFinancialYear =
-                getFinancialYearFromRow(
-                  row
-                );
-
-              if (
-                normalizeValue(
-                  rowFinancialYear
-                ) !==
-                normalizeValue(
-                  filters.year
-                )
-              ) {
-
-                return false;
-
-              }
-
-            }
-
-            if (
-              filters.quarter
-            ) {
-
-              const rowQuarter =
-                getFinancialQuarter(
-                  row[
-                    "Date Client Acquired"
-                  ]
-                );
-
-              if (
-                normalizeValue(
-                  rowQuarter
-                ) !==
-                normalizeValue(
-                  filters.quarter
-                )
-              ) {
-
-                return false;
-
-              }
-
-            }
-
-          }
-
-          if (
-            filters.viewReportAs ===
-            "monthly"
-          ) {
-
-            if (
-              filters.year
-            ) {
-
-              const rowFinancialYear =
-                getFinancialYearFromRow(
-                  row
-                );
-
-              if (
-                normalizeValue(
-                  rowFinancialYear
-                ) !==
-                normalizeValue(
-                  filters.year
-                )
-              ) {
-
-                return false;
-
-              }
-
-            }
-
-            if (
-              filters.month
-            ) {
-
-              const rowMonth =
-                getMonthFromDate(
-                  row[
-                    "Date Client Acquired"
-                  ]
-                );
-
-              if (
-                normalizeValue(
-                  rowMonth
-                ) !==
-                normalizeValue(
-                  filters.month
-                )
-              ) {
-
-                return false;
-
-              }
-
-            }
-
-          }
-
-          /* =================================================
-             OLD FINANCIAL YEAR FILTER
-             
-             Preserved so existing Financial Year
-             filter continues working.
-             ================================================= */
-
-          if (
-            filters.year &&
-            (
-              !filters.viewReportAs ||
-              filters.viewReportAs === "all"
-            )
+            filters.year
           ) {
 
             const rowFinancialYear =
@@ -814,17 +678,19 @@ export function DataProvider({
           }
 
           /* =================================================
-             OLD MONTH FILTER
+             MONTH
              
-             Preserved.
+             Existing Base Filter.
+             
+             Used directly when:
+             - Month is selected normally
+             - View Report As = Monthly
+             
+             No second Month filter is created.
              ================================================= */
 
           if (
-            filters.month &&
-            (
-              !filters.viewReportAs ||
-              filters.viewReportAs === "all"
-            )
+            filters.month
           ) {
 
             const rowMonth =
@@ -850,17 +716,14 @@ export function DataProvider({
           }
 
           /* =================================================
-             OLD QUARTER FILTER
+             QUARTER
              
-             Preserved.
+             Only used for:
+             View Report As = Quarterly
              ================================================= */
 
           if (
-            filters.quarter &&
-            (
-              !filters.viewReportAs ||
-              filters.viewReportAs === "all"
-            )
+            filters.quarter
           ) {
 
             const rowQuarter =
@@ -1071,9 +934,9 @@ export function DataProvider({
 
           /* =================================================
              ENQUIRY STATUS
-
-             Info column values:
-
+             
+             Info column:
+             
              C     = Closed
              CN    = Credit Note
              IP    = Inprogress
@@ -1141,14 +1004,6 @@ export function DataProvider({
      DASHBOARD DATA
 
      Pass BOTH filteredRows and filters.
-
-     This allows dataProcessor.js to calculate:
-     - Client Performance
-     - Enquiry Performance
-     - Report By
-     - Count
-     - Revenue
-     - View Report As
      ========================================================= */
 
   const dashboardData =
@@ -1176,43 +1031,27 @@ export function DataProvider({
     <DataContext.Provider
       value={{
 
-        /* Raw data */
-
         rows,
 
-        /* Filtered data */
-
         filteredRows,
-
-        /* API state */
 
         loading,
 
         error,
 
-        /* File information */
-
         fileName,
 
         lastRefresh,
-
-        /* Filters */
 
         filters,
 
         setFilters,
 
-        /* Dashboard */
-
         dashboardData,
-
-        /* Data functions */
 
         loadExcelData,
 
         fetchLedgerData,
-
-        /* Date helpers */
 
         getFinancialYearFromRow,
 
@@ -1221,8 +1060,6 @@ export function DataProvider({
         getMonthFromDate,
 
         getFinancialQuarter,
-
-        /* Financial filter options */
 
         financialMonths:
           FINANCIAL_MONTHS,
