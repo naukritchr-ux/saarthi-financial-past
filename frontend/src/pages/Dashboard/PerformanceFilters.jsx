@@ -22,9 +22,7 @@ function PerformanceFilters() {
   } = useData();
 
 
-  // ======================================================
   // TEMPORARY FILTER VALUES
-  // ======================================================
 
   const [selectedFilters, setSelectedFilters] =
     useState({
@@ -38,15 +36,17 @@ function PerformanceFilters() {
 
       allTime: filters.allTime || "all",
 
+      sortBy: filters.sortBy || "",
+
+      viewReportAs: filters.viewReportAs || "all",
+
       clientStatus: filters.clientStatus || "",
 
       enquiryStatus: filters.enquiryStatus || ""
     });
 
 
-  // ======================================================
   // KEEP LOCAL STATE SYNCHRONIZED
-  // ======================================================
 
   useEffect(() => {
 
@@ -61,6 +61,10 @@ function PerformanceFilters() {
 
       allTime: filters.allTime || "all",
 
+      sortBy: filters.sortBy || "",
+
+      viewReportAs: filters.viewReportAs || "all",
+
       clientStatus: filters.clientStatus || "",
 
       enquiryStatus: filters.enquiryStatus || ""
@@ -69,9 +73,7 @@ function PerformanceFilters() {
   }, [filters]);
 
 
-  // ======================================================
   // UNIQUE VALUES
-  // ======================================================
 
   function getUniqueValues(column) {
 
@@ -105,9 +107,7 @@ function PerformanceFilters() {
   }
 
 
-  // ======================================================
   // FINANCIAL YEARS
-  // ======================================================
 
   const financialYears =
     useMemo(() => {
@@ -148,9 +148,7 @@ function PerformanceFilters() {
     ]);
 
 
-  // ======================================================
   // MONTHS
-  // ======================================================
 
   const months =
     useMemo(() => {
@@ -224,56 +222,40 @@ function PerformanceFilters() {
     ]);
 
 
-  // ======================================================
-  // REPORT VIEW
-  // ======================================================
+  // QUARTERS
 
-  const reportView =
-    selectedFilters.viewBy || "";
-
-
-  // ======================================================
-  // REPORT BY OPTIONS
-  // ======================================================
-
-  const reportByOptions = [
+  const quarters = [
 
     {
-      label: "Business Development Member",
-      value: "bdMember"
+      label: "Q1",
+      value: "Q1"
     },
 
     {
-      label: "Team Leader",
-      value: "teamLeader"
+      label: "Q2",
+      value: "Q2"
     },
 
     {
-      label: "Franchisee",
-      value: "franchise"
+      label: "Q3",
+      value: "Q3"
     },
 
     {
-      label: "City",
-      value: "city"
-    },
-
-    {
-      label: "Industry",
-      value: "industry"
-    },
-
-    {
-      label: "Sub Industry",
-      value: "subIndustry"
+      label: "Q4",
+      value: "Q4"
     }
 
   ];
 
 
-  // ======================================================
+  // REPORT VIEW
+
+  const reportView =
+    selectedFilters.viewBy || "";
+
+
   // VIEW BY OPTIONS
-  // ======================================================
 
   const metricViewOptions = [
 
@@ -290,9 +272,89 @@ function PerformanceFilters() {
   ];
 
 
-  // ======================================================
+  // VIEW REPORT AS OPTIONS
+
+  const viewReportAsOptions = [
+
+    {
+      label: "All Time",
+      value: "all"
+    },
+
+    {
+      label: "Yearly",
+      value: "yearly"
+    },
+
+    {
+      label: "Quarterly",
+      value: "quarterly"
+    },
+
+    {
+      label: "Monthly",
+      value: "monthly"
+    }
+
+  ];
+
+
+  // SORT BY OPTIONS
+
+  const sortByOptions = [
+
+    {
+      label: "BD Member",
+      value: "bdMember",
+      column: "BD Member"
+    },
+
+    {
+      label: "Team Leader",
+      value: "teamLeader",
+      column: "Team Leader"
+    },
+
+    {
+      label: "Franchise",
+      value: "franchise",
+      column: "Franchise Name"
+    }
+
+  ];
+
+
+  // SELECTED SORT OPTION
+
+  const selectedSortOption =
+    sortByOptions.find(
+      option =>
+        option.value ===
+        selectedFilters.sortBy
+    );
+
+
+  // SORT VALUE OPTIONS
+
+  const sortValueOptions =
+    useMemo(() => {
+
+      if (!selectedSortOption) {
+        return [];
+      }
+
+
+      return getUniqueValues(
+        selectedSortOption.column
+      );
+
+    }, [
+      rows,
+      selectedSortOption
+    ]);
+
+
   // CLIENT STATUS OPTIONS
-  // ======================================================
 
   const clientStatusOptions =
     useMemo(() => {
@@ -304,9 +366,7 @@ function PerformanceFilters() {
     }, [rows]);
 
 
-  // ======================================================
   // ENQUIRY STATUS OPTIONS
-  // ======================================================
 
   const enquiryStatusOptions = [
 
@@ -343,9 +403,7 @@ function PerformanceFilters() {
   ];
 
 
-  // ======================================================
-  // HANDLE SELECTION
-  // ======================================================
+  // HANDLE CHANGE
 
   function handleChange(
     field,
@@ -360,9 +418,7 @@ function PerformanceFilters() {
       };
 
 
-      // ================================================
       // REPORT VIEW CHANGED
-      // ================================================
 
       if (field === "viewBy") {
 
@@ -373,13 +429,66 @@ function PerformanceFilters() {
       }
 
 
-      // ================================================
+      // SORT BY CHANGED
+
+      if (field === "sortBy") {
+
+        updated.bdMember = "";
+        updated.teamLeader = "";
+        updated.franchise = "";
+
+      }
+
+
+      // VIEW REPORT AS CHANGED
+
+      if (field === "viewReportAs") {
+
+        if (value === "all") {
+
+          updated.year = "";
+          updated.month = "";
+          updated.quarter = "";
+
+        }
+
+
+        if (value === "yearly") {
+
+          updated.month = "";
+          updated.quarter = "";
+
+        }
+
+
+        if (value === "quarterly") {
+
+          updated.month = "";
+
+        }
+
+
+        if (value === "monthly") {
+
+          updated.quarter = "";
+
+        }
+
+      }
+
+
       // FINANCIAL YEAR CHANGED
-      // ================================================
 
       if (field === "year") {
 
         updated.month = "";
+
+        if (
+          updated.viewReportAs ===
+          "quarterly"
+        ) {
+          updated.quarter = "";
+        }
 
       }
 
@@ -391,9 +500,62 @@ function PerformanceFilters() {
   }
 
 
-  // ======================================================
+  // HANDLE SORT VALUE
+
+  function handleSortValueChange(
+    value
+  ) {
+
+    if (!selectedSortOption) {
+      return;
+    }
+
+
+    setSelectedFilters(previous => {
+
+      const updated = {
+        ...previous
+      };
+
+
+      if (
+        selectedSortOption.value ===
+        "bdMember"
+      ) {
+
+        updated.bdMember = value;
+
+      }
+
+
+      if (
+        selectedSortOption.value ===
+        "teamLeader"
+      ) {
+
+        updated.teamLeader = value;
+
+      }
+
+
+      if (
+        selectedSortOption.value ===
+        "franchise"
+      ) {
+
+        updated.franchise = value;
+
+      }
+
+
+      return updated;
+
+    });
+
+  }
+
+
   // APPLY FILTERS
-  // ======================================================
 
   function applyFilters() {
 
@@ -404,17 +566,11 @@ function PerformanceFilters() {
   }
 
 
-  // ======================================================
   // CLEAR FILTERS
-  // ======================================================
 
   function clearFilters() {
 
     const emptyFilters = {
-
-      // -----------------------------------------------
-      // REPORT VIEW
-      // -----------------------------------------------
 
       viewBy: "",
 
@@ -426,49 +582,24 @@ function PerformanceFilters() {
 
       sortBy: "",
 
-
-      // -----------------------------------------------
-      // GENERAL FILTERS
-      // -----------------------------------------------
+      viewReportAs: "all",
 
       company: "",
 
       year: "",
-
       month: "",
-
       quarter: "",
 
-
-      // -----------------------------------------------
-      // ORGANIZATION FILTERS
-      // -----------------------------------------------
-
       bdMember: "",
-
       teamLeader: "",
-
       franchise: "",
 
       industry: "",
-
       subIndustry: "",
-
       city: "",
 
-
-      // -----------------------------------------------
-      // STATUS FILTERS
-      // -----------------------------------------------
-
       clientStatus: "",
-
       enquiryStatus: "",
-
-
-      // -----------------------------------------------
-      // POSITION
-      // -----------------------------------------------
 
       position: ""
 
@@ -479,7 +610,6 @@ function PerformanceFilters() {
       emptyFilters
     );
 
-
     setFilters(
       emptyFilters
     );
@@ -487,463 +617,139 @@ function PerformanceFilters() {
   }
 
 
-  // ======================================================
-  // BASE REPORT FILTERS
-  // ======================================================
+  // ADDITIONAL FILTERS
 
-  const baseReportFilters = [
-
-    {
-      label: "Reports View",
-
-      field: "viewBy",
-
-      options: [
-
-        {
-          label: "None",
-          value: ""
-        },
-
-        {
-          label: "Client Performance",
-          value: "client"
-        },
-
-        {
-          label: "Enquiry Performance",
-          value: "enquiry"
-        }
-
-      ]
-
-    },
-
-
-    {
-      label: "All Time",
-
-      field: "allTime",
-
-      options: [
-
-        {
-          label: "All Time",
-          value: "all"
-        },
-
-        {
-          label: "Yearly",
-          value: "yearly"
-        },
-
-        {
-          label: "Monthly",
-          value: "monthly"
-        },
-
-        {
-          label: "Quarterly",
-          value: "quarterly"
-        }
-
-      ]
-
-    }
-
-  ];
-
-
-  // ======================================================
-  // REPORT-SPECIFIC FILTERS
-  // ======================================================
-
-  const reportSpecificFilters = [];
-
-
-  // ======================================================
-  // CLIENT PERFORMANCE
-  // ======================================================
-
-  if (reportView === "client") {
-
-    reportSpecificFilters.push({
-
-      label: "Report By",
-
-      field: "reportBy",
-
-      options: reportByOptions
-
-    });
-
-
-    reportSpecificFilters.push({
-
-      label: "View By",
-
-      field: "metricView",
-
-      options: metricViewOptions
-
-    });
-
-  }
-
-
-  // ======================================================
-  // ENQUIRY PERFORMANCE
-  // ======================================================
-
-  if (reportView === "enquiry") {
-
-    reportSpecificFilters.push({
-
-      label: "Report By",
-
-      field: "reportBy",
-
-      options: reportByOptions
-
-    });
-
-
-    reportSpecificFilters.push({
-
-      label: "View By",
-
-      field: "metricView",
-
-      options: metricViewOptions
-
-    });
-
-  }
-
-
-  // ======================================================
-  // STATUS FILTERS
-  //
-  // NONE:
-  // Client Status + Enquiry Status
-  //
-  // CLIENT:
-  // Client Status only
-  //
-  // ENQUIRY:
-  // Enquiry Status only
-  // ======================================================
-
-  const statusFilters = [];
-
-
-  // ======================================================
-  // OVERALL BUSINESS PERFORMANCE
-  // ======================================================
-
-  if (reportView === "") {
-
-    statusFilters.push({
-
-      label: "Client Status",
-
-      field: "clientStatus",
-
-      options: clientStatusOptions
-
-    });
-
-
-    statusFilters.push({
-
-      label: "Enquiry Status",
-
-      field: "enquiryStatus",
-
-      options: enquiryStatusOptions,
-
-      type: "enquiryStatus"
-
-    });
-
-  }
-
-
-  // ======================================================
-  // CLIENT PERFORMANCE
-  // ======================================================
-
-  if (reportView === "client") {
-
-    statusFilters.push({
-
-      label: "Client Status",
-
-      field: "clientStatus",
-
-      options: clientStatusOptions
-
-    });
-
-  }
-
-
-  // ======================================================
-  // ENQUIRY PERFORMANCE
-  // ======================================================
-
-  if (reportView === "enquiry") {
-
-    statusFilters.push({
-
-      label: "Enquiry Status",
-
-      field: "enquiryStatus",
-
-      options: enquiryStatusOptions,
-
-      type: "enquiryStatus"
-
-    });
-
-  }
-
-
-  // ======================================================
-  // GENERAL FILTER CONFIG
-  // ======================================================
-
-  const filtersConfig = [
-
-    {
-      label: "Financial Year",
-
-      field: "year",
-
-      type: "year"
-    },
-
-    {
-      label: "Month",
-
-      field: "month",
-
-      type: "month"
-    },
+  const additionalFilters = [
 
     {
       label: "Team Leader",
-
       field: "teamLeader",
-
-      column: "Team Leader"
+      options: getUniqueValues(
+        "Team Leader"
+      )
     },
 
     {
       label: "BD Member",
-
       field: "bdMember",
-
-      column: "BD Member"
+      options: getUniqueValues(
+        "BD Member"
+      )
     },
 
     {
       label: "Franchise",
-
       field: "franchise",
-
-      column: "Franchise Name"
+      options: getUniqueValues(
+        "Franchise Name"
+      )
     },
 
     {
       label: "Industry",
-
       field: "industry",
-
-      column: "Industry"
+      options: getUniqueValues(
+        "Industry"
+      )
     },
 
     {
       label: "Sub Industry",
-
       field: "subIndustry",
-
-      column: "Sub Industry"
+      options: getUniqueValues(
+        "Sub Industry"
+      )
     },
 
     {
       label: "City",
-
       field: "city",
-
-      column: "City"
+      options: getUniqueValues(
+        "City"
+      )
     },
 
     {
       label: "Position",
-
       field: "position",
-
-      column: "Position Name"
+      options: getUniqueValues(
+        "Position Name"
+      )
     }
 
   ];
 
 
-  // ======================================================
-  // GET OPTIONS
-  // ======================================================
+  // REMOVE SORT FIELD FROM ADDITIONAL FILTERS
 
-  function renderOptions(filter) {
-
-    if (filter.type === "year") {
-
-      return financialYears;
-
-    }
-
-
-    if (filter.type === "month") {
-
-      return months;
-
-    }
-
-
-    if (
-      filter.type ===
-      "enquiryStatus"
-    ) {
-
-      return enquiryStatusOptions;
-
-    }
-
-
-    return getUniqueValues(
-      filter.column
+  const visibleAdditionalFilters =
+    additionalFilters.filter(
+      filter =>
+        filter.field !==
+        selectedFilters.sortBy
     );
 
-  }
 
-
-  // ======================================================
   // RENDER SELECT
-  // ======================================================
 
   function renderSelect(
-    filter
+    label,
+    field,
+    options,
+    placeholder = "Select"
   ) {
-
-    const options =
-      filter.options ||
-      renderOptions(filter);
-
-
-    const monthDisabled =
-      filter.type === "month" &&
-      !selectedFilters.year;
-
 
     return (
 
       <div
         className="filter-box"
-        key={filter.field}
+        key={field}
       >
 
         <label>
-          {filter.label}
+          {label}
         </label>
 
-
         <select
-
           value={
-            selectedFilters[
-              filter.field
-            ] || ""
+            selectedFilters[field] || ""
           }
-
-          disabled={
-            monthDisabled
-          }
-
-          onChange={e =>
+          onChange={event =>
             handleChange(
-              filter.field,
-              e.target.value
+              field,
+              event.target.value
             )
           }
-
         >
 
           <option value="">
-
-            {
-              monthDisabled
-                ? "Select Financial Year First"
-                : `All ${filter.label}`
-            }
-
+            {placeholder}
           </option>
 
+          {options.map(option => {
 
-          {
+            const value =
+              typeof option === "object"
+                ? option.value
+                : option;
 
-            options.map(option => {
+            const text =
+              typeof option === "object"
+                ? option.label
+                : option;
 
-              // ========================================
-              // OBJECT OPTION
-              // ========================================
+            return (
 
-              if (
-                typeof option ===
-                "object"
-              ) {
+              <option
+                key={value}
+                value={value}
+              >
+                {text}
+              </option>
 
-                return (
+            );
 
-                  <option
-                    key={
-                      option.value
-                    }
-                    value={
-                      option.value
-                    }
-                  >
-
-                    {
-                      option.label
-                    }
-
-                  </option>
-
-                );
-
-              }
-
-
-              // ========================================
-              // NORMAL OPTION
-              // ========================================
-
-              return (
-
-                <option
-                  key={option}
-                  value={option}
-                >
-
-                  {option}
-
-                </option>
-
-              );
-
-            })
-
-          }
+          })}
 
         </select>
 
@@ -954,25 +760,210 @@ function PerformanceFilters() {
   }
 
 
-  // ======================================================
-  // UI
-  // ======================================================
+  // RENDER SORT VALUE
+
+  function renderSortValue() {
+
+    if (!selectedSortOption) {
+      return null;
+    }
+
+
+    let currentValue = "";
+
+
+    if (
+      selectedSortOption.value ===
+      "bdMember"
+    ) {
+
+      currentValue =
+        selectedFilters.bdMember || "";
+
+    }
+
+
+    if (
+      selectedSortOption.value ===
+      "teamLeader"
+    ) {
+
+      currentValue =
+        selectedFilters.teamLeader || "";
+
+    }
+
+
+    if (
+      selectedSortOption.value ===
+      "franchise"
+    ) {
+
+      currentValue =
+        selectedFilters.franchise || "";
+
+    }
+
+
+    return (
+
+      <div
+        className="filter-box sort-value-box"
+      >
+
+        <label>
+          Select Value
+        </label>
+
+        <select
+          value={currentValue}
+          onChange={event =>
+            handleSortValueChange(
+              event.target.value
+            )
+          }
+        >
+
+          <option value="">
+            Select Value
+          </option>
+
+          {sortValueOptions.map(
+            value => (
+
+              <option
+                key={value}
+                value={value}
+              >
+                {value}
+              </option>
+
+            )
+          )}
+
+        </select>
+
+      </div>
+
+    );
+
+  }
+
+
+  // RENDER VIEW REPORT PERIOD FILTERS
+
+  function renderViewReportPeriodFilters() {
+
+    if (
+      selectedFilters.viewReportAs ===
+      "all"
+    ) {
+
+      return null;
+
+    }
+
+
+    if (
+      selectedFilters.viewReportAs ===
+      "yearly"
+    ) {
+
+      return (
+
+        <>
+
+          {renderSelect(
+            "FY",
+            "year",
+            financialYears,
+            "Select FY"
+          )}
+
+        </>
+
+      );
+
+    }
+
+
+    if (
+      selectedFilters.viewReportAs ===
+      "quarterly"
+    ) {
+
+      return (
+
+        <>
+
+          {renderSelect(
+            "FY",
+            "year",
+            financialYears,
+            "Select FY"
+          )}
+
+          {renderSelect(
+            "Quarter",
+            "quarter",
+            quarters,
+            "Select Quarter"
+          )}
+
+        </>
+
+      );
+
+    }
+
+
+    if (
+      selectedFilters.viewReportAs ===
+      "monthly"
+    ) {
+
+      return (
+
+        <>
+
+          {renderSelect(
+            "FY",
+            "year",
+            financialYears,
+            "Select FY"
+          )}
+
+          {renderSelect(
+            "Month",
+            "month",
+            months,
+            "Select Month"
+          )}
+
+        </>
+
+      );
+
+    }
+
+
+    return null;
+
+  }
+
 
   return (
 
     <div className="performance-filter-panel">
 
 
-      {/* ==================================================
-          HEADER
-      ================================================== */}
+      {/* HEADER */}
 
       <div className="filter-header">
 
         <h3>
-          Reports View
+          Performance Filters
         </h3>
-
 
         <div className="filter-actions">
 
@@ -981,16 +972,15 @@ function PerformanceFilters() {
             className="filter-button"
             onClick={applyFilters}
           >
-            Filter
+            Apply Filters
           </button>
-
 
           <button
             type="button"
             className="clear-filter-button"
             onClick={clearFilters}
           >
-            Clear Filter
+            Clear Filters
           </button>
 
         </div>
@@ -998,103 +988,230 @@ function PerformanceFilters() {
       </div>
 
 
-      {/* ==================================================
-          BASE REPORT FILTERS
-      ================================================== */}
+      {/* BASE FILTERS */}
 
-      <div className="base-performance-grid">
+      <div className="base-performance-section">
 
-        {
+        <div className="base-performance-title">
+          Base Filters
+        </div>
 
-          baseReportFilters.map(
-            filter =>
-              renderSelect(filter)
-          )
 
-        }
+        <div className="base-performance-grid">
+
+
+          {/* REPORTS VIEW */}
+
+          {renderSelect(
+            "Reports View",
+            "viewBy",
+            [
+              {
+                label: "None",
+                value: ""
+              },
+              {
+                label: "Client Performance",
+                value: "client"
+              },
+              {
+                label: "Enquiry Performance",
+                value: "enquiry"
+              }
+            ],
+            "Select View"
+          )}
+
+
+          {/* VIEW BY */}
+
+          {renderSelect(
+            "View By",
+            "metricView",
+            metricViewOptions,
+            "Select View By"
+          )}
+
+
+          {/* SORT BY */}
+
+          {renderSelect(
+            "Sort By",
+            "sortBy",
+            sortByOptions,
+            "Select Sort By"
+          )}
+
+
+          {/* SORT VALUE */}
+
+          {renderSortValue()}
+
+
+          {/* FINANCIAL YEAR */}
+
+          {renderSelect(
+            "Financial Year",
+            "year",
+            financialYears,
+            "Select Financial Year"
+          )}
+
+
+          {/* MONTH */}
+
+          {renderSelect(
+            "Month",
+            "month",
+            months,
+            "Select Month"
+          )}
+
+
+          {/* VIEW REPORT AS */}
+
+          {renderSelect(
+            "View Report As:",
+            "viewReportAs",
+            viewReportAsOptions,
+            "Select View Report As"
+          )}
+
+
+          {/* DEPENDENT PERIOD FILTERS */}
+
+          {renderViewReportPeriodFilters()}
+
+        </div>
 
       </div>
 
 
-      {/* ==================================================
-          CLIENT / ENQUIRY REPORT FILTERS
-      ================================================== */}
+      {/* ADDITIONAL FILTERS */}
 
-      {
+      <div className="additional-filter-section">
 
-        reportSpecificFilters.length > 0 && (
+        <div className="additional-filter-title">
+          Additional Filters
+        </div>
 
-          <>
 
-            <div className="additional-filter-title">
+        <div className="filter-grid">
 
-              {
-                reportView === "client"
-                  ? "Client Performance Filters"
-                  : "Enquiry Performance Filters"
-              }
+
+          {visibleAdditionalFilters.map(
+            filter =>
+              renderSelect(
+                filter.label,
+                filter.field,
+                filter.options,
+                `Select ${filter.label}`
+              )
+          )}
+
+
+          {/* CLIENT STATUS */}
+
+          {(
+            reportView === "" ||
+            reportView === "client"
+          ) && (
+
+            <div className="filter-box">
+
+              <label>
+                Client Status
+              </label>
+
+              <select
+                value={
+                  selectedFilters.clientStatus ||
+                  ""
+                }
+                onChange={event =>
+                  handleChange(
+                    "clientStatus",
+                    event.target.value
+                  )
+                }
+              >
+
+                <option value="">
+                  Select Client Status
+                </option>
+
+                {clientStatusOptions.map(
+                  status => (
+
+                    <option
+                      key={status}
+                      value={status}
+                    >
+                      {status}
+                    </option>
+
+                  )
+                )}
+
+              </select>
 
             </div>
 
+          )}
 
-            <div className="base-performance-grid">
 
-              {
+          {/* ENQUIRY STATUS */}
 
-                reportSpecificFilters.map(
-                  filter =>
-                    renderSelect(filter)
-                )
+          {(
+            reportView === "" ||
+            reportView === "enquiry"
+          ) && (
 
-              }
+            <div className="filter-box">
+
+              <label>
+                Enquiry Status
+              </label>
+
+              <select
+                value={
+                  selectedFilters.enquiryStatus ||
+                  ""
+                }
+                onChange={event =>
+                  handleChange(
+                    "enquiryStatus",
+                    event.target.value
+                  )
+                }
+              >
+
+                <option value="">
+                  Select Enquiry Status
+                </option>
+
+                {enquiryStatusOptions.map(
+                  status => (
+
+                    <option
+                      key={status.value}
+                      value={status.value}
+                    >
+                      {status.label}
+                    </option>
+
+                  )
+                )}
+
+              </select>
 
             </div>
 
-          </>
+          )}
 
-        )
-
-      }
-
-
-      {/* ==================================================
-          ADDITIONAL FILTERS
-      ================================================== */}
-
-      <div className="additional-filter-title">
-
-        Additional Filters
+        </div>
 
       </div>
-
-
-      <div className="filter-grid">
-
-        {
-
-          filtersConfig.map(
-            filter =>
-              renderSelect(filter)
-          )
-
-        }
-
-
-        {/* ================================================
-            STATUS FILTERS
-            ================================================ */}
-
-        {
-
-          statusFilters.map(
-            filter =>
-              renderSelect(filter)
-          )
-
-        }
-
-      </div>
-
 
     </div>
 

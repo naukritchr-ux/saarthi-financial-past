@@ -5,22 +5,29 @@
 .performance-filter-panel {
   width: 100%;
   background: #ffffff;
+
   border: 1px solid #dcd5c2;
   border-radius: 16px;
+
   padding: 22px;
   margin-bottom: 25px;
+
   box-sizing: border-box;
+
   box-shadow:
     0 8px 24px rgba(27, 42, 74, 0.08);
+
   transition:
     box-shadow 0.25s ease,
     transform 0.25s ease;
 }
 
+
 .performance-filter-panel:hover {
   box-shadow:
     0 12px 30px rgba(27, 42, 74, 0.1);
 }
+
 
 
 /* ======================================================
@@ -29,19 +36,27 @@
 
 .filter-header {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
+
   margin-bottom: 22px;
+
   gap: 20px;
 }
 
+
 .filter-header h3 {
   margin: 0;
+
   font-family: "Fraunces", serif;
+
   font-size: 21px;
   font-weight: 700;
+
   color: #1b2a4a;
 }
+
 
 
 /* ======================================================
@@ -50,9 +65,12 @@
 
 .filter-actions {
   display: flex;
+
   align-items: center;
+
   gap: 10px;
 }
+
 
 
 /* ======================================================
@@ -63,70 +81,151 @@
 .clear-filter-button {
   min-width: 100px;
   height: 40px;
+
   padding: 0 17px;
-  border: none;
+
   border-radius: 8px;
+
+  font-family: inherit;
+
   font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
+
   transition:
     background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
 
-/* Apply Filter */
+
+/* ======================================================
+   APPLY BUTTON
+====================================================== */
 
 .filter-button {
   background: #1b2a4a;
+
   color: #ffffff;
+
+  border: 1px solid #1b2a4a;
+
   box-shadow:
     0 4px 10px rgba(27, 42, 74, 0.18);
 }
 
+
 .filter-button:hover {
   background: #24385f;
+
+  border-color: #24385f;
+
   transform: translateY(-1px);
+
   box-shadow:
     0 6px 14px rgba(27, 42, 74, 0.22);
 }
 
+
 .filter-button:active {
   transform: translateY(0);
+
+  box-shadow:
+    0 3px 8px rgba(27, 42, 74, 0.18);
 }
 
 
-/* Clear Filter */
+
+/* ======================================================
+   CLEAR BUTTON
+====================================================== */
 
 .clear-filter-button {
   background: #f2efe7;
+
   color: #1b2a4a;
+
   border: 1px solid #dcd5c2;
 }
 
+
 .clear-filter-button:hover {
   background: #e8e2d4;
+
   border-color: #cfc5ae;
+
+  transform: translateY(-1px);
 }
+
 
 .clear-filter-button:active {
   transform: translateY(0);
 }
 
 
+
 /* ======================================================
-   NEW BASE PERFORMANCE FILTERS
+   BASE FILTER SECTION
+====================================================== */
+
+.base-performance-section {
+  width: 100%;
+
+  margin-bottom: 28px;
+}
+
+
+
+/* ======================================================
+   BASE FILTER TITLE
+====================================================== */
+
+.base-performance-title {
+  margin: 0 0 16px 0;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #6f685b;
+
+  letter-spacing: 0.8px;
+
+  text-transform: uppercase;
+}
+
+
+
+/* ======================================================
+   BASE PERFORMANCE GRID
 ====================================================== */
 
 .base-performance-grid {
   display: grid;
+
   grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+    repeat(4, minmax(0, 1fr));
+
   gap: 18px;
+
   width: 100%;
-  margin-bottom: 28px;
 }
+
+
+
+/* ======================================================
+   ADDITIONAL FILTER SECTION
+====================================================== */
+
+.additional-filter-section {
+  width: 100%;
+
+  margin-bottom: 25px;
+}
+
 
 
 /* ======================================================
@@ -134,26 +233,35 @@
 ====================================================== */
 
 .additional-filter-title {
-  margin-bottom: 16px;
+  margin: 0 0 16px 0;
+
   font-size: 13px;
   font-weight: 700;
+
   color: #6f685b;
+
   letter-spacing: 0.8px;
+
   text-transform: uppercase;
 }
 
 
+
 /* ======================================================
-   EXISTING FILTER GRID
+   ADDITIONAL FILTER GRID
 ====================================================== */
 
 .filter-grid {
   display: grid;
+
   grid-template-columns:
     repeat(4, minmax(0, 1fr));
+
   gap: 18px;
+
   width: 100%;
 }
+
 
 
 /* ======================================================
@@ -162,9 +270,12 @@
 
 .filter-box {
   display: flex;
+
   flex-direction: column;
+
   min-width: 0;
 }
+
 
 
 /* ======================================================
@@ -173,12 +284,17 @@
 
 .filter-box label {
   margin-bottom: 7px;
+
   font-size: 11px;
   font-weight: 700;
+
   color: #6f685b;
+
   letter-spacing: 0.9px;
+
   text-transform: uppercase;
 }
+
 
 
 /* ======================================================
@@ -187,71 +303,221 @@
 
 .filter-box select {
   width: 100%;
+
   height: 43px;
+
   padding: 0 12px;
+
   border: 1px solid #dcd5c2;
+
   border-radius: 8px;
+
   background: #ffffff;
+
   color: #1b2a4a;
+
   font-family: inherit;
+
   font-size: 13px;
   font-weight: 500;
+
   outline: none;
+
   cursor: pointer;
+
   box-sizing: border-box;
+
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
-    background 0.2s ease;
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 
+
 /* ======================================================
-   HOVER
+   SELECT HOVER
 ====================================================== */
 
 .filter-box select:hover {
   border-color: #b78a34;
+
   background: #fffdf8;
 }
 
 
+
 /* ======================================================
-   FOCUS
+   SELECT FOCUS
 ====================================================== */
 
 .filter-box select:focus {
   border-color: #b78a34;
+
+  background: #fffdf8;
+
   box-shadow:
     0 0 0 3px rgba(183, 138, 52, 0.14);
 }
 
 
+
 /* ======================================================
-   FIRST FILTER EMPHASIS
+   DISABLED SELECT
 ====================================================== */
 
-.filter-box:first-child select {
+.filter-box select:disabled {
+  background: #f5f3ee;
+
+  color: #999285;
+
+  border-color: #ded9ce;
+
+  cursor: not-allowed;
+
+  opacity: 0.75;
+}
+
+
+
+/* ======================================================
+   FIRST BASE FILTER EMPHASIS
+====================================================== */
+
+.base-performance-grid
+.filter-box:first-child
+select {
   border-color: #cfc4a8;
+
   background: #fffdf8;
 }
 
-.filter-box:first-child select:focus {
+
+.base-performance-grid
+.filter-box:first-child
+select:focus {
   border-color: #b78a34;
+
+  background: #fffdf8;
+
   box-shadow:
     0 0 0 3px rgba(183, 138, 52, 0.16);
 }
 
 
+
 /* ======================================================
-   SELECT OPTION
+   SORT BY FILTER
+====================================================== */
+
+.sort-by-box select {
+  border-color: #cfc4a8;
+
+  background: #fffdf8;
+}
+
+
+.sort-by-box select:focus {
+  border-color: #b78a34;
+
+  box-shadow:
+    0 0 0 3px rgba(183, 138, 52, 0.16);
+}
+
+
+
+/* ======================================================
+   SELECT VALUE FILTER
+====================================================== */
+
+.sort-value-box select {
+  border-color: #cfc4a8;
+
+  background: #fffdf8;
+}
+
+
+.sort-value-box select:focus {
+  border-color: #b78a34;
+
+  box-shadow:
+    0 0 0 3px rgba(183, 138, 52, 0.16);
+}
+
+
+
+/* ======================================================
+   EMPTY SELECT VALUE
+====================================================== */
+
+.sort-value-box.empty select {
+  background: #ffffff;
+
+  border-color: #dcd5c2;
+}
+
+
+
+/* ======================================================
+   SELECT OPTIONS
 ====================================================== */
 
 .filter-box select option {
   background: #ffffff;
+
   color: #1b2a4a;
+
   font-size: 13px;
 }
+
+
+
+/* ======================================================
+   PLACEHOLDER / SELECT OPTION
+====================================================== */
+
+.filter-box select option[value=""] {
+  color: #8b8579;
+}
+
+
+
+/* ======================================================
+   BASE FILTER SPECIAL SPACING
+====================================================== */
+
+.base-performance-grid
+.filter-box {
+  min-width: 0;
+}
+
+
+
+/* ======================================================
+   ADDITIONAL FILTER SPECIAL SPACING
+====================================================== */
+
+.filter-grid
+.filter-box {
+  min-width: 0;
+}
+
+
+
+/* ======================================================
+   FILTER ACTION AREA
+====================================================== */
+
+.performance-filter-panel
+.filter-actions {
+  margin-top: 6px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #eee9df;
+}
+
 
 
 /* ======================================================
@@ -264,26 +530,41 @@
     padding: 24px 26px;
   }
 
+
   .base-performance-grid {
     gap: 20px;
   }
+
 
   .filter-grid {
     gap: 20px;
   }
 
+
   .filter-box select {
     height: 44px;
   }
 
+
+  .filter-header h3 {
+    font-size: 22px;
+  }
+
 }
+
 
 
 /* ======================================================
    MEDIUM DESKTOP
 ====================================================== */
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
+
+  .base-performance-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
 
   .filter-grid {
     grid-template-columns:
@@ -291,6 +572,37 @@
   }
 
 }
+
+
+
+/* ======================================================
+   SMALL DESKTOP
+====================================================== */
+
+@media (max-width: 1100px) {
+
+  .performance-filter-panel {
+    padding: 20px;
+  }
+
+
+  .base-performance-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+  }
+
+
+  .filter-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+  }
+
+}
+
 
 
 /* ======================================================
@@ -303,19 +615,66 @@
     padding: 18px;
   }
 
+
+  .filter-header {
+    gap: 15px;
+  }
+
+
+  .filter-header h3 {
+    font-size: 20px;
+  }
+
+
   .base-performance-grid {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
+
     gap: 16px;
   }
+
 
   .filter-grid {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
+
     gap: 16px;
   }
 
+
+  .filter-box select {
+    height: 42px;
+  }
+
 }
+
+
+
+/* ======================================================
+   SMALL TABLET
+====================================================== */
+
+@media (max-width: 750px) {
+
+  .filter-header {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+
+  .filter-actions {
+    width: 100%;
+  }
+
+
+  .filter-button,
+  .clear-filter-button {
+    min-width: 110px;
+  }
+
+}
+
 
 
 /* ======================================================
@@ -326,7 +685,9 @@
 
   .performance-filter-panel {
     padding: 16px;
+
     border-radius: 12px;
+
     margin-bottom: 20px;
   }
 
@@ -335,42 +696,79 @@
 
   .filter-header {
     flex-direction: column;
+
     align-items: flex-start;
+
     gap: 15px;
+
     margin-bottom: 18px;
   }
+
 
   .filter-header h3 {
     font-size: 19px;
   }
 
 
-  /* Buttons */
+  /* Actions */
 
   .filter-actions {
     width: 100%;
+
+    gap: 10px;
   }
+
 
   .filter-button,
   .clear-filter-button {
     flex: 1;
+
     min-width: 0;
   }
 
 
-  /* New Base Filters */
+  /* Base Section */
 
-  .base-performance-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
+  .base-performance-section {
     margin-bottom: 24px;
   }
 
 
-  /* Existing Filters */
+  .base-performance-title {
+    margin-bottom: 14px;
+
+    font-size: 12px;
+  }
+
+
+  /* Base Filters */
+
+  .base-performance-grid {
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+
+  /* Additional Section */
+
+  .additional-filter-section {
+    margin-bottom: 22px;
+  }
+
+
+  .additional-filter-title {
+    margin-bottom: 14px;
+
+    font-size: 12px;
+  }
+
+
+  /* Additional Filters */
 
   .filter-grid {
     grid-template-columns: 1fr;
+
     gap: 14px;
   }
 
@@ -379,9 +777,12 @@
 
   .filter-box select {
     height: 42px;
+
+    font-size: 13px;
   }
 
 }
+
 
 
 /* ======================================================
@@ -394,24 +795,74 @@
     padding: 14px;
   }
 
+
   .filter-header h3 {
     font-size: 18px;
   }
 
+
   .filter-actions {
     flex-direction: column;
+
+    width: 100%;
   }
+
 
   .filter-button,
   .clear-filter-button {
     width: 100%;
+
+    min-width: 0;
   }
+
 
   .filter-box label {
     font-size: 10px;
   }
 
+
   .filter-box select {
+    height: 41px;
+
+    font-size: 12px;
+  }
+
+
+  .base-performance-title,
+  .additional-filter-title {
+    font-size: 11px;
+
+    letter-spacing: 0.7px;
+  }
+
+}
+
+
+
+/* ======================================================
+   VERY SMALL MOBILE
+====================================================== */
+
+@media (max-width: 350px) {
+
+  .performance-filter-panel {
+    padding: 12px;
+  }
+
+
+  .filter-header {
+    gap: 12px;
+  }
+
+
+  .filter-header h3 {
+    font-size: 17px;
+  }
+
+
+  .filter-box select {
+    padding: 0 10px;
+
     font-size: 12px;
   }
 

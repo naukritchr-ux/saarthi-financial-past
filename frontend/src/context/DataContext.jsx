@@ -423,6 +423,8 @@ export function DataProvider({
 
     allTime: "all",
 
+    viewReportAs: "all",
+
     sortBy: "",
 
     /* Main filters */
@@ -616,11 +618,179 @@ export function DataProvider({
           }
 
           /* =================================================
-             FINANCIAL YEAR
+             VIEW REPORT AS
+             
+             All Time
+             Yearly
+             Quarterly
+             Monthly
+
+             This works together with:
+             - year
+             - month
+             - quarter
+
+             Existing filters are preserved.
              ================================================= */
 
           if (
-            filters.year
+            filters.viewReportAs ===
+            "yearly"
+          ) {
+
+            if (
+              filters.year
+            ) {
+
+              const rowFinancialYear =
+                getFinancialYearFromRow(
+                  row
+                );
+
+              if (
+                normalizeValue(
+                  rowFinancialYear
+                ) !==
+                normalizeValue(
+                  filters.year
+                )
+              ) {
+
+                return false;
+
+              }
+
+            }
+
+          }
+
+          if (
+            filters.viewReportAs ===
+            "quarterly"
+          ) {
+
+            if (
+              filters.year
+            ) {
+
+              const rowFinancialYear =
+                getFinancialYearFromRow(
+                  row
+                );
+
+              if (
+                normalizeValue(
+                  rowFinancialYear
+                ) !==
+                normalizeValue(
+                  filters.year
+                )
+              ) {
+
+                return false;
+
+              }
+
+            }
+
+            if (
+              filters.quarter
+            ) {
+
+              const rowQuarter =
+                getFinancialQuarter(
+                  row[
+                    "Date Client Acquired"
+                  ]
+                );
+
+              if (
+                normalizeValue(
+                  rowQuarter
+                ) !==
+                normalizeValue(
+                  filters.quarter
+                )
+              ) {
+
+                return false;
+
+              }
+
+            }
+
+          }
+
+          if (
+            filters.viewReportAs ===
+            "monthly"
+          ) {
+
+            if (
+              filters.year
+            ) {
+
+              const rowFinancialYear =
+                getFinancialYearFromRow(
+                  row
+                );
+
+              if (
+                normalizeValue(
+                  rowFinancialYear
+                ) !==
+                normalizeValue(
+                  filters.year
+                )
+              ) {
+
+                return false;
+
+              }
+
+            }
+
+            if (
+              filters.month
+            ) {
+
+              const rowMonth =
+                getMonthFromDate(
+                  row[
+                    "Date Client Acquired"
+                  ]
+                );
+
+              if (
+                normalizeValue(
+                  rowMonth
+                ) !==
+                normalizeValue(
+                  filters.month
+                )
+              ) {
+
+                return false;
+
+              }
+
+            }
+
+          }
+
+          /* =================================================
+             OLD FINANCIAL YEAR FILTER
+             
+             Preserved so existing Financial Year
+             filter continues working.
+             ================================================= */
+
+          if (
+            filters.year &&
+            (
+              !filters.viewReportAs ||
+              filters.viewReportAs === "all"
+            )
           ) {
 
             const rowFinancialYear =
@@ -644,11 +814,17 @@ export function DataProvider({
           }
 
           /* =================================================
-             MONTH
+             OLD MONTH FILTER
+             
+             Preserved.
              ================================================= */
 
           if (
-            filters.month
+            filters.month &&
+            (
+              !filters.viewReportAs ||
+              filters.viewReportAs === "all"
+            )
           ) {
 
             const rowMonth =
@@ -674,11 +850,17 @@ export function DataProvider({
           }
 
           /* =================================================
-             QUARTER
+             OLD QUARTER FILTER
+             
+             Preserved.
              ================================================= */
 
           if (
-            filters.quarter
+            filters.quarter &&
+            (
+              !filters.viewReportAs ||
+              filters.viewReportAs === "all"
+            )
           ) {
 
             const rowQuarter =
@@ -958,7 +1140,6 @@ export function DataProvider({
   /* =========================================================
      DASHBOARD DATA
 
-     IMPORTANT:
      Pass BOTH filteredRows and filters.
 
      This allows dataProcessor.js to calculate:
@@ -967,6 +1148,7 @@ export function DataProvider({
      - Report By
      - Count
      - Revenue
+     - View Report As
      ========================================================= */
 
   const dashboardData =
