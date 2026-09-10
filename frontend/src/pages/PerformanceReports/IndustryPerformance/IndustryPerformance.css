@@ -1,287 +1,1317 @@
-.industry-performance {
+/* =========================================================
+   INDUSTRY PERFORMANCE PAGE
+========================================================= */
 
-  padding:30px;
-
-  background:#F7F4EC;
-
-  min-height:100%;
-
+.industry-performance-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 30px;
+  box-sizing: border-box;
+  background: #f7f4ec;
 }
 
 
+/* =========================================================
+   PAGE HEADER
+========================================================= */
 
-/* Page Heading */
+.industry-page-header {
+  margin-bottom: 28px;
+}
 
-.industry-performance h1 {
+.industry-page-eyebrow {
+  margin: 0 0 7px 0;
 
-  font-family:"Fraunces",serif;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
 
-  color:#1B2A4A;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
 
-  font-size:28px;
+  color: #b78a34;
+}
 
-  margin-bottom:30px;
+.industry-page-header h1 {
+  margin: 0;
 
+  font-family: "Fraunces", serif;
+  font-size: 30px;
+  font-weight: 600;
+
+  color: #1b2a4a;
+  line-height: 1.2;
+}
+
+.industry-page-header p {
+  margin: 9px 0 0 0;
+
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+
+  color: #6b7280;
 }
 
 
+/* =========================================================
+   MAIN TABLE CARD
+========================================================= */
 
-/* Summary Cards */
+.industry-table-card {
+  width: 100%;
 
-.industry-cards {
+  background: #ffffff;
 
-  display:grid;
+  border: 1px solid #dcd5c2;
+  border-radius: 14px;
 
-  grid-template-columns:repeat(4,1fr);
-
-  gap:20px;
-
-  margin-bottom:30px;
-
-}
-
-
-
-.industry-cards div {
-
-
-  background:white;
-
-  border:1px solid #DCD5C2;
-
-  border-radius:12px;
-
-  padding:20px;
-
+  overflow: hidden;
 
   box-shadow:
-
-  0 6px 15px rgba(27,42,74,.08);
-
-
+    0 8px 25px rgba(27, 42, 74, 0.07);
 }
 
 
+/* =========================================================
+   TABLE HEADER
+========================================================= */
 
-.industry-cards h3 {
+.industry-table-header {
+  display: flex;
 
+  align-items: center;
+  justify-content: space-between;
 
-  font-size:14px;
+  gap: 20px;
 
-  color:#5B6472;
+  padding: 20px 24px;
 
-  margin:0 0 10px;
+  border-bottom: 1px solid #e8e1d2;
 
+  background: #ffffff;
+}
 
+.industry-table-header h2 {
+  margin: 0;
+
+  font-family: "Fraunces", serif;
+  font-size: 21px;
+  font-weight: 600;
+
+  color: #1b2a4a;
+}
+
+.industry-count {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 34px;
+  height: 30px;
+
+  padding: 0 10px;
+
+  border-radius: 20px;
+
+  background: #f7f4ec;
+
+  border: 1px solid #dcd5c2;
+
+  color: #1b2a4a;
+
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 
+/* =========================================================
+   TABLE WRAPPER
+========================================================= */
 
-.industry-cards strong {
+.industry-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
 
-
-  font-family:"Fraunces",serif;
-
-  font-size:24px;
-
-  color:#1B2A4A;
-
-
+  scrollbar-width: thin;
+  scrollbar-color: #b78a34 #f7f4ec;
 }
 
 
-
-/* Chart */
-
-.industry-chart {
-
-
-  background:white;
-
-  border:1px solid #DCD5C2;
-
-  border-radius:12px;
-
-  padding:20px;
-
-  margin-bottom:30px;
-
-
-}
-
-
-
-.industry-chart h2 {
-
-
-  font-family:"Fraunces",serif;
-
-  color:#1B2A4A;
-
-  font-size:20px;
-
-  margin-bottom:20px;
-
-
-}
-
-
-
-/* Table */
+/* =========================================================
+   TABLE
+========================================================= */
 
 .industry-table {
+  width: 100%;
+  min-width: 900px;
 
-
-  width:100%;
-
-  overflow-x:auto;
-
-  background:white;
-
-  border:1px solid #DCD5C2;
-
-  border-radius:12px;
-
-
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 
+/* =========================================================
+   TABLE HEAD
+========================================================= */
 
-.industry-table table {
+.industry-table thead th {
+  padding: 15px 20px;
 
+  background: #1b2a4a;
 
-  width:100%;
+  color: #ffffff;
 
-  min-width:950px;
+  text-align: left;
 
-  border-collapse:collapse;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
 
+  letter-spacing: 0.4px;
 
+  white-space: nowrap;
+}
+
+.industry-table thead th:first-child {
+  padding-left: 24px;
 }
 
 
+/* =========================================================
+   TABLE BODY
+========================================================= */
 
-.industry-table th {
+.industry-table tbody td {
+  padding: 16px 20px;
 
+  border-bottom: 1px solid #eee8db;
 
-  background:#1B2A4A;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
 
-  color:white;
+  color: #1b2a4a;
 
-  padding:15px;
-
-  text-align:left;
-
-  font-size:13px;
-
-
+  vertical-align: middle;
 }
 
-
-
-.industry-table td {
-
-
-  padding:14px 15px;
-
-  border-bottom:1px solid #E8E1D2;
-
-  color:#1B2A4A;
-
-  font-size:14px;
-
-
+.industry-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-
-
-/* Rank */
-
-.industry-table td:first-child {
-
-
-  color:#B78A34;
-
-  font-weight:700;
-
-
+.industry-table tbody tr {
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
-
-
-
-/* Industry Name */
-
-.industry-table td:nth-child(2) {
-
-
-  font-weight:600;
-
-
-}
-
-
-
-/* Hover */
 
 .industry-table tbody tr:hover {
+  background: #fcfaf5;
+}
 
 
-  background:#F7F4EC;
+/* =========================================================
+   INDUSTRY NAME
+========================================================= */
 
+.industry-name {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  font-weight: 600;
+
+  color: #1b2a4a;
+
+  white-space: nowrap;
+}
+
+.industry-avatar {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  border-radius: 9px;
+
+  background: #f7f4ec;
+
+  border: 1px solid #dcd5c2;
+
+  color: #b78a34;
+
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   CLIENT COUNT
+========================================================= */
+
+.industry-client-count {
+  font-weight: 700;
+
+  color: #1b2a4a;
+}
+
+
+/* =========================================================
+   BILLING
+========================================================= */
+
+.industry-billing-value {
+  font-weight: 600;
+
+  color: #26734d;
+}
+
+
+/* =========================================================
+   NET AMOUNT
+========================================================= */
+
+.industry-net-value {
+  font-weight: 600;
+
+  color: #1b2a4a;
+}
+
+
+/* =========================================================
+   VIEW PERFORMANCE BUTTON
+========================================================= */
+
+.industry-view-performance-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-width: 118px;
+
+  padding: 9px 15px;
+
+  border: 1px solid #b78a34;
+  border-radius: 8px;
+
+  background: #b78a34;
+
+  color: #ffffff;
+
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.industry-view-performance-btn:hover {
+  background: #9f742b;
+
+  border-color: #9f742b;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 12px rgba(183, 138, 52, 0.2);
+}
+
+.industry-view-performance-btn:active {
+  transform: translateY(0);
+}
+
+.industry-view-arrow {
+  font-size: 15px;
+
+  line-height: 1;
+
+  transition:
+    transform 0.2s ease;
+}
+
+.industry-view-performance-btn:hover
+.industry-view-arrow {
+  transform: translateX(3px);
+}
+
+
+/* =========================================================
+   EMPTY TABLE
+========================================================= */
+
+.industry-empty {
+  padding: 55px 25px !important;
+
+  text-align: center !important;
+
+  color: #6b7280 !important;
+
+  font-family: "Inter", sans-serif !important;
+  font-size: 14px !important;
+}
+
+
+/* =========================================================
+   PERFORMANCE MODAL OVERLAY
+========================================================= */
+
+.industry-performance-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+
+  box-sizing: border-box;
+
+  background:
+    rgba(15, 24, 42, 0.65);
+
+  backdrop-filter: blur(4px);
+
+  animation:
+    industryOverlayIn 0.2s ease;
+}
+
+@keyframes industryOverlayIn {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 
 }
 
 
+/* =========================================================
+   PERFORMANCE MODAL
+========================================================= */
 
-/* Responsive */
+.industry-performance-modal {
+  width: 100%;
+  max-width: 1180px;
 
+  max-height: 92vh;
 
-@media(max-width:1100px){
+  overflow-y: auto;
 
+  background: #f7f4ec;
 
-.industry-cards {
+  border: 1px solid #dcd5c2;
 
+  border-radius: 16px;
 
-  grid-template-columns:repeat(2,1fr);
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.28);
 
+  animation:
+    industryModalIn 0.25s ease;
+
+  scrollbar-width: thin;
+  scrollbar-color: #b78a34 #f7f4ec;
+}
+
+@keyframes industryModalIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(15px)
+      scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
 
 }
 
 
+/* =========================================================
+   MODAL HEADER
+========================================================= */
+
+.industry-modal-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 24px 28px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #dcd5c2;
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 5;
+}
+
+.industry-modal-header h2 {
+  margin: 4px 0 0 0;
+
+  font-family: "Fraunces", serif;
+  font-size: 25px;
+  font-weight: 600;
+
+  color: #1b2a4a;
+}
+
+.industry-modal-eyebrow {
+  margin: 0;
+
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+
+  color: #b78a34;
 }
 
 
+/* =========================================================
+   CLOSE ICON
+========================================================= */
 
-@media(max-width:600px){
+.industry-modal-close {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #dcd5c2;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #1b2a4a;
+
+  font-size: 23px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.industry-modal-close:hover {
+  background: #1b2a4a;
+
+  color: #ffffff;
+
+  transform: rotate(3deg);
+}
 
 
-.industry-performance {
+/* =========================================================
+   SUMMARY GRID
+========================================================= */
+
+.industry-summary-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 16px;
+
+  padding: 22px 28px 0;
+}
 
 
-  padding:15px;
+/* =========================================================
+   SUMMARY CARD
+========================================================= */
 
+.industry-summary-card {
+  min-height: 110px;
+
+  padding: 18px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #dcd5c2;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 5px 15px rgba(27, 42, 74, 0.05);
+}
+
+.industry-summary-label {
+  display: block;
+
+  margin-bottom: 10px;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.8px;
+
+  color: #6b7280;
+}
+
+.industry-summary-text {
+  margin: 0;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #1b2a4a;
+
+  line-height: 1.4;
+}
+
+.industry-summary-value {
+  display: block;
+
+  font-family: "Fraunces", serif;
+
+  font-size: 22px;
+  font-weight: 600;
+
+  color: #1b2a4a;
+
+  line-height: 1.25;
+}
+
+
+/* =========================================================
+   TOP INDUSTRY CARD
+========================================================= */
+
+.industry-top-industry-card {
+  border-top: 3px solid #b78a34;
+}
+
+.industry-top-industry-card
+.industry-summary-text {
+  color: #b78a34;
+}
+
+
+/* =========================================================
+   SHARE CARD
+========================================================= */
+
+.industry-share-card {
+  border-top: 3px solid #8a6a2f;
+}
+
+
+/* =========================================================
+   NET CARD
+========================================================= */
+
+.industry-net-card {
+  border-top: 3px solid #26734d;
+}
+
+.industry-net-card
+.industry-summary-value {
+  color: #26734d;
+}
+
+
+/* =========================================================
+   SUB INDUSTRIES
+========================================================= */
+
+.industry-sub-industry-list {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin-top: 10px;
+}
+
+.industry-sub-industry-tag {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 6px 9px;
+
+  border-radius: 20px;
+
+  background: #f7f4ec;
+
+  border: 1px solid #dcd5c2;
+
+  color: #1b2a4a;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  line-height: 1.2;
+}
+
+
+/* =========================================================
+   REPORT CONTROLS
+========================================================= */
+
+.industry-report-controls {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin: 22px 28px 0;
+
+  padding: 17px 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #dcd5c2;
+
+  border-radius: 12px;
+}
+
+.industry-report-period {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.industry-report-period label {
+  font-family: "Inter", sans-serif;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: #1b2a4a;
+}
+
+.industry-report-period select {
+  min-width: 190px;
+
+  padding: 10px 36px 10px 12px;
+
+  border: 1px solid #dcd5c2;
+
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #1b2a4a;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.industry-report-period select:hover {
+  border-color: #b78a34;
+}
+
+.industry-report-period select:focus {
+  border-color: #b78a34;
+
+  box-shadow:
+    0 0 0 3px rgba(183, 138, 52, 0.12);
+}
+
+
+/* =========================================================
+   REPORT GRAPHS
+========================================================= */
+
+.industry-report-graphs {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+
+  padding: 18px 28px 28px;
+}
+
+
+/* =========================================================
+   CHART CARD
+========================================================= */
+
+.industry-chart-card {
+  min-width: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #dcd5c2;
+
+  border-radius: 12px;
+
+  padding: 18px;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 5px 15px rgba(27, 42, 74, 0.05);
+}
+
+
+/* =========================================================
+   CHART HEADING
+========================================================= */
+
+.industry-chart-heading {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 12px;
+}
+
+.industry-chart-heading h3 {
+  margin: 0;
+
+  font-family: "Fraunces", serif;
+
+  font-size: 18px;
+  font-weight: 600;
+
+  color: #1b2a4a;
+}
+
+.industry-chart-indicator {
+  width: 9px;
+  height: 9px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+}
+
+.industry-client-indicator {
+  background: #b78a34;
+}
+
+.industry-billing-indicator {
+  background: #26734d;
+}
+
+
+/* =========================================================
+   CHART CONTAINER
+========================================================= */
+
+.industry-chart-container {
+  width: 100%;
+  height: 300px;
+}
+
+
+/* =========================================================
+   NO CHART DATA
+========================================================= */
+
+.industry-no-chart-data {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  height: 300px;
+
+  border-radius: 8px;
+
+  background: #faf8f2;
+
+  color: #7b8492;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   MODERN TOOLTIP
+========================================================= */
+
+.industry-modern-tooltip {
+  min-width: 170px;
+
+  padding: 12px 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #dcd5c2;
+
+  border-radius: 9px;
+
+  box-shadow:
+    0 10px 30px rgba(27, 42, 74, 0.15);
+}
+
+.industry-tooltip-label {
+  margin-bottom: 5px;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  color: #6b7280;
+}
+
+.industry-tooltip-industry {
+  margin-bottom: 9px;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: #1b2a4a;
+}
+
+.industry-tooltip-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 5px 0;
+
+  border-top: 1px solid #eee8db;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 11px;
+
+  color: #6b7280;
+}
+
+.industry-tooltip-row strong {
+  color: #1b2a4a;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.industry-modal-footer {
+  display: flex;
+
+  justify-content: flex-end;
+
+  padding: 16px 28px 22px;
+
+  background: #ffffff;
+
+  border-top: 1px solid #dcd5c2;
+}
+
+.industry-footer-close {
+  min-width: 95px;
+
+  padding: 10px 18px;
+
+  border: 1px solid #1b2a4a;
+
+  border-radius: 8px;
+
+  background: #1b2a4a;
+
+  color: #ffffff;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.industry-footer-close:hover {
+  background: #263b61;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 12px rgba(27, 42, 74, 0.18);
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.industry-performance-modal::-webkit-scrollbar,
+.industry-table-wrapper::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.industry-performance-modal::-webkit-scrollbar-track,
+.industry-table-wrapper::-webkit-scrollbar-track {
+  background: #f7f4ec;
+}
+
+.industry-performance-modal::-webkit-scrollbar-thumb,
+.industry-table-wrapper::-webkit-scrollbar-thumb {
+  background: #c5b99d;
+
+  border-radius: 10px;
+}
+
+.industry-performance-modal::-webkit-scrollbar-thumb:hover,
+.industry-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #b78a34;
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1100px
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .industry-summary-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .industry-report-graphs {
+    grid-template-columns: 1fr;
+  }
 
 }
 
 
+/* =========================================================
+   RESPONSIVE - 850px
+========================================================= */
 
-.industry-cards {
+@media (max-width: 850px) {
 
+  .industry-performance-page {
+    padding: 22px;
+  }
 
-  grid-template-columns:1fr;
+  .industry-page-header h1 {
+    font-size: 26px;
+  }
 
+  .industry-performance-overlay {
+    padding: 15px;
+  }
+
+  .industry-performance-modal {
+    max-height: 95vh;
+
+    border-radius: 13px;
+  }
+
+  .industry-modal-header {
+    padding: 20px;
+  }
+
+  .industry-summary-grid {
+    padding:
+      18px 20px 0;
+  }
+
+  .industry-report-controls {
+    margin:
+      18px 20px 0;
+  }
+
+  .industry-report-graphs {
+    padding:
+      16px 20px 22px;
+  }
+
+  .industry-modal-footer {
+    padding:
+      15px 20px 20px;
+  }
 
 }
 
 
+/* =========================================================
+   RESPONSIVE - 600px
+========================================================= */
 
-.industry-performance h1 {
+@media (max-width: 600px) {
+
+  .industry-performance-page {
+    padding: 15px;
+  }
 
 
-  font-size:22px;
+  /* Header */
 
+  .industry-page-header {
+    margin-bottom: 20px;
+  }
+
+  .industry-page-header h1 {
+    font-size: 23px;
+  }
+
+  .industry-page-header p {
+    font-size: 13px;
+  }
+
+
+  /* Table */
+
+  .industry-table-header {
+    padding: 17px;
+  }
+
+  .industry-table-header h2 {
+    font-size: 18px;
+  }
+
+
+  /* Modal */
+
+  .industry-performance-overlay {
+    padding: 8px;
+  }
+
+  .industry-performance-modal {
+    max-height: 97vh;
+
+    border-radius: 11px;
+  }
+
+
+  /* Modal Header */
+
+  .industry-modal-header {
+    padding: 17px;
+
+    gap: 12px;
+  }
+
+  .industry-modal-header h2 {
+    font-size: 20px;
+  }
+
+  .industry-modal-close {
+    width: 36px;
+    height: 36px;
+
+    font-size: 20px;
+  }
+
+
+  /* Summary */
+
+  .industry-summary-grid {
+    grid-template-columns: 1fr;
+
+    padding:
+      15px 17px 0;
+
+    gap: 11px;
+  }
+
+  .industry-summary-card {
+    min-height: auto;
+
+    padding: 15px;
+  }
+
+
+  /* Sub Industries */
+
+  .industry-sub-industry-list {
+    gap: 6px;
+  }
+
+  .industry-sub-industry-tag {
+    font-size: 10px;
+  }
+
+
+  /* Report Controls */
+
+  .industry-report-controls {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    margin:
+      15px 17px 0;
+
+    padding: 15px;
+  }
+
+  .industry-report-period {
+    width: 100%;
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 7px;
+  }
+
+  .industry-report-period select {
+    width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+  }
+
+
+  /* Graphs */
+
+  .industry-report-graphs {
+    padding:
+      14px 17px 18px;
+
+    gap: 12px;
+  }
+
+  .industry-chart-card {
+    padding: 13px;
+  }
+
+  .industry-chart-heading h3 {
+    font-size: 16px;
+  }
+
+  .industry-chart-container {
+    height: 260px;
+  }
+
+  .industry-no-chart-data {
+    height: 260px;
+  }
+
+
+  /* Footer */
+
+  .industry-modal-footer {
+    padding:
+      13px 17px 17px;
+  }
+
+  .industry-footer-close {
+    width: 100%;
+  }
 
 }
 
+
+/* =========================================================
+   VERY SMALL SCREENS
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .industry-page-header h1 {
+    font-size: 21px;
+  }
+
+  .industry-table-header {
+    padding: 15px;
+  }
+
+  .industry-table-header h2 {
+    font-size: 17px;
+  }
+
+  .industry-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .industry-modal-header h2 {
+    font-size: 18px;
+  }
 
 }
