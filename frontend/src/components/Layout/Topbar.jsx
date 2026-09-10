@@ -113,7 +113,6 @@ function Topbar({ onMenuClick }) {
     }
 
 
-    // Allow selecting the same file again
     event.target.value = "";
 
   }
@@ -125,7 +124,7 @@ function Topbar({ onMenuClick }) {
 
 
       {/* =================================================
-          THREE LINE MENU BUTTON
+          FIXED SIDEBAR TOGGLE BUTTON
           ================================================= */}
 
       <IconButton
@@ -168,8 +167,7 @@ function Topbar({ onMenuClick }) {
             File:
 
             <strong>
-              {fileName ||
-                "No File Uploaded"}
+              {fileName || "No File Uploaded"}
             </strong>
 
           </span>
@@ -180,11 +178,13 @@ function Topbar({ onMenuClick }) {
             Last Refresh:
 
             <strong>
+
               {
                 lastRefresh
                   ? lastRefresh.toLocaleString()
                   : "--"
               }
+
             </strong>
 
           </span>
@@ -201,7 +201,9 @@ function Topbar({ onMenuClick }) {
       <div className="ledger-header-actions">
 
 
-        {/* UPLOAD BUTTON */}
+        {/* =================================================
+            UPLOAD BUTTON
+            ================================================= */}
 
         <Button
           variant="contained"
@@ -210,7 +212,6 @@ function Topbar({ onMenuClick }) {
         >
 
           Upload New Sheet
-
 
           <input
             hidden
@@ -222,10 +223,14 @@ function Topbar({ onMenuClick }) {
         </Button>
 
 
-        {/* PROFILE BUTTON */}
+        {/* =================================================
+            PROFILE BUTTON
+            ================================================= */}
 
         <IconButton
+          className="profile-button"
           onClick={handleProfileClick}
+          aria-label="Open profile menu"
         >
 
           <AccountCircle />
@@ -233,7 +238,9 @@ function Topbar({ onMenuClick }) {
         </IconButton>
 
 
-        {/* PROFILE MENU */}
+        {/* =================================================
+            PROFILE MENU
+            ================================================= */}
 
         <Menu
           anchorEl={anchorEl}

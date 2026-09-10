@@ -8,9 +8,9 @@
 
   height: 100vh;
 
-  background: #1B2A4A;
+  background: #FFFFFF;
 
-  color: #FFFFFF;
+  color: #1B2A4A;
 
   display: flex;
 
@@ -24,7 +24,11 @@
 
   overflow-y: auto;
 
+  overflow-x: hidden;
+
   box-sizing: border-box;
+
+  border-right: 1px solid #DCD5C2;
 
   transition: transform 0.3s ease;
 
@@ -34,7 +38,7 @@
 
 
 /* =========================================================
-   SIDEBAR VISIBLE
+   SIDEBAR OPEN
    ========================================================= */
 
 .sidebar.sidebar-visible {
@@ -45,7 +49,7 @@
 
 
 /* =========================================================
-   SIDEBAR HIDDEN
+   SIDEBAR CLOSED
    ========================================================= */
 
 .sidebar.sidebar-hidden {
@@ -63,10 +67,14 @@
 
   padding: 30px 24px;
 
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+  border-bottom: 1px solid #DCD5C2;
 
 }
 
+
+/* =========================================================
+   LOGO TITLE
+   ========================================================= */
 
 .logo h2 {
 
@@ -78,8 +86,14 @@
 
   letter-spacing: 2px;
 
+  color: #1B2A4A;
+
 }
 
+
+/* =========================================================
+   LOGO SUBTITLE
+   ========================================================= */
 
 .logo p {
 
@@ -87,9 +101,9 @@
 
   font-size: 14px;
 
-  color: #DCD5C2;
+  color: #7A7F87;
 
-  opacity: .9;
+  opacity: 1;
 
 }
 
@@ -125,7 +139,7 @@
 
   padding: 13px 18px;
 
-  color: #FFFFFF;
+  color: #1B2A4A;
 
   text-decoration: none;
 
@@ -135,25 +149,36 @@
 
   border-radius: 8px;
 
-  transition: .25s ease;
-
-}
-
-
-.sidebar nav > a svg {
-
-  font-size: 21px;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
 
 }
 
 
 /* =========================================================
-   HOVER
+   DASHBOARD ICON
    ========================================================= */
 
-.sidebar nav a:hover {
+.sidebar nav > a svg {
 
-  background: rgba(255,255,255,0.08);
+  font-size: 21px;
+
+  color: #1B2A4A;
+
+}
+
+
+/* =========================================================
+   NAVIGATION HOVER
+   ========================================================= */
+
+.sidebar nav > a:hover {
+
+  background: #F7F4EC;
+
+  color: #1B2A4A;
 
   transform: translateX(4px);
 
@@ -168,11 +193,21 @@
 
   background: #B78A34;
 
-  color: white;
+  color: #FFFFFF;
 
   box-shadow:
+    0 5px 15px rgba(183, 138, 52, 0.25);
 
-    0 5px 15px rgba(183,138,52,.25);
+}
+
+
+/* =========================================================
+   ACTIVE DASHBOARD ICON
+   ========================================================= */
+
+.sidebar nav > a.active svg {
+
+  color: #FFFFFF;
 
 }
 
@@ -204,7 +239,7 @@
 
   padding: 13px 18px;
 
-  color: #DCD5C2;
+  color: #7A7F87;
 
   font-size: 14px;
 
@@ -215,9 +250,15 @@
 }
 
 
+/* =========================================================
+   REPORTS TITLE ICON
+   ========================================================= */
+
 .sidebar-section-title svg {
 
   font-size: 21px;
+
+  color: #7A7F87;
 
 }
 
@@ -238,7 +279,7 @@
 
   padding-left: 10px;
 
-  border-left: 1px solid rgba(220,213,194,0.25);
+  border-left: 1px solid #DCD5C2;
 
 }
 
@@ -257,7 +298,7 @@
 
   padding: 10px 14px;
 
-  color: #FFFFFF;
+  color: #1B2A4A;
 
   text-decoration: none;
 
@@ -267,16 +308,23 @@
 
   border-radius: 7px;
 
-  transition: .25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
 
 }
 
+
+/* =========================================================
+   REPORT ICON
+   ========================================================= */
 
 .sidebar-report-link svg {
 
   font-size: 18px;
 
-  color: #DCD5C2;
+  color: #7A7F87;
 
 }
 
@@ -287,7 +335,9 @@
 
 .sidebar-report-link:hover {
 
-  background: rgba(255,255,255,0.08);
+  background: #F7F4EC;
+
+  color: #1B2A4A;
 
   transform: translateX(4px);
 
@@ -305,11 +355,14 @@
   color: #FFFFFF;
 
   box-shadow:
-
-    0 5px 15px rgba(183,138,52,.25);
+    0 5px 15px rgba(183, 138, 52, 0.25);
 
 }
 
+
+/* =========================================================
+   ACTIVE REPORT ICON
+   ========================================================= */
 
 .sidebar-report-link.active svg {
 
@@ -319,7 +372,7 @@
 
 
 /* =========================================================
-   SCROLLBAR
+   SIDEBAR SCROLLBAR
    ========================================================= */
 
 .sidebar::-webkit-scrollbar {
@@ -346,10 +399,100 @@
 
 
 /* =========================================================
+   FIXED MENUBAR
+   ========================================================= */
+
+/*
+   This button stays fixed at the top-left
+   corner of the screen.
+
+   It is NOT inside the sidebar.
+*/
+
+.sidebar-menu-button {
+
+  position: fixed !important;
+
+  top: 20px !important;
+
+  left: 20px !important;
+
+  width: 45px !important;
+
+  height: 45px !important;
+
+  padding: 0 !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  background: #FFFFFF !important;
+
+  border: 1px solid #DCD5C2 !important;
+
+  border-radius: 8px !important;
+
+  box-shadow:
+    0 3px 10px rgba(27, 42, 74, 0.10);
+
+  z-index: 2000 !important;
+
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease !important;
+
+}
+
+
+/* =========================================================
+   MENUBAR HOVER
+   ========================================================= */
+
+.sidebar-menu-button:hover {
+
+  background: #F7F4EC !important;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 5px 15px rgba(27, 42, 74, 0.15);
+
+}
+
+
+/* =========================================================
+   MENUBAR ICON
+   ========================================================= */
+
+.sidebar-menu-button svg {
+
+  color: #1B2A4A !important;
+
+  font-size: 27px !important;
+
+}
+
+
+/* =========================================================
+   MENUBAR ACTIVE / FOCUS
+   ========================================================= */
+
+.sidebar-menu-button:focus {
+
+  outline: none !important;
+
+}
+
+
+/* =========================================================
    RESPONSIVE
    ========================================================= */
 
-@media(max-width: 900px) {
+@media (max-width: 900px) {
 
   .sidebar {
 
@@ -368,6 +511,113 @@
   .logo h2 {
 
     font-size: 30px;
+
+  }
+
+
+  .sidebar-menu-button {
+
+    top: 15px !important;
+
+    left: 15px !important;
+
+    width: 42px !important;
+
+    height: 42px !important;
+
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .sidebar {
+
+    width: 220px;
+
+    box-shadow:
+      4px 0 20px rgba(27, 42, 74, 0.12);
+
+  }
+
+
+  .sidebar-menu-button {
+
+    top: 12px !important;
+
+    left: 12px !important;
+
+    width: 40px !important;
+
+    height: 40px !important;
+
+  }
+
+
+  .sidebar-menu-button svg {
+
+    font-size: 24px !important;
+
+  }
+
+
+  .sidebar nav {
+
+    padding: 15px 10px;
+
+  }
+
+
+  .logo {
+
+    padding: 22px 18px;
+
+  }
+
+
+  .logo h2 {
+
+    font-size: 28px;
+
+  }
+
+
+  .logo p {
+
+    font-size: 13px;
+
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+  .sidebar {
+
+    width: 210px;
+
+  }
+
+
+  .sidebar-menu-button {
+
+    top: 10px !important;
+
+    left: 10px !important;
+
+    width: 38px !important;
+
+    height: 38px !important;
 
   }
 
