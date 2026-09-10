@@ -253,7 +253,7 @@ function getFinancialYear(row) {
 
 
       /*
-       * April - March
+       * April - March Financial Year
        */
 
       if (month >= 4) {
@@ -494,9 +494,7 @@ function CityTooltip({
 function CityPerformance() {
 
   const {
-    rows = [],
-    filteredRows,
-    filters
+    rows = []
   } = useData();
 
 
@@ -513,26 +511,9 @@ function CityPerformance() {
 
 
   /* =========================================================
-     ACTIVE FILTER
-  ========================================================= */
-
-  const hasActiveFilter =
-    Object.values(filters || {}).some(
-      value =>
-        value !== "" &&
-        value !== null &&
-        value !== undefined
-    );
-
-
-  const dataRows =
-    hasActiveFilter
-      ? filteredRows
-      : rows;
-
-
-  /* =========================================================
      CITY TABLE DATA
+     
+     NO DASHBOARD FILTERS
   ========================================================= */
 
   const cityData =
@@ -542,7 +523,7 @@ function CityPerformance() {
         new Map();
 
 
-      dataRows.forEach(row => {
+      rows.forEach(row => {
 
         const city =
           getCity(row);
@@ -574,10 +555,27 @@ function CityPerformance() {
           cityMap.get(city);
 
 
+        /*
+         * Every row represents
+         * one acquired client.
+         */
+
         data.clients += 1;
+
+
+        /*
+         * Total Billing
+         */
 
         data.billing +=
           getBilling(row);
+
+
+        /*
+         * Net Amount
+         *
+         * Billing - Franchise Share
+         */
 
         data.netAmount +=
           getNetAmount(row);
@@ -592,7 +590,7 @@ function CityPerformance() {
           b.clients - a.clients
       );
 
-    }, [dataRows]);
+    }, [rows]);
 
 
   /* =========================================================
@@ -613,7 +611,9 @@ function CityPerformance() {
 
 
         if (year) {
+
           years.add(year);
+
         }
 
       });
@@ -645,18 +645,20 @@ function CityPerformance() {
     useMemo(() => {
 
       if (!selectedCity) {
+
         return [];
+
       }
 
 
-      return dataRows.filter(
+      return rows.filter(
         row =>
           getCity(row) ===
           selectedCity
       );
 
     }, [
-      dataRows,
+      rows,
       selectedCity
     ]);
 
@@ -680,8 +682,10 @@ function CityPerformance() {
         totalBilling +=
           getBilling(row);
 
+
         totalFranchiseShare +=
           getFranchiseeShare(row);
+
 
         netAmount +=
           getNetAmount(row);
@@ -741,11 +745,12 @@ function CityPerformance() {
   /* =========================================================
      YEARLY REPORT
      
-     Compare ALL cities.
+     NONE = YEARLY
      
-     For each FY:
-     - find city with highest client count
-     - show that city's billing
+     For every financial year:
+     - compare all cities
+     - select city with highest acquired clients
+     - show its billing
   ========================================================= */
 
   const yearlyReportData =
@@ -760,6 +765,7 @@ function CityPerformance() {
         const year =
           getFinancialYear(row);
 
+
         const city =
           getCity(row);
 
@@ -768,7 +774,9 @@ function CityPerformance() {
           !year ||
           !city
         ) {
+
           return;
+
         }
 
 
@@ -809,6 +817,7 @@ function CityPerformance() {
 
 
         data.clients += 1;
+
 
         data.billing +=
           getBilling(row);
@@ -884,20 +893,25 @@ function CityPerformance() {
   /* =========================================================
      MONTHLY REPORT
      
-     Selected FY:
+     SELECTED FY = MONTHLY
+     
      April → March
      
      For each month:
-     - compare ALL cities
-     - find city with highest client count
-     - show that city's billing
+     - compare all cities
+     - select city with highest clients
+     - show its billing
   ========================================================= */
 
   const monthlyReportData =
     useMemo(() => {
 
-      if (!selectedFinancialYear) {
+      if (
+        !selectedFinancialYear
+      ) {
+
         return [];
+
       }
 
 
@@ -918,7 +932,10 @@ function CityPerformance() {
 
 
       return monthNumbers.map(
-        (monthNumber, index) => {
+        (
+          monthNumber,
+          index
+        ) => {
 
           const monthInfo =
             financialMonths[index];
@@ -928,10 +945,13 @@ function CityPerformance() {
             rows.filter(row => {
 
               return (
+
                 getFinancialYear(row) ===
                   selectedFinancialYear &&
+
                 getMonth(row) ===
                   monthNumber
+
               );
 
             });
@@ -948,7 +968,9 @@ function CityPerformance() {
 
 
             if (!city) {
+
               return;
+
             }
 
 
@@ -973,6 +995,7 @@ function CityPerformance() {
 
 
             data.clients += 1;
+
 
             data.billing +=
               getBilling(row);
@@ -1108,16 +1131,7 @@ function CityPerformance() {
 
 
       {/* =====================================================
-          FILTERS
-      ===================================================== */}
-
-      <PerformanceFilters
-        activeFilter="city"
-      />
-
-
-      {/* =====================================================
-          MAIN TABLE
+          MAIN CITY TABLE
       ===================================================== */}
 
       <div className="city-table-card">
@@ -1194,8 +1208,9 @@ function CityPerformance() {
                     colSpan="5"
                     className="city-empty"
                   >
-                    No city data available
-                    for the selected filters.
+
+                    No city data available.
+
                   </td>
 
                 </tr>
@@ -1267,7 +1282,7 @@ function CityPerformance() {
                       </td>
 
 
-                      {/* NET */}
+                      {/* NET AMOUNT */}
 
                       <td>
 
@@ -1333,7 +1348,9 @@ function CityPerformance() {
 
         <div
           className="city-performance-overlay"
-          onClick={handleCloseModal}
+          onClick={
+            handleCloseModal
+          }
         >
 
           <div
@@ -1373,7 +1390,9 @@ function CityPerformance() {
               <button
                 type="button"
                 className="city-modal-close"
-                onClick={handleCloseModal}
+                onClick={
+                  handleCloseModal
+                }
                 aria-label="Close"
               >
                 ×
@@ -1626,7 +1645,9 @@ function CityPerformance() {
             <div className="city-report-graphs">
 
 
-              {/* CLIENT ACQUIRED */}
+              {/* =================================================
+                  CLIENT ACQUIRED
+              ================================================= */}
 
               <div className="city-chart-card">
 
@@ -1743,7 +1764,9 @@ function CityPerformance() {
               </div>
 
 
-              {/* TOTAL BILLING */}
+              {/* =================================================
+                  TOTAL BILLING
+              ================================================= */}
 
               <div className="city-chart-card">
 
@@ -1826,9 +1849,19 @@ function CityPerformance() {
                           tickLine={false}
                           axisLine={false}
                           tickFormatter={value =>
-                            `₹${(
-                              value / 100000
-                            ).toFixed(0)}L`
+                            value >= 10000000
+                              ? `₹${(
+                                  value / 10000000
+                                ).toFixed(1)}Cr`
+                              : value >= 100000
+                              ? `₹${(
+                                  value / 100000
+                                ).toFixed(1)}L`
+                              : value >= 1000
+                              ? `₹${(
+                                  value / 1000
+                                ).toFixed(1)}K`
+                              : `₹${value}`
                           }
                         />
 
@@ -1887,7 +1920,9 @@ function CityPerformance() {
               <button
                 type="button"
                 className="city-footer-close"
-                onClick={handleCloseModal}
+                onClick={
+                  handleCloseModal
+                }
               >
                 Close
               </button>
