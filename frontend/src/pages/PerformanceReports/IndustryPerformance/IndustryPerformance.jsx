@@ -21,18 +21,54 @@ import "./IndustryPerformance.css";
 
 
 const financialMonths = [
-  { full: "April", short: "Apr" },
-  { full: "May", short: "May" },
-  { full: "June", short: "Jun" },
-  { full: "July", short: "Jul" },
-  { full: "August", short: "Aug" },
-  { full: "September", short: "Sep" },
-  { full: "October", short: "Oct" },
-  { full: "November", short: "Nov" },
-  { full: "December", short: "Dec" },
-  { full: "January", short: "Jan" },
-  { full: "February", short: "Feb" },
-  { full: "March", short: "Mar" }
+  {
+    full: "April",
+    short: "Apr"
+  },
+  {
+    full: "May",
+    short: "May"
+  },
+  {
+    full: "June",
+    short: "Jun"
+  },
+  {
+    full: "July",
+    short: "Jul"
+  },
+  {
+    full: "August",
+    short: "Aug"
+  },
+  {
+    full: "September",
+    short: "Sep"
+  },
+  {
+    full: "October",
+    short: "Oct"
+  },
+  {
+    full: "November",
+    short: "Nov"
+  },
+  {
+    full: "December",
+    short: "Dec"
+  },
+  {
+    full: "January",
+    short: "Jan"
+  },
+  {
+    full: "February",
+    short: "Feb"
+  },
+  {
+    full: "March",
+    short: "Mar"
+  }
 ];
 
 
@@ -52,7 +88,8 @@ function toNumber(value) {
       .replace(/[₹$€£]/g, "")
       .trim();
 
-  const number = Number(cleanedValue);
+  const number =
+    Number(cleanedValue);
 
   return Number.isFinite(number)
     ? number
@@ -120,17 +157,6 @@ function getBDMember(row) {
 }
 
 
-function getFranchise(row) {
-
-  return String(
-    row?.franchise_name ??
-    row?.["Franchise Name"] ??
-    ""
-  ).trim();
-
-}
-
-
 function getBilling(row) {
 
   return toNumber(
@@ -177,10 +203,12 @@ function getFinancialYear(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
+
   if (dateValue) {
 
     const date =
       new Date(dateValue);
+
 
     if (
       !Number.isNaN(
@@ -194,6 +222,7 @@ function getFinancialYear(row) {
       const year =
         date.getFullYear();
 
+
       if (month >= 4) {
 
         return `${year}-${String(
@@ -201,6 +230,7 @@ function getFinancialYear(row) {
         ).slice(-2)}`;
 
       }
+
 
       return `${year - 1}-${String(
         year
@@ -216,6 +246,7 @@ function getFinancialYear(row) {
     row?.["Aquired Year"] ??
     row?.["Acquired Year"];
 
+
   if (
     acquiredYear !== undefined &&
     acquiredYear !== null &&
@@ -224,6 +255,7 @@ function getFinancialYear(row) {
 
     const year =
       Number(acquiredYear);
+
 
     if (
       Number.isFinite(year) &&
@@ -238,6 +270,7 @@ function getFinancialYear(row) {
 
   }
 
+
   return "";
 
 }
@@ -248,12 +281,15 @@ function getMonth(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
+
   if (!dateValue) {
     return "";
   }
 
+
   const date =
     new Date(dateValue);
+
 
   if (
     Number.isNaN(
@@ -262,6 +298,7 @@ function getMonth(row) {
   ) {
     return "";
   }
+
 
   return date.getMonth() + 1;
 
@@ -276,14 +313,17 @@ function getMostFrequent(
   const countMap =
     new Map();
 
+
   rows.forEach(row => {
 
     const value =
       getter(row);
 
+
     if (!value) {
       return;
     }
+
 
     countMap.set(
       value,
@@ -340,6 +380,7 @@ function IndustryTooltip({
     return null;
   }
 
+
   const industry =
     payload[0]?.payload?.industry;
 
@@ -352,6 +393,7 @@ function IndustryTooltip({
         {label}
       </div>
 
+
       {industry && (
 
         <div className="industry-tooltip-industry">
@@ -359,6 +401,7 @@ function IndustryTooltip({
         </div>
 
       )}
+
 
       {payload.map(
         (item, index) => (
@@ -371,6 +414,7 @@ function IndustryTooltip({
             <span>
               {item.name}
             </span>
+
 
             <strong>
 
@@ -414,7 +458,7 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     INDUSTRY TABLE
+     INDUSTRY TABLE DATA
   ========================================================= */
 
   const industryData =
@@ -423,17 +467,22 @@ function IndustryPerformance() {
       const industryMap =
         new Map();
 
+
       rows.forEach(row => {
 
         const industry =
           getIndustry(row);
 
+
         if (!industry) {
           return;
         }
 
+
         if (
-          !industryMap.has(industry)
+          !industryMap.has(
+            industry
+          )
         ) {
 
           industryMap.set(
@@ -448,8 +497,12 @@ function IndustryPerformance() {
 
         }
 
+
         const data =
-          industryMap.get(industry);
+          industryMap.get(
+            industry
+          );
+
 
         data.clients += 1;
 
@@ -482,10 +535,12 @@ function IndustryPerformance() {
       const years =
         new Set();
 
+
       rows.forEach(row => {
 
         const year =
           getFinancialYear(row);
+
 
         if (year) {
           years.add(year);
@@ -514,8 +569,6 @@ function IndustryPerformance() {
 
   /* =========================================================
      SELECTED INDUSTRY ROWS
-
-     ALL MODAL DETAILS ARE BASED ONLY ON THIS INDUSTRY.
   ========================================================= */
 
   const selectedRows =
@@ -524,6 +577,7 @@ function IndustryPerformance() {
       if (!selectedIndustry) {
         return [];
       }
+
 
       return rows.filter(
         row =>
@@ -538,7 +592,7 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     SUMMARY
+     PERFORMANCE SUMMARY
   ========================================================= */
 
   const performanceSummary =
@@ -587,7 +641,6 @@ function IndustryPerformance() {
   /* =========================================================
      SUB INDUSTRIES
 
-     IMPORTANT:
      Only Sub Industries belonging to the selected
      main Industry are displayed.
   ========================================================= */
@@ -600,10 +653,6 @@ function IndustryPerformance() {
 
 
       selectedRows.forEach(row => {
-
-        /*
-         * Extra safety check.
-         */
 
         if (
           getIndustry(row) !==
@@ -651,10 +700,10 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     BEST TEAM LEADER
+     TEAM LEADER
   ========================================================= */
 
-  const bestTeamLeader =
+  const teamLeader =
     useMemo(() => {
 
       return getMostFrequent(
@@ -666,10 +715,10 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     BEST BD MEMBER
+     BD MEMBER
   ========================================================= */
 
-  const bestBDMember =
+  const bdMember =
     useMemo(() => {
 
       return getMostFrequent(
@@ -681,26 +730,11 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     BEST FRANCHISE
-  ========================================================= */
+     YEARLY REPORT
 
-  const bestFranchise =
-    useMemo(() => {
-
-      return getMostFrequent(
-        selectedRows,
-        getFranchise
-      );
-
-    }, [selectedRows]);
-
-
-  /* =========================================================
-     YEARLY TOP INDUSTRY REPORT
-
-     Every year:
-     - count acquired clients for every industry
-     - select industry with highest count
+     For every financial year:
+     - compare all industries
+     - find industry with highest acquired clients
      - show only that industry
   ========================================================= */
 
@@ -745,7 +779,9 @@ function IndustryPerformance() {
 
 
         if (
-          !industryMap.has(industry)
+          !industryMap.has(
+            industry
+          )
         ) {
 
           industryMap.set(
@@ -761,7 +797,9 @@ function IndustryPerformance() {
 
 
         const data =
-          industryMap.get(industry);
+          industryMap.get(
+            industry
+          );
 
 
         data.clients += 1;
@@ -778,19 +816,20 @@ function IndustryPerformance() {
       yearMap.forEach(
         (industryMap, year) => {
 
-          let top = null;
+          let topIndustry = null;
 
 
           industryMap.forEach(
             data => {
 
               if (
-                !top ||
+                !topIndustry ||
                 data.clients >
-                  top.clients
+                  topIndustry.clients
               ) {
 
-                top = data;
+                topIndustry =
+                  data;
 
               }
 
@@ -798,20 +837,20 @@ function IndustryPerformance() {
           );
 
 
-          if (top) {
+          if (topIndustry) {
 
             result.push({
 
               year,
 
               industry:
-                top.industry,
+                topIndustry.industry,
 
               clients:
-                top.clients,
+                topIndustry.clients,
 
               billing:
-                top.billing
+                topIndustry.billing
 
             });
 
@@ -824,12 +863,10 @@ function IndustryPerformance() {
       return result.sort(
         (a, b) =>
           Number(
-            String(a.year)
-              .slice(0, 4)
+            String(a.year).slice(0, 4)
           ) -
           Number(
-            String(b.year)
-              .slice(0, 4)
+            String(b.year).slice(0, 4)
           )
       );
 
@@ -837,15 +874,15 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     MONTHLY TOP INDUSTRY REPORT
+     MONTHLY REPORT
 
-     Financial year order:
+     Financial year:
      Apr → Mar
 
-     Every month:
-     - count clients for every industry
-     - select top industry
-     - show only top industry
+     For every month:
+     - compare all industries
+     - find industry with highest acquired clients
+     - show only that industry
   ========================================================= */
 
   const monthlyReportData =
@@ -873,18 +910,10 @@ function IndustryPerformance() {
 
 
       return monthNumbers.map(
-        monthNumber => {
-
-          const monthIndex =
-            monthNumbers.indexOf(
-              monthNumber
-            );
-
+        (monthNumber, index) => {
 
           const monthInfo =
-            financialMonths[
-              monthIndex
-            ];
+            financialMonths[index];
 
 
           const monthRows =
@@ -1003,7 +1032,7 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     REPORT DATA
+     ACTIVE REPORT
   ========================================================= */
 
   const reportData =
@@ -1013,7 +1042,7 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     OPEN
+     VIEW PERFORMANCE
   ========================================================= */
 
   function handleViewPerformance(
@@ -1030,7 +1059,7 @@ function IndustryPerformance() {
 
 
   /* =========================================================
-     CLOSE
+     CLOSE MODAL
   ========================================================= */
 
   function handleCloseModal() {
@@ -1047,9 +1076,9 @@ function IndustryPerformance() {
     <div className="industry-performance-page">
 
 
-      {/* ===================================================
+      {/* =====================================================
           PAGE HEADER
-      =================================================== */}
+      ===================================================== */}
 
       <div className="industry-page-header">
 
@@ -1057,9 +1086,11 @@ function IndustryPerformance() {
           PERFORMANCE ANALYTICS
         </div>
 
+
         <h1>
           Industry Performance
         </h1>
+
 
         <p>
           Monitor industry-wise client
@@ -1070,9 +1101,9 @@ function IndustryPerformance() {
       </div>
 
 
-      {/* ===================================================
+      {/* =====================================================
           MAIN TABLE
-      =================================================== */}
+      ===================================================== */}
 
       <div className="industry-table-card">
 
@@ -1177,6 +1208,7 @@ function IndustryPerformance() {
 
                           </div>
 
+
                           <span>
                             {
                               industry.industry
@@ -1270,9 +1302,9 @@ function IndustryPerformance() {
       </div>
 
 
-      {/* ===================================================
+      {/* =====================================================
           PERFORMANCE MODAL
-      =================================================== */}
+      ===================================================== */}
 
       {selectedIndustry && (
 
@@ -1289,9 +1321,9 @@ function IndustryPerformance() {
           >
 
 
-            {/* =============================================
-                HEADER
-            ============================================= */}
+            {/* =================================================
+                MODAL HEADER
+            ================================================= */}
 
             <div className="industry-modal-header">
 
@@ -1301,9 +1333,11 @@ function IndustryPerformance() {
                   PERFORMANCE REPORT
                 </div>
 
+
                 <h2>
                   {selectedIndustry}
                 </h2>
+
 
                 <p>
                   Industry performance analysis
@@ -1325,14 +1359,14 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* =============================================
+            {/* =================================================
                 SUMMARY CARDS
-            ============================================= */}
+            ================================================= */}
 
             <div className="industry-summary-grid">
 
 
-              {/* INDUSTRY + SUB INDUSTRIES */}
+              {/* INDUSTRY */}
 
               <div className="industry-summary-card industry-top-industry-card">
 
@@ -1340,11 +1374,14 @@ function IndustryPerformance() {
                   Industry
                 </span>
 
+
                 <strong className="industry-summary-text">
+
                   {
                     performanceSummary.industry ||
                     "—"
                   }
+
                 </strong>
 
 
@@ -1388,6 +1425,7 @@ function IndustryPerformance() {
                   Total Billing
                 </span>
 
+
                 <strong className="industry-summary-value">
 
                   {
@@ -1401,29 +1439,30 @@ function IndustryPerformance() {
               </div>
 
 
-              {/* BEST TEAM LEADER */}
+              {/* TEAM LEADER */}
 
               <div className="industry-summary-card">
 
                 <span className="industry-summary-label">
-                  Best Team Leader
+                  Team Leader
                 </span>
+
 
                 <strong className="industry-summary-text">
 
                   {
-                    bestTeamLeader.value ||
+                    teamLeader.value ||
                     "—"
                   }
 
                 </strong>
 
 
-                {bestTeamLeader.count > 0 && (
+                {teamLeader.count > 0 && (
 
                   <small className="industry-summary-count">
 
-                    {bestTeamLeader.count}
+                    {teamLeader.count}
                     {" "}
                     acquired clients
 
@@ -1434,62 +1473,30 @@ function IndustryPerformance() {
               </div>
 
 
-              {/* BEST BD MEMBER */}
+              {/* BD MEMBER */}
 
               <div className="industry-summary-card">
 
                 <span className="industry-summary-label">
-                  Best BD Member
+                  BD Member
                 </span>
+
 
                 <strong className="industry-summary-text">
 
                   {
-                    bestBDMember.value ||
+                    bdMember.value ||
                     "—"
                   }
 
                 </strong>
 
 
-                {bestBDMember.count > 0 && (
+                {bdMember.count > 0 && (
 
                   <small className="industry-summary-count">
 
-                    {bestBDMember.count}
-                    {" "}
-                    acquired clients
-
-                  </small>
-
-                )}
-
-              </div>
-
-
-              {/* BEST FRANCHISE */}
-
-              <div className="industry-summary-card">
-
-                <span className="industry-summary-label">
-                  Best Franchise
-                </span>
-
-                <strong className="industry-summary-text">
-
-                  {
-                    bestFranchise.value ||
-                    "—"
-                  }
-
-                </strong>
-
-
-                {bestFranchise.count > 0 && (
-
-                  <small className="industry-summary-count">
-
-                    {bestFranchise.count}
+                    {bdMember.count}
                     {" "}
                     acquired clients
 
@@ -1507,6 +1514,7 @@ function IndustryPerformance() {
                 <span className="industry-summary-label">
                   Franchise Share Claimed
                 </span>
+
 
                 <strong className="industry-summary-value">
 
@@ -1529,6 +1537,7 @@ function IndustryPerformance() {
                   Net Amount
                 </span>
 
+
                 <strong className="industry-summary-value">
 
                   {
@@ -1546,7 +1555,7 @@ function IndustryPerformance() {
 
 
             {/* =================================================
-                FINANCIAL YEAR
+                FINANCIAL YEAR CONTROL
             ================================================= */}
 
             <div className="industry-report-controls">
@@ -1558,6 +1567,7 @@ function IndustryPerformance() {
                 >
                   Financial Year
                 </label>
+
 
                 <select
                   id="industry-financial-year"
@@ -1600,6 +1610,7 @@ function IndustryPerformance() {
                   Report Period
                 </span>
 
+
                 <strong>
 
                   {
@@ -1632,11 +1643,13 @@ function IndustryPerformance() {
 
                     <span className="industry-chart-indicator industry-client-indicator"></span>
 
+
                     <h3>
                       Client Acquired
                     </h3>
 
                   </div>
+
 
                   <span>
 
@@ -1681,6 +1694,7 @@ function IndustryPerformance() {
                           vertical={false}
                         />
 
+
                         <XAxis
                           dataKey={
                             selectedFinancialYear
@@ -1694,6 +1708,7 @@ function IndustryPerformance() {
                           axisLine={false}
                         />
 
+
                         <YAxis
                           allowDecimals={false}
                           tick={{
@@ -1703,11 +1718,13 @@ function IndustryPerformance() {
                           axisLine={false}
                         />
 
+
                         <Tooltip
                           content={
                             <IndustryTooltip />
                           }
                         />
+
 
                         <Bar
                           dataKey="clients"
@@ -1743,11 +1760,13 @@ function IndustryPerformance() {
 
                     <span className="industry-chart-indicator industry-billing-indicator"></span>
 
+
                     <h3>
                       Total Billing
                     </h3>
 
                   </div>
+
 
                   <span>
 
@@ -1792,6 +1811,7 @@ function IndustryPerformance() {
                           vertical={false}
                         />
 
+
                         <XAxis
                           dataKey={
                             selectedFinancialYear
@@ -1804,6 +1824,7 @@ function IndustryPerformance() {
                           tickLine={false}
                           axisLine={false}
                         />
+
 
                         <YAxis
                           tick={{
@@ -1818,11 +1839,13 @@ function IndustryPerformance() {
                           }
                         />
 
+
                         <Tooltip
                           content={
                             <IndustryTooltip />
                           }
                         />
+
 
                         <Bar
                           dataKey="billing"
@@ -1852,7 +1875,7 @@ function IndustryPerformance() {
 
 
             {/* =================================================
-                FOOTER
+                MODAL FOOTER
             ================================================= */}
 
             <div className="industry-modal-footer">
