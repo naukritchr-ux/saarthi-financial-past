@@ -1,3 +1,7 @@
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
 .sidebar {
 
   width:260px;
@@ -20,10 +24,14 @@
 
   overflow-y:auto;
 
+  box-sizing:border-box;
+
 }
 
 
-/* LOGO SECTION */
+/* =========================================================
+   LOGO SECTION
+   ========================================================= */
 
 .logo {
 
@@ -60,10 +68,9 @@
 }
 
 
-
-
-
-/* NAVIGATION */
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
 
 .sidebar nav {
 
@@ -78,9 +85,11 @@
 }
 
 
+/* =========================================================
+   DASHBOARD LINK
+   ========================================================= */
 
-.sidebar nav a {
-
+.sidebar nav > a {
 
   display:flex;
 
@@ -88,78 +97,204 @@
 
   gap:14px;
 
-
   padding:13px 18px;
-
 
   color:#FFFFFF;
 
-
   text-decoration:none;
-
 
   font-size:14px;
 
-
   font-weight:500;
-
 
   border-radius:8px;
 
-
   transition:.25s ease;
-
 
 }
 
 
-
-.sidebar nav a svg {
+.sidebar nav > a svg {
 
   font-size:21px;
 
 }
 
 
-
-/* HOVER */
+/* =========================================================
+   HOVER
+   ========================================================= */
 
 .sidebar nav a:hover {
 
-
   background:rgba(255,255,255,0.08);
-
 
   transform:translateX(4px);
 
-
 }
 
 
+/* =========================================================
+   ACTIVE DASHBOARD
+   ========================================================= */
 
-/* ACTIVE */
-
-.sidebar nav a.active {
-
+.sidebar nav > a.active {
 
   background:#B78A34;
 
-
   color:white;
-
 
   box-shadow:
 
-  0 5px 15px rgba(183,138,52,.25);
-
+    0 5px 15px rgba(183,138,52,.25);
 
 }
 
 
+/* =========================================================
+   REPORTS CATEGORY
+   ========================================================= */
+
+.sidebar-reports {
+
+  width:100%;
+
+  margin-top:4px;
+
+}
 
 
+/* =========================================================
+   REPORTS TITLE
+   ========================================================= */
 
-/* SCROLLBAR */
+.sidebar-section-title {
+
+  display:flex;
+
+  align-items:center;
+
+  gap:14px;
+
+  padding:13px 18px;
+
+  color:#DCD5C2;
+
+  font-size:14px;
+
+  font-weight:600;
+
+  border-radius:8px;
+
+}
+
+
+.sidebar-section-title svg {
+
+  font-size:21px;
+
+}
+
+
+/* =========================================================
+   REPORT ITEMS
+   ========================================================= */
+
+.sidebar-report-items {
+
+  display:flex;
+
+  flex-direction:column;
+
+  margin-top:3px;
+
+  margin-left:10px;
+
+  padding-left:10px;
+
+  border-left:1px solid rgba(220,213,194,0.25);
+
+}
+
+
+/* =========================================================
+   INDIVIDUAL REPORT LINK
+   ========================================================= */
+
+.sidebar-report-link {
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  padding:10px 14px;
+
+  color:#FFFFFF;
+
+  text-decoration:none;
+
+  font-size:13px;
+
+  font-weight:500;
+
+  border-radius:7px;
+
+  transition:.25s ease;
+
+}
+
+
+.sidebar-report-link svg {
+
+  font-size:18px;
+
+  color:#DCD5C2;
+
+}
+
+
+/* =========================================================
+   REPORT HOVER
+   ========================================================= */
+
+.sidebar-report-link:hover {
+
+  background:rgba(255,255,255,0.08);
+
+  transform:translateX(4px);
+
+}
+
+
+/* =========================================================
+   ACTIVE REPORT
+   ========================================================= */
+
+.sidebar-report-link.active {
+
+  background:#B78A34;
+
+  color:#FFFFFF;
+
+  box-shadow:
+
+    0 5px 15px rgba(183,138,52,.25);
+
+}
+
+
+.sidebar-report-link.active svg {
+
+  color:#FFFFFF;
+
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
 
 .sidebar::-webkit-scrollbar {
 
@@ -173,5 +308,39 @@
   background:#B78A34;
 
   border-radius:10px;
+
+}
+
+
+.sidebar::-webkit-scrollbar-track {
+
+  background:transparent;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:900px) {
+
+  .sidebar {
+
+    width:220px;
+
+  }
+
+  .logo {
+
+    padding:25px 20px;
+
+  }
+
+  .logo h2 {
+
+    font-size:30px;
+
+  }
 
 }

@@ -2,7 +2,8 @@ import { NavLink } from "react-router-dom";
 
 import {
   MdDashboard,
-  MdAnalytics
+  MdAnalytics,
+  MdAssessment
 } from "react-icons/md";
 
 import {
@@ -36,10 +37,94 @@ function Sidebar() {
     [];
 
 
+  /*
+   * Client Status has been removed from
+   * the sidebar completely.
+   */
+
+  const reportSegments = [
+
+    "Year",
+
+    "Team Leader",
+
+    "BD Member",
+
+    "Franchise",
+
+    "Industry",
+
+    "City"
+
+  ];
+
+
+  /*
+   * Only show report options that are
+   * available for the logged-in user's role.
+   */
+
+  const availableReports =
+
+    reportSegments.filter(
+
+      (segment) =>
+        segments.includes(segment)
+
+    );
+
+
+  function getReportPath(segment) {
+
+    switch (segment) {
+
+      case "Year":
+
+        return "/year-performance";
+
+
+      case "Team Leader":
+
+        return "/team-leader-performance";
+
+
+      case "BD Member":
+
+        return "/bd-performance";
+
+
+      case "Franchise":
+
+        return "/franchise-performance";
+
+
+      case "Industry":
+
+        return "/industry-performance";
+
+
+      case "City":
+
+        return "/city-performance";
+
+
+      default:
+
+        return "/dashboard";
+
+    }
+
+  }
+
+
   return (
 
     <aside className="sidebar">
 
+
+      {/* =================================================
+          LOGO
+          ================================================= */}
 
       <div className="logo">
 
@@ -54,107 +139,97 @@ function Sidebar() {
       </div>
 
 
+      {/* =================================================
+          NAVIGATION
+          ================================================= */}
+
       <nav>
 
 
-        {/* Dashboard */}
+        {/* =================================================
+            DASHBOARD
+            ================================================= */}
 
-        <NavLink to="/dashboard">
+        <NavLink
+          to="/dashboard"
+          className="sidebar-link"
+        >
 
           <MdDashboard />
 
-          Dashboard
+          <span>
+            Dashboard
+          </span>
 
         </NavLink>
 
 
+        {/* =================================================
+            REPORTS CATEGORY
+            ================================================= */}
+
         {
 
+          availableReports.length > 0 && (
 
-          segments.map(
-
-            (segment) => (
+            <div className="sidebar-reports">
 
 
-              <NavLink
+              {/* Reports Heading */}
 
-                key={segment}
+              <div className="sidebar-section-title">
 
-                to={
+                <MdAssessment />
 
-                  segment === "Year"
+                <span>
+                  Reports
+                </span>
 
-                    ?
+              </div>
 
-                  "/year-performance"
 
-                    :
+              {/* =================================================
+                  REPORT OPTIONS
+                  ================================================= */}
 
-                  segment === "Team Leader"
+              <div className="sidebar-report-items">
 
-                    ?
+                {
 
-                  "/team-leader-performance"
+                  availableReports.map(
 
-                    :
+                    (segment) => (
 
-                  segment === "BD Member"
+                      <NavLink
 
-                    ?
+                        key={segment}
 
-                  "/bd-performance"
+                        to={getReportPath(segment)}
 
-                    :
+                        className="sidebar-report-link"
 
-                  segment === "Franchise"
+                      >
 
-                    ?
+                        <MdAnalytics />
 
-                  "/franchise-performance"
+                        <span>
+                          {segment}
+                        </span>
 
-                    :
+                      </NavLink>
 
-                  segment === "Industry"
+                    )
 
-                    ?
-
-                  "/industry-performance"
-
-                    :
-
-                  segment === "City"
-
-                    ?
-
-                  "/city-performance"
-
-                    :
-
-                  segment === "Client Status"
-
-                    ?
-
-                  "/client-status-performance"
-
-                    :
-
-                  `/dashboard?segment=${encodeURIComponent(segment)}`
+                  )
 
                 }
 
-              >
-
-                <MdAnalytics />
-
-                {segment}
-
-              </NavLink>
+              </div>
 
 
-            )
+            </div>
 
           )
-
 
         }
 
