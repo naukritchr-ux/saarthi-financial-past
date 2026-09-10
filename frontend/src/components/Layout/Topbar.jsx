@@ -1,7 +1,8 @@
-import { 
-  UploadFile, 
+import {
+  UploadFile,
   AccountCircle,
-  Logout
+  Logout,
+  Menu as MenuIcon,
 } from "@mui/icons-material";
 
 import {
@@ -10,9 +11,8 @@ import {
   Menu,
   MenuItem,
   Divider,
-  Typography
+  Typography,
 } from "@mui/material";
-
 
 import { useState } from "react";
 
@@ -23,193 +23,206 @@ import { readExcel } from "../../utils/excel";
 import "./Topbar.css";
 
 
-function Topbar() {
+function Topbar({ onMenuClick }) {
 
-
-  const { 
+  const {
     user,
-    logout
+    logout,
   } = useAuth();
-
 
 
   const {
     fileName,
     lastRefresh,
-    loadExcelData
+    loadExcelData,
   } = useData();
 
 
-
-  const [anchorEl,setAnchorEl] = useState(null);
-
+  const [
+    anchorEl,
+    setAnchorEl,
+  ] = useState(null);
 
 
   const menuOpen =
     Boolean(anchorEl);
 
 
+  function handleProfileClick(event) {
 
-  function handleProfileClick(event){
-
-    setAnchorEl(event.currentTarget);
+    setAnchorEl(
+      event.currentTarget
+    );
 
   }
 
 
-
-  function handleClose(){
+  function handleClose() {
 
     setAnchorEl(null);
 
   }
 
 
-
-  function handleLogout(){
+  function handleLogout() {
 
     logout();
 
     handleClose();
 
-    window.location.href="/";
+    window.location.href = "/";
 
   }
-
 
 
   async function handleUpload(event) {
 
+    const file =
+      event.target.files[0];
 
-    const file = event.target.files[0];
 
-
-    if (!file) return;
-
+    if (!file) {
+      return;
+    }
 
 
     try {
 
-
-      const rows = await readExcel(file);
-
-
-      loadExcelData(rows,file);
+      const rows =
+        await readExcel(file);
 
 
-      alert(`Loaded ${rows.length} rows successfully.`);
+      loadExcelData(
+        rows,
+        file
+      );
 
 
-    }
+      alert(
+        `Loaded ${rows.length} rows successfully.`
+      );
 
-    catch(error){
-
+    } catch (error) {
 
       console.error(error);
 
-
-      alert("Unable to read Excel file.");
-
+      alert(
+        "Unable to read Excel file."
+      );
 
     }
 
+
+    // Allow selecting the same file again
+    event.target.value = "";
 
   }
 
 
-
-
   return (
-
 
     <header className="ledger-topbar">
 
 
-      <div className="ledger-header-info">
+      {/* =================================================
+          THREE LINE MENU BUTTON
+          ================================================= */}
 
+      <IconButton
+        className="sidebar-menu-button"
+        onClick={onMenuClick}
+        aria-label="Toggle sidebar"
+      >
+
+        <MenuIcon />
+
+      </IconButton>
+
+
+      {/* =================================================
+          HEADER INFORMATION
+          ================================================= */}
+
+      <div className="ledger-header-info">
 
         <h1>
           Dashboard
         </h1>
 
 
-
         <div className="ledger-meta">
 
-
           <span>
+
             Role:
+
             <strong>
               {user?.role || "Guest"}
             </strong>
+
           </span>
 
 
-
           <span>
+
             File:
+
             <strong>
-              {fileName || "No File Uploaded"}
+              {fileName ||
+                "No File Uploaded"}
             </strong>
+
           </span>
 
 
-
           <span>
+
             Last Refresh:
+
             <strong>
               {
                 lastRefresh
-                ? lastRefresh.toLocaleString()
-                : "--"
+                  ? lastRefresh.toLocaleString()
+                  : "--"
               }
             </strong>
+
           </span>
 
-
         </div>
-
 
       </div>
 
 
-
+      {/* =================================================
+          HEADER ACTIONS
+          ================================================= */}
 
       <div className="ledger-header-actions">
 
 
+        {/* UPLOAD BUTTON */}
 
         <Button
-
           variant="contained"
-
           component="label"
-
           startIcon={<UploadFile />}
-
         >
 
           Upload New Sheet
 
 
           <input
-
             hidden
-
             type="file"
-
             accept=".xlsx,.xls,.csv"
-
             onChange={handleUpload}
-
           />
-
 
         </Button>
 
 
-
-
+        {/* PROFILE BUTTON */}
 
         <IconButton
           onClick={handleProfileClick}
@@ -217,26 +230,21 @@ function Topbar() {
 
           <AccountCircle />
 
-
         </IconButton>
 
 
-
+        {/* PROFILE MENU */}
 
         <Menu
-
           anchorEl={anchorEl}
-
           open={menuOpen}
-
           onClose={handleClose}
-
         >
 
 
+          {/* ROLE */}
 
           <MenuItem disabled>
-
 
             <Typography>
 
@@ -247,55 +255,39 @@ function Topbar() {
                 {user?.role || "Guest"}
               </strong>
 
-
             </Typography>
 
-
           </MenuItem>
-
-
 
 
           <Divider />
 
 
-
+          {/* LOGOUT */}
 
           <MenuItem
             onClick={handleLogout}
           >
 
-
             <Logout
-
               fontSize="small"
-
               sx={{
-                marginRight:"10px"
+                marginRight: "10px",
               }}
-
             />
 
-
             Logout
-
 
           </MenuItem>
 
 
-
         </Menu>
-
-
 
       </div>
 
-
     </header>
 
-
   );
-
 
 }
 

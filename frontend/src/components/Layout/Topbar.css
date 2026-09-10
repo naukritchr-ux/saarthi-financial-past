@@ -1,272 +1,474 @@
+/* =========================================
+   TOPBAR
+========================================= */
+
 .ledger-topbar {
 
-  height:90px;
+  height: 90px;
 
-  background:#F7F4EC;
+  background: #F7F4EC;
 
-  border-bottom:1px solid #DCD5C2;
+  border-bottom: 1px solid #DCD5C2;
 
-  display:flex;
+  display: flex;
 
-  align-items:center;
+  align-items: center;
 
-  justify-content:space-between;
+  justify-content: space-between;
 
-  padding:0 35px;
+  padding: 0 35px;
 
-  box-sizing:border-box;
+  box-sizing: border-box;
+
+  position: relative;
+
+  z-index: 1000;
 
 }
 
 
-/* LEFT HEADER */
+/* =========================================
+   LEFT HEADER
+========================================= */
+
+.ledger-header-info {
+
+  display: flex;
+
+  flex-direction: column;
+
+}
+
 
 .ledger-header-info h1 {
 
-  font-family:"Fraunces",serif;
+  font-family: "Fraunces", serif;
 
-  font-size:28px;
+  font-size: 28px;
 
-  color:#1B2A4A;
+  color: #1B2A4A;
 
-  margin:0 0 8px 0;
+  margin: 0 0 8px 0;
 
-  letter-spacing:.5px;
+  letter-spacing: .5px;
 
 }
 
 
-
-/* META INFORMATION */
+/* =========================================
+   META INFORMATION
+========================================= */
 
 .ledger-meta {
 
-  display:flex;
+  display: flex;
 
-  gap:25px;
+  gap: 25px;
 
-  font-size:13px;
+  font-size: 13px;
 
-  color:#5B6472;
+  color: #5B6472;
 
-  align-items:center;
+  align-items: center;
 
 }
-
 
 
 .ledger-meta span {
 
-  display:flex;
+  display: flex;
 
-  align-items:center;
+  align-items: center;
 
 }
-
 
 
 .ledger-meta strong {
 
-  margin-left:5px;
+  margin-left: 5px;
 
-  color:#1B2A4A;
+  color: #1B2A4A;
 
-  font-weight:600;
+  font-weight: 600;
 
 }
 
 
-
-/* RIGHT ACTION AREA */
+/* =========================================
+   RIGHT ACTION AREA
+========================================= */
 
 .ledger-header-actions {
 
-  display:flex;
+  display: flex;
 
-  align-items:center;
+  align-items: center;
 
-  gap:18px;
-
-}
-
-
-
-/* UPLOAD BUTTON */
-
-.ledger-header-actions button {
-
-  background:#B78A34 !important;
-
-  color:white !important;
-
-  text-transform:none !important;
-
-  border-radius:8px !important;
-
-  padding:10px 20px !important;
-
-  font-weight:600 !important;
-
-  box-shadow:none !important;
-
-  transition:.25s ease;
+  gap: 18px;
 
 }
 
 
+/* =========================================
+   HAMBURGER / SIDEBAR MENU BUTTON
+========================================= */
 
-.ledger-header-actions button:hover {
+.sidebar-menu-button {
 
-  background:#9f742b !important;
+  width: 45px !important;
 
-  transform:translateY(-2px);
+  height: 45px !important;
 
-}
+  padding: 0 !important;
 
+  border-radius: 8px !important;
 
+  background: white !important;
 
-/* PROFILE ICON BUTTON */
+  border: 1px solid #DCD5C2 !important;
 
-.ledger-header-actions .MuiIconButton-root {
-
-  width:45px;
-
-  height:45px;
-
-  background:white;
-
-  border:1px solid #DCD5C2;
-
-  transition:.25s ease;
+  transition: .25s ease !important;
 
 }
 
 
+.sidebar-menu-button:hover {
 
-.ledger-header-actions .MuiIconButton-root:hover {
+  background: #EFE7D5 !important;
 
-  background:#EFE7D5;
-
-  transform:translateY(-2px);
-
-}
-
-
-
-/* PROFILE ICON */
-
-.ledger-header-actions svg {
-
-  color:#1B2A4A;
-
-  font-size:34px;
+  transform: translateY(-2px);
 
 }
 
 
+.sidebar-menu-button svg {
+
+  color: #1B2A4A !important;
+
+  font-size: 28px !important;
+
+}
 
 
+/* =========================================
+   UPLOAD BUTTON
+========================================= */
 
-/* PROFILE MENU */
+.ledger-header-actions .MuiButton-root {
+
+  background: #B78A34 !important;
+
+  color: white !important;
+
+  text-transform: none !important;
+
+  border-radius: 8px !important;
+
+  padding: 10px 20px !important;
+
+  font-weight: 600 !important;
+
+  box-shadow: none !important;
+
+  transition: .25s ease;
+
+}
+
+
+.ledger-header-actions .MuiButton-root:hover {
+
+  background: #9f742b !important;
+
+  transform: translateY(-2px);
+
+}
+
+
+/* =========================================
+   PROFILE ICON BUTTON
+========================================= */
+
+.ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button) {
+
+  width: 45px;
+
+  height: 45px;
+
+  background: white;
+
+  border: 1px solid #DCD5C2;
+
+  transition: .25s ease;
+
+}
+
+
+.ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button):hover {
+
+  background: #EFE7D5;
+
+  transform: translateY(-2px);
+
+}
+
+
+/* =========================================
+   PROFILE ICON
+========================================= */
+
+.ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button) svg {
+
+  color: #1B2A4A;
+
+  font-size: 34px;
+
+}
+
+
+/* =========================================
+   PROFILE MENU
+========================================= */
 
 .MuiMenu-paper {
 
-  margin-top:10px !important;
+  margin-top: 10px !important;
 
-  min-width:220px !important;
+  min-width: 220px !important;
 
-  border-radius:10px !important;
+  border-radius: 10px !important;
 
-  border:1px solid #DCD5C2;
+  border: 1px solid #DCD5C2;
 
   box-shadow:
-
-  0 15px 35px rgba(27,42,74,.18) !important;
+    0 15px 35px rgba(27, 42, 74, .18) !important;
 
 }
 
 
-
-/* MENU ITEMS */
+/* =========================================
+   MENU ITEMS
+========================================= */
 
 .MuiMenuItem-root {
 
-  font-family:"Inter",sans-serif !important;
+  font-family: "Inter", sans-serif !important;
 
-  color:#1B2A4A !important;
+  color: #1B2A4A !important;
 
-  font-size:14px !important;
+  font-size: 14px !important;
 
 }
-
 
 
 .MuiMenuItem-root:hover {
 
-  background:#F7F4EC !important;
+  background: #F7F4EC !important;
 
 }
 
 
-
-/* ROLE TEXT */
+/* =========================================
+   ROLE TEXT
+========================================= */
 
 .MuiTypography-root {
 
-  font-family:"Inter",sans-serif !important;
+  font-family: "Inter", sans-serif !important;
 
-  font-size:14px !important;
+  font-size: 14px !important;
 
-  color:#5B6472 !important;
+  color: #5B6472 !important;
 
 }
-
 
 
 .MuiTypography-root strong {
 
-  color:#1B2A4A;
+  color: #1B2A4A;
 
 }
 
 
+/* =========================================
+   RESPONSIVE
+========================================= */
 
-/* RESPONSIVE */
-
-@media(max-width:900px){
-
+@media (max-width: 900px) {
 
   .ledger-topbar {
 
-    height:auto;
+    height: auto;
 
-    padding:20px;
+    min-height: 90px;
 
-    flex-direction:column;
+    padding: 15px 20px;
 
-    gap:20px;
+    flex-direction: row;
 
-    align-items:flex-start;
+    gap: 15px;
+
+  }
+
+
+  .ledger-header-info {
+
+    min-width: 0;
+
+    flex: 1;
+
+  }
+
+
+  .ledger-header-info h1 {
+
+    font-size: 23px;
 
   }
 
 
   .ledger-meta {
 
-    flex-wrap:wrap;
+    flex-wrap: wrap;
 
-    gap:12px;
+    gap: 8px 15px;
 
   }
 
 
   .ledger-header-actions {
 
-    width:100%;
+    width: auto;
 
-    justify-content:flex-end;
+    justify-content: flex-end;
+
+    gap: 10px;
 
   }
 
+
+  .ledger-header-actions .MuiButton-root {
+
+    padding: 9px 14px !important;
+
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .ledger-topbar {
+
+    align-items: center;
+
+    padding: 12px 15px;
+
+  }
+
+
+  .ledger-header-info h1 {
+
+    font-size: 21px;
+
+    margin-bottom: 5px;
+
+  }
+
+
+  .ledger-meta {
+
+    display: none;
+
+  }
+
+
+  .ledger-header-actions {
+
+    gap: 8px;
+
+  }
+
+
+  .ledger-header-actions .MuiButton-root {
+
+    font-size: 0 !important;
+
+    width: 45px;
+
+    min-width: 45px !important;
+
+    height: 45px;
+
+    padding: 0 !important;
+
+  }
+
+
+  .ledger-header-actions .MuiButton-root .MuiButton-startIcon {
+
+    margin: 0 !important;
+
+  }
+
+
+  .ledger-header-actions .MuiButton-root svg {
+
+    font-size: 24px !important;
+
+  }
+
+}
+
+
+@media (max-width: 400px) {
+
+  .ledger-topbar {
+
+    padding: 10px 12px;
+
+  }
+
+
+  .ledger-header-info h1 {
+
+    font-size: 19px;
+
+  }
+
+
+  .sidebar-menu-button,
+
+  .ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button) {
+
+    width: 40px !important;
+
+    height: 40px !important;
+
+  }
+
+
+  .sidebar-menu-button svg {
+
+    font-size: 25px !important;
+
+  }
+
+
+  .ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button) svg {
+
+    font-size: 30px !important;
+
+  }
+
+
+  .ledger-header-actions .MuiButton-root {
+
+    width: 40px;
+
+    min-width: 40px !important;
+
+    height: 40px;
+
+  }
 
 }
