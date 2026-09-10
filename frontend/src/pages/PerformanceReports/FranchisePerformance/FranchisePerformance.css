@@ -1,571 +1,744 @@
-/* =====================================================
-   FRANCHISE PERFORMANCE
-===================================================== */
+/* =========================================================
+   PAGE
+========================================================= */
 
-.franchise-performance {
-
-  padding: 30px;
-
-  background: #F7F4EC;
-
+.franchise-performance-page {
   min-height: 100%;
-
-}
-
-
-/* =====================================================
-   PAGE HEADING
-===================================================== */
-
-.franchise-performance h1 {
-
-  font-family: "Fraunces", serif;
-
-  color: #1B2A4A;
-
-  font-size: 30px;
-
-  margin: 0 0 25px;
-
-}
-
-
-/* =====================================================
-   EXISTING TABLE
-===================================================== */
-
-.franchise-performance-table {
-
-  width: 100%;
-
-  overflow-x: auto;
-
-  background: white;
-
-  border: 1px solid #DCD5C2;
-
-  border-radius: 14px;
-
-  box-shadow:
-    0 8px 24px
-    rgba(
-      27,
-      42,
-      74,
-      0.10
-    );
-
-}
-
-
-.franchise-performance-table table {
-
-  width: 100%;
-
-  min-width: 850px;
-
-  border-collapse: collapse;
-
-}
-
-
-.franchise-performance-table th {
-
-  background: #1B2A4A;
-
-  color: white;
-
-  padding: 16px 18px;
-
-  text-align: left;
-
-  font-size: 14px;
-
-  font-weight: 600;
-
-  letter-spacing: .4px;
-
-}
-
-
-.franchise-performance-table td {
-
-  padding: 15px 18px;
-
-  color: #1B2A4A;
-
-  font-size: 14px;
-
-  border-bottom:
-    1px solid #E8E1D2;
-
-}
-
-
-.franchise-performance-table td:first-child {
-
-  font-weight: 700;
-
-  color: #B78A34;
-
-}
-
-
-.franchise-performance-table td:nth-child(2) {
-
-  font-weight: 600;
-
-}
-
-
-.franchise-performance-table td:nth-child(3),
-.franchise-performance-table td:nth-child(4),
-.franchise-performance-table td:nth-child(5) {
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-}
-
-
-.franchise-performance-table tbody tr {
-
-  transition:
-    background .2s ease,
-    transform .2s ease;
-
-}
-
-
-.franchise-performance-table tbody tr:hover {
-
+  padding: 30px 35px 40px;
   background: #F7F4EC;
-
-  transform: scale(1.005);
-
+  box-sizing: border-box;
 }
 
 
-.franchise-performance-table tr:last-child td {
+/* =========================================================
+   PAGE HEADER
+========================================================= */
 
-  border-bottom: none;
-
-}
-
-
-/* =====================================================
-   SELECTED FRANCHISE HEADER
-===================================================== */
-
-.selected-franchise-header {
-
-  margin-top: 25px;
-
-  margin-bottom: 22px;
-
-  padding: 24px 26px;
-
-  background: white;
-
-  border: 1px solid #E1DAC8;
-
-  border-radius: 16px;
-
-  box-shadow:
-    0 8px 25px
-    rgba(
-      27,
-      42,
-      74,
-      .08
-    );
-
+.franchise-page-header {
   display: flex;
-
-  align-items: center;
-
+  align-items: flex-start;
   justify-content: space-between;
-
-  gap: 25px;
-
+  margin-bottom: 28px;
 }
 
-
-.selected-franchise-header span {
-
-  display: block;
-
-  color: #8A806C;
-
-  font-size: 12px;
-
-  font-weight: 600;
-
+.franchise-page-eyebrow {
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+  color: #B78A34;
   text-transform: uppercase;
-
-  letter-spacing: 1px;
-
 }
 
-
-.selected-franchise-header h2 {
-
-  margin: 6px 0 0;
-
+.franchise-page-header h1 {
+  margin: 0;
   color: #1B2A4A;
+  font-family: "Fraunces", serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
 
-  font-size: 24px;
-
+.franchise-page-header p {
+  margin: 8px 0 0;
+  color: #6B7280;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
 }
 
 
-/* =====================================================
-   SUMMARY
-===================================================== */
+/* =========================================================
+   TABLE CARD
+========================================================= */
 
-.franchise-summary {
+.franchise-table-card {
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid #E4DDCC;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(27, 42, 74, 0.07);
+}
 
+.franchise-table-header {
+  min-height: 82px;
+  padding: 20px 24px;
   display: flex;
-
-  gap: 12px;
-
-  flex-wrap: wrap;
-
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ECE7DA;
 }
 
-
-.summary-item {
-
-  min-width: 125px;
-
-  padding: 12px 16px;
-
-  background: #F7F4EC;
-
-  border-radius: 10px;
-
-  border:
-    1px solid #E4DDCB;
-
-}
-
-
-.summary-item span {
-
-  font-size: 10px;
-
-  margin-bottom: 5px;
-
-}
-
-
-.summary-item strong {
-
-  display: block;
-
+.franchise-table-header h2 {
+  margin: 0;
   color: #1B2A4A;
+  font-family: "Inter", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+}
 
-  font-family:
-    "IBM Plex Mono",
-    monospace;
+.franchise-table-header p {
+  margin: 5px 0 0;
+  color: #8A9099;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+}
 
+.franchise-member-count {
+  min-width: 72px;
+  padding: 9px 13px;
+  background: #F7F4EC;
+  border: 1px solid #E4DDCC;
+  border-radius: 10px;
+  color: #1B2A4A;
+  font-family: "Inter", sans-serif;
   font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.franchise-member-count span {
+  display: block;
+  margin-top: 2px;
+  color: #8A9099;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.franchise-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.franchise-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+  font-family: "Inter", sans-serif;
+}
+
+.franchise-table thead th {
+  padding: 15px 22px;
+  background: #FBFAF7;
+  border-bottom: 1px solid #E9E3D6;
+  color: #6B7280;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.franchise-table tbody td {
+  padding: 17px 22px;
+  border-bottom: 1px solid #F0ECE3;
+  color: #384152;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.franchise-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.franchise-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.franchise-table tbody tr:hover {
+  background: #FCFAF4;
+}
+
+
+/* =========================================================
+   FRANCHISE NAME
+========================================================= */
+
+.franchise-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1B2A4A;
+  font-weight: 700;
+}
+
+.franchise-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #EFE7D5;
+  border: 1px solid #DED2B7;
+  border-radius: 50%;
+  color: #8E6927;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.franchise-client-count {
+  color: #1B2A4A;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.franchise-billing-value {
+  color: #26734D;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.franchise-net-value {
+  color: #1B2A4A;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   VIEW BUTTON
+========================================================= */
+
+.franchise-view-performance-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #DCD5C2;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #1B2A4A;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.franchise-view-performance-btn:hover {
+  background: #F7F4EC;
+  border-color: #B78A34;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(27, 42, 74, 0.08);
+}
+
+.franchise-view-arrow {
+  color: #B78A34;
+  font-size: 15px;
+  transition: transform 0.2s ease;
+}
+
+.franchise-view-performance-btn:hover .franchise-view-arrow {
+  transform: translateX(3px);
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.franchise-empty {
+  padding: 60px 20px;
+  color: #8A9099;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  text-align: center;
+}
+
+
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
+
+.franchise-performance-overlay {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 24, 42, 0.60);
+  backdrop-filter: blur(5px);
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.franchise-performance-modal {
+  width: min(1180px, 100%);
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+  background: #F7F4EC;
+  border: 1px solid #DCD5C2;
+  border-radius: 20px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+  animation: franchiseModalOpen 0.22s ease-out;
+}
+
+@keyframes franchiseModalOpen {
+
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 
 }
 
 
-/* =====================================================
-   CHART GRID
-===================================================== */
+/* =========================================================
+   MODAL HEADER
+========================================================= */
 
-.franchise-chart-grid {
+.franchise-modal-header {
+  padding: 24px 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E4DDCC;
+}
 
+.franchise-modal-eyebrow {
+  margin-bottom: 6px;
+  color: #B78A34;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.franchise-modal-header h2 {
+  margin: 0;
+  color: #1B2A4A;
+  font-family: "Fraunces", serif;
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.franchise-modal-header p {
+  margin: 5px 0 0;
+  color: #7A818C;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+}
+
+.franchise-modal-close {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #DDD6C7;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #1B2A4A;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.franchise-modal-close:hover {
+  background: #F7F4EC;
+  border-color: #B78A34;
+  transform: rotate(3deg);
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.franchise-summary-grid {
+  padding: 22px 28px;
   display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
 
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+.franchise-summary-card {
+  min-height: 105px;
+  padding: 17px;
+  background: #FFFFFF;
+  border: 1px solid #E4DDCC;
+  border-radius: 13px;
+  box-sizing: border-box;
+}
 
-  gap: 22px;
+.franchise-summary-card span {
+  display: block;
+  margin-bottom: 9px;
+  color: #7A818C;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+}
 
+.franchise-summary-card strong {
+  display: block;
+  overflow: hidden;
+  color: #1B2A4A;
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.franchise-summary-card small {
+  display: block;
+  margin-top: 7px;
+  color: #9AA0A8;
+  font-size: 10px;
 }
 
 
-/* =====================================================
-   CHART CARD
-===================================================== */
+/* =========================================================
+   REPORT CONTROLS
+========================================================= */
+
+.franchise-report-controls {
+  margin: 0 28px 18px;
+  padding: 15px 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E4DDCC;
+  border-radius: 13px;
+}
+
+.franchise-report-period {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.franchise-report-period label {
+  color: #1B2A4A;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.franchise-report-period select {
+  min-width: 145px;
+  padding: 9px 34px 9px 11px;
+  border: 1px solid #DCD5C2;
+  border-radius: 8px;
+  outline: none;
+  background: #FBFAF7;
+  color: #1B2A4A;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.franchise-report-period select:focus {
+  border-color: #B78A34;
+  box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.12);
+}
+
+.franchise-report-period-info {
+  color: #8A9099;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   GRAPHS
+========================================================= */
+
+.franchise-report-graphs {
+  padding: 0 28px 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
 
 .franchise-chart-card {
-
-  background: white;
-
-  border:
-    1px solid #E1DAC8;
-
-  border-radius: 18px;
-
-  padding: 22px;
-
   min-width: 0;
-
-  box-shadow:
-    0 10px 30px
-    rgba(
-      27,
-      42,
-      74,
-      .08
-    );
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease;
-
+  background: #FFFFFF;
+  border: 1px solid #E4DDCC;
+  border-radius: 15px;
+  overflow: hidden;
 }
 
-
-.franchise-chart-card:hover {
-
-  transform:
-    translateY(-2px);
-
-  box-shadow:
-    0 14px 34px
-    rgba(
-      27,
-      42,
-      74,
-      .12
-    );
-
+.franchise-chart-heading {
+  padding: 17px 18px;
+  border-bottom: 1px solid #ECE7DA;
 }
 
-
-/* =====================================================
-   CHART HEADER
-===================================================== */
-
-.chart-card-header {
-
+.franchise-chart-heading > div {
   display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  margin-bottom: 5px;
-
+  align-items: flex-start;
+  gap: 10px;
 }
 
-
-.chart-label {
-
-  color: #B78A34 !important;
-
-  font-size: 10px !important;
-
-  font-weight: 700 !important;
-
-  letter-spacing: 1.2px;
-
+.franchise-chart-indicator {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  flex-shrink: 0;
+  border-radius: 50%;
 }
 
+.franchise-client-indicator {
+  background: #B78A34;
+  box-shadow: 0 0 0 4px rgba(183, 138, 52, 0.12);
+}
 
-.chart-card-header h3 {
+.franchise-billing-indicator {
+  background: #26734D;
+  box-shadow: 0 0 0 4px rgba(38, 115, 77, 0.12);
+}
 
-  margin: 5px 0 0;
-
+.franchise-chart-heading h3 {
+  margin: 0;
   color: #1B2A4A;
-
-  font-size: 19px;
-
-  font-weight: 700;
-
-}
-
-
-/* =====================================================
-   BAR TOOLTIP
-===================================================== */
-
-.franchise-bar-tooltip {
-
-  background: #1B2A4A;
-
-  border-radius: 9px;
-
-  padding: 10px 14px;
-
-  box-shadow:
-    0 8px 20px
-    rgba(
-      27,
-      42,
-      74,
-      .25
-    );
-
-}
-
-
-.franchise-bar-tooltip strong {
-
-  display: block;
-
-  color: white;
-
-  font-size: 13px;
-
-  margin-bottom: 4px;
-
-}
-
-
-.franchise-bar-tooltip span {
-
-  color: #F2D68A;
-
-  font-size: 12px;
-
-}
-
-
-/* =====================================================
-   PIE TOOLTIP
-===================================================== */
-
-.franchise-pie-tooltip {
-
-  background: #1B2A4A;
-
-  border-radius: 9px;
-
-  padding: 10px 14px;
-
-  box-shadow:
-    0 8px 20px
-    rgba(
-      27,
-      42,
-      74,
-      .25
-    );
-
-}
-
-
-.franchise-pie-tooltip strong {
-
-  display: block;
-
-  color: white;
-
-  font-size: 13px;
-
-  margin-bottom: 4px;
-
-}
-
-
-.franchise-pie-tooltip span {
-
-  color: #F2D68A;
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size: 12px;
-
-}
-
-
-/* =====================================================
-   NO DATA
-===================================================== */
-
-.no-financial-data {
-
-  height: 350px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  color: #8A806C;
-
+  font-family: "Inter", sans-serif;
   font-size: 14px;
+  font-weight: 800;
+}
 
+.franchise-chart-heading p {
+  margin: 4px 0 0;
+  color: #9298A1;
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+}
+
+.franchise-chart-container {
+  width: 100%;
+  height: 330px;
+  padding: 8px 8px 5px;
+  box-sizing: border-box;
 }
 
 
-/* =====================================================
+/* =========================================================
+   NO CHART DATA
+========================================================= */
+
+.franchise-no-chart-data {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9298A1;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   TOOLTIP
+========================================================= */
+
+.franchise-modern-tooltip {
+  min-width: 175px;
+  padding: 11px 13px;
+  background: #1B2A4A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  box-shadow: 0 12px 30px rgba(27, 42, 74, 0.2);
+}
+
+.franchise-tooltip-label {
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.franchise-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 5px;
+  color: #DDE2EA;
+  font-size: 10px;
+}
+
+.franchise-tooltip-row strong {
+  color: #FFFFFF;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.franchise-modal-footer {
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  background: #FFFFFF;
+  border-top: 1px solid #E4DDCC;
+}
+
+.franchise-modal-footer span {
+  color: #8A9099;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+}
+
+.franchise-footer-close {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #1B2A4A;
+  color: #FFFFFF;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.franchise-footer-close:hover {
+  background: #273A61;
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.franchise-performance-modal::-webkit-scrollbar {
+  width: 7px;
+}
+
+.franchise-performance-modal::-webkit-scrollbar-track {
+  background: #F1EDE3;
+}
+
+.franchise-performance-modal::-webkit-scrollbar-thumb {
+  background: #C8B98F;
+  border-radius: 10px;
+}
+
+.franchise-performance-modal::-webkit-scrollbar-thumb:hover {
+  background: #B78A34;
+}
+
+
+/* =========================================================
    RESPONSIVE
-===================================================== */
+========================================================= */
 
 @media (max-width: 1100px) {
 
-  .selected-franchise-header {
-
-    align-items: flex-start;
-
-    flex-direction: column;
-
+  .franchise-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-
-  .franchise-chart-grid {
-
+  .franchise-report-graphs {
     grid-template-columns: 1fr;
-
   }
 
 }
 
 
-@media (max-width: 800px) {
+@media (max-width: 850px) {
 
-  .franchise-performance {
-
-    padding: 15px;
-
+  .franchise-performance-page {
+    padding: 24px 20px 30px;
   }
 
-
-  .franchise-performance h1 {
-
-    font-size: 23px;
-
+  .franchise-performance-overlay {
+    padding: 18px;
   }
 
-
-  .franchise-chart-card {
-
-    padding: 15px;
-
+  .franchise-modal-header,
+  .franchise-summary-grid,
+  .franchise-report-graphs {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
+  .franchise-report-controls {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
 
-  .franchise-summary {
+  .franchise-modal-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 
+}
+
+
+@media (max-width: 600px) {
+
+  .franchise-page-header h1 {
+    font-size: 25px;
+  }
+
+  .franchise-table-header {
+    padding: 17px;
+  }
+
+  .franchise-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .franchise-report-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .franchise-report-period {
     width: 100%;
-
+    justify-content: space-between;
   }
 
-
-  .summary-item {
-
-    flex: 1;
-
+  .franchise-report-period select {
+    min-width: 130px;
   }
 
+  .franchise-modal-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-  .franchise-performance-table {
-
-    overflow-x: auto;
-
+  .franchise-footer-close {
+    width: 100%;
   }
 
 }
