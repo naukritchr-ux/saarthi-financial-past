@@ -37,6 +37,16 @@
 
   flex-direction: column;
 
+  /*
+   * Space reserved for the fixed
+   * hamburger button.
+   */
+  margin-left: 70px;
+
+  flex: 1;
+
+  min-width: 0;
+
 }
 
 
@@ -110,27 +120,57 @@
 
 
 /* =========================================
-   HAMBURGER / SIDEBAR MENU BUTTON
+   FIXED HAMBURGER / SIDEBAR BUTTON
 ========================================= */
 
 .sidebar-menu-button {
+
+  position: fixed !important;
+
+  top: 20px !important;
+
+  left: 20px !important;
 
   width: 45px !important;
 
   height: 45px !important;
 
+  min-width: 45px !important;
+
   padding: 0 !important;
 
-  border-radius: 8px !important;
+  margin: 0 !important;
 
-  background: white !important;
+  display: flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  background: #FFFFFF !important;
+
+  color: #1B2A4A !important;
 
   border: 1px solid #DCD5C2 !important;
 
-  transition: .25s ease !important;
+  border-radius: 8px !important;
+
+  box-shadow:
+    0 3px 10px rgba(27, 42, 74, 0.10);
+
+  z-index: 2000 !important;
+
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease !important;
 
 }
 
+
+/* =========================================
+   HAMBURGER HOVER
+========================================= */
 
 .sidebar-menu-button:hover {
 
@@ -138,14 +178,32 @@
 
   transform: translateY(-2px);
 
+  box-shadow:
+    0 5px 15px rgba(27, 42, 74, 0.15);
+
 }
 
+
+/* =========================================
+   HAMBURGER ICON
+========================================= */
 
 .sidebar-menu-button svg {
 
   color: #1B2A4A !important;
 
   font-size: 28px !important;
+
+}
+
+
+/* =========================================
+   HAMBURGER FOCUS
+========================================= */
+
+.sidebar-menu-button:focus {
+
+  outline: none !important;
 
 }
 
@@ -158,7 +216,7 @@
 
   background: #B78A34 !important;
 
-  color: white !important;
+  color: #FFFFFF !important;
 
   text-transform: none !important;
 
@@ -177,7 +235,7 @@
 
 .ledger-header-actions .MuiButton-root:hover {
 
-  background: #9f742b !important;
+  background: #9F742B !important;
 
   transform: translateY(-2px);
 
@@ -194,7 +252,7 @@
 
   height: 45px;
 
-  background: white;
+  background: #FFFFFF;
 
   border: 1px solid #DCD5C2;
 
@@ -290,7 +348,7 @@
 
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE - TABLET
 ========================================= */
 
 @media (max-width: 900px) {
@@ -312,9 +370,11 @@
 
   .ledger-header-info {
 
-    min-width: 0;
+    margin-left: 65px;
 
     flex: 1;
+
+    min-width: 0;
 
   }
 
@@ -352,8 +412,36 @@
 
   }
 
+
+  /* Fixed hamburger */
+
+  .sidebar-menu-button {
+
+    top: 15px !important;
+
+    left: 15px !important;
+
+    width: 42px !important;
+
+    height: 42px !important;
+
+    min-width: 42px !important;
+
+  }
+
+
+  .sidebar-menu-button svg {
+
+    font-size: 26px !important;
+
+  }
+
 }
 
+
+/* =========================================
+   RESPONSIVE - MOBILE
+========================================= */
 
 @media (max-width: 650px) {
 
@@ -362,6 +450,13 @@
     align-items: center;
 
     padding: 12px 15px;
+
+  }
+
+
+  .ledger-header-info {
+
+    margin-left: 55px;
 
   }
 
@@ -417,14 +512,49 @@
 
   }
 
+
+  /* Fixed hamburger */
+
+  .sidebar-menu-button {
+
+    top: 12px !important;
+
+    left: 12px !important;
+
+    width: 40px !important;
+
+    height: 40px !important;
+
+    min-width: 40px !important;
+
+  }
+
+
+  .sidebar-menu-button svg {
+
+    font-size: 24px !important;
+
+  }
+
 }
 
+
+/* =========================================
+   VERY SMALL MOBILE
+========================================= */
 
 @media (max-width: 400px) {
 
   .ledger-topbar {
 
     padding: 10px 12px;
+
+  }
+
+
+  .ledger-header-info {
+
+    margin-left: 52px;
 
   }
 
@@ -436,13 +566,17 @@
   }
 
 
-  .sidebar-menu-button,
+  .sidebar-menu-button {
 
-  .ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button) {
+    top: 10px !important;
 
-    width: 40px !important;
+    left: 10px !important;
 
-    height: 40px !important;
+    width: 38px !important;
+
+    height: 38px !important;
+
+    min-width: 38px !important;
 
   }
 
@@ -454,9 +588,18 @@
   }
 
 
+  .ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button) {
+
+    width: 40px;
+
+    height: 40px;
+
+  }
+
+
   .ledger-header-actions > .MuiIconButton-root:not(.sidebar-menu-button) svg {
 
-    font-size: 30px !important;
+    font-size: 30px;
 
   }
 

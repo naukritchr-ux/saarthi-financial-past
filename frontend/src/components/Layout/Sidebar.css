@@ -64,11 +64,9 @@
    ========================================================= */
 
 .logo {
-
-  padding: 30px 24px;
-
+  padding: 30px 24px 30px 90px;
   border-bottom: 1px solid #DCD5C2;
-
+  box-sizing: border-box;
 }
 
 

@@ -135,11 +135,11 @@ function Sidebar({ isOpen }) {
       <div className="logo">
 
         <h2>
-          TCHR
+          Saarthi
         </h2>
 
         <p>
-          Performance Ledger
+          Financial - Past 
         </p>
 
       </div>
