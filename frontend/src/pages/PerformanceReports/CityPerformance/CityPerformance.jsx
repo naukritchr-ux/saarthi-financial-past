@@ -17,9 +17,6 @@ import {
   useData
 } from "../../../context/DataContext";
 
-import PerformanceFilters
-  from "../../Dashboard/PerformanceFilters";
-
 import "./CityPerformance.css";
 
 
