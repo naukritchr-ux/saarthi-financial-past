@@ -37,6 +37,76 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
+     FINANCIAL MONTHS
+     APRIL → MARCH
+     ===================================================== */
+
+  const financialMonths = [
+
+    {
+      full: "April",
+      short: "Apr"
+    },
+
+    {
+      full: "May",
+      short: "May"
+    },
+
+    {
+      full: "June",
+      short: "Jun"
+    },
+
+    {
+      full: "July",
+      short: "Jul"
+    },
+
+    {
+      full: "August",
+      short: "Aug"
+    },
+
+    {
+      full: "September",
+      short: "Sep"
+    },
+
+    {
+      full: "October",
+      short: "Oct"
+    },
+
+    {
+      full: "November",
+      short: "Nov"
+    },
+
+    {
+      full: "December",
+      short: "Dec"
+    },
+
+    {
+      full: "January",
+      short: "Jan"
+    },
+
+    {
+      full: "February",
+      short: "Feb"
+    },
+
+    {
+      full: "March",
+      short: "Mar"
+    }
+
+  ];
+
+
+  /* =====================================================
      FORMAT CURRENCY
      ===================================================== */
 
@@ -170,7 +240,7 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     GET NET AMOUNT
+     NET AMOUNT
      
      Net Amount =
      Total Billing - Franchisee Share
@@ -207,7 +277,6 @@ function TeamLeaderPerformance() {
 
   /* =====================================================
      GET FINANCIAL MONTH
-     April → March
      ===================================================== */
 
   function getFinancialMonth(row) {
@@ -249,25 +318,31 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     FINANCIAL MONTH ORDER
+     GET BEST VALUE
      ===================================================== */
 
-  const financialMonths = [
+  function getBestValue(values) {
 
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-    "January",
-    "February",
-    "March"
+    const entries =
+      Object.entries(values);
 
-  ];
+
+    if (!entries.length) {
+
+      return "—";
+
+    }
+
+
+    entries.sort(
+      ([, countA], [, countB]) =>
+        countB - countA
+    );
+
+
+    return entries[0][0];
+
+  }
 
 
   /* =====================================================
@@ -323,7 +398,16 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     TEAM LEADER DATA
+     TEAM LEADER SUMMARY
+     
+     Main page table.
+     
+     Columns:
+     Team Leader Name
+     Total Acquired Client
+     Total Billing
+     Net Amount
+     Performance
      ===================================================== */
 
   const leaderData = useMemo(() => {
@@ -356,11 +440,7 @@ function TeamLeaderPerformance() {
 
           billing: 0,
 
-          netAmount: 0,
-
-          industries: {},
-
-          cities: {}
+          netAmount: 0
 
         };
 
@@ -371,74 +451,26 @@ function TeamLeaderPerformance() {
         teamLeaders[leader];
 
 
-      /* Client */
+      /* Total acquired clients */
 
       data.clients++;
 
 
-      /* Billing */
+      /* Total billing */
 
       data.billing +=
         getBilling(row);
 
 
-      /* Net Amount */
+      /* Net amount */
 
       data.netAmount +=
         getNetAmount(row);
-
-
-      /* Industry */
-
-      const industry =
-        String(
-          getIndustry(row)
-        ).trim();
-
-
-      if (industry) {
-
-        data.industries[industry] =
-          (data.industries[industry] || 0) + 1;
-
-      }
-
-
-      /* City */
-
-      const city =
-        String(
-          getCity(row)
-        ).trim();
-
-
-      if (city) {
-
-        data.cities[city] =
-          (data.cities[city] || 0) + 1;
-
-      }
 
     });
 
 
     return Object.values(teamLeaders)
-
-      .map(leader => ({
-
-        ...leader,
-
-        bestIndustry:
-          getBestValue(
-            leader.industries
-          ),
-
-        bestCity:
-          getBestValue(
-            leader.cities
-          )
-
-      }))
 
       .sort(
         (a, b) =>
@@ -448,34 +480,6 @@ function TeamLeaderPerformance() {
 
 
   }, [rows]);
-
-
-  /* =====================================================
-     BEST VALUE
-     ===================================================== */
-
-  function getBestValue(values) {
-
-    const entries =
-      Object.entries(values);
-
-
-    if (!entries.length) {
-
-      return "—";
-
-    }
-
-
-    entries.sort(
-      ([, countA], [, countB]) =>
-        countB - countA
-    );
-
-
-    return entries[0][0];
-
-  }
 
 
   /* =====================================================
@@ -518,6 +522,13 @@ function TeamLeaderPerformance() {
 
   /* =====================================================
      SELECTED LEADER SUMMARY
+     
+     Performance window:
+     
+     Best Industry
+     Best City
+     Total Billing
+     Net Amount
      ===================================================== */
 
   const selectedSummary = useMemo(() => {
@@ -547,6 +558,7 @@ function TeamLeaderPerformance() {
 
     let netAmount = 0;
 
+
     const industries = {};
 
     const cities = {};
@@ -556,12 +568,16 @@ function TeamLeaderPerformance() {
 
       clients++;
 
+
       billing +=
         getBilling(row);
+
 
       netAmount +=
         getNetAmount(row);
 
+
+      /* Industry count */
 
       const industry =
         String(
@@ -572,10 +588,15 @@ function TeamLeaderPerformance() {
       if (industry) {
 
         industries[industry] =
-          (industries[industry] || 0) + 1;
+          (
+            industries[industry] ||
+            0
+          ) + 1;
 
       }
 
+
+      /* City count */
 
       const city =
         String(
@@ -586,7 +607,10 @@ function TeamLeaderPerformance() {
       if (city) {
 
         cities[city] =
-          (cities[city] || 0) + 1;
+          (
+            cities[city] ||
+            0
+          ) + 1;
 
       }
 
@@ -602,10 +626,14 @@ function TeamLeaderPerformance() {
       netAmount,
 
       bestIndustry:
-        getBestValue(industries),
+        getBestValue(
+          industries
+        ),
 
       bestCity:
-        getBestValue(cities)
+        getBestValue(
+          cities
+        )
 
     };
 
@@ -617,10 +645,11 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     YEARLY GRAPH DATA
+     YEARLY REPORT DATA
      
-     No FY selected:
-     Show yearly report.
+     Used when Financial Year = None.
+     
+     One entry per Financial Year.
      ===================================================== */
 
   const yearlyReportData = useMemo(() => {
@@ -658,6 +687,7 @@ function TeamLeaderPerformance() {
 
       yearly[year].clients++;
 
+
       yearly[year].billing +=
         getBilling(row);
 
@@ -671,12 +701,14 @@ function TeamLeaderPerformance() {
 
           const yearA =
             Number(
-              String(a.year).split("-")[0]
+              String(a.year)
+                .split("-")[0]
             );
 
           const yearB =
             Number(
-              String(b.year).split("-")[0]
+              String(b.year)
+                .split("-")[0]
             );
 
           return yearA - yearB;
@@ -692,10 +724,11 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     MONTHLY GRAPH DATA
+     MONTHLY REPORT DATA
      
-     FY selected:
-     Show April → March.
+     Used when Financial Year is selected.
+     
+     Always April → March.
      ===================================================== */
 
   const monthlyReportData = useMemo(() => {
@@ -705,9 +738,13 @@ function TeamLeaderPerformance() {
 
     financialMonths.forEach(month => {
 
-      monthly[month] = {
+      monthly[month.full] = {
 
-        month,
+        month:
+          month.full,
+
+        monthShort:
+          month.short,
 
         clients: 0,
 
@@ -716,6 +753,13 @@ function TeamLeaderPerformance() {
       };
 
     });
+
+
+    if (!selectedFinancialYear) {
+
+      return [];
+
+    }
 
 
     selectedLeaderRows.forEach(row => {
@@ -745,7 +789,15 @@ function TeamLeaderPerformance() {
       }
 
 
+      if (!monthly[month]) {
+
+        return;
+
+      }
+
+
       monthly[month].clients++;
+
 
       monthly[month].billing +=
         getBilling(row);
@@ -755,7 +807,7 @@ function TeamLeaderPerformance() {
 
     return financialMonths.map(
       month =>
-        monthly[month]
+        monthly[month.full]
     );
 
 
@@ -766,7 +818,13 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     GRAPH DATA
+     ACTIVE GRAPH DATA
+     
+     None:
+       Yearly
+    
+     Selected FY:
+       Monthly
      ===================================================== */
 
   const reportGraphData =
@@ -783,7 +841,7 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     GRAPH LABEL
+     GRAPH TYPE LABEL
      ===================================================== */
 
   const graphPeriodLabel =
@@ -792,7 +850,7 @@ function TeamLeaderPerformance() {
 
       ?
 
-    `Monthly Report - ${selectedFinancialYear}`
+    `Monthly Report · ${selectedFinancialYear}`
 
       :
 
@@ -800,7 +858,7 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     TOOLTIP
+     CLIENT TOOLTIP
      ===================================================== */
 
   function renderClientTooltip({
@@ -882,7 +940,7 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     OPEN PERFORMANCE
+     OPEN PERFORMANCE WINDOW
      ===================================================== */
 
   function openPerformance(leader) {
@@ -899,7 +957,7 @@ function TeamLeaderPerformance() {
 
 
   /* =====================================================
-     CLOSE PERFORMANCE
+     CLOSE PERFORMANCE WINDOW
      ===================================================== */
 
   function closePerformance() {
@@ -950,7 +1008,14 @@ function TeamLeaderPerformance() {
 
 
       {/* =================================================
-          TABLE
+          TEAM LEADER TABLE
+          
+          Only:
+          Name
+          Clients
+          Billing
+          Net Amount
+          Performance
           ================================================= */}
 
       <div className="team-table-card">
@@ -1000,14 +1065,6 @@ function TeamLeaderPerformance() {
                 </th>
 
                 <th>
-                  Industry
-                </th>
-
-                <th>
-                  City
-                </th>
-
-                <th>
                   Total Billing
                 </th>
 
@@ -1035,6 +1092,8 @@ function TeamLeaderPerformance() {
                       key={leader.name}
                     >
 
+                      {/* Team Leader */}
+
                       <td>
 
                         <div className="leader-name">
@@ -1056,6 +1115,8 @@ function TeamLeaderPerformance() {
                       </td>
 
 
+                      {/* Clients */}
+
                       <td>
 
                         <span className="client-count">
@@ -1067,27 +1128,7 @@ function TeamLeaderPerformance() {
                       </td>
 
 
-                      <td>
-
-                        <span className="best-value">
-
-                          {leader.bestIndustry}
-
-                        </span>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="best-value">
-
-                          {leader.bestCity}
-
-                        </span>
-
-                      </td>
-
+                      {/* Billing */}
 
                       <td>
 
@@ -1102,6 +1143,8 @@ function TeamLeaderPerformance() {
                       </td>
 
 
+                      {/* Net Amount */}
+
                       <td>
 
                         <strong className="net-value">
@@ -1114,6 +1157,8 @@ function TeamLeaderPerformance() {
 
                       </td>
 
+
+                      {/* Performance */}
 
                       <td>
 
@@ -1131,7 +1176,9 @@ function TeamLeaderPerformance() {
 
                         >
 
-                          <MdArrow />
+                          <span className="view-arrow">
+                            →
+                          </span>
 
                           View
 
@@ -1150,7 +1197,7 @@ function TeamLeaderPerformance() {
                 <tr>
 
                   <td
-                    colSpan="7"
+                    colSpan="5"
                     className="no-team-data"
                   >
 
@@ -1172,13 +1219,15 @@ function TeamLeaderPerformance() {
 
 
       {/* =================================================
-          PERFORMANCE MODAL
+          PERFORMANCE WINDOW
           ================================================= */}
 
       {selectedLeader && (
 
         <div
+
           className="team-performance-overlay"
+
           onMouseDown={(event) => {
 
             if (
@@ -1191,6 +1240,7 @@ function TeamLeaderPerformance() {
             }
 
           }}
+
         >
 
           <div className="team-performance-modal">
@@ -1229,7 +1279,7 @@ function TeamLeaderPerformance() {
                   closePerformance
                 }
 
-                aria-label="Close"
+                aria-label="Close performance report"
 
               >
 
@@ -1241,24 +1291,13 @@ function TeamLeaderPerformance() {
 
 
             {/* =================================================
-                SUMMARY CARDS
+                PERFORMANCE SUMMARY
                 ================================================= */}
 
             <div className="performance-summary-grid">
 
 
-              <div className="performance-summary-card">
-
-                <span>
-                  Total Acquired Client
-                </span>
-
-                <strong>
-                  {selectedSummary.clients}
-                </strong>
-
-              </div>
-
+              {/* Best Industry */}
 
               <div className="performance-summary-card">
 
@@ -1270,8 +1309,14 @@ function TeamLeaderPerformance() {
                   {selectedSummary.bestIndustry}
                 </strong>
 
+                <small>
+                  Highest client acquisition
+                </small>
+
               </div>
 
+
+              {/* Best City */}
 
               <div className="performance-summary-card">
 
@@ -1283,8 +1328,14 @@ function TeamLeaderPerformance() {
                   {selectedSummary.bestCity}
                 </strong>
 
+                <small>
+                  Highest client acquisition
+                </small>
+
               </div>
 
+
+              {/* Total Billing */}
 
               <div className="performance-summary-card">
 
@@ -1300,6 +1351,8 @@ function TeamLeaderPerformance() {
 
               </div>
 
+
+              {/* Net Amount */}
 
               <div className="performance-summary-card">
 
@@ -1325,13 +1378,16 @@ function TeamLeaderPerformance() {
 
             <div className="performance-report-controls">
 
-              <div>
+              <div className="financial-year-control">
 
-                <label>
+                <label htmlFor="team-leader-financial-year">
                   Financial Year
                 </label>
 
+
                 <select
+
+                  id="team-leader-financial-year"
 
                   value={
                     selectedFinancialYear
@@ -1348,6 +1404,7 @@ function TeamLeaderPerformance() {
                   <option value="">
                     None
                   </option>
+
 
                   {financialYears.map(
                     year => (
@@ -1390,7 +1447,7 @@ function TeamLeaderPerformance() {
 
 
               {/* =================================================
-                  CLIENT ACQUIRED
+                  CLIENT ACQUIRED GRAPH
                   ================================================= */}
 
               <div className="performance-chart-card">
@@ -1409,6 +1466,7 @@ function TeamLeaderPerformance() {
 
                   </div>
 
+
                   <div className="chart-indicator client-indicator">
                   </div>
 
@@ -1421,6 +1479,7 @@ function TeamLeaderPerformance() {
                 >
 
                   <BarChart
+
                     data={
                       reportGraphData
                     }
@@ -1440,54 +1499,78 @@ function TeamLeaderPerformance() {
                       stroke="#E7E1D3"
                     />
 
+
                     <XAxis
+
                       dataKey={
                         selectedFinancialYear
-                          ? "month"
+                          ? "monthShort"
                           : "year"
                       }
+
                       axisLine={false}
+
                       tickLine={false}
+
+                      interval={0}
+
                       tick={{
                         fill: "#5B6472",
                         fontSize: 12
                       }}
+
                     />
+
 
                     <YAxis
+
                       allowDecimals={false}
+
                       axisLine={false}
+
                       tickLine={false}
+
                       tick={{
                         fill: "#5B6472",
                         fontSize: 12
                       }}
+
                     />
 
+
                     <Tooltip
+
                       content={
                         renderClientTooltip
                       }
+
                       cursor={{
                         fill:
                           "rgba(183,138,52,0.08)"
                       }}
+
                     />
 
+
                     <Bar
+
                       dataKey="clients"
+
                       fill="#B78A34"
+
                       radius={[
                         7,
                         7,
                         0,
                         0
                       ]}
+
                       barSize={
                         selectedFinancialYear
-                          ? 24
+                          ? 20
                           : 45
                       }
+
                     />
 
                   </BarChart>
@@ -1498,7 +1581,7 @@ function TeamLeaderPerformance() {
 
 
               {/* =================================================
-                  TOTAL BILLING
+                  TOTAL BILLING GRAPH
                   ================================================= */}
 
               <div className="performance-chart-card">
@@ -1517,6 +1600,7 @@ function TeamLeaderPerformance() {
 
                   </div>
 
+
                   <div className="chart-indicator billing-indicator">
                   </div>
 
@@ -1529,6 +1613,7 @@ function TeamLeaderPerformance() {
                 >
 
                   <BarChart
+
                     data={
                       reportGraphData
                     }
@@ -1548,59 +1633,83 @@ function TeamLeaderPerformance() {
                       stroke="#E7E1D3"
                     />
 
+
                     <XAxis
+
                       dataKey={
                         selectedFinancialYear
-                          ? "month"
+                          ? "monthShort"
                           : "year"
                       }
+
                       axisLine={false}
+
                       tickLine={false}
+
+                      interval={0}
+
                       tick={{
                         fill: "#5B6472",
                         fontSize: 12
                       }}
+
                     />
 
+
                     <YAxis
+
                       axisLine={false}
+
                       tickLine={false}
+
                       tick={{
                         fill: "#5B6472",
                         fontSize: 12
                       }}
+
                       tickFormatter={
                         value =>
                           formatCurrency(
                             value
                           )
                       }
+
                     />
 
+
                     <Tooltip
+
                       content={
                         renderBillingTooltip
                       }
+
                       cursor={{
                         fill:
                           "rgba(38,115,77,0.08)"
                       }}
+
                     />
 
+
                     <Bar
+
                       dataKey="billing"
+
                       fill="#26734D"
+
                       radius={[
                         7,
                         7,
                         0,
                         0
                       ]}
+
                       barSize={
                         selectedFinancialYear
-                          ? 24
+                          ? 20
                           : 45
                       }
+
                     />
 
                   </BarChart>
@@ -1620,10 +1729,19 @@ function TeamLeaderPerformance() {
             <div className="performance-modal-footer">
 
               <span>
+
                 {selectedFinancialYear
-                  ? `Showing monthly performance for ${selectedFinancialYear}`
-                  : "Showing yearly performance across all financial years"
+
+                  ?
+
+                `Showing monthly performance for ${selectedFinancialYear}`
+
+                  :
+
+                "Showing yearly performance across all financial years"
+
                 }
+
               </span>
 
 
@@ -1653,23 +1771,6 @@ function TeamLeaderPerformance() {
       )}
 
     </div>
-
-  );
-
-}
-
-
-/* =========================================================
-   SIMPLE VIEW ICON
-   ========================================================= */
-
-function MdArrow() {
-
-  return (
-
-    <span className="view-arrow">
-      →
-    </span>
 
   );
 
