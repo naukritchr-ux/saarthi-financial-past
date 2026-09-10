@@ -1,23 +1,116 @@
 .layout {
+
   display: flex;
+
   width: 100%;
+
   min-height: 100vh;
+
 }
 
+
+/* =========================================
+   MAIN CONTENT
+========================================= */
+
 .main-content {
-  margin-left: 260px;          /* Same as sidebar width */
+
+  margin-left: 260px;
+
   width: calc(100% - 260px);
 
   display: flex;
+
   flex-direction: column;
 
   min-height: 100vh;
+
   background: #F7F4EC;
+
+  transition:
+    margin-left 0.3s ease,
+    width 0.3s ease;
+
 }
 
+
+/* =========================================
+   SIDEBAR OPEN
+========================================= */
+
+.layout.sidebar-open .main-content {
+
+  margin-left: 260px;
+
+  width: calc(100% - 260px);
+
+}
+
+
+/* =========================================
+   SIDEBAR CLOSED
+========================================= */
+
+.layout.sidebar-closed .main-content {
+
+  margin-left: 0;
+
+  width: 100%;
+
+}
+
+
+/* =========================================
+   PAGE CONTENT
+========================================= */
+
 .page-content {
+
   flex: 1;
+
   padding: 25px 30px;
+
   overflow-y: auto;
+
   overflow-x: hidden;
+
+  box-sizing: border-box;
+
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+
+  .main-content,
+  .layout.sidebar-open .main-content,
+  .layout.sidebar-closed .main-content {
+
+    margin-left: 0;
+
+    width: 100%;
+
+  }
+
+
+  .page-content {
+
+    padding: 20px;
+
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .page-content {
+
+    padding: 15px;
+
+  }
+
 }

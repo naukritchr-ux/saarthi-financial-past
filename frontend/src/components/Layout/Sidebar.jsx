@@ -17,7 +17,7 @@ import {
 import "./Sidebar.css";
 
 
-function Sidebar() {
+function Sidebar({ isOpen }) {
 
   const {
     user
@@ -119,7 +119,13 @@ function Sidebar() {
 
   return (
 
-    <aside className="sidebar">
+    <aside
+      className={
+        isOpen
+          ? "sidebar sidebar-visible"
+          : "sidebar sidebar-hidden"
+      }
+    >
 
 
       {/* =================================================
