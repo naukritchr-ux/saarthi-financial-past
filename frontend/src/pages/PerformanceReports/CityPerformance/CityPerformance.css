@@ -1,228 +1,1268 @@
-.city-performance {
+/* =========================================================
+   CITY PERFORMANCE PAGE
+========================================================= */
 
-  padding:30px;
-
-  background:#F7F4EC;
-
-  min-height:100%;
-
+.city-performance-page {
+  min-height: 100%;
+  padding: 30px;
+  background: #F7F4EC;
+  box-sizing: border-box;
 }
 
 
+/* =========================================================
+   PAGE HEADER
+========================================================= */
 
-/* Heading */
+.city-page-header {
+  margin-bottom: 24px;
+}
 
-.city-performance h1 {
+.city-page-eyebrow {
+  margin-bottom: 6px;
+  color: #B78A34;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
 
-  font-family:"Fraunces",serif;
+.city-page-header h1 {
+  margin: 0;
+  color: #1B2A4A;
+  font-family: "Fraunces", serif;
+  font-size: 30px;
+  line-height: 1.2;
+}
 
-  color:#1B2A4A;
-
-  font-size:28px;
-
-  margin-bottom:30px;
-
+.city-page-header p {
+  margin: 8px 0 0;
+  color: #6B7280;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 
+/* =========================================================
+   MAIN TABLE CARD
+========================================================= */
 
-/* Cards */
-
-.city-cards {
-
-  display:grid;
-
-  grid-template-columns:repeat(4,1fr);
-
-  gap:20px;
-
-  margin-bottom:30px;
-
-}
-
-
-
-.city-card {
-
-  background:white;
-
-  border:1px solid #DCD5C2;
-
-  border-radius:12px;
-
-  padding:20px;
-
+.city-table-card {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid #DCD5C2;
+  border-radius: 14px;
+  overflow: hidden;
   box-shadow:
-  0 6px 15px rgba(27,42,74,.08);
-
+    0 6px 18px rgba(27, 42, 74, 0.06);
 }
 
 
+/* =========================================================
+   TABLE HEADER
+========================================================= */
 
-.city-card h3 {
+.city-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E8E1D2;
+}
 
-  font-size:14px;
+.city-table-header h2 {
+  margin: 0;
+  color: #1B2A4A;
+  font-family: "Fraunces", serif;
+  font-size: 21px;
+  font-weight: 700;
+}
 
-  color:#6B7280;
-
-  margin-bottom:10px;
-
+.city-table-header p {
+  margin: 5px 0 0;
+  color: #7A7F87;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
 }
 
 
+/* =========================================================
+   CITY COUNT
+========================================================= */
 
-.city-card strong {
+.city-count {
+  min-width: 70px;
+  padding: 8px 12px;
+  border: 1px solid #DCD5C2;
+  border-radius: 9px;
+  background: #F7F4EC;
+  color: #1B2A4A;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+}
 
-  font-family:"Fraunces",serif;
-
-  font-size:25px;
-
-  color:#1B2A4A;
-
+.city-count span {
+  display: block;
+  margin-top: 2px;
+  color: #7A7F87;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 
+/* =========================================================
+   TABLE WRAPPER
+========================================================= */
 
-.city-card p {
-
-  margin-top:8px;
-
-  color:#B78A34;
-
-  font-weight:600;
-
+.city-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 
-
-
-
-/* Table */
+/* =========================================================
+   TABLE
+========================================================= */
 
 .city-table {
-
-  background:white;
-
-  border:1px solid #DCD5C2;
-
-  border-radius:12px;
-
-  padding:20px;
-
-  overflow-x:auto;
-
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+  font-family: "Inter", sans-serif;
 }
 
 
+/* =========================================================
+   TABLE HEADER
+========================================================= */
 
-.city-table h2 {
-
-  font-family:"Fraunces",serif;
-
-  color:#1B2A4A;
-
-  margin-bottom:20px;
-
+.city-table thead th {
+  padding: 14px 20px;
+  background: #1B2A4A;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: left;
+  white-space: nowrap;
 }
 
 
+/* =========================================================
+   TABLE BODY
+========================================================= */
 
-.city-table table {
-
-  width:100%;
-
-  min-width:950px;
-
-  border-collapse:collapse;
-
+.city-table tbody td {
+  padding: 15px 20px;
+  border-bottom: 1px solid #E8E1D2;
+  color: #1B2A4A;
+  font-size: 13px;
+  vertical-align: middle;
 }
 
-
-
-.city-table th {
-
-  background:#1B2A4A;
-
-  color:white;
-
-  padding:14px;
-
-  text-align:left;
-
+.city-table tbody tr {
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
-
-
-
-.city-table td {
-
-  padding:14px;
-
-  border-bottom:1px solid #E8E1D2;
-
-  color:#1B2A4A;
-
-}
-
-
 
 .city-table tbody tr:hover {
+  background: #FBF9F3;
+}
 
-  background:#F7F4EC;
+.city-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* =========================================================
+   CITY NAME
+========================================================= */
+
+.city-name {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 150px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   CITY AVATAR
+========================================================= */
+
+.city-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #F7F4EC;
+  border: 1px solid #DCD5C2;
+
+  color: #B78A34;
+
+  font-family: "Fraunces", serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   CLIENT COUNT
+========================================================= */
+
+.city-client-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 34px;
+  height: 28px;
+
+  padding: 0 9px;
+
+  border-radius: 7px;
+
+  background: #F7F4EC;
+
+  color: #1B2A4A;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   BILLING
+========================================================= */
+
+.city-billing-value {
+  color: #26734D;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   NET AMOUNT
+========================================================= */
+
+.city-net-value {
+  color: #1B2A4A;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   VIEW PERFORMANCE BUTTON
+========================================================= */
+
+.city-view-performance-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 8px 13px;
+
+  border: 1px solid #B78A34;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #B78A34;
+
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.city-view-performance-btn:hover {
+  background: #B78A34;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.city-view-performance-btn:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   VIEW ARROW
+========================================================= */
+
+.city-view-arrow {
+  font-size: 14px;
+  line-height: 1;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.city-empty {
+  padding: 45px 20px !important;
+
+  color: #7A7F87 !important;
+
+  font-size: 13px !important;
+  text-align: center;
+}
+
+
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
+
+.city-performance-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+
+  background: rgba(27, 42, 74, 0.55);
+
+  backdrop-filter: blur(4px);
+
+  animation: cityOverlayFade 0.2s ease;
+}
+
+
+@keyframes cityOverlayFade {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 
 }
 
 
+/* =========================================================
+   MODAL
+========================================================= */
 
-.city-table td:first-child {
+.city-performance-modal {
+  width: min(1050px, 100%);
+  max-height: calc(100vh - 50px);
 
-  color:#B78A34;
+  display: flex;
+  flex-direction: column;
 
-  font-weight:700;
+  overflow-y: auto;
+
+  background: #F7F4EC;
+
+  border: 1px solid #DCD5C2;
+  border-radius: 16px;
+
+  box-shadow:
+    0 20px 60px rgba(27, 42, 74, 0.22);
+
+  animation: cityModalOpen 0.25s ease;
+}
+
+
+@keyframes cityModalOpen {
+
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 
 }
 
 
+/* =========================================================
+   MODAL HEADER
+========================================================= */
+
+.city-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 23px 25px;
+
+  background: #FFFFFF;
+
+  border-bottom: 1px solid #DCD5C2;
+}
 
 
+.city-modal-eyebrow {
+  margin-bottom: 5px;
 
-/* Responsive */
+  color: #B78A34;
 
-@media(max-width:1100px){
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+}
 
 
-  .city-cards {
+.city-modal-header h2 {
+  margin: 0;
 
-    grid-template-columns:repeat(2,1fr);
+  color: #1B2A4A;
 
+  font-family: "Fraunces", serif;
+
+  font-size: 25px;
+}
+
+
+.city-modal-header p {
+  margin: 5px 0 0;
+
+  color: #7A7F87;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   MODAL CLOSE BUTTON
+========================================================= */
+
+.city-modal-close {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #DCD5C2;
+  border-radius: 8px;
+
+  background: #F7F4EC;
+
+  color: #1B2A4A;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.city-modal-close:hover {
+  background: #1B2A4A;
+  color: #FFFFFF;
+}
+
+
+/* =========================================================
+   SUMMARY GRID
+========================================================= */
+
+.city-summary-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+
+  padding: 17px 25px 0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   SUMMARY CARD
+========================================================= */
+
+.city-summary-card {
+  min-height: 88px;
+
+  padding: 14px 16px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background: #FFFFFF;
+
+  border: 1px solid #DCD5C2;
+  border-radius: 10px;
+
+  box-shadow:
+    0 3px 10px rgba(27, 42, 74, 0.04);
+}
+
+
+/* =========================================================
+   CITY CARD
+========================================================= */
+
+.city-top-city-card {
+  background: #FFFCF5;
+}
+
+
+/* =========================================================
+   SUMMARY LABEL
+========================================================= */
+
+.city-summary-label {
+  margin-bottom: 7px;
+
+  color: #7A7F87;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   SUMMARY TEXT
+========================================================= */
+
+.city-summary-text {
+  color: #1B2A4A;
+
+  font-family: "Fraunces", serif;
+
+  font-size: 17px;
+  line-height: 1.3;
+
+  word-break: break-word;
+}
+
+
+/* =========================================================
+   SUMMARY VALUE
+========================================================= */
+
+.city-summary-value {
+  color: #1B2A4A;
+
+  font-family: "Fraunces", serif;
+
+  font-size: 19px;
+
+  line-height: 1.3;
+}
+
+
+/* =========================================================
+   SUMMARY COUNT
+========================================================= */
+
+.city-summary-count {
+  margin-top: 5px;
+
+  color: #B78A34;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   FRANCHISE SHARE CARD
+========================================================= */
+
+.city-share-card {
+  background: #FFFDF8;
+}
+
+
+/* =========================================================
+   NET CARD
+========================================================= */
+
+.city-net-card {
+  background: #F7FBF8;
+}
+
+
+/* =========================================================
+   REPORT CONTROLS
+========================================================= */
+
+.city-report-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin: 20px 25px 0;
+
+  padding: 15px;
+
+  background: #FFFFFF;
+
+  border: 1px solid #DCD5C2;
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   REPORT PERIOD
+========================================================= */
+
+.city-report-period {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+
+.city-report-period label,
+.city-report-period > span {
+  color: #7A7F87;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.7px;
+
+  text-transform: uppercase;
+}
+
+
+.city-report-period select {
+  min-width: 170px;
+
+  padding: 9px 12px;
+
+  border: 1px solid #DCD5C2;
+  border-radius: 7px;
+
+  background: #F7F4EC;
+
+  color: #1B2A4A;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  outline: none;
+
+  cursor: pointer;
+}
+
+
+.city-report-period select:focus {
+  border-color: #B78A34;
+
+  box-shadow:
+    0 0 0 2px rgba(183, 138, 52, 0.12);
+}
+
+
+.city-report-period strong {
+  color: #1B2A4A;
+
+  font-family: "Fraunces", serif;
+
+  font-size: 17px;
+}
+
+
+/* =========================================================
+   GRAPH SECTION
+========================================================= */
+
+.city-report-graphs {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 15px;
+
+  padding: 15px 25px 20px;
+}
+
+
+/* =========================================================
+   CHART CARD
+========================================================= */
+
+.city-chart-card {
+  min-width: 0;
+
+  background: #FFFFFF;
+
+  border: 1px solid #DCD5C2;
+  border-radius: 11px;
+
+  padding: 16px;
+
+  box-shadow:
+    0 3px 10px rgba(27, 42, 74, 0.04);
+}
+
+
+/* =========================================================
+   CHART HEADING
+========================================================= */
+
+.city-chart-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+}
+
+
+.city-chart-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.city-chart-heading h3 {
+  margin: 0;
+
+  color: #1B2A4A;
+
+  font-family: "Fraunces", serif;
+
+  font-size: 16px;
+}
+
+
+.city-chart-heading > span {
+  color: #8A8F96;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   CHART INDICATORS
+========================================================= */
+
+.city-chart-indicator {
+  width: 8px;
+  height: 8px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+}
+
+
+.city-client-indicator {
+  background: #B78A34;
+}
+
+
+.city-billing-indicator {
+  background: #26734D;
+}
+
+
+/* =========================================================
+   CHART CONTAINER
+========================================================= */
+
+.city-chart-container {
+  width: 100%;
+  height: 260px;
+}
+
+
+/* =========================================================
+   NO CHART DATA
+========================================================= */
+
+.city-no-chart-data {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #8A8F96;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   TOOLTIP
+========================================================= */
+
+.city-modern-tooltip {
+  min-width: 155px;
+
+  padding: 11px 13px;
+
+  background: #FFFFFF;
+
+  border: 1px solid #DCD5C2;
+  border-radius: 9px;
+
+  box-shadow:
+    0 8px 25px rgba(27, 42, 74, 0.13);
+}
+
+
+.city-tooltip-label {
+  margin-bottom: 5px;
+
+  color: #7A7F87;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.city-tooltip-city {
+  margin-bottom: 8px;
+
+  color: #1B2A4A;
+
+  font-family: "Fraunces", serif;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+
+.city-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding-top: 5px;
+
+  color: #5F6670;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 10px;
+}
+
+
+.city-tooltip-row strong {
+  color: #1B2A4A;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.city-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 14px 25px;
+
+  background: #FFFFFF;
+
+  border-top: 1px solid #DCD5C2;
+
+  color: #7A7F87;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 10px;
+}
+
+
+.city-footer-close {
+  padding: 8px 15px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #1B2A4A;
+
+  color: #FFFFFF;
+
+  font-family: "Inter", sans-serif;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.city-footer-close:hover {
+  background: #B78A34;
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .city-performance-page {
+    padding: 25px;
   }
 
+  .city-report-graphs {
+    grid-template-columns: 1fr;
+  }
 
 }
 
 
+/* =========================================================
+   TABLET
+========================================================= */
 
-@media(max-width:600px){
+@media (max-width: 850px) {
 
-
-  .city-performance {
-
-    padding:15px;
-
+  .city-performance-page {
+    padding: 20px;
   }
 
 
-  .city-cards {
-
-    grid-template-columns:1fr;
-
+  .city-page-header h1 {
+    font-size: 27px;
   }
 
 
-  .city-performance h1 {
+  .city-summary-grid {
+    grid-template-columns: 1fr 1fr;
 
-    font-size:22px;
-
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
+
+  .city-report-controls {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+
+  .city-report-graphs {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+
+  .city-modal-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .city-performance-page {
+    padding: 15px;
+  }
+
+
+  .city-page-header {
+    margin-bottom: 18px;
+  }
+
+
+  .city-page-header h1 {
+    font-size: 23px;
+  }
+
+
+  .city-page-header p {
+    font-size: 12px;
+  }
+
+
+  .city-table-header {
+    align-items: flex-start;
+
+    padding: 16px;
+  }
+
+
+  .city-table-header h2 {
+    font-size: 18px;
+  }
+
+
+  .city-count {
+    min-width: 55px;
+
+    padding: 7px 9px;
+
+    font-size: 14px;
+  }
+
+
+  .city-table thead th {
+    padding: 12px 15px;
+  }
+
+
+  .city-table tbody td {
+    padding: 13px 15px;
+  }
+
+
+  /* Summary cards */
+
+  .city-summary-grid {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+    padding: 15px 17px 0;
+  }
+
+
+  .city-summary-card {
+    min-height: 78px;
+  }
+
+
+  /* Report controls */
+
+  .city-report-controls {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 12px;
+
+    margin: 15px 17px 0;
+
+    padding: 13px;
+  }
+
+
+  .city-report-period select {
+    width: 100%;
+  }
+
+
+  /* Charts */
+
+  .city-report-graphs {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+
+    padding: 12px 17px 17px;
+  }
+
+
+  .city-chart-container {
+    height: 230px;
+  }
+
+
+  /* Modal */
+
+  .city-performance-overlay {
+    align-items: flex-start;
+
+    padding: 10px;
+  }
+
+
+  .city-performance-modal {
+    max-height: calc(100vh - 20px);
+
+    border-radius: 13px;
+  }
+
+
+  .city-modal-header {
+    padding: 18px;
+  }
+
+
+  .city-modal-header h2 {
+    font-size: 21px;
+  }
+
+
+  .city-modal-header p {
+    font-size: 11px;
+  }
+
+
+  .city-modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+
+    padding: 13px 17px;
+  }
+
+
+  .city-footer-close {
+    width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .city-performance-page {
+    padding: 12px;
+  }
+
+
+  .city-page-header h1 {
+    font-size: 21px;
+  }
+
+
+  .city-table-header {
+    padding: 14px;
+  }
+
+
+  .city-table-header h2 {
+    font-size: 17px;
+  }
+
+
+  .city-name {
+    gap: 8px;
+  }
+
+
+  .city-avatar {
+    width: 30px;
+    height: 30px;
+
+    border-radius: 7px;
+
+    font-size: 13px;
+  }
+
+
+  .city-summary-grid {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+
+  .city-report-controls {
+    margin-left: 13px;
+    margin-right: 13px;
+  }
+
+
+  .city-report-graphs {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+
+  .city-chart-card {
+    padding: 13px;
+  }
+
+
+  .city-chart-container {
+    height: 210px;
+  }
 
 }
