@@ -15,7 +15,7 @@ import {
 
 import {
   useData
-} from "../../context/DataContext";
+} from "../../../context/DataContext";
 
 import "./FranchisePerformance.css";
 
