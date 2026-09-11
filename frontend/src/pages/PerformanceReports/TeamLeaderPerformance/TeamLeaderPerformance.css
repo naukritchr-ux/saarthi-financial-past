@@ -6,26 +6,29 @@
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
+  color: #171717;
 }
 
 
 /* ============================================================
-   HEADER
+   PAGE HEADER
    ============================================================ */
 
-.performance-header {
-  width: 100%;
+.team-leader-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
 }
 
-.performance-header h2 {
+.team-leader-page-header h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: #171717;
 }
 
-.performance-header p {
+.team-leader-page-header p {
   margin: 5px 0 0;
   color: #6b7280;
   font-size: 14px;
@@ -65,23 +68,64 @@
    ============================================================ */
 
 .team-leader-filter-header {
-  display: flex;
-
+  display: flex !important;
   align-items: center;
   justify-content: space-between;
 
   width: 100%;
+  margin-bottom: 16px;
 
-  margin-bottom: 15px;
+  visibility: visible !important;
 }
 
 .team-leader-filter-header h3 {
   margin: 0;
-
   font-size: 16px;
   font-weight: 700;
-
   color: #171717;
+}
+
+.team-leader-filter-header p {
+  margin: 3px 0 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+
+/* ============================================================
+   CLEAR BUTTON
+   ============================================================ */
+
+.team-leader-clear-btn {
+  display: inline-flex !important;
+
+  align-items: center;
+  justify-content: center;
+
+  height: 36px;
+
+  padding: 0 15px;
+
+  background: #ffffff;
+
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.team-leader-clear-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
 }
 
 
@@ -93,7 +137,6 @@
   display: flex !important;
 
   flex-direction: row;
-
   align-items: flex-end;
 
   gap: 20px;
@@ -107,7 +150,7 @@
 
 
 /* ============================================================
-   INDIVIDUAL FILTER
+   FILTER ITEM
    ============================================================ */
 
 .team-leader-filter-item {
@@ -118,10 +161,11 @@
   gap: 7px;
 
   width: 240px;
-
   min-width: 200px;
 
   visibility: visible !important;
+
+  box-sizing: border-box;
 }
 
 
@@ -144,7 +188,7 @@
 
 
 /* ============================================================
-   SELECT
+   FILTER SELECT
    ============================================================ */
 
 .team-leader-filter-item select {
@@ -158,11 +202,11 @@
   background-color: #ffffff;
 
   border: 1px solid #d1d5db;
-
   border-radius: 8px;
 
   color: #171717;
 
+  font-family: inherit;
   font-size: 14px;
 
   outline: none;
@@ -179,44 +223,10 @@
 }
 
 .team-leader-filter-item select:focus {
-  border-color: #6366f1;
+  border-color: #6b7280;
 
   box-shadow:
-    0 0 0 3px rgba(99, 102, 241, 0.12);
-}
-
-
-/* ============================================================
-   CLEAR BUTTON
-   ============================================================ */
-
-.team-leader-clear-btn {
-  height: 42px;
-
-  padding: 0 18px;
-
-  border: 1px solid #d1d5db;
-
-  border-radius: 8px;
-
-  background: #f9fafb;
-
-  color: #374151;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  white-space: nowrap;
-
-  transition: all 0.2s ease;
-}
-
-.team-leader-clear-btn:hover {
-  background: #f3f4f6;
-
-  border-color: #9ca3af;
+    0 0 0 2px rgba(107, 114, 128, 0.12);
 }
 
 
@@ -228,22 +238,130 @@
   display: flex;
 
   align-items: center;
+  gap: 6px;
 
-  gap: 25px;
+  margin-top: 14px;
 
-  margin-top: 15px;
-
-  padding-top: 12px;
-
-  border-top: 1px solid #f0f0f0;
+  font-size: 12px;
 
   color: #6b7280;
-
-  font-size: 13px;
 }
 
 .team-leader-filter-result strong {
   color: #171717;
+}
+
+.filter-separator {
+  margin: 0 5px;
+  color: #d1d5db;
+}
+
+
+/* ============================================================
+   SUMMARY CARDS
+   ============================================================ */
+
+.team-leader-summary-cards {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 15px;
+
+  margin-bottom: 20px;
+}
+
+
+.team-leader-summary-card {
+  min-height: 105px;
+
+  padding: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 12px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+.summary-card-label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+
+  color: #6b7280;
+}
+
+.team-leader-summary-card strong {
+  font-size: 21px;
+
+  color: #171717;
+
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   TABLE CARD
+   ============================================================ */
+
+.team-leader-table-card {
+  width: 100%;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+}
+
+
+/* ============================================================
+   TABLE HEADER
+   ============================================================ */
+
+.team-leader-table-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.team-leader-table-header h3 {
+  margin: 0;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  color: #171717;
+}
+
+.team-leader-table-header p {
+  margin: 4px 0 0;
+
+  color: #6b7280;
+
+  font-size: 12px;
 }
 
 
@@ -251,16 +369,10 @@
    TABLE CONTAINER
    ============================================================ */
 
-.performance-table-container {
+.team-leader-table-container {
   width: 100%;
 
   overflow-x: auto;
-
-  background: #ffffff;
-
-  border: 1px solid #e5e7eb;
-
-  border-radius: 12px;
 }
 
 
@@ -268,7 +380,7 @@
    MAIN TABLE
    ============================================================ */
 
-.performance-table {
+.team-leader-table {
   width: 100%;
 
   border-collapse: collapse;
@@ -276,16 +388,15 @@
   min-width: 900px;
 }
 
-.performance-table thead {
-  background: #f7f4ec;
-}
+.team-leader-table thead th {
+  background: #f8f8f8;
 
-.performance-table th {
-  padding: 14px 16px;
+  padding: 13px 15px;
 
   text-align: left;
 
-  font-size: 13px;
+  font-size: 12px;
+
   font-weight: 700;
 
   color: #374151;
@@ -295,80 +406,55 @@
   white-space: nowrap;
 }
 
-.performance-table td {
-  padding: 15px 16px;
+.team-leader-table tbody td {
+  padding: 13px 15px;
 
-  font-size: 14px;
+  font-size: 13px;
 
   color: #374151;
 
   border-bottom: 1px solid #f0f0f0;
+
+  white-space: nowrap;
 }
 
-.performance-table tbody tr:last-child td {
+.team-leader-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.performance-table tbody tr:hover {
-  background: #fafafa;
-}
-
-
-/* ============================================================
-   CLICKABLE ROW
-   ============================================================ */
-
-.clickable-row {
+.team-leader-table tbody tr.clickable-row {
   cursor: pointer;
 
-  transition: background 0.15s ease;
+  transition:
+    background 0.15s ease;
 }
 
-.clickable-row:hover {
-  background: #f9fafb !important;
-}
-
-
-/* ============================================================
-   TABLE FOOTER
-   ============================================================ */
-
-.performance-table tfoot {
+.team-leader-table tbody tr.clickable-row:hover {
   background: #fafafa;
 }
 
-.performance-table tfoot td {
-  border-top: 2px solid #e5e7eb;
+.team-leader-table .leader-name {
+  font-weight: 700;
 
-  border-bottom: none;
+  color: #171717;
+}
+
+.team-leader-table tfoot th {
+  padding: 14px 15px;
+
+  background: #f8f8f8;
+
+  font-size: 13px;
 
   font-weight: 700;
-}
 
+  text-align: left;
 
-/* ============================================================
-   VIEW DETAILS BUTTON
-   ============================================================ */
+  color: #171717;
 
-.view-performance-btn {
-  padding: 7px 12px;
+  border-top: 1px solid #e5e7eb;
 
-  border: none;
-
-  border-radius: 7px;
-
-  background: #f1f5f9;
-
-  color: #374151;
-
-  font-size: 12px;
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-.view-performance-btn:hover {
-  background: #e2e8f0;
+  white-space: nowrap;
 }
 
 
@@ -379,9 +465,9 @@
 .no-data {
   text-align: center !important;
 
-  padding: 35px !important;
+  padding: 35px 20px !important;
 
-  color: #6b7280 !important;
+  color: #9ca3af !important;
 }
 
 
@@ -389,22 +475,21 @@
    MODAL OVERLAY
    ============================================================ */
 
-.leader-modal-overlay {
+.team-leader-modal-overlay {
   position: fixed;
 
   inset: 0;
 
   z-index: 3000;
 
+  background: rgba(0, 0, 0, 0.45);
+
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
-  padding: 25px;
-
-  background: rgba(0, 0, 0, 0.45);
+  padding: 20px;
 
   box-sizing: border-box;
 }
@@ -414,8 +499,8 @@
    MODAL
    ============================================================ */
 
-.leader-modal {
-  width: min(1200px, 100%);
+.team-leader-modal {
+  width: min(1400px, 100%);
 
   max-height: 92vh;
 
@@ -427,6 +512,8 @@
 
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.2);
+
+  box-sizing: border-box;
 }
 
 
@@ -434,60 +521,64 @@
    MODAL HEADER
    ============================================================ */
 
-.leader-modal-header {
+.team-leader-modal-header {
   display: flex;
 
   align-items: flex-start;
-
   justify-content: space-between;
 
   padding: 22px 24px;
 
   border-bottom: 1px solid #e5e7eb;
+
+  position: sticky;
+
+  top: 0;
+
+  background: #ffffff;
+
+  z-index: 5;
 }
 
-.leader-modal-header h2 {
+.team-leader-modal-header h2 {
   margin: 0;
 
   font-size: 22px;
 
+  font-weight: 700;
+
   color: #171717;
 }
 
-.leader-modal-header p {
-  margin: 5px 0 0;
+.team-leader-modal-header p {
+  margin: 4px 0 0;
 
   font-size: 13px;
 
   color: #6b7280;
 }
 
-
-/* ============================================================
-   CLOSE BUTTON
-   ============================================================ */
-
-.modal-close-btn {
-  width: 36px;
-  height: 36px;
+.team-leader-modal-close {
+  width: 38px;
+  height: 38px;
 
   border: none;
 
-  border-radius: 50%;
+  background: #f5f5f5;
 
-  background: #f3f4f6;
+  border-radius: 8px;
+
+  font-size: 25px;
+
+  line-height: 1;
 
   color: #374151;
 
-  font-size: 24px;
-
   cursor: pointer;
-
-  line-height: 1;
 }
 
-.modal-close-btn:hover {
-  background: #e5e7eb;
+.team-leader-modal-close:hover {
+  background: #eeeeee;
 }
 
 
@@ -495,13 +586,7 @@
    MODAL FILTER
    ============================================================ */
 
-.modal-filter {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
+.leader-modal-filter-section {
   padding: 18px 24px;
 
   background: #fafafa;
@@ -509,7 +594,17 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.modal-filter label {
+.leader-modal-filter {
+  width: 240px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.leader-modal-filter label {
   font-size: 13px;
 
   font-weight: 600;
@@ -517,66 +612,108 @@
   color: #374151;
 }
 
-.modal-filter select {
-  height: 38px;
+.leader-modal-filter select {
+  width: 100%;
 
-  min-width: 200px;
+  height: 40px;
 
   padding: 0 12px;
+
+  background: #ffffff;
 
   border: 1px solid #d1d5db;
 
   border-radius: 7px;
 
-  background: #ffffff;
-
   font-size: 13px;
 
   color: #171717;
 
-  outline: none;
+  box-sizing: border-box;
 }
 
 
 /* ============================================================
-   SUMMARY GRID
+   MODAL KPIS
    ============================================================ */
 
-.leader-summary-grid {
+.leader-modal-kpis {
   display: grid;
 
   grid-template-columns:
-    repeat(6, minmax(0, 1fr));
+    repeat(5, minmax(0, 1fr));
 
   gap: 12px;
 
   padding: 20px 24px;
 }
 
-.leader-summary-card {
-  padding: 16px;
+.leader-modal-kpis > div {
+  padding: 15px;
 
-  background: #f7f4ec;
+  background: #fafafa;
 
-  border: 1px solid #e5e0d3;
+  border: 1px solid #e5e7eb;
 
-  border-radius: 10px;
+  border-radius: 9px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
 }
 
-.leader-summary-card span {
+.leader-modal-kpis span {
+  font-size: 12px;
+
+  color: #6b7280;
+}
+
+.leader-modal-kpis strong {
+  font-size: 16px;
+
+  color: #171717;
+}
+
+
+/* ============================================================
+   BEST SECTION
+   ============================================================ */
+
+.leader-best-section {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 15px;
+
+  padding: 0 24px 20px;
+}
+
+.leader-best-card {
+  padding: 16px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+.leader-best-card span {
   display: block;
 
-  margin-bottom: 7px;
+  margin-bottom: 5px;
 
   font-size: 12px;
 
   color: #6b7280;
 }
 
-.leader-summary-card strong {
-  display: block;
-
-  font-size: 17px;
+.leader-best-card strong {
+  font-size: 15px;
 
   color: #171717;
 }
@@ -586,59 +723,58 @@
    REPORT SECTION
    ============================================================ */
 
-.report-section {
-  padding: 20px 24px;
-
-  border-top: 1px solid #eeeeee;
+.leader-report-section {
+  padding: 0 24px 24px;
 }
 
-.report-section > h3 {
-  margin: 0 0 15px;
+.leader-report-header {
+  display: flex;
 
-  font-size: 17px;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 12px;
+}
+
+.leader-report-header h3 {
+  margin: 0;
+
+  font-size: 16px;
 
   color: #171717;
 }
 
 
 /* ============================================================
-   CHART
+   REPORT TABLE
    ============================================================ */
 
-.chart-container {
-  width: 100%;
-  height: 320px;
-}
-
-
-/* ============================================================
-   CLIENT DETAILS
-   ============================================================ */
-
-.client-details-table-container {
+.leader-report-table-container {
   width: 100%;
 
   overflow-x: auto;
 
   border: 1px solid #e5e7eb;
 
-  border-radius: 8px;
+  border-radius: 9px;
 }
 
-.client-details-table {
+.leader-report-table {
   width: 100%;
 
-  min-width: 900px;
+  min-width: 850px;
 
   border-collapse: collapse;
 }
 
-.client-details-table th {
-  padding: 12px;
+.leader-report-table thead th {
+  padding: 12px 14px;
+
+  background: #f8f8f8;
+
+  border-bottom: 1px solid #e5e7eb;
 
   text-align: left;
-
-  background: #f7f4ec;
 
   font-size: 12px;
 
@@ -649,14 +785,39 @@
   white-space: nowrap;
 }
 
-.client-details-table td {
-  padding: 12px;
+.leader-report-table tbody td {
+  padding: 12px 14px;
 
-  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+
+  font-size: 12px;
 
   color: #374151;
 
-  border-top: 1px solid #f0f0f0;
+  white-space: nowrap;
+}
+
+.leader-report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* ============================================================
+   CHART
+   ============================================================ */
+
+.leader-chart {
+  width: 100%;
+
+  height: 350px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 9px;
+
+  padding: 10px;
+
+  box-sizing: border-box;
 }
 
 
@@ -668,28 +829,58 @@
   display: inline-flex;
 
   align-items: center;
-
   justify-content: center;
 
-  min-width: 35px;
+  min-width: 30px;
 
   padding: 4px 8px;
 
   border-radius: 5px;
-
-  background: #f3f4f6;
-
-  color: #374151;
 
   font-size: 11px;
 
   font-weight: 700;
 }
 
+.info-r {
+  background: #e7f6ec;
+  color: #187a3d;
+}
+
+.info-rv {
+  background: #fff4dc;
+  color: #9a6700;
+}
+
+.info-c {
+  background: #e8f0ff;
+  color: #3159a6;
+}
+
+.info-cn {
+  background: #f3e8ff;
+  color: #7435a8;
+}
+
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+
+@media (max-width: 1200px) {
+
+  .team-leader-summary-cards {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .leader-modal-kpis {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+}
+
 
 @media (max-width: 900px) {
 
@@ -698,12 +889,21 @@
   }
 
 
+  .team-leader-filter-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 12px;
+  }
+
+
   .team-leader-filters {
     flex-direction: column;
 
     align-items: stretch;
 
-    gap: 12px;
+    gap: 14px;
   }
 
 
@@ -714,21 +914,21 @@
   }
 
 
-  .team-leader-clear-btn {
-    width: 100%;
-  }
-
-
-  .team-leader-filter-result {
-    flex-wrap: wrap;
-
-    gap: 10px 20px;
-  }
-
-
-  .leader-summary-grid {
+  .team-leader-summary-cards {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
+  }
+
+
+  .leader-modal-kpis {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .leader-best-section {
+    grid-template-columns:
+      1fr;
   }
 
 }
@@ -741,51 +941,35 @@
   }
 
 
-  .performance-header h2 {
-    font-size: 22px;
+  .team-leader-page-header h2 {
+    font-size: 21px;
   }
 
 
-  .team-leader-filter-wrapper {
-    padding: 15px;
+  .team-leader-summary-cards {
+    grid-template-columns: 1fr;
   }
 
 
-  .team-leader-filter-header {
-    align-items: flex-start;
-
-    gap: 10px;
+  .leader-modal-kpis {
+    grid-template-columns: 1fr;
   }
 
 
-  .team-leader-filter-header {
-    flex-direction: column;
+  .team-leader-modal-overlay {
+    padding: 8px;
   }
 
 
-  .team-leader-clear-btn {
-    width: auto;
+  .team-leader-modal-header {
+    padding: 17px;
   }
 
 
-  .leader-summary-grid {
-    grid-template-columns:
-      1fr;
-  }
-
-
-  .leader-modal-overlay {
-    padding: 10px;
-  }
-
-
-  .leader-modal-header {
-    padding: 18px;
-  }
-
-
-  .report-section {
-    padding: 18px;
+  .leader-modal-filter-section,
+  .leader-report-section {
+    padding-left: 17px;
+    padding-right: 17px;
   }
 
 }
