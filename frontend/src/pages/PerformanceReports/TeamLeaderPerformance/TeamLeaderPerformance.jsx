@@ -10,7 +10,7 @@ import {
   Legend
 } from "recharts";
 
-import { useData } from "../../context/DataContext";
+import { useData } from "../../../context/DataContext";
 import "./TeamLeaderPerformance.css";
 
 
@@ -50,15 +50,18 @@ function TeamLeaderPerformance() {
      FILTER STATES
      ========================================================== */
 
+  // Main table filters
   const [selectedTableFinancialYear, setSelectedTableFinancialYear] =
     useState("");
 
   const [selectedInfoStatus, setSelectedInfoStatus] =
     useState("");
 
+  // Selected Team Leader
   const [selectedLeader, setSelectedLeader] =
     useState(null);
 
+  // Modal Financial Year filter
   const [selectedFinancialYear, setSelectedFinancialYear] =
     useState("");
 
@@ -69,7 +72,11 @@ function TeamLeaderPerformance() {
 
   const toNumber = (value) => {
 
-    if (value === null || value === undefined || value === "") {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
       return 0;
     }
 
@@ -102,8 +109,7 @@ function TeamLeaderPerformance() {
 
   const normalizeText = (value) => {
 
-    return String(value ?? "")
-      .trim();
+    return String(value ?? "").trim();
   };
 
 
@@ -113,31 +119,34 @@ function TeamLeaderPerformance() {
 
   const getTeamLeader = (row) => {
 
-    return normalizeText(
-      row?.["Team Leader"]
-    ) || "Unknown";
+    return (
+      normalizeText(row?.["Team Leader"]) ||
+      "Unknown"
+    );
   };
 
 
   const getIndustry = (row) => {
 
-    return normalizeText(
-      row?.["Industry"] ||
-      row?.["Sub Industry"]
-    ) || "Unknown";
+    return (
+      normalizeText(
+        row?.["Industry"] ||
+        row?.["Sub Industry"]
+      ) || "Unknown"
+    );
   };
 
 
   const getCity = (row) => {
 
-    return normalizeText(
-      row?.["City"]
-    ) || "Unknown";
+    return (
+      normalizeText(row?.["City"]) ||
+      "Unknown"
+    );
   };
 
 
   /*
-   * IMPORTANT:
    * Excel column is exactly "Info"
    */
 
@@ -175,10 +184,10 @@ function TeamLeaderPerformance() {
 
   const getNetAmount = (row) => {
 
-    const billing = getBilling(row);
-    const franchiseeShare = getFranchiseeShare(row);
-
-    return billing - franchiseeShare;
+    return (
+      getBilling(row) -
+      getFranchiseeShare(row)
+    );
   };
 
 
@@ -218,6 +227,7 @@ function TeamLeaderPerformance() {
     }
 
     if (value instanceof Date) {
+
       return Number.isNaN(value.getTime())
         ? null
         : value;
@@ -230,15 +240,16 @@ function TeamLeaderPerformance() {
     }
 
 
-    /*
-     * Excel serial date
-     */
+    /* Excel serial date */
 
     if (/^\d+(\.\d+)?$/.test(text)) {
 
       const serial = Number(text);
 
-      if (serial > 20000 && serial < 70000) {
+      if (
+        serial > 20000 &&
+        serial < 70000
+      ) {
 
         const date = new Date(
           Date.UTC(1899, 11, 30) +
@@ -252,9 +263,7 @@ function TeamLeaderPerformance() {
     }
 
 
-    /*
-     * DD/MM/YYYY or DD-MM-YYYY
-     */
+    /* DD/MM/YYYY or DD-MM-YYYY */
 
     const parts = text.split(/[\/\-]/);
 
@@ -324,9 +333,13 @@ function TeamLeaderPerformance() {
 
     try {
 
-      if (typeof getFinancialYearFromRow === "function") {
+      if (
+        typeof getFinancialYearFromRow ===
+        "function"
+      ) {
 
-        const fy = getFinancialYearFromRow(row);
+        const fy =
+          getFinancialYearFromRow(row);
 
         if (fy) {
           return String(fy);
@@ -334,6 +347,7 @@ function TeamLeaderPerformance() {
       }
 
     } catch (error) {
+
       console.error(
         "Financial year error:",
         error
@@ -353,10 +367,15 @@ function TeamLeaderPerformance() {
     const month = date.getMonth() + 1;
 
     if (month >= 4) {
-      return `${year}-${String(year + 1).slice(-2)}`;
+
+      return `${year}-${String(
+        year + 1
+      ).slice(-2)}`;
     }
 
-    return `${year - 1}-${String(year).slice(-2)}`;
+    return `${year - 1}-${String(
+      year
+    ).slice(-2)}`;
   };
 
 
@@ -370,30 +389,36 @@ function TeamLeaderPerformance() {
 
     rows.forEach((row) => {
 
-      const fy = getRowFinancialYear(row);
+      const fy =
+        getRowFinancialYear(row);
 
       if (fy) {
         years.add(fy);
       }
-
     });
+
 
     return Array.from(years).sort(
       (a, b) => {
 
-        const yearA = Number(
-          String(a).substring(0, 4)
-        );
+        const yearA =
+          Number(
+            String(a).substring(0, 4)
+          );
 
-        const yearB = Number(
-          String(b).substring(0, 4)
-        );
+        const yearB =
+          Number(
+            String(b).substring(0, 4)
+          );
 
         return yearB - yearA;
       }
     );
 
-  }, [rows]);
+  }, [
+    rows,
+    getFinancialYearFromRow
+  ]);
 
 
   /* ==========================================================
@@ -410,33 +435,33 @@ function TeamLeaderPerformance() {
        Net Amount = 0
        TL Expenditure = 0
 
-     All:
-       Only R rows are included financially.
+     No Info filter:
+       Only R rows contribute financially.
   ========================================================== */
 
   const applyFinancialRules = (row) => {
 
-    const info = getInfoStatus(row);
+    const info =
+      getInfoStatus(row);
 
-    const billing = getBilling(row);
+    const billing =
+      getBilling(row);
 
-    /*
-     * R
-     */
 
     if (info === "R") {
 
       return {
+
         billing,
-        netAmount: getNetAmount(row),
-        tlExpenditure: getTLExpenditure(row)
+
+        netAmount:
+          getNetAmount(row),
+
+        tlExpenditure:
+          getTLExpenditure(row)
       };
     }
 
-
-    /*
-     * RV / C / CN
-     */
 
     if (
       info === "RV" ||
@@ -445,60 +470,54 @@ function TeamLeaderPerformance() {
     ) {
 
       return {
+
         billing,
+
         netAmount: 0,
+
         tlExpenditure: 0
       };
     }
 
 
-    /*
-     * Unknown / blank
-     */
-
     return {
+
       billing: 0,
+
       netAmount: 0,
+
       tlExpenditure: 0
     };
   };
 
 
   /* ==========================================================
-     FILTERED ROWS
+     MAIN FILTER
      ========================================================== */
 
   const filteredRows = useMemo(() => {
 
     return rows.filter((row) => {
 
-      const fy = getRowFinancialYear(row);
+      const fy =
+        getRowFinancialYear(row);
 
-      const info = getInfoStatus(row);
+      const info =
+        getInfoStatus(row);
 
-
-      /*
-       * Financial Year filter
-       */
 
       if (
         selectedTableFinancialYear &&
         fy !== selectedTableFinancialYear
       ) {
-
         return false;
       }
 
-
-      /*
-       * Info filter
-       */
 
       if (
         selectedInfoStatus &&
         info !== selectedInfoStatus
       ) {
-
         return false;
       }
 
@@ -509,37 +528,31 @@ function TeamLeaderPerformance() {
   }, [
     rows,
     selectedTableFinancialYear,
-    selectedInfoStatus
+    selectedInfoStatus,
+    getFinancialYearFromRow
   ]);
 
 
   /* ==========================================================
-     FINANCIAL ROWS FOR SUMMARY
+     FINANCIAL ROWS
      ========================================================== */
 
   const financialRows = useMemo(() => {
 
-    /*
-     * If no Info filter is selected,
-     * only R contributes financially.
-     */
-
     if (!selectedInfoStatus) {
 
       return filteredRows.filter(
-        (row) => getInfoStatus(row) === "R"
+        (row) =>
+          getInfoStatus(row) === "R"
       );
     }
 
 
-    return filteredRows.filter((row) => {
-
-      const info = getInfoStatus(row);
-
-      return (
-        info === selectedInfoStatus
-      );
-    });
+    return filteredRows.filter(
+      (row) =>
+        getInfoStatus(row) ===
+        selectedInfoStatus
+    );
 
   }, [
     filteredRows,
@@ -556,13 +569,11 @@ function TeamLeaderPerformance() {
     const grouped = {};
 
 
-    /*
-     * Create all leaders from filtered rows
-     */
-
     filteredRows.forEach((row) => {
 
-      const leader = getTeamLeader(row);
+      const leader =
+        getTeamLeader(row);
+
 
       if (!grouped[leader]) {
 
@@ -583,7 +594,6 @@ function TeamLeaderPerformance() {
           cities: {},
 
           clients: []
-
         };
       }
 
@@ -597,18 +607,14 @@ function TeamLeaderPerformance() {
        * Financial calculation
        */
 
-      let shouldCalculate = false;
+      const info =
+        getInfoStatus(row);
 
-      if (selectedInfoStatus) {
 
-        shouldCalculate =
-          getInfoStatus(row) === selectedInfoStatus;
-
-      } else {
-
-        shouldCalculate =
-          getInfoStatus(row) === "R";
-      }
+      const shouldCalculate =
+        selectedInfoStatus
+          ? info === selectedInfoStatus
+          : info === "R";
 
 
       if (shouldCalculate) {
@@ -616,11 +622,14 @@ function TeamLeaderPerformance() {
         const financial =
           applyFinancialRules(row);
 
+
         grouped[leader].totalBilling +=
           financial.billing;
 
+
         grouped[leader].netAmount +=
           financial.netAmount;
+
 
         grouped[leader].tlExpenditure +=
           financial.tlExpenditure;
@@ -635,7 +644,10 @@ function TeamLeaderPerformance() {
         getIndustry(row);
 
       grouped[leader].industries[industry] =
-        (grouped[leader].industries[industry] || 0) + 1;
+        (
+          grouped[leader].industries[industry] ||
+          0
+        ) + 1;
 
 
       /*
@@ -646,49 +658,41 @@ function TeamLeaderPerformance() {
         getCity(row);
 
       grouped[leader].cities[city] =
-        (grouped[leader].cities[city] || 0) + 1;
-
+        (
+          grouped[leader].cities[city] ||
+          0
+        ) + 1;
     });
 
 
-    return Object.values(grouped).map(
-      (leader) => {
-
-        const totalBilling =
-          leader.totalBilling;
-
-        const netAmount =
-          leader.netAmount;
-
-        const tlExpenditure =
-          leader.tlExpenditure;
+    return Object.values(grouped)
+      .map((leader) => {
 
         const grossProfit =
-          netAmount - tlExpenditure;
+          leader.netAmount -
+          leader.tlExpenditure;
 
 
         return {
 
           ...leader,
 
-          totalBilling,
-
-          netAmount,
-
-          tlExpenditure,
-
           grossProfit,
 
           grossMargin:
-            netAmount !== 0
-              ? (grossProfit / netAmount) * 100
+            leader.netAmount !== 0
+              ? (
+                  grossProfit /
+                  leader.netAmount
+                ) * 100
               : 0
         };
-      }
-    ).sort(
-      (a, b) =>
-        b.totalBilling - a.totalBilling
-    );
+      })
+      .sort(
+        (a, b) =>
+          b.totalBilling -
+          a.totalBilling
+      );
 
   }, [
     filteredRows,
@@ -706,25 +710,29 @@ function TeamLeaderPerformance() {
     let netAmount = 0;
     let tlExpenditure = 0;
 
+
     financialRows.forEach((row) => {
 
       const financial =
         applyFinancialRules(row);
 
+
       totalBilling +=
         financial.billing;
+
 
       netAmount +=
         financial.netAmount;
 
+
       tlExpenditure +=
         financial.tlExpenditure;
-
     });
 
 
     const grossProfit =
-      netAmount - tlExpenditure;
+      netAmount -
+      tlExpenditure;
 
 
     return {
@@ -742,7 +750,10 @@ function TeamLeaderPerformance() {
 
       grossMargin:
         netAmount !== 0
-          ? (grossProfit / netAmount) * 100
+          ? (
+              grossProfit /
+              netAmount
+            ) * 100
           : 0
     };
 
@@ -759,6 +770,7 @@ function TeamLeaderPerformance() {
   const clearFilters = () => {
 
     setSelectedTableFinancialYear("");
+
     setSelectedInfoStatus("");
   };
 
@@ -772,13 +784,17 @@ function TeamLeaderPerformance() {
     const entries =
       Object.entries(object || {});
 
+
     if (!entries.length) {
       return "N/A";
     }
 
+
     entries.sort(
-      (a, b) => b[1] - a[1]
+      (a, b) =>
+        b[1] - a[1]
     );
+
 
     return entries[0][0];
   };
@@ -788,80 +804,187 @@ function TeamLeaderPerformance() {
      SELECTED LEADER DATA
      ========================================================== */
 
-  const selectedLeaderData = useMemo(() => {
+  const selectedLeaderData =
+    useMemo(() => {
 
-    if (!selectedLeader) {
-      return null;
-    }
+      if (!selectedLeader) {
+        return null;
+      }
 
-    const leader =
-      teamLeaderSummary.find(
-        (item) =>
-          item.teamLeader === selectedLeader
-      );
 
-    return leader || null;
+      const leader =
+        teamLeaderSummary.find(
+          (item) =>
+            item.teamLeader ===
+            selectedLeader
+        );
 
-  }, [
-    selectedLeader,
-    teamLeaderSummary
-  ]);
+
+      return leader || null;
+
+    }, [
+      selectedLeader,
+      teamLeaderSummary
+    ]);
 
 
   /* ==========================================================
      SELECTED LEADER ROWS
      ========================================================== */
 
-  const selectedLeaderRows = useMemo(() => {
-
-    if (!selectedLeader) {
-      return [];
-    }
-
-    return filteredRows.filter(
-      (row) =>
-        getTeamLeader(row) === selectedLeader
-    );
-
-  }, [
-    filteredRows,
-    selectedLeader
-  ]);
-
-
-  /* ==========================================================
-     SELECTED LEADER FINANCIAL ROWS
-     ========================================================== */
-
-  const selectedLeaderFinancialRows =
+  const selectedLeaderRows =
     useMemo(() => {
 
       if (!selectedLeader) {
         return [];
       }
 
-      return selectedLeaderRows.filter(
-        (row) => {
 
-          const info =
-            getInfoStatus(row);
-
-          if (selectedInfoStatus) {
-
-            return (
-              info === selectedInfoStatus
-            );
-          }
-
-          return info === "R";
-        }
+      return filteredRows.filter(
+        (row) =>
+          getTeamLeader(row) ===
+          selectedLeader
       );
 
     }, [
-      selectedLeaderRows,
-      selectedInfoStatus,
+      filteredRows,
       selectedLeader
     ]);
+
+
+  /* ==========================================================
+     MODAL FILTERED LEADER ROWS
+     ========================================================== */
+
+  const modalLeaderRows = useMemo(() => {
+
+    return selectedLeaderRows.filter(
+      (row) => {
+
+        const fy =
+          getRowFinancialYear(row);
+
+
+        if (
+          selectedFinancialYear &&
+          fy !== selectedFinancialYear
+        ) {
+          return false;
+        }
+
+
+        return true;
+      }
+    );
+
+  }, [
+    selectedLeaderRows,
+    selectedFinancialYear,
+    getFinancialYearFromRow
+  ]);
+
+
+  /* ==========================================================
+     MODAL LEADER DATA
+     ========================================================== */
+
+  const modalLeaderData = useMemo(() => {
+
+    if (!selectedLeader) {
+      return null;
+    }
+
+
+    let totalBilling = 0;
+    let netAmount = 0;
+    let tlExpenditure = 0;
+
+    const industries = {};
+    const cities = {};
+
+
+    modalLeaderRows.forEach((row) => {
+
+      const info =
+        getInfoStatus(row);
+
+
+      const shouldCalculate =
+        selectedInfoStatus
+          ? info === selectedInfoStatus
+          : info === "R";
+
+
+      if (shouldCalculate) {
+
+        const financial =
+          applyFinancialRules(row);
+
+
+        totalBilling +=
+          financial.billing;
+
+
+        netAmount +=
+          financial.netAmount;
+
+
+        tlExpenditure +=
+          financial.tlExpenditure;
+      }
+
+
+      const industry =
+        getIndustry(row);
+
+      industries[industry] =
+        (industries[industry] || 0) + 1;
+
+
+      const city =
+        getCity(row);
+
+      cities[city] =
+        (cities[city] || 0) + 1;
+    });
+
+
+    const grossProfit =
+      netAmount -
+      tlExpenditure;
+
+
+    return {
+
+      clients:
+        modalLeaderRows.length,
+
+      totalBilling,
+
+      netAmount,
+
+      tlExpenditure,
+
+      grossProfit,
+
+      grossMargin:
+        netAmount !== 0
+          ? (
+              grossProfit /
+              netAmount
+            ) * 100
+          : 0,
+
+      industries,
+
+      cities
+    };
+
+  }, [
+    modalLeaderRows,
+    selectedInfoStatus,
+    selectedLeader
+  ]);
 
 
   /* ==========================================================
@@ -874,13 +997,15 @@ function TeamLeaderPerformance() {
       return [];
     }
 
+
     const grouped = {};
 
 
-    selectedLeaderRows.forEach((row) => {
+    modalLeaderRows.forEach((row) => {
 
       const fy =
         getRowFinancialYear(row);
+
 
       if (!fy) {
         return;
@@ -911,18 +1036,10 @@ function TeamLeaderPerformance() {
         getInfoStatus(row);
 
 
-      let shouldCalculate = false;
-
-      if (selectedInfoStatus) {
-
-        shouldCalculate =
-          info === selectedInfoStatus;
-
-      } else {
-
-        shouldCalculate =
-          info === "R";
-      }
+      const shouldCalculate =
+        selectedInfoStatus
+          ? info === selectedInfoStatus
+          : info === "R";
 
 
       if (shouldCalculate) {
@@ -930,16 +1047,18 @@ function TeamLeaderPerformance() {
         const financial =
           applyFinancialRules(row);
 
+
         grouped[fy].totalBilling +=
           financial.billing;
+
 
         grouped[fy].netAmount +=
           financial.netAmount;
 
+
         grouped[fy].tlExpenditure +=
           financial.tlExpenditure;
       }
-
     });
 
 
@@ -963,9 +1082,10 @@ function TeamLeaderPerformance() {
     );
 
   }, [
-    selectedLeaderRows,
+    modalLeaderRows,
     selectedInfoStatus,
-    selectedLeader
+    selectedLeader,
+    getFinancialYearFromRow
   ]);
 
 
@@ -978,6 +1098,7 @@ function TeamLeaderPerformance() {
     if (!selectedLeader) {
       return [];
     }
+
 
     const grouped = {};
 
@@ -1001,17 +1122,13 @@ function TeamLeaderPerformance() {
     );
 
 
-    selectedLeaderRows.forEach((row) => {
+    modalLeaderRows.forEach((row) => {
 
       const month =
         getFinancialMonth(row);
 
-      if (!month) {
-        return;
-      }
 
-
-      if (!grouped[month]) {
+      if (!month || !grouped[month]) {
         return;
       }
 
@@ -1023,18 +1140,10 @@ function TeamLeaderPerformance() {
         getInfoStatus(row);
 
 
-      let shouldCalculate = false;
-
-      if (selectedInfoStatus) {
-
-        shouldCalculate =
-          info === selectedInfoStatus;
-
-      } else {
-
-        shouldCalculate =
-          info === "R";
-      }
+      const shouldCalculate =
+        selectedInfoStatus
+          ? info === selectedInfoStatus
+          : info === "R";
 
 
       if (shouldCalculate) {
@@ -1042,25 +1151,28 @@ function TeamLeaderPerformance() {
         const financial =
           applyFinancialRules(row);
 
+
         grouped[month].totalBilling +=
           financial.billing;
+
 
         grouped[month].netAmount +=
           financial.netAmount;
 
+
         grouped[month].tlExpenditure +=
           financial.tlExpenditure;
       }
-
     });
 
 
     return financialMonths.map(
-      (month) => grouped[month]
+      (month) =>
+        grouped[month]
     );
 
   }, [
-    selectedLeaderRows,
+    modalLeaderRows,
     selectedInfoStatus,
     selectedLeader
   ]);
@@ -1076,11 +1188,13 @@ function TeamLeaderPerformance() {
       return [];
     }
 
-    return selectedLeaderRows.map(
+
+    return modalLeaderRows.map(
       (row, index) => {
 
         const info =
           getInfoStatus(row);
+
 
         let financial = {
 
@@ -1092,11 +1206,13 @@ function TeamLeaderPerformance() {
         };
 
 
-        if (
+        const shouldCalculate =
           selectedInfoStatus
             ? info === selectedInfoStatus
-            : info === "R"
-        ) {
+            : info === "R";
+
+
+        if (shouldCalculate) {
 
           financial =
             applyFinancialRules(row);
@@ -1105,8 +1221,7 @@ function TeamLeaderPerformance() {
 
         return {
 
-          id:
-            index + 1,
+          id: index + 1,
 
           company:
             row?.["Company Name"] ||
@@ -1140,10 +1255,36 @@ function TeamLeaderPerformance() {
     );
 
   }, [
-    selectedLeaderRows,
+    modalLeaderRows,
     selectedInfoStatus,
-    selectedLeader
+    selectedLeader,
+    getFinancialYearFromRow
   ]);
+
+
+  /* ==========================================================
+     OPEN LEADER
+     ========================================================== */
+
+  const openLeader = (leader) => {
+
+    setSelectedLeader(leader);
+
+    // Reset modal FY every time a new leader is opened
+    setSelectedFinancialYear("");
+  };
+
+
+  /* ==========================================================
+     CLOSE LEADER
+     ========================================================== */
+
+  const closeLeader = () => {
+
+    setSelectedLeader(null);
+
+    setSelectedFinancialYear("");
+  };
 
 
   /* ==========================================================
@@ -1154,9 +1295,10 @@ function TeamLeaderPerformance() {
 
     <div className="team-leader-performance">
 
-      {/* =====================================================
+
+      {/* ======================================================
           HEADER
-      ===================================================== */}
+      ====================================================== */}
 
       <div className="team-leader-page-header">
 
@@ -1175,9 +1317,9 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* =====================================================
+      {/* ======================================================
           FILTERS
-      ===================================================== */}
+      ====================================================== */}
 
       <div className="team-leader-filter-wrapper">
 
@@ -1209,6 +1351,7 @@ function TeamLeaderPerformance() {
 
         <div className="team-leader-filters">
 
+
           {/* Financial Year */}
 
           <div className="team-leader-filter-item">
@@ -1216,6 +1359,7 @@ function TeamLeaderPerformance() {
             <label htmlFor="teamLeaderFinancialYear">
               Financial Year
             </label>
+
 
             <select
               id="teamLeaderFinancialYear"
@@ -1230,6 +1374,7 @@ function TeamLeaderPerformance() {
               <option value="">
                 All Financial Years
               </option>
+
 
               {financialYears.map(
                 (year) => (
@@ -1256,6 +1401,7 @@ function TeamLeaderPerformance() {
             <label htmlFor="teamLeaderInfoStatus">
               Info Status
             </label>
+
 
             <select
               id="teamLeaderInfoStatus"
@@ -1294,7 +1440,7 @@ function TeamLeaderPerformance() {
         </div>
 
 
-        {/* Filter result */}
+        {/* Filter Result */}
 
         <div className="team-leader-filter-result">
 
@@ -1303,7 +1449,9 @@ function TeamLeaderPerformance() {
           </span>
 
           <strong>
-            {filteredRows.length}
+            {filteredRows.length.toLocaleString(
+              "en-IN"
+            )}
           </strong>
 
           <span>
@@ -1314,6 +1462,7 @@ function TeamLeaderPerformance() {
           {selectedTableFinancialYear && (
 
             <>
+
               <span className="filter-separator">
                 |
               </span>
@@ -1325,6 +1474,7 @@ function TeamLeaderPerformance() {
               <strong>
                 {selectedTableFinancialYear}
               </strong>
+
             </>
 
           )}
@@ -1333,6 +1483,7 @@ function TeamLeaderPerformance() {
           {selectedInfoStatus && (
 
             <>
+
               <span className="filter-separator">
                 |
               </span>
@@ -1344,6 +1495,7 @@ function TeamLeaderPerformance() {
               <strong>
                 {selectedInfoStatus}
               </strong>
+
             </>
 
           )}
@@ -1353,11 +1505,12 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* =====================================================
+      {/* ======================================================
           SUMMARY CARDS
-      ===================================================== */}
+      ====================================================== */}
 
       <div className="team-leader-summary-cards">
+
 
         <div className="team-leader-summary-card">
 
@@ -1449,9 +1602,9 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* =====================================================
+      {/* ======================================================
           MAIN TABLE
-      ===================================================== */}
+      ====================================================== */}
 
       <div className="team-leader-table-card">
 
@@ -1536,7 +1689,7 @@ function TeamLeaderPerformance() {
                     <tr
                       key={leader.teamLeader}
                       onClick={() =>
-                        setSelectedLeader(
+                        openLeader(
                           leader.teamLeader
                         )
                       }
@@ -1544,55 +1697,41 @@ function TeamLeaderPerformance() {
                     >
 
                       <td className="leader-name">
-
                         {leader.teamLeader}
-
                       </td>
 
                       <td>
-
                         {leader.acquiredClients.toLocaleString(
                           "en-IN"
                         )}
-
                       </td>
 
                       <td>
-
                         {formatCurrency(
                           leader.totalBilling
                         )}
-
                       </td>
 
                       <td>
-
                         {formatCurrency(
                           leader.netAmount
                         )}
-
                       </td>
 
                       <td>
-
                         {formatCurrency(
                           leader.tlExpenditure
                         )}
-
                       </td>
 
                       <td>
-
                         {formatCurrency(
                           leader.grossProfit
                         )}
-
                       </td>
 
                       <td>
-
                         {leader.grossMargin.toFixed(2)}%
-
                       </td>
 
                     </tr>
@@ -1662,17 +1801,16 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* =====================================================
+      {/* ======================================================
           LEADER MODAL
-      ===================================================== */}
+      ====================================================== */}
 
-      {selectedLeader && selectedLeaderData && (
+      {selectedLeader &&
+        modalLeaderData && (
 
         <div
           className="team-leader-modal-overlay"
-          onClick={() =>
-            setSelectedLeader(null)
-          }
+          onClick={closeLeader}
         >
 
           <div
@@ -1681,6 +1819,7 @@ function TeamLeaderPerformance() {
               e.stopPropagation()
             }
           >
+
 
             {/* Modal Header */}
 
@@ -1702,9 +1841,7 @@ function TeamLeaderPerformance() {
               <button
                 type="button"
                 className="team-leader-modal-close"
-                onClick={() =>
-                  setSelectedLeader(null)
-                }
+                onClick={closeLeader}
               >
                 ×
               </button>
@@ -1712,17 +1849,21 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* Modal Filters */}
+            {/* =================================================
+                MODAL FINANCIAL YEAR FILTER
+            ================================================= */}
 
             <div className="leader-modal-filter-section">
 
               <div className="leader-modal-filter">
 
-                <label>
+                <label htmlFor="leaderFinancialYear">
                   Financial Year
                 </label>
 
+
                 <select
+                  id="leaderFinancialYear"
                   value={selectedFinancialYear}
                   onChange={(e) =>
                     setSelectedFinancialYear(
@@ -1734,6 +1875,7 @@ function TeamLeaderPerformance() {
                   <option value="">
                     All Financial Years
                   </option>
+
 
                   {financialYears.map(
                     (year) => (
@@ -1755,7 +1897,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* Modal KPI */}
+            {/* =================================================
+                MODAL KPI
+            ================================================= */}
 
             <div className="leader-modal-kpis">
 
@@ -1766,7 +1910,7 @@ function TeamLeaderPerformance() {
                 </span>
 
                 <strong>
-                  {selectedLeaderData.acquiredClients.toLocaleString(
+                  {modalLeaderData.clients.toLocaleString(
                     "en-IN"
                   )}
                 </strong>
@@ -1782,7 +1926,7 @@ function TeamLeaderPerformance() {
 
                 <strong>
                   {formatCurrency(
-                    selectedLeaderData.totalBilling
+                    modalLeaderData.totalBilling
                   )}
                 </strong>
 
@@ -1797,7 +1941,7 @@ function TeamLeaderPerformance() {
 
                 <strong>
                   {formatCurrency(
-                    selectedLeaderData.netAmount
+                    modalLeaderData.netAmount
                   )}
                 </strong>
 
@@ -1812,7 +1956,7 @@ function TeamLeaderPerformance() {
 
                 <strong>
                   {formatCurrency(
-                    selectedLeaderData.tlExpenditure
+                    modalLeaderData.tlExpenditure
                   )}
                 </strong>
 
@@ -1827,7 +1971,7 @@ function TeamLeaderPerformance() {
 
                 <strong>
                   {formatCurrency(
-                    selectedLeaderData.grossProfit
+                    modalLeaderData.grossProfit
                   )}
                 </strong>
 
@@ -1836,7 +1980,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* Best Industry / City */}
+            {/* =================================================
+                BEST INDUSTRY / CITY
+            ================================================= */}
 
             <div className="leader-best-section">
 
@@ -1848,7 +1994,7 @@ function TeamLeaderPerformance() {
 
                 <strong>
                   {getBestValue(
-                    selectedLeaderData.industries
+                    modalLeaderData.industries
                   )}
                 </strong>
 
@@ -1863,7 +2009,7 @@ function TeamLeaderPerformance() {
 
                 <strong>
                   {getBestValue(
-                    selectedLeaderData.cities
+                    modalLeaderData.cities
                   )}
                 </strong>
 
@@ -1872,7 +2018,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* Yearly Report */}
+            {/* =================================================
+                YEARLY REPORT
+            ================================================= */}
 
             <div className="leader-report-section">
 
@@ -1920,44 +2068,63 @@ function TeamLeaderPerformance() {
 
                   <tbody>
 
-                    {yearlyReport.map(
-                      (item) => (
+                    {yearlyReport.length === 0 ? (
 
-                        <tr
-                          key={
-                            item.financialYear
-                          }
+                      <tr>
+
+                        <td
+                          colSpan="5"
+                          className="no-data"
                         >
+                          No yearly data found.
+                        </td>
 
-                          <td>
-                            {item.financialYear}
-                          </td>
+                      </tr>
 
-                          <td>
-                            {item.clients}
-                          </td>
+                    ) : (
 
-                          <td>
-                            {formatCurrency(
-                              item.totalBilling
-                            )}
-                          </td>
+                      yearlyReport.map(
+                        (item) => (
 
-                          <td>
-                            {formatCurrency(
-                              item.netAmount
-                            )}
-                          </td>
+                          <tr
+                            key={
+                              item.financialYear
+                            }
+                          >
 
-                          <td>
-                            {formatCurrency(
-                              item.tlExpenditure
-                            )}
-                          </td>
+                            <td>
+                              {item.financialYear}
+                            </td>
 
-                        </tr>
+                            <td>
+                              {item.clients.toLocaleString(
+                                "en-IN"
+                              )}
+                            </td>
 
+                            <td>
+                              {formatCurrency(
+                                item.totalBilling
+                              )}
+                            </td>
+
+                            <td>
+                              {formatCurrency(
+                                item.netAmount
+                              )}
+                            </td>
+
+                            <td>
+                              {formatCurrency(
+                                item.tlExpenditure
+                              )}
+                            </td>
+
+                          </tr>
+
+                        )
                       )
+
                     )}
 
                   </tbody>
@@ -1969,7 +2136,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* Monthly Report */}
+            {/* =================================================
+                MONTHLY REPORT
+            ================================================= */}
 
             <div className="leader-report-section">
 
@@ -2017,15 +2186,18 @@ function TeamLeaderPerformance() {
 
                     <Legend />
 
+
                     <Bar
                       dataKey="totalBilling"
                       name="Total Billing"
                     />
 
+
                     <Bar
                       dataKey="netAmount"
                       name="Net Amount"
                     />
+
 
                     <Bar
                       dataKey="tlExpenditure"
@@ -2041,7 +2213,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* Client Details */}
+            {/* =================================================
+                CLIENT DETAILS
+            ================================================= */}
 
             <div className="leader-report-section">
 
@@ -2127,7 +2301,9 @@ function TeamLeaderPerformance() {
                       clientDetails.map(
                         (client) => (
 
-                          <tr key={client.id}>
+                          <tr
+                            key={client.id}
+                          >
 
                             <td>
                               {client.id}
@@ -2138,11 +2314,13 @@ function TeamLeaderPerformance() {
                             </td>
 
                             <td>
+
                               <span
                                 className={`info-status info-${client.info.toLowerCase()}`}
                               >
                                 {client.info || "-"}
                               </span>
+
                             </td>
 
                             <td>
