@@ -36,10 +36,11 @@ const financialMonths = [
 
 
 /* ============================================================
-   NUMBER HELPER
+   HELPERS
    ============================================================ */
 
 const toNumber = (value) => {
+
   if (
     value === null ||
     value === undefined ||
@@ -56,78 +57,59 @@ const toNumber = (value) => {
 
   const number = Number(cleaned);
 
-  return Number.isFinite(number) ? number : 0;
+  return Number.isFinite(number)
+    ? number
+    : 0;
 };
 
-
-/* ============================================================
-   CURRENCY FORMAT
-   ============================================================ */
 
 const formatCurrency = (value) => {
-  return `₹${toNumber(value).toLocaleString("en-IN", {
-    maximumFractionDigits: 2
-  })}`;
+
+  return `₹${toNumber(value).toLocaleString(
+    "en-IN",
+    {
+      maximumFractionDigits: 2
+    }
+  )}`;
 };
 
-
-/* ============================================================
-   CITY
-   ============================================================ */
 
 const getCity = (row) => {
-  const city =
-    row?.city ??
-    row?.City ??
-    row?.["City"] ??
-    row?.["City Name"];
 
-  return city &&
-    String(city).trim() !== ""
-    ? String(city).trim()
-    : "Unknown";
+  return (
+    row?.city ??
+    row?.["City"] ??
+    "Unknown"
+  );
 };
 
-
-/* ============================================================
-   TEAM LEADER
-   ============================================================ */
 
 const getTeamLeader = (row) => {
-  const value =
-    row?.team_leader ??
-    row?.["Team Leader"];
 
-  return value &&
-    String(value).trim() !== ""
-    ? String(value).trim()
-    : "Unknown";
+  return (
+    row?.team_leader ??
+    row?.["Team Leader"] ??
+    "Unknown"
+  );
 };
 
-
-/* ============================================================
-   BD MEMBER
-   ============================================================ */
 
 const getBDMember = (row) => {
-  const value =
-    row?.bd_member ??
-    row?.["BD Member"];
 
-  return value &&
-    String(value).trim() !== ""
-    ? String(value).trim()
-    : "Unknown";
+  return (
+    row?.bd_member ??
+    row?.["BD Member"] ??
+    "Unknown"
+  );
 };
 
 
 /* ============================================================
-   BILLING
-   IMPORTANT:
-   Billing comes from total_bill_amount
+   BILLING MUST COME FROM total_bill_amount
    ============================================================ */
 
 const getBilling = (row) => {
+
   return toNumber(
     row?.total_bill_amount ??
     row?.["Total Bill Amount"] ??
@@ -141,9 +123,9 @@ const getBilling = (row) => {
    ============================================================ */
 
 const getInfoStatus = (row) => {
+
   return String(
     row?.info ??
-    row?.Info ??
     row?.["Info"] ??
     row?.["Info Status"] ??
     ""
@@ -157,32 +139,35 @@ const getInfoStatus = (row) => {
    FINANCIAL VALUES
    ============================================================
 
-   Rules:
-
    ALL
+   --------------------------------
    Total Billing = R + RV + C + CN
-   City Expenditure = 5% of Total Billing
-   Net Amount = Total Billing - City Expenditure
+   City Expenditure = 5% of Billing
+   Net Amount = Billing - Expenditure
 
    R
+   --------------------------------
    Total Billing = R Billing
    City Expenditure = 5% of R Billing
-   Net Amount = Total Billing - City Expenditure
+   Net Amount = Billing - Expenditure
 
    RV
+   --------------------------------
    Total Billing = RV Billing
-   City Expenditure = ₹0
-   Net Amount = Total Billing
+   City Expenditure = 0
+   Net Amount = Billing
 
    C
+   --------------------------------
    Total Billing = C Billing
-   City Expenditure = ₹0
-   Net Amount = Total Billing
+   City Expenditure = 0
+   Net Amount = Billing
 
    CN
+   --------------------------------
    Total Billing = CN Billing
-   City Expenditure = ₹0
-   Net Amount = Total Billing
+   City Expenditure = 0
+   Net Amount = Billing
 
    Franchise Share is NOT calculated.
    ============================================================ */
@@ -191,50 +176,59 @@ const getFinancialValues = (
   rows,
   infoStatus
 ) => {
-  let totalBilling = 0;
 
-  if (!rows || rows.length === 0) {
-    return {
-      totalBilling: 0,
-      cityExpenditure: 0,
-      netAmount: 0
-    };
-  }
+  let totalBilling = 0;
 
 
   rows.forEach((row) => {
-    const status = getInfoStatus(row);
-    const billing = getBilling(row);
+
+    const status =
+      getInfoStatus(row);
+
+    const billing =
+      getBilling(row);
+
 
     /*
-      When "All" is selected,
-      include all records.
+      ALL
+      Include every Info Status.
     */
 
     if (
       !infoStatus ||
       infoStatus === "All"
     ) {
+
       totalBilling += billing;
+
       return;
     }
 
 
     /*
-      When a specific Info Status
-      is selected, include only
-      matching records.
+      Specific Info Status
+      Include only matching rows.
     */
 
-    if (status === infoStatus) {
+    if (
+      status === infoStatus
+    ) {
+
       totalBilling += billing;
+
     }
+
   });
 
 
   /*
-    Only All and R have
-    5% City Expenditure.
+    City Expenditure
+
+    All = 5%
+    R   = 5%
+    RV  = 0
+    C   = 0
+    CN  = 0
   */
 
   const cityExpenditure =
@@ -245,86 +239,107 @@ const getFinancialValues = (
       : 0;
 
 
+  /*
+    Net Amount
+  */
+
   const netAmount =
-    totalBilling - cityExpenditure;
+    totalBilling -
+    cityExpenditure;
 
 
   return {
+
     totalBilling,
-    cityExpenditure,
-    netAmount
+
+    netAmount,
+
+    cityExpenditure
+
   };
 };
 
 
 /* ============================================================
-   CLIENT ACQUIRED DATE
+   DATE HELPERS
    ============================================================ */
 
 const getClientAcquiredDate = (row) => {
+
   return (
     row?.date_client_acquired ??
-    row?.dateClientAcquired ??
     row?.["Date Client Acquired"] ??
     row?.client_acquired_date ??
     row?.["Client Acquired Date"] ??
-    row?.acquisition_date ??
-    row?.["Acquisition Date"] ??
     null
   );
 };
 
 
-/* ============================================================
-   FINANCIAL YEAR
-   ============================================================ */
-
 const getFinancialYear = (dateValue) => {
+
   if (!dateValue) {
     return null;
   }
 
-  const date = new Date(dateValue);
+  const date =
+    new Date(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return null;
   }
 
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
+  const month =
+    date.getMonth() + 1;
+
+  const year =
+    date.getFullYear();
+
 
   if (month >= 4) {
-    return `${year}-${String(year + 1).slice(-2)}`;
+
+    return `${year}-${String(
+      year + 1
+    ).slice(-2)}`;
+
   }
 
-  return `${year - 1}-${String(year).slice(-2)}`;
+
+  return `${year - 1}-${String(
+    year
+  ).slice(-2)}`;
 };
 
 
-/* ============================================================
-   MONTH
-   ============================================================ */
-
 const getMonth = (dateValue) => {
+
   if (!dateValue) {
     return null;
   }
 
-  const date = new Date(dateValue);
+  const date =
+    new Date(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return null;
   }
 
-  const monthIndex = date.getMonth();
+  const monthIndex =
+    date.getMonth();
 
-  const financialMonthIndex =
-    monthIndex >= 3
-      ? monthIndex - 3
-      : monthIndex + 9;
 
   return financialMonths[
-    financialMonthIndex
+    monthIndex >= 3
+      ? monthIndex - 3
+      : monthIndex + 9
   ]?.full;
 };
 
@@ -334,13 +349,19 @@ const getMonth = (dateValue) => {
    ============================================================ */
 
 const getMostFrequent = (values) => {
-  if (!values || values.length === 0) {
+
+  if (
+    !values ||
+    values.length === 0
+  ) {
     return "N/A";
   }
 
   const counts = {};
 
+
   values.forEach((value) => {
+
     const cleaned =
       value === null ||
       value === undefined ||
@@ -348,15 +369,17 @@ const getMostFrequent = (values) => {
         ? "Unknown"
         : String(value).trim();
 
+
     counts[cleaned] =
       (counts[cleaned] || 0) + 1;
+
   });
 
-  return (
-    Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])[0]?.[0] ||
-    "N/A"
-  );
+
+  return Object.entries(counts)
+    .sort(
+      (a, b) => b[1] - a[1]
+    )[0]?.[0] || "N/A";
 };
 
 
@@ -369,6 +392,7 @@ const CityTooltip = ({
   payload,
   label
 }) => {
+
   if (
     !active ||
     !payload ||
@@ -377,26 +401,39 @@ const CityTooltip = ({
     return null;
   }
 
+
   return (
+
     <div className="city-chart-tooltip">
 
       <strong>
         {label}
       </strong>
 
-      {payload.map((item, index) => (
-        <div key={index}>
 
-          {item.name}:{" "}
+      {payload.map(
+        (item, index) => (
 
-          {item.name === "Total Billing"
-            ? formatCurrency(item.value)
-            : item.value}
+          <div key={index}>
 
-        </div>
-      ))}
+            {item.name}:{" "}
+
+            {item.name ===
+            "Total Billing"
+
+              ? formatCurrency(
+                  item.value
+                )
+
+              : item.value}
+
+          </div>
+
+        )
+      )}
 
     </div>
+
   );
 };
 
@@ -407,34 +444,21 @@ const CityTooltip = ({
 
 function CityPerformance() {
 
-  const dataContext = useData();
+  const { rows } =
+    useData();
 
-  /*
-    Supports the current DataContext structure
-    and prevents the page from breaking if
-    the array is named differently.
-  */
-
-  const rows =
-    dataContext?.rows ??
-    dataContext?.ledgerData ??
-    dataContext?.data ??
-    [];
-
-
-  /* ==========================================================
-     STATE
-     ========================================================== */
 
   const [
     selectedCity,
     setSelectedCity
   ] = useState(null);
 
+
   const [
     selectedFinancialYear,
     setSelectedFinancialYear
   ] = useState("");
+
 
   const [
     selectedInfoStatus,
@@ -446,185 +470,216 @@ function CityPerformance() {
      CITY DATA
      ============================================================ */
 
-  const cityData = useMemo(() => {
+  const cityData =
+    useMemo(() => {
 
-    if (
-      !rows ||
-      rows.length === 0
-    ) {
-      return [];
-    }
-
-
-    const grouped = {};
-
-
-    rows.forEach((row) => {
-
-      const city = getCity(row);
-
-      if (!grouped[city]) {
-        grouped[city] = [];
+      if (
+        !rows ||
+        rows.length === 0
+      ) {
+        return [];
       }
 
-      grouped[city].push(row);
 
-    });
-
-
-    return Object.entries(grouped)
-      .map(([city, cityRows]) => {
-
-        /*
-          Filter by Financial Year.
-        */
-
-        const filteredRows =
-          selectedFinancialYear
-            ? cityRows.filter(
-                (row) =>
-                  getFinancialYear(
-                    getClientAcquiredDate(row)
-                  ) === selectedFinancialYear
-              )
-            : cityRows;
+      const grouped = {};
 
 
-        /*
-          Filter by Info Status
-          only for financial calculations.
-        */
+      rows.forEach((row) => {
 
-        const financial =
-          getFinancialValues(
-            filteredRows,
-            selectedInfoStatus
-          );
+        const city =
+          getCity(row);
 
 
-        /*
-          Client count should respect
-          Info Status when selected.
-        */
-
-        const clientCount =
-          selectedInfoStatus
-            ? filteredRows.filter(
-                (row) =>
-                  getInfoStatus(row) ===
-                  selectedInfoStatus
-              ).length
-            : filteredRows.length;
+        if (!grouped[city]) {
+          grouped[city] = [];
+        }
 
 
-        return {
-          city,
+        grouped[city].push(row);
 
-          clients:
-            clientCount,
+      });
 
-          totalBilling:
-            financial.totalBilling,
 
-          netAmount:
-            financial.netAmount,
+      return Object.entries(
+        grouped
+      )
 
-          cityExpenditure:
-            financial.cityExpenditure
-        };
+        .map(
+          ([city, cityRows]) => {
 
-      })
-      .filter(
-        (item) =>
-          item.clients > 0
-      );
+            /*
+              Financial Year filter
+            */
 
-  }, [
-    rows,
-    selectedFinancialYear,
-    selectedInfoStatus
-  ]);
+            const filteredRows =
+              selectedFinancialYear
+                ? cityRows.filter(
+                    (row) =>
+                      getFinancialYear(
+                        getClientAcquiredDate(
+                          row
+                        )
+                      ) ===
+                      selectedFinancialYear
+                  )
+                : cityRows;
+
+
+            /*
+              Financial calculation
+            */
+
+            const financial =
+              getFinancialValues(
+                filteredRows,
+                selectedInfoStatus
+              );
+
+
+            /*
+              Client count
+
+              If Info Status is selected,
+              count only that status.
+            */
+
+            const clientCount =
+              selectedInfoStatus
+                ? filteredRows.filter(
+                    (row) =>
+                      getInfoStatus(
+                        row
+                      ) ===
+                      selectedInfoStatus
+                  ).length
+                : filteredRows.length;
+
+
+            return {
+
+              city,
+
+              clients:
+                clientCount,
+
+              totalBilling:
+                financial.totalBilling,
+
+              netAmount:
+                financial.netAmount,
+
+              cityExpenditure:
+                financial.cityExpenditure
+
+            };
+
+          }
+        )
+
+        .filter(
+          (item) =>
+            item.clients > 0
+        );
+
+    }, [
+      rows,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
 
 
   /* ============================================================
      FINANCIAL YEARS
      ============================================================ */
 
-  const financialYears = useMemo(() => {
+  const financialYears =
+    useMemo(() => {
 
-    if (
-      !rows ||
-      rows.length === 0
-    ) {
-      return [];
-    }
-
-
-    const years = new Set();
-
-
-    rows.forEach((row) => {
-
-      const year =
-        getFinancialYear(
-          getClientAcquiredDate(row)
-        );
-
-      if (year) {
-        years.add(year);
+      if (
+        !rows ||
+        rows.length === 0
+      ) {
+        return [];
       }
 
-    });
+
+      const years =
+        new Set();
 
 
-    return Array.from(years).sort();
+      rows.forEach((row) => {
 
-  }, [rows]);
+        const year =
+          getFinancialYear(
+            getClientAcquiredDate(
+              row
+            )
+          );
+
+
+        if (year) {
+          years.add(year);
+        }
+
+      });
+
+
+      return Array.from(years)
+        .sort();
+
+    }, [rows]);
 
 
   /* ============================================================
      SELECTED ROWS
      ============================================================ */
 
-  const selectedRows = useMemo(() => {
+  const selectedRows =
+    useMemo(() => {
 
-    if (!selectedCity) {
-      return [];
-    }
-
-
-    return rows.filter((row) => {
-
-      const cityMatch =
-        getCity(row) === selectedCity;
+      if (!selectedCity) {
+        return [];
+      }
 
 
-      const yearMatch =
-        !selectedFinancialYear ||
-        getFinancialYear(
-          getClientAcquiredDate(row)
-        ) === selectedFinancialYear;
+      return (rows || [])
+        .filter((row) => {
+
+          const cityMatch =
+            getCity(row) ===
+            selectedCity;
 
 
-      const infoMatch =
-        !selectedInfoStatus ||
-        getInfoStatus(row) === selectedInfoStatus;
+          const yearMatch =
+            !selectedFinancialYear ||
+            getFinancialYear(
+              getClientAcquiredDate(
+                row
+              )
+            ) ===
+            selectedFinancialYear;
 
 
-      return (
-        cityMatch &&
-        yearMatch &&
-        infoMatch
-      );
+          const infoMatch =
+            !selectedInfoStatus ||
+            getInfoStatus(row) ===
+            selectedInfoStatus;
 
-    });
 
-  }, [
-    rows,
-    selectedCity,
-    selectedFinancialYear,
-    selectedInfoStatus
-  ]);
+          return (
+            cityMatch &&
+            yearMatch &&
+            infoMatch
+          );
+
+        });
+
+    }, [
+      rows,
+      selectedCity,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
 
 
   /* ============================================================
@@ -642,16 +697,26 @@ function CityPerformance() {
   const performanceSummary =
     useMemo(() => {
 
+      /*
+        selectedRows are already filtered
+        by Info Status.
+
+        Therefore calculate using "All"
+        here so we don't filter twice.
+      */
+
       return getFinancialValues(
         selectedRows,
         ""
       );
 
-    }, [selectedRows]);
+    }, [
+      selectedRows
+    ]);
 
 
   /* ============================================================
-     TEAM LEADER
+     TEAM LEADER / BD MEMBER
      ============================================================ */
 
   const teamLeader =
@@ -661,10 +726,6 @@ function CityPerformance() {
       )
     );
 
-
-  /* ============================================================
-     BD MEMBER
-     ============================================================ */
 
   const bdMember =
     getMostFrequent(
@@ -689,59 +750,75 @@ function CityPerformance() {
       const grouped = {};
 
 
-      selectedRows.forEach((row) => {
+      selectedRows.forEach(
+        (row) => {
 
-        const date =
-          getClientAcquiredDate(row);
+          const date =
+            getClientAcquiredDate(
+              row
+            );
 
-        if (!date) {
-          return;
+
+          if (!date) {
+            return;
+          }
+
+
+          const year =
+            getFinancialYear(
+              date
+            );
+
+
+          if (!year) {
+            return;
+          }
+
+
+          if (!grouped[year]) {
+            grouped[year] = [];
+          }
+
+
+          grouped[year].push(row);
+
         }
+      );
 
 
-        const year =
-          getFinancialYear(date);
+      return Object.entries(
+        grouped
+      )
 
-        if (!year) {
-          return;
-        }
-
-
-        if (!grouped[year]) {
-          grouped[year] = [];
-        }
-
-
-        grouped[year].push(row);
-
-      });
-
-
-      return Object.entries(grouped)
         .sort(
           ([a], [b]) =>
             a.localeCompare(b)
         )
-        .map(([year, yearRows]) => {
 
-          const financial =
-            getFinancialValues(
-              yearRows,
-              ""
-            );
+        .map(
+          ([year, yearRows]) => {
+
+            const financial =
+              getFinancialValues(
+                yearRows,
+                ""
+              );
 
 
-          return {
-            period: year,
+            return {
 
-            clients:
-              yearRows.length,
+              period: year,
 
-            totalBilling:
-              financial.totalBilling
-          };
+              clients:
+                yearRows.length,
 
-        });
+              totalBilling:
+                financial.totalBilling
+
+            };
+
+          }
+        );
 
     }, [
       selectedRows,
@@ -771,7 +848,9 @@ function CityPerformance() {
             selectedRows.filter(
               (row) =>
                 getMonth(
-                  getClientAcquiredDate(row)
+                  getClientAcquiredDate(
+                    row
+                  )
                 ) === month.full
             );
 
@@ -784,13 +863,16 @@ function CityPerformance() {
 
 
           return {
-            period: month.short,
+
+            period:
+              month.short,
 
             clients:
               monthRows.length,
 
             totalBilling:
               financial.totalBilling
+
           };
 
         }
@@ -802,10 +884,6 @@ function CityPerformance() {
       selectedFinancialYear
     ]);
 
-
-  /* ============================================================
-     REPORT DATA
-     ============================================================ */
 
   const reportData =
     selectedFinancialYear
@@ -887,8 +965,11 @@ function CityPerformance() {
             Financial Year
           </label>
 
+
           <select
-            value={selectedFinancialYear}
+            value={
+              selectedFinancialYear
+            }
             onChange={(e) =>
               setSelectedFinancialYear(
                 e.target.value
@@ -899,6 +980,7 @@ function CityPerformance() {
             <option value="">
               All Financial Years
             </option>
+
 
             {financialYears.map(
               (year) => (
@@ -924,8 +1006,11 @@ function CityPerformance() {
             Info Status
           </label>
 
+
           <select
-            value={selectedInfoStatus}
+            value={
+              selectedInfoStatus
+            }
             onChange={(e) =>
               setSelectedInfoStatus(
                 e.target.value
@@ -1007,54 +1092,63 @@ function CityPerformance() {
 
               {cityData.length > 0 ? (
 
-                cityData.map((item) => (
+                cityData.map(
+                  (item) => (
 
-                  <tr key={item.city}>
+                    <tr
+                      key={item.city}
+                    >
 
-                    <td>
-                      {item.city}
-                    </td>
+                      <td>
+                        {item.city}
+                      </td>
 
-                    <td>
-                      {item.clients}
-                    </td>
 
-                    <td>
-                      {formatCurrency(
-                        item.totalBilling
-                      )}
-                    </td>
+                      <td>
+                        {item.clients}
+                      </td>
 
-                    <td>
-                      {formatCurrency(
-                        item.netAmount
-                      )}
-                    </td>
 
-                    <td>
-                      {formatCurrency(
-                        item.cityExpenditure
-                      )}
-                    </td>
+                      <td>
+                        {formatCurrency(
+                          item.totalBilling
+                        )}
+                      </td>
 
-                    <td>
 
-                      <button
-                        className="city-view-btn"
-                        onClick={() =>
-                          handleViewPerformance(
-                            item.city
-                          )
-                        }
-                      >
-                        View Performance
-                      </button>
+                      <td>
+                        {formatCurrency(
+                          item.netAmount
+                        )}
+                      </td>
 
-                    </td>
 
-                  </tr>
+                      <td>
+                        {formatCurrency(
+                          item.cityExpenditure
+                        )}
+                      </td>
 
-                ))
+
+                      <td>
+
+                        <button
+                          className="city-view-btn"
+                          onClick={() =>
+                            handleViewPerformance(
+                              item.city
+                            )
+                          }
+                        >
+                          View Performance
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  )
+                )
 
               ) : (
 
@@ -1112,7 +1206,9 @@ function CityPerformance() {
 
               <button
                 className="city-close-btn"
-                onClick={handleCloseModal}
+                onClick={
+                  handleCloseModal
+                }
               >
                 ×
               </button>
@@ -1232,14 +1328,18 @@ function CityPerformance() {
 
             <div className="city-report-controls">
 
+
               <div>
 
                 <label>
                   Financial Year
                 </label>
 
+
                 <select
-                  value={selectedFinancialYear}
+                  value={
+                    selectedFinancialYear
+                  }
                   onChange={(e) =>
                     setSelectedFinancialYear(
                       e.target.value
@@ -1250,6 +1350,7 @@ function CityPerformance() {
                   <option value="">
                     All Financial Years
                   </option>
+
 
                   {financialYears.map(
                     (year) => (
@@ -1275,8 +1376,11 @@ function CityPerformance() {
                   Info Status
                 </label>
 
+
                 <select
-                  value={selectedInfoStatus}
+                  value={
+                    selectedInfoStatus
+                  }
                   onChange={(e) =>
                     setSelectedInfoStatus(
                       e.target.value
@@ -1314,6 +1418,7 @@ function CityPerformance() {
                 <label>
                   Report Period
                 </label>
+
 
                 <div className="city-report-period">
 
@@ -1368,17 +1473,21 @@ function CityPerformance() {
                     strokeDasharray="3 3"
                   />
 
+
                   <XAxis
                     dataKey="period"
                   />
 
+
                   <YAxis />
+
 
                   <Tooltip
                     content={
                       <CityTooltip />
                     }
                   />
+
 
                   <Bar
                     dataKey="clients"
@@ -1438,17 +1547,21 @@ function CityPerformance() {
                     strokeDasharray="3 3"
                   />
 
+
                   <XAxis
                     dataKey="period"
                   />
 
+
                   <YAxis />
+
 
                   <Tooltip
                     content={
                       <CityTooltip />
                     }
                   />
+
 
                   <Bar
                     dataKey="totalBilling"
@@ -1484,7 +1597,9 @@ function CityPerformance() {
 
 
               <button
-                onClick={handleCloseModal}
+                onClick={
+                  handleCloseModal
+                }
               >
                 Close
               </button>
