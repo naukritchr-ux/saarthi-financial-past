@@ -40,6 +40,7 @@ const financialMonths = [
 // ============================================================
 
 function TeamLeaderPerformance() {
+
   const {
     rows = [],
     getFinancialYearFromRow,
@@ -47,50 +48,41 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
-  // FILTER STATES
+  // MAIN FILTERS
   // ==========================================================
 
-  const [selectedTableFinancialYear, setSelectedTableFinancialYear] =
-    useState("");
+  const [
+    selectedTableFinancialYear,
+    setSelectedTableFinancialYear,
+  ] = useState("");
 
-  const [selectedInfoStatus, setSelectedInfoStatus] =
-    useState("");
-
-
-  // ==========================================================
-  // MODAL STATES
-  // ==========================================================
-
-  const [selectedLeader, setSelectedLeader] =
-    useState(null);
-
-  const [selectedFinancialYear, setSelectedFinancialYear] =
-    useState("");
+  const [
+    selectedInfoStatus,
+    setSelectedInfoStatus,
+  ] = useState("");
 
 
   // ==========================================================
-  // CURRENCY FORMAT
+  // MODAL
   // ==========================================================
 
-  const formatCurrency = (value) => {
-    const number = Number(value) || 0;
+  const [
+    selectedLeader,
+    setSelectedLeader,
+  ] = useState(null);
 
-    return number.toLocaleString("en-IN", {
-      maximumFractionDigits: 2,
-    });
-  };
-
-
-  const fullCurrency = (value) => {
-    return `₹${formatCurrency(value)}`;
-  };
+  const [
+    selectedFinancialYear,
+    setSelectedFinancialYear,
+  ] = useState("");
 
 
   // ==========================================================
-  // SAFE NUMBER
+  // NUMBER HELPER
   // ==========================================================
 
   const toNumber = (value) => {
+
     if (
       value === null ||
       value === undefined ||
@@ -103,13 +95,13 @@ function TeamLeaderPerformance() {
       return value;
     }
 
-    const cleaned = String(value)
+    const cleanedValue = String(value)
       .replace(/₹/g, "")
       .replace(/,/g, "")
       .replace(/%/g, "")
       .trim();
 
-    const number = Number(cleaned);
+    const number = Number(cleanedValue);
 
     return Number.isFinite(number)
       ? number
@@ -118,10 +110,31 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
+  // CURRENCY FORMAT
+  // ==========================================================
+
+  const formatCurrency = (value) => {
+
+    return toNumber(value).toLocaleString(
+      "en-IN",
+      {
+        maximumFractionDigits: 2,
+      }
+    );
+  };
+
+
+  const fullCurrency = (value) => {
+    return `₹${formatCurrency(value)}`;
+  };
+
+
+  // ==========================================================
   // GET TEAM LEADER
   // ==========================================================
 
   const getTeamLeader = (row) => {
+
     return (
       row["Team Leader"] ??
       row["team_leader"] ??
@@ -137,6 +150,7 @@ function TeamLeaderPerformance() {
   // ==========================================================
 
   const getIndustry = (row) => {
+
     return (
       row["Industry"] ??
       row["industry"] ??
@@ -150,6 +164,7 @@ function TeamLeaderPerformance() {
   // ==========================================================
 
   const getCity = (row) => {
+
     return (
       row["City"] ??
       row["city"] ??
@@ -163,6 +178,7 @@ function TeamLeaderPerformance() {
   // ==========================================================
 
   const getInfoStatus = (row) => {
+
     return String(
       row["Info"] ??
       row["info"] ??
@@ -182,6 +198,7 @@ function TeamLeaderPerformance() {
   // ==========================================================
 
   const getBilling = (row) => {
+
     return toNumber(
       row["Total Bill Amount"] ??
       row["total_bill_amount"] ??
@@ -199,6 +216,7 @@ function TeamLeaderPerformance() {
   // ==========================================================
 
   const getFranchiseeShare = (row) => {
+
     return toNumber(
       row["Franchisee Share"] ??
       row["franchisee_share"] ??
@@ -212,10 +230,11 @@ function TeamLeaderPerformance() {
   // ==========================================================
   // TL EXPENDITURE
   //
-  // TL EXPENDITURE = 5% OF GROSS REVENUE
+  // 5% OF GROSS REVENUE
   // ==========================================================
 
   const getTLExpenditure = (row) => {
+
     return getBilling(row) * 0.05;
   };
 
@@ -223,10 +242,11 @@ function TeamLeaderPerformance() {
   // ==========================================================
   // NET AMOUNT
   //
-  // NET AMOUNT = TOTAL BILLING - FRANCHISEE SHARE
+  // TOTAL BILLING - FRANCHISEE SHARE
   // ==========================================================
 
   const getNetAmount = (row) => {
+
     return (
       getBilling(row) -
       getFranchiseeShare(row)
@@ -235,10 +255,11 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
-  // GET ACQUIRED DATE
+  // ACQUISITION DATE
   // ==========================================================
 
   const getAcquiredDate = (row) => {
+
     return (
       row["Date Client Acquired"] ??
       row["date_client_acquired"] ??
@@ -252,17 +273,20 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
-  // GET FINANCIAL MONTH
+  // FINANCIAL MONTH
   // ==========================================================
 
   const getFinancialMonth = (row) => {
-    const dateValue = getAcquiredDate(row);
+
+    const dateValue =
+      getAcquiredDate(row);
 
     if (!dateValue) {
       return null;
     }
 
-    const date = new Date(dateValue);
+    const date =
+      new Date(dateValue);
 
     if (Number.isNaN(date.getTime())) {
       return null;
@@ -281,35 +305,52 @@ function TeamLeaderPerformance() {
   // BEST VALUE
   // ==========================================================
 
-  const getBestValue = (data, key) => {
-    if (!data || data.length === 0) {
+  const getBestValue = (
+    data,
+    type
+  ) => {
+
+    if (
+      !data ||
+      data.length === 0
+    ) {
       return "N/A";
     }
 
     const grouped = {};
 
-    data.forEach((row) => {
-      let value = "";
 
-      if (key === "Industry") {
+    data.forEach((row) => {
+
+      let value = "Unknown";
+
+
+      if (type === "Industry") {
         value = getIndustry(row);
       }
 
-      if (key === "City") {
+
+      if (type === "City") {
         value = getCity(row);
       }
 
+
       value =
-        String(value || "Unknown").trim();
+        String(value || "Unknown")
+          .trim();
+
 
       grouped[value] =
         (grouped[value] || 0) + 1;
     });
 
+
     const sorted =
-      Object.entries(grouped).sort(
-        (a, b) => b[1] - a[1]
-      );
+      Object.entries(grouped)
+        .sort(
+          (a, b) => b[1] - a[1]
+        );
+
 
     return sorted.length > 0
       ? sorted[0][0]
@@ -322,18 +363,31 @@ function TeamLeaderPerformance() {
   // ==========================================================
 
   const financialYears = useMemo(() => {
+
     const years = new Set();
 
+
     rows.forEach((row) => {
+
       const financialYear =
-        getFinancialYearFromRow?.(row);
+        getFinancialYearFromRow?.(
+          row
+        );
+
 
       if (financialYear) {
-        years.add(financialYear);
+        years.add(
+          financialYear
+        );
       }
+
     });
 
-    return Array.from(years).sort().reverse();
+
+    return Array.from(years)
+      .sort()
+      .reverse();
+
   }, [
     rows,
     getFinancialYearFromRow,
@@ -341,21 +395,24 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
-  // FILTER ROWS
+  // FILTERED ROWS
   //
-  // 1. Financial Year
-  // 2. Info Status
+  // Financial Year + Info Status
   // ==========================================================
 
   const filteredTableRows = useMemo(() => {
+
     return rows.filter((row) => {
 
       // ------------------------------------------------------
-      // FINANCIAL YEAR FILTER
+      // FINANCIAL YEAR
       // ------------------------------------------------------
 
       const rowFinancialYear =
-        getFinancialYearFromRow?.(row) || "";
+        getFinancialYearFromRow?.(
+          row
+        ) || "";
+
 
       const matchesFinancialYear =
         !selectedTableFinancialYear ||
@@ -364,15 +421,17 @@ function TeamLeaderPerformance() {
 
 
       // ------------------------------------------------------
-      // INFO FILTER
+      // INFO STATUS
       // ------------------------------------------------------
 
       const infoStatus =
         getInfoStatus(row);
 
+
       const matchesInfoStatus =
         !selectedInfoStatus ||
-        infoStatus === selectedInfoStatus;
+        infoStatus ===
+          selectedInfoStatus;
 
 
       return (
@@ -380,6 +439,7 @@ function TeamLeaderPerformance() {
         matchesInfoStatus
       );
     });
+
   }, [
     rows,
     selectedTableFinancialYear,
@@ -389,22 +449,22 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
-  // APPLY FINANCIAL CALCULATION RULES
+  // FINANCIAL CALCULATION RULE
   //
   // NO INFO FILTER:
-  //   Billing       = ALL records
-  //   Net           = ONLY R
-  //   Expenditure   = ONLY R
+  // Billing       = ALL
+  // Net           = ONLY R
+  // Expenditure   = ONLY R
   //
   // R:
-  //   Billing       = R
-  //   Net           = R
-  //   Expenditure   = R
+  // Billing       = R
+  // Net           = R
+  // Expenditure   = R
   //
   // RV / C / CN:
-  //   Billing       = selected status
-  //   Net           = 0
-  //   Expenditure   = 0
+  // Billing       = SELECTED STATUS
+  // Net           = 0
+  // Expenditure   = 0
   // ==========================================================
 
   const applyFinancialRules = (
@@ -419,17 +479,19 @@ function TeamLeaderPerformance() {
       getBilling(row);
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // NO INFO FILTER
-    // ========================================================
+    // --------------------------------------------------------
 
     if (!selectedInfoStatus) {
 
-      // Total Billing includes ALL records
-      target.billing += billing;
+      // Total billing from all records
+      target.billing +=
+        billing;
 
 
-      // Net + Expenditure ONLY for R
+      // Net and expenditure only
+      // where Info = R
       if (infoStatus === "R") {
 
         target.netAmount +=
@@ -443,13 +505,16 @@ function TeamLeaderPerformance() {
     }
 
 
-    // ========================================================
-    // R FILTER
-    // ========================================================
+    // --------------------------------------------------------
+    // R
+    // --------------------------------------------------------
 
-    if (selectedInfoStatus === "R") {
+    if (
+      selectedInfoStatus === "R"
+    ) {
 
-      target.billing += billing;
+      target.billing +=
+        billing;
 
       target.netAmount +=
         getNetAmount(row);
@@ -461,9 +526,9 @@ function TeamLeaderPerformance() {
     }
 
 
-    // ========================================================
-    // RV / C / CN FILTER
-    // ========================================================
+    // --------------------------------------------------------
+    // RV / C / CN
+    // --------------------------------------------------------
 
     if (
       selectedInfoStatus === "RV" ||
@@ -471,10 +536,13 @@ function TeamLeaderPerformance() {
       selectedInfoStatus === "CN"
     ) {
 
-      // Billing is calculated
-      target.billing += billing;
+      // Billing calculated
+      target.billing +=
+        billing;
 
-      // Net and Expenditure stay 0
+      // Net = 0
+      // Expenditure = 0
+
       return;
     }
   };
@@ -494,12 +562,9 @@ function TeamLeaderPerformance() {
       const leader =
         String(
           getTeamLeader(row)
-        ).trim() || "Unknown";
+        ).trim() ||
+        "Unknown";
 
-
-      // ------------------------------------------------------
-      // CREATE LEADER
-      // ------------------------------------------------------
 
       if (!grouped[leader]) {
 
@@ -518,17 +583,11 @@ function TeamLeaderPerformance() {
       }
 
 
-      // ------------------------------------------------------
-      // CLIENT COUNT
-      // ------------------------------------------------------
-
+      // Client count
       grouped[leader].clients += 1;
 
 
-      // ------------------------------------------------------
-      // FINANCIAL CALCULATIONS
-      // ------------------------------------------------------
-
+      // Financial calculation
       applyFinancialRules(
         row,
         grouped[leader]
@@ -536,10 +595,11 @@ function TeamLeaderPerformance() {
     });
 
 
-    return Object.values(grouped).sort(
-      (a, b) =>
-        b.billing - a.billing
-    );
+    return Object.values(grouped)
+      .sort(
+        (a, b) =>
+          b.billing - a.billing
+      );
 
   }, [
     filteredTableRows,
@@ -556,6 +616,7 @@ function TeamLeaderPerformance() {
     if (!selectedLeader) {
       return [];
     }
+
 
     return filteredTableRows.filter(
       (row) =>
@@ -599,7 +660,6 @@ function TeamLeaderPerformance() {
           row,
           summary
         );
-
       }
     );
 
@@ -628,7 +688,7 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
-  // MODAL FINANCIAL YEAR ROWS
+  // MODAL FILTERED ROWS
   // ==========================================================
 
   const modalFinancialYearRows =
@@ -638,11 +698,13 @@ function TeamLeaderPerformance() {
         return selectedLeaderRows;
       }
 
+
       return selectedLeaderRows.filter(
         (row) =>
           getFinancialYearFromRow?.(
             row
-          ) === selectedFinancialYear
+          ) ===
+          selectedFinancialYear
       );
 
     }, [
@@ -775,21 +837,25 @@ function TeamLeaderPerformance() {
 
 
   // ==========================================================
-  // OPEN REPORT
+  // OPEN MODAL
   // ==========================================================
 
   const openLeaderReport = (
     leader
   ) => {
 
-    setSelectedLeader(leader);
+    setSelectedLeader(
+      leader
+    );
 
-    setSelectedFinancialYear("");
+    setSelectedFinancialYear(
+      ""
+    );
   };
 
 
   // ==========================================================
-  // CLOSE REPORT
+  // CLOSE MODAL
   // ==========================================================
 
   const closeModal = () => {
@@ -806,9 +872,13 @@ function TeamLeaderPerformance() {
 
   const clearFilters = () => {
 
-    setSelectedTableFinancialYear("");
+    setSelectedTableFinancialYear(
+      ""
+    );
 
-    setSelectedInfoStatus("");
+    setSelectedInfoStatus(
+      ""
+    );
   };
 
 
@@ -820,9 +890,10 @@ function TeamLeaderPerformance() {
 
     <div className="team-leader-performance">
 
-      {/* ====================================================
-          HEADER
-      ==================================================== */}
+
+      {/* ======================================================
+          PAGE HEADER
+      ====================================================== */}
 
       <div className="performance-header">
 
@@ -842,46 +913,48 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* ====================================================
-          FILTERS
-      ==================================================== */}
+      {/* ======================================================
+          FILTERS ABOVE TABLE
+      ====================================================== */}
 
       <div
-        className="performance-filters"
+        className="team-leader-filter-container"
         style={{
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "flex-end",
           gap: "20px",
-          margin: "20px 0",
-          padding: "18px 20px",
+          width: "100%",
+          padding: "20px",
+          marginTop: "20px",
+          marginBottom: "20px",
           background: "#ffffff",
           border: "1px solid #e5e7eb",
           borderRadius: "10px",
-          flexWrap: "wrap",
-          visibility: "visible",
-          opacity: 1,
+          boxSizing: "border-box",
         }}
       >
 
-        {/* ==================================================
+
+        {/* ====================================================
             FINANCIAL YEAR
-        ================================================== */}
+        ==================================================== */}
 
         <div
-          className="filter-group"
           style={{
             display: "flex",
             flexDirection: "column",
             gap: "7px",
-            minWidth: "200px",
+            width: "220px",
           }}
         >
 
           <label
-            htmlFor="tl-financial-year"
+            htmlFor="team-leader-financial-year"
             style={{
+              display: "block",
               fontSize: "13px",
-              fontWeight: 600,
+              fontWeight: "600",
               color: "#374151",
             }}
           >
@@ -890,7 +963,7 @@ function TeamLeaderPerformance() {
 
 
           <select
-            id="tl-financial-year"
+            id="team-leader-financial-year"
             value={
               selectedTableFinancialYear
             }
@@ -900,15 +973,18 @@ function TeamLeaderPerformance() {
               )
             }
             style={{
+              display: "block",
+              width: "220px",
               height: "42px",
-              minWidth: "200px",
               padding: "0 12px",
+              backgroundColor: "#ffffff",
+              color: "#111827",
               border: "1px solid #d1d5db",
               borderRadius: "7px",
-              background: "#ffffff",
-              color: "#111827",
               fontSize: "14px",
               cursor: "pointer",
+              outline: "none",
+              boxSizing: "border-box",
             }}
           >
 
@@ -935,25 +1011,25 @@ function TeamLeaderPerformance() {
         </div>
 
 
-        {/* ==================================================
+        {/* ====================================================
             INFO STATUS
-        ================================================== */}
+        ==================================================== */}
 
         <div
-          className="filter-group"
           style={{
             display: "flex",
             flexDirection: "column",
             gap: "7px",
-            minWidth: "200px",
+            width: "220px",
           }}
         >
 
           <label
-            htmlFor="tl-info-status"
+            htmlFor="team-leader-info-status"
             style={{
+              display: "block",
               fontSize: "13px",
-              fontWeight: 600,
+              fontWeight: "600",
               color: "#374151",
             }}
           >
@@ -962,7 +1038,7 @@ function TeamLeaderPerformance() {
 
 
           <select
-            id="tl-info-status"
+            id="team-leader-info-status"
             value={
               selectedInfoStatus
             }
@@ -972,15 +1048,18 @@ function TeamLeaderPerformance() {
               )
             }
             style={{
+              display: "block",
+              width: "220px",
               height: "42px",
-              minWidth: "200px",
               padding: "0 12px",
+              backgroundColor: "#ffffff",
+              color: "#111827",
               border: "1px solid #d1d5db",
               borderRadius: "7px",
-              background: "#ffffff",
-              color: "#111827",
               fontSize: "14px",
               cursor: "pointer",
+              outline: "none",
+              boxSizing: "border-box",
             }}
           >
 
@@ -1009,26 +1088,25 @@ function TeamLeaderPerformance() {
         </div>
 
 
-        {/* ==================================================
+        {/* ====================================================
             CLEAR FILTER
-        ================================================== */}
+        ==================================================== */}
 
         {(selectedTableFinancialYear ||
           selectedInfoStatus) && (
 
           <button
             type="button"
-            className="clear-filter-btn"
             onClick={clearFilters}
             style={{
               height: "42px",
               padding: "0 18px",
+              backgroundColor: "#ffffff",
+              color: "#374151",
               border: "1px solid #d1d5db",
               borderRadius: "7px",
-              background: "#ffffff",
-              color: "#374151",
               fontSize: "14px",
-              fontWeight: 600,
+              fontWeight: "600",
               cursor: "pointer",
             }}
           >
@@ -1040,28 +1118,53 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* ====================================================
-          FILTER SUMMARY
-      ==================================================== */}
+      {/* ======================================================
+          FILTER RESULT
+      ====================================================== */}
 
-      <div className="filter-summary">
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "20px",
+          alignItems: "center",
+          marginBottom: "15px",
+          fontSize: "13px",
+          color: "#6b7280",
+        }}
+      >
 
         <span>
+
           Showing{" "}
-          <strong>
+
+          <strong
+            style={{
+              color: "#111827",
+            }}
+          >
             {filteredTableRows.length}
-          </strong>{" "}
-          records
+          </strong>
+
+          {" "}records
+
         </span>
 
 
         {selectedTableFinancialYear && (
 
           <span>
+
             Financial Year:{" "}
-            <strong>
+
+            <strong
+              style={{
+                color: "#111827",
+              }}
+            >
               {selectedTableFinancialYear}
             </strong>
+
           </span>
 
         )}
@@ -1070,10 +1173,17 @@ function TeamLeaderPerformance() {
         {selectedInfoStatus && (
 
           <span>
+
             Info Status:{" "}
-            <strong>
+
+            <strong
+              style={{
+                color: "#111827",
+              }}
+            >
               {selectedInfoStatus}
             </strong>
+
           </span>
 
         )}
@@ -1081,9 +1191,9 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* ====================================================
+      {/* ======================================================
           PERFORMANCE TABLE
-      ==================================================== */}
+      ====================================================== */}
 
       <div className="performance-table-container">
 
@@ -1144,7 +1254,9 @@ function TeamLeaderPerformance() {
                 (leader) => (
 
                   <tr
-                    key={leader.name}
+                    key={
+                      leader.name
+                    }
                   >
 
                     <td>
@@ -1220,9 +1332,9 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* ====================================================
+      {/* ======================================================
           MODAL
-      ==================================================== */}
+      ====================================================== */}
 
       {selectedLeader && (
 
@@ -1238,9 +1350,10 @@ function TeamLeaderPerformance() {
             }
           >
 
-            {/* =================================================
+
+            {/* ==================================================
                 MODAL HEADER
-            ================================================= */}
+            ================================================== */}
 
             <div className="modal-header">
 
@@ -1268,9 +1381,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
+            {/* ==================================================
                 MODAL FINANCIAL YEAR
-            ================================================= */}
+            ================================================== */}
 
             <div className="modal-filter">
 
@@ -1314,11 +1427,12 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
+            {/* ==================================================
                 SUMMARY CARDS
-            ================================================= */}
+            ================================================== */}
 
             <div className="summary-cards">
+
 
               <div className="summary-card">
 
@@ -1406,9 +1520,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
-                YEARLY PERFORMANCE
-            ================================================= */}
+            {/* ==================================================
+                YEARLY REPORT
+            ================================================== */}
 
             <div className="report-section">
 
@@ -1480,9 +1594,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
-                MONTHLY PERFORMANCE
-            ================================================= */}
+            {/* ==================================================
+                MONTHLY REPORT
+            ================================================== */}
 
             <div className="report-section">
 
@@ -1557,9 +1671,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
+            {/* ==================================================
                 CLIENT DETAILS
-            ================================================= */}
+            ================================================== */}
 
             <div className="report-section">
 
@@ -1642,10 +1756,10 @@ function TeamLeaderPerformance() {
                           let tlExpenditure = 0;
 
 
-                          // --------------------------------
+                          // ----------------------------------
                           // NO FILTER
-                          // ONLY R GETS NET + EXPENDITURE
-                          // --------------------------------
+                          // ONLY R
+                          // ----------------------------------
 
                           if (
                             !selectedInfoStatus &&
@@ -1664,9 +1778,9 @@ function TeamLeaderPerformance() {
                           }
 
 
-                          // --------------------------------
+                          // ----------------------------------
                           // R FILTER
-                          // --------------------------------
+                          // ----------------------------------
 
                           if (
                             selectedInfoStatus ===
@@ -1762,9 +1876,9 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
-                FOOTER
-            ================================================= */}
+            {/* ==================================================
+                MODAL FOOTER
+            ================================================== */}
 
             <div className="modal-footer">
 
