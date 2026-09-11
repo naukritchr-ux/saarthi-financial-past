@@ -1251,3 +1251,81 @@
   }
 
 }
+/* ============================================================
+   BD PERFORMANCE FILTERS
+   ============================================================ */
+
+.bd-performance-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+
+.bd-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bd-filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.bd-filter-group select {
+  min-width: 180px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #dcd5c2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #333;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+.bd-filter-group select:focus {
+  border-color: #999;
+}
+
+.bd-filter-group select:hover {
+  border-color: #bbb;
+}
+
+
+/* ============================================================
+   MODAL FILTERS
+   ============================================================ */
+
+.bd-year-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bd-year-control label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.bd-year-control select {
+  height: 38px;
+  min-width: 160px;
+  padding: 0 10px;
+  border: 1px solid #dcd5c2;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+}
+
+.bd-year-control select:focus {
+  border-color: #999;
+}
