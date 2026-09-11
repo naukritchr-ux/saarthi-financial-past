@@ -1,240 +1,194 @@
-/* ============================================================
-   BD PERFORMANCE PAGE
-   ============================================================ */
+/* =========================================================
+   MAIN PAGE
+========================================================= */
 
 .bd-performance-page {
   width: 100%;
   min-height: 100%;
-  padding: 24px;
+  padding: 30px;
   box-sizing: border-box;
-  color: #171717;
+  background: #F7F4EC;
 }
 
 
-/* ============================================================
+/* =========================================================
    PAGE HEADER
-   ============================================================ */
+========================================================= */
 
-.bd-performance-header {
-  width: 100%;
+.bd-page-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
-.bd-performance-header h1 {
-  margin: 0;
-  font-size: 28px;
+.bd-page-eyebrow {
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1.25;
-  color: #171717;
+  letter-spacing: 1.8px;
+  color: #B78A34;
+  margin-bottom: 7px;
 }
 
-.bd-performance-header p {
+.bd-page-header h1 {
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: #1B2A4A;
+}
+
+.bd-page-header p {
   margin: 7px 0 0;
   font-size: 14px;
-  line-height: 1.5;
-  color: #6b7280;
+  color: #6B7280;
 }
 
 
-/* ============================================================
+/* =========================================================
+   TABLE CARD
+========================================================= */
+
+.bd-table-card {
+  background: #FFFFFF;
+  border: 1px solid #E2DCCB;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 5px 18px rgba(27, 42, 74, 0.06);
+}
+
+.bd-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 25px;
+  border-bottom: 1px solid #E8E3D7;
+}
+
+.bd-table-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1B2A4A;
+}
+
+.bd-table-header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #7B8491;
+}
+
+.bd-member-count {
+  min-width: 75px;
+  padding: 9px 13px;
+  text-align: center;
+  border-radius: 9px;
+  background: #F7F4EC;
+  color: #1B2A4A;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.bd-member-count span {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #7B8491;
+}
+
+
+/* =========================================================
    MAIN FILTERS
-   ============================================================ */
+========================================================= */
 
 .bd-performance-filters {
-  width: 100%;
   display: flex;
   align-items: flex-end;
-  gap: 18px;
-
-  margin: 0 0 20px;
-  padding: 18px 20px;
-
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-
-  box-sizing: border-box;
-
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  gap: 20px;
+  margin: 0 25px 20px;
+  padding: 17px 19px;
+  background: #FFFFFF;
+  border: 1px solid #E2DCCB;
+  border-radius: 11px;
 }
 
 .bd-filter-group {
   display: flex;
   flex-direction: column;
   gap: 7px;
-
-  width: 210px;
 }
 
 .bd-filter-group label {
-  display: block;
-
-  margin: 0;
-
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.4;
-
-  color: #374151;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5F6875;
 }
 
 .bd-filter-group select {
-  width: 100%;
-  height: 42px;
-
-  padding: 0 38px 0 13px;
-
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-
-  background-color: #ffffff;
-  color: #171717;
-
+  min-width: 210px;
+  height: 39px;
+  padding: 0 35px 0 12px;
+  border: 1px solid #D7D0C0;
+  border-radius: 7px;
+  background: #FFFFFF;
+  color: #1B2A4A;
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-
+  font-size: 13px;
+  font-weight: 600;
   outline: none;
   cursor: pointer;
-
-  box-sizing: border-box;
-}
-
-.bd-filter-group select:hover {
-  border-color: #9ca3af;
 }
 
 .bd-filter-group select:focus {
-  border-color: #6b7280;
-  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.12);
+  border-color: #B78A34;
+  box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
 }
 
 
-/* ============================================================
-   MAIN TABLE CONTAINER
-   ============================================================ */
+/* =========================================================
+   TABLE
+========================================================= */
 
-.bd-table-container {
+.bd-table-wrapper {
   width: 100%;
-
-  background: #ffffff;
-
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-
-  overflow: hidden;
-
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
-
-  box-sizing: border-box;
-}
-
-
-/* ============================================================
-   TABLE HEADER
-   ============================================================ */
-
-.bd-table-header {
-  width: 100%;
-  min-height: 68px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 0 22px;
-
-  border-bottom: 1px solid #e5e7eb;
-
-  box-sizing: border-box;
-}
-
-.bd-table-header h2 {
-  margin: 0;
-
-  font-size: 18px;
-  font-weight: 700;
-
-  color: #171717;
-}
-
-
-/* ============================================================
-   TABLE RESPONSIVE
-   ============================================================ */
-
-.table-responsive {
-  width: 100%;
-
   overflow-x: auto;
-  overflow-y: hidden;
-
-  -webkit-overflow-scrolling: touch;
 }
-
-
-/* ============================================================
-   MAIN BD PERFORMANCE TABLE
-   ============================================================ */
 
 .bd-performance-table {
   width: 100%;
-  min-width: 900px;
-
   border-collapse: collapse;
-  border-spacing: 0;
-
-  background: #ffffff;
+  min-width: 900px;
 }
 
 .bd-performance-table thead {
-  background: #f8f7f3;
+  background: #FBFAF6;
 }
 
 .bd-performance-table th {
-  padding: 14px 18px;
-
+  padding: 15px 22px;
   text-align: left;
-  vertical-align: middle;
-
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-
-  color: #4b5563;
-
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-
-  white-space: nowrap;
-
-  border-bottom: 1px solid #e5e7eb;
+  color: #68717E;
+  border-bottom: 1px solid #E8E3D7;
 }
 
 .bd-performance-table td {
-  padding: 16px 18px;
-
-  text-align: left;
-  vertical-align: middle;
-
+  padding: 17px 22px;
+  border-bottom: 1px solid #EEEAE1;
   font-size: 14px;
-  font-weight: 500;
-
-  color: #374151;
-
-  white-space: nowrap;
-
-  border-bottom: 1px solid #eeeeee;
+  color: #344054;
 }
 
 .bd-performance-table tbody tr {
-  transition: background-color 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .bd-performance-table tbody tr:hover {
-  background: #fafafa;
+  background: #FCFBF7;
 }
 
 .bd-performance-table tbody tr:last-child td {
@@ -242,613 +196,548 @@
 }
 
 
-/* ============================================================
-   BD MEMBER COLUMN
-   ============================================================ */
+/* =========================================================
+   BD MEMBER NAME
+========================================================= */
 
-.bd-performance-table td:first-child {
-  font-weight: 600;
-  color: #171717;
+.bd-name {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: #1B2A4A;
+  font-weight: 700;
+}
+
+.bd-avatar {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #EFE7D5;
+  color: #1B2A4A;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 
-/* ============================================================
-   CURRENCY COLUMNS
-   ============================================================ */
+/* =========================================================
+   VALUES
+========================================================= */
 
-.bd-performance-table td:nth-child(3),
-.bd-performance-table td:nth-child(4),
-.bd-performance-table td:nth-child(5) {
-  font-variant-numeric: tabular-nums;
+.bd-client-count {
+  display: inline-flex;
+  min-width: 32px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border-radius: 7px;
+  background: #F3F5F8;
+  color: #1B2A4A;
+  font-weight: 700;
+}
+
+.bd-billing-value {
+  color: #26734D;
+  font-weight: 700;
+}
+
+.bd-net-value {
+  color: #1B2A4A;
+  font-weight: 700;
+}
+
+.bd-expenditure-value {
+  color: #B78A34;
+  font-weight: 700;
 }
 
 
-/* ============================================================
-   VIEW PERFORMANCE BUTTON
-   ============================================================ */
+/* =========================================================
+   VIEW BUTTON
+========================================================= */
 
-.view-performance-btn {
+.bd-view-performance-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-
-  min-width: 145px;
-  min-height: 36px;
-
-  padding: 8px 14px;
-
-  border: 1px solid #171717;
+  gap: 9px;
+  border: none;
   border-radius: 7px;
-
-  background: #171717;
-  color: #ffffff;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-
+  padding: 9px 14px;
+  background: #1B2A4A;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
-.view-performance-btn:hover {
-  background: #333333;
-  border-color: #333333;
-
+.bd-view-performance-btn:hover {
+  background: #263B62;
   transform: translateY(-1px);
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
-.view-performance-btn:active {
-  transform: translateY(0);
-}
-
-.view-performance-btn:focus-visible {
-  outline: 3px solid rgba(23, 23, 23, 0.15);
-  outline-offset: 2px;
-}
-
-
-/* ============================================================
-   NO DATA
-   ============================================================ */
-
-.no-data {
-  padding: 42px 20px !important;
-
-  text-align: center !important;
-
-  color: #9ca3af !important;
-
-  font-size: 14px !important;
-  font-weight: 500 !important;
-}
-
-
-/* ============================================================
-   PERFORMANCE MODAL OVERLAY
-   ============================================================ */
-
-.performance-modal-overlay {
-  position: fixed;
-
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-
-  z-index: 3000;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 24px;
-
-  background: rgba(17, 24, 39, 0.58);
-
-  box-sizing: border-box;
-}
-
-
-/* ============================================================
-   PERFORMANCE MODAL
-   ============================================================ */
-
-.performance-modal {
-  width: min(1200px, 100%);
-  max-height: calc(100vh - 48px);
-
-  background: #ffffff;
-
-  border-radius: 16px;
-
-  overflow-x: hidden;
-  overflow-y: auto;
-
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.25),
-    0 5px 20px rgba(0, 0, 0, 0.12);
-
-  box-sizing: border-box;
-}
-
-
-/* ============================================================
-   MODAL HEADER
-   ============================================================ */
-
-.performance-modal-header {
-  position: sticky;
-  top: 0;
-
-  z-index: 20;
-
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 20px 24px;
-
-  background: #ffffff;
-
-  border-bottom: 1px solid #e5e7eb;
-
-  box-sizing: border-box;
-}
-
-.performance-modal-header h2 {
-  margin: 0;
-
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.3;
-
-  color: #171717;
-}
-
-.performance-modal-header p {
-  margin: 5px 0 0;
-
-  font-size: 13px;
-  line-height: 1.4;
-
-  color: #6b7280;
-}
-
-
-/* ============================================================
-   MODAL CLOSE BUTTON
-   ============================================================ */
-
-.modal-close-btn {
-  width: 38px;
-  height: 38px;
-
-  flex: 0 0 38px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-
-  background: #ffffff;
-  color: #374151;
-
-  font-family: Arial, sans-serif;
-  font-size: 26px;
-  font-weight: 400;
-  line-height: 1;
-
-  cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.modal-close-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-  color: #111827;
-}
-
-
-/* ============================================================
-   MODAL FILTERS
-   ============================================================ */
-
-.bd-modal-filters {
-  width: 100%;
-
-  display: flex;
-  align-items: flex-end;
-  gap: 18px;
-
-  padding: 18px 24px;
-
-  background: #fafafa;
-
-  border-bottom: 1px solid #e5e7eb;
-
-  box-sizing: border-box;
-}
-
-.bd-modal-filters .bd-year-control {
-  width: 210px;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 7px;
-}
-
-.bd-modal-filters .bd-year-control label {
-  display: block;
-
-  margin: 0;
-
-  font-size: 13px;
-  font-weight: 600;
-
-  line-height: 1.4;
-
-  color: #374151;
-}
-
-.bd-modal-filters .bd-year-control select {
-  width: 100%;
-  height: 42px;
-
-  padding: 0 38px 0 13px;
-
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-
-  background: #ffffff;
-  color: #171717;
-
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-
-  outline: none;
-  cursor: pointer;
-
-  box-sizing: border-box;
-}
-
-.bd-modal-filters .bd-year-control select:hover {
-  border-color: #9ca3af;
-}
-
-.bd-modal-filters .bd-year-control select:focus {
-  border-color: #6b7280;
-
-  box-shadow:
-    0 0 0 3px rgba(107, 114, 128, 0.12);
-}
-
-
-/* ============================================================
-   PERFORMANCE SUMMARY GRID
-   ============================================================ */
-
-.performance-summary-grid {
-  width: 100%;
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(5, minmax(0, 1fr));
-
-  gap: 14px;
-
-  padding: 20px 24px;
-
-  box-sizing: border-box;
-}
-
-
-/* ============================================================
-   PERFORMANCE SUMMARY CARD
-   ============================================================ */
-
-.performance-summary-card {
-  min-width: 0;
-  min-height: 120px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  padding: 18px;
-
-  background: #f7f4ec;
-
-  border: 1px solid #ded8c8;
-  border-radius: 12px;
-
-  box-sizing: border-box;
-
-  overflow: hidden;
-}
-
-.performance-summary-card span {
-  display: block;
-
-  margin-bottom: 8px;
-
-  font-size: 11px;
-  font-weight: 700;
-
-  color: #6b7280;
-
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.performance-summary-card strong {
-  display: block;
-
-  margin: 0;
-
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.35;
-
-  color: #171717;
-
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-.performance-summary-card small {
-  display: block;
-
-  margin-top: 7px;
-
-  font-size: 12px;
-  font-weight: 500;
-
-  color: #6b7280;
-}
-
-
-/* ============================================================
-   PERFORMANCE REPORT SECTION
-   ============================================================ */
-
-.performance-report-section {
-  width: auto;
-
-  margin: 0 24px 24px;
-
-  background: #ffffff;
-
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-
-  overflow: hidden;
-
-  box-sizing: border-box;
-}
-
-
-/* ============================================================
-   REPORT SECTION HEADER
-   ============================================================ */
-
-.performance-section-header {
-  min-height: 58px;
-
-  display: flex;
-  align-items: center;
-
-  padding: 0 18px;
-
-  background: #fafafa;
-
-  border-bottom: 1px solid #e5e7eb;
-
-  box-sizing: border-box;
-}
-
-.performance-section-header h3 {
-  margin: 0;
-
+.bd-view-arrow {
   font-size: 16px;
-  font-weight: 700;
-
-  color: #171717;
+  line-height: 1;
 }
 
 
-/* ============================================================
-   PERFORMANCE REPORT TABLE
-   ============================================================ */
+/* =========================================================
+   EMPTY
+========================================================= */
 
-.performance-report-table {
-  width: 100%;
-  min-width: 700px;
-
-  border-collapse: collapse;
-  border-spacing: 0;
-
-  background: #ffffff;
-}
-
-.performance-report-table thead {
-  background: #f8f7f3;
-}
-
-.performance-report-table th {
-  padding: 13px 16px;
-
-  text-align: left;
-  vertical-align: middle;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  color: #4b5563;
-
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-
-  white-space: nowrap;
-
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.performance-report-table td {
-  padding: 14px 16px;
-
-  text-align: left;
-  vertical-align: middle;
-
-  font-size: 13px;
-  font-weight: 500;
-
-  color: #374151;
-
-  white-space: nowrap;
-
-  border-bottom: 1px solid #eeeeee;
-}
-
-.performance-report-table tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.performance-report-table tbody tr:hover {
-  background: #fafafa;
-}
-
-.performance-report-table tbody tr:last-child td {
-  border-bottom: none;
+.bd-empty {
+  text-align: center !important;
+  padding: 45px 20px !important;
+  color: #7B8491 !important;
 }
 
 
-/* ============================================================
-   CHART
-   ============================================================ */
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
 
-.performance-chart {
-  width: 100%;
-
-  padding: 18px;
-
+.bd-performance-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
   box-sizing: border-box;
+  background: rgba(17, 27, 45, 0.58);
+  backdrop-filter: blur(5px);
 }
 
 
-/* ============================================================
-   SCROLLBARS
-   ============================================================ */
+/* =========================================================
+   MODAL
+========================================================= */
 
-.performance-modal::-webkit-scrollbar,
-.table-responsive::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.bd-performance-modal {
+  width: min(1180px, 100%);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: #F7F4EC;
+  border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(16, 24, 40, 0.30);
+  animation: bdModalIn 0.25s ease;
 }
 
-.performance-modal::-webkit-scrollbar-track,
-.table-responsive::-webkit-scrollbar-track {
-  background: #f5f5f5;
-}
+@keyframes bdModalIn {
 
-.performance-modal::-webkit-scrollbar-thumb,
-.table-responsive::-webkit-scrollbar-thumb {
-  background: #c7c7c7;
-  border-radius: 10px;
-}
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
 
-.performance-modal::-webkit-scrollbar-thumb:hover,
-.table-responsive::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-
-/* ============================================================
-   TABLET - 1050px
-   ============================================================ */
-
-@media (max-width: 1050px) {
-
-  .performance-summary-grid {
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 
 }
 
 
-/* ============================================================
-   TABLET - 850px
-   ============================================================ */
+/* =========================================================
+   MODAL HEADER
+========================================================= */
+
+.bd-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 27px 30px 23px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E4DED0;
+}
+
+.bd-modal-eyebrow {
+  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  color: #B78A34;
+}
+
+.bd-modal-header h2 {
+  margin: 0;
+  color: #1B2A4A;
+  font-family: "Fraunces", serif;
+  font-size: 27px;
+  font-weight: 600;
+}
+
+.bd-modal-header p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #7B8491;
+}
+
+.bd-modal-close {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #DED8CA;
+  border-radius: 9px;
+  background: #FFFFFF;
+  color: #1B2A4A;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bd-modal-close:hover {
+  background: #F7F4EC;
+  transform: rotate(3deg);
+}
+
+
+/* =========================================================
+   SUMMARY GRID
+========================================================= */
+
+.bd-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 13px;
+  padding: 20px 25px;
+}
+
+.bd-summary-card {
+  min-height: 86px;
+  padding: 16px;
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border: 1px solid #E2DCCB;
+  border-radius: 11px;
+  box-shadow: 0 3px 12px rgba(27, 42, 74, 0.04);
+}
+
+.bd-summary-label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: #7B8491;
+}
+
+.bd-summary-text {
+  display: block;
+  color: #1B2A4A;
+  font-size: 16px;
+  font-weight: 750;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bd-summary-value {
+  display: block;
+  color: #1B2A4A;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.bd-summary-card small {
+  display: block;
+  margin-top: 5px;
+  color: #89919D;
+  font-size: 10px;
+}
+
+.bd-summary-net {
+  border-top: 3px solid #26734D;
+}
+
+
+/* =========================================================
+   REPORT CONTROLS
+========================================================= */
+
+.bd-report-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0 25px 18px;
+  padding: 17px 19px;
+  background: #FFFFFF;
+  border: 1px solid #E2DCCB;
+  border-radius: 11px;
+}
+
+.bd-report-controls label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5F6875;
+}
+
+.bd-report-controls select {
+  min-width: 210px;
+  height: 39px;
+  padding: 0 35px 0 12px;
+  border: 1px solid #D7D0C0;
+  border-radius: 7px;
+  background: #FFFFFF;
+  color: #1B2A4A;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.bd-report-controls select:focus {
+  border-color: #B78A34;
+  box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
+}
+
+.bd-report-period {
+  text-align: right;
+}
+
+.bd-report-period span {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #89919D;
+}
+
+.bd-report-period strong {
+  color: #1B2A4A;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   GRAPHS
+========================================================= */
+
+.bd-report-graphs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 0 25px 25px;
+}
+
+.bd-chart-card {
+  min-width: 0;
+  background: #FFFFFF;
+  border: 1px solid #E2DCCB;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.bd-chart-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid #EEEAE1;
+}
+
+.bd-chart-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.bd-chart-heading h3 {
+  margin: 0;
+  color: #1B2A4A;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.bd-chart-heading > span {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #8A929E;
+}
+
+.bd-chart-indicator {
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.bd-client-indicator {
+  background: #B78A34;
+}
+
+.bd-billing-indicator {
+  background: #26734D;
+}
+
+.bd-chart-container {
+  height: 285px;
+  padding: 15px 13px 10px 5px;
+  box-sizing: border-box;
+}
+
+.bd-no-chart-data {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8A929E;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   TOOLTIP
+========================================================= */
+
+.bd-modern-tooltip {
+  min-width: 150px;
+  padding: 11px 13px;
+  background: #1B2A4A;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(27, 42, 74, 0.20);
+}
+
+.bd-tooltip-label {
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bd-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 5px;
+  color: #D9E0EA;
+  font-size: 11px;
+}
+
+.bd-tooltip-row strong {
+  color: #FFFFFF;
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.bd-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: #FFFFFF;
+  border-top: 1px solid #E4DED0;
+}
+
+.bd-modal-footer span {
+  color: #7B8491;
+  font-size: 12px;
+}
+
+.bd-footer-close {
+  padding: 9px 19px;
+  border: none;
+  border-radius: 7px;
+  background: #1B2A4A;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.bd-footer-close:hover {
+  background: #263B62;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.bd-performance-modal::-webkit-scrollbar {
+  width: 7px;
+}
+
+.bd-performance-modal::-webkit-scrollbar-track {
+  background: #F7F4EC;
+}
+
+.bd-performance-modal::-webkit-scrollbar-thumb {
+  background: #C9C0AD;
+  border-radius: 10px;
+}
+
+.bd-performance-modal::-webkit-scrollbar-thumb:hover {
+  background: #B78A34;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .bd-summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+}
+
 
 @media (max-width: 850px) {
 
   .bd-performance-page {
-    padding: 18px;
+    padding: 20px;
   }
 
+  .bd-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bd-report-graphs {
+    grid-template-columns: 1fr;
+  }
 
   .bd-performance-filters {
-    flex-wrap: wrap;
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-
-  .bd-filter-group {
-    width: 190px;
+  .bd-report-controls {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-
-  .bd-modal-filters {
-    flex-wrap: wrap;
-  }
-
-
-  .bd-modal-filters .bd-year-control {
-    width: 190px;
-  }
-
-
-  .performance-summary-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-
-    padding: 18px 20px;
-  }
-
-
-  .performance-report-section {
-    margin-left: 20px;
-    margin-right: 20px;
+  .bd-report-period {
+    text-align: left;
   }
 
 }
 
-
-/* ============================================================
-   MOBILE - 600px
-   ============================================================ */
 
 @media (max-width: 600px) {
 
@@ -856,131 +745,45 @@
     padding: 14px;
   }
 
-
-  .bd-performance-header {
-    margin-bottom: 16px;
+  .bd-page-header h1 {
+    font-size: 24px;
   }
 
+  .bd-modal-header {
+    padding: 21px 18px;
+  }
 
-  .bd-performance-header h1 {
+  .bd-modal-header h2 {
     font-size: 22px;
   }
 
-
-  .bd-performance-header p {
-    font-size: 13px;
+  .bd-performance-overlay {
+    padding: 10px;
   }
 
-
-  /* Main filters */
+  .bd-summary-grid {
+    grid-template-columns: 1fr;
+    padding: 15px;
+  }
 
   .bd-performance-filters {
-    flex-direction: column;
-    align-items: stretch;
-
-    gap: 14px;
-
-    padding: 16px;
+    margin: 0 15px 15px;
   }
 
-
-  .bd-filter-group {
-    width: 100%;
+  .bd-report-controls {
+    margin: 0 15px 15px;
   }
 
-
-  /* Main table */
-
-  .bd-table-header {
-    min-height: 60px;
-
-    padding: 0 16px;
+  .bd-report-graphs {
+    padding: 0 15px 15px;
   }
 
-
-  .bd-table-header h2 {
-    font-size: 16px;
+  .bd-chart-container {
+    height: 250px;
   }
 
-
-  /* Modal */
-
-  .performance-modal-overlay {
-    align-items: flex-start;
-
-    padding: 10px;
-  }
-
-
-  .performance-modal {
-    width: 100%;
-
-    max-height:
-      calc(100vh - 20px);
-
-    border-radius: 12px;
-  }
-
-
-  .performance-modal-header {
-    padding: 16px;
-  }
-
-
-  .performance-modal-header h2 {
-    font-size: 19px;
-  }
-
-
-  /* Modal filters */
-
-  .bd-modal-filters {
-    flex-direction: column;
-    align-items: stretch;
-
-    gap: 14px;
-
-    padding: 16px;
-  }
-
-
-  .bd-modal-filters .bd-year-control {
-    width: 100%;
-  }
-
-
-  /* Summary cards */
-
-  .performance-summary-grid {
-    grid-template-columns: 1fr;
-
-    gap: 10px;
-
-    padding: 16px;
-  }
-
-
-  .performance-summary-card {
-    min-height: 100px;
-  }
-
-
-  /* Reports */
-
-  .performance-report-section {
-    margin-left: 16px;
-    margin-right: 16px;
-    margin-bottom: 16px;
-  }
-
-
-  .performance-section-header {
-    padding: 0 14px;
-  }
-
-
-  .performance-chart {
-    padding: 10px;
+  .bd-modal-footer {
+    padding: 13px 15px;
   }
 
 }
