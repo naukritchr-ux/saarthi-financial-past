@@ -1031,3 +1031,131 @@
   }
 
 }
+
+/* ============================================================
+   CITY PERFORMANCE FILTERS
+   ============================================================ */
+
+.city-performance-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+/* FILTER GROUP */
+
+.city-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+/* LABEL */
+
+.city-filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  letter-spacing: 0.2px;
+}
+
+
+/* SELECT */
+
+.city-filter-group select {
+  width: 220px;
+  height: 40px;
+  padding: 0 36px 0 12px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+
+  background-color: #ffffff;
+  color: #111827;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+
+  outline: none;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+
+/* HOVER */
+
+.city-filter-group select:hover {
+  border-color: #9ca3af;
+  background-color: #fafafa;
+}
+
+
+/* FOCUS */
+
+.city-filter-group select:focus {
+  border-color: #6b7280;
+
+  box-shadow:
+    0 0 0 3px rgba(107, 114, 128, 0.10);
+}
+
+
+/* DROPDOWN OPTIONS */
+
+.city-filter-group select option {
+  padding: 10px;
+  background: #ffffff;
+  color: #111827;
+}
+
+
+/* EXPENDITURE */
+
+.city-expenditure-value {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 850px) {
+
+  .city-performance-filters {
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .city-performance-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .city-filter-group {
+    width: 100%;
+  }
+
+  .city-filter-group select {
+    width: 100%;
+  }
+
+}
