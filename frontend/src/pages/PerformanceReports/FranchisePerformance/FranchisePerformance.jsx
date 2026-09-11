@@ -90,9 +90,16 @@ function toNumber(value) {
     return 0;
   }
 
+  if (typeof value === "number") {
+    return Number.isFinite(value)
+      ? value
+      : 0;
+  }
+
   const cleanedValue = String(value)
     .replace(/,/g, "")
     .replace(/[₹$€£]/g, "")
+    .replace(/%/g, "")
     .trim();
 
   const number = Number(cleanedValue);
@@ -167,14 +174,40 @@ function getCity(row) {
 
 
 /* =========================================================
+   GET INFO STATUS
+   DATABASE FIELD:
+   info
+========================================================= */
+
+function getInfoStatus(row) {
+
+  return String(
+    row?.info ??
+    row?.["Info"] ??
+    ""
+  )
+    .trim()
+    .toUpperCase();
+
+}
+
+
+/* =========================================================
    GET BILLING
+
+   DATABASE FIELD:
+   total_bill_amount
+
+   NO TANN
+   NO TDS
 ========================================================= */
 
 function getBilling(row) {
 
   return toNumber(
     row?.total_bill_amount ??
-    row?.["Total Bill Amount"]
+    row?.["Total Bill Amount"] ??
+    0
   );
 
 }
@@ -182,43 +215,260 @@ function getBilling(row) {
 
 /* =========================================================
    GET FRANCHISE SHARE
+
+   DATABASE FIELD:
+   franchisee_share
 ========================================================= */
 
 function getFranchiseeShare(row) {
 
   return toNumber(
     row?.franchisee_share ??
-    row?.["Franchisee Share"]
+    row?.["Franchisee Share"] ??
+    0
   );
 
 }
 
 
 /* =========================================================
-   GET FRANCHISE EXPENDITURE
-   FORMULA:
-   Franchise Expenditure = Total Billing × 5%
+   GET FINANCIAL VALUES
+
+   ALL:
+   Total Billing = R + RV + C + CN
+   Net Amount = Billing - Franchisee Share
+   Franchise Expenditure = Billing × 5%
+
+   R:
+   Billing = R Billing
+   Net Amount = R Billing - R Franchisee Share
+   Expenditure = R Billing × 5%
+
+   RV:
+   Billing = RV Billing
+   Net Amount = 0
+   Expenditure = 0
+
+   C:
+   Billing = C Billing
+   Net Amount = 0
+   Expenditure = 0
+
+   CN:
+   Billing = CN Billing
+   Net Amount = 0
+   Expenditure = 0
 ========================================================= */
 
-function getFranchiseExpenditure(row) {
+function getFinancialValues(
+  row,
+  infoFilter = ""
+) {
 
-  return getBilling(row) * 0.05;
+  const info =
+    getInfoStatus(row);
 
-}
+  const billing =
+    getBilling(row);
 
-
-/* =========================================================
-   GET NET AMOUNT
-========================================================= */
-
-function getNetAmount(row) {
-
-  const billing = getBilling(row);
-
-  const franchiseShare =
+  const franchiseeShare =
     getFranchiseeShare(row);
 
-  return billing - franchiseShare;
+
+  /* =======================================================
+     ALL
+  ======================================================= */
+
+  if (
+    !infoFilter ||
+    infoFilter === "ALL"
+  ) {
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount:
+        billing -
+        franchiseeShare,
+
+      franchiseExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  /* =======================================================
+     R
+  ======================================================= */
+
+  if (
+    infoFilter === "R"
+  ) {
+
+    if (
+      info !== "R"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        franchiseExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount:
+        billing -
+        franchiseeShare,
+
+      franchiseExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  /* =======================================================
+     RV
+  ======================================================= */
+
+  if (
+    infoFilter === "RV"
+  ) {
+
+    if (
+      info !== "RV"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        franchiseExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount: 0,
+
+      franchiseExpenditure: 0
+
+    };
+
+  }
+
+
+  /* =======================================================
+     C
+  ======================================================= */
+
+  if (
+    infoFilter === "C"
+  ) {
+
+    if (
+      info !== "C"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        franchiseExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount: 0,
+
+      franchiseExpenditure: 0
+
+    };
+
+  }
+
+
+  /* =======================================================
+     CN
+  ======================================================= */
+
+  if (
+    infoFilter === "CN"
+  ) {
+
+    if (
+      info !== "CN"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        franchiseExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount: 0,
+
+      franchiseExpenditure: 0
+
+    };
+
+  }
+
+
+  return {
+
+    billing: 0,
+
+    netAmount: 0,
+
+    franchiseExpenditure: 0
+
+  };
 
 }
 
@@ -247,18 +497,25 @@ function getFinancialYear(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
+
   if (dateValue) {
 
     const date =
       new Date(dateValue);
 
-    if (!Number.isNaN(date.getTime())) {
+
+    if (
+      !Number.isNaN(
+        date.getTime()
+      )
+    ) {
 
       const month =
         date.getMonth() + 1;
 
       const year =
         date.getFullYear();
+
 
       if (month >= 4) {
 
@@ -267,6 +524,7 @@ function getFinancialYear(row) {
         ).slice(-2)}`;
 
       }
+
 
       return `${year - 1}-${String(
         year
@@ -291,6 +549,7 @@ function getFinancialYear(row) {
 
     const year =
       Number(acquiredYear);
+
 
     if (
       Number.isFinite(year) &&
@@ -320,16 +579,24 @@ function getMonth(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
+
   if (!dateValue) {
     return "";
   }
 
+
   const date =
     new Date(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return "";
   }
+
 
   return date.getMonth() + 1;
 
@@ -351,8 +618,11 @@ function FranchiseTooltip({
     !payload ||
     !payload.length
   ) {
+
     return null;
+
   }
+
 
   return (
 
@@ -361,6 +631,7 @@ function FranchiseTooltip({
       <div className="franchise-tooltip-label">
         {label}
       </div>
+
 
       {payload.map(
         (item, index) => (
@@ -373,6 +644,7 @@ function FranchiseTooltip({
             <span>
               {item.name}
             </span>
+
 
             <strong>
 
@@ -414,9 +686,16 @@ function FranchisePerformance() {
     setSelectedFranchise
   ] = useState("");
 
+
   const [
     selectedFinancialYear,
     setSelectedFinancialYear
+  ] = useState("");
+
+
+  const [
+    selectedInfoStatus,
+    setSelectedInfoStatus
   ] = useState("");
 
 
@@ -424,134 +703,200 @@ function FranchisePerformance() {
      FRANCHISE SUMMARY TABLE
   ======================================================= */
 
-  const franchiseData = useMemo(() => {
+  const franchiseData =
+    useMemo(() => {
 
-    const map =
-      new Map();
-
-
-    rows.forEach(row => {
-
-      const franchise =
-        getFranchise(row);
-
-      if (!franchise) {
-        return;
-      }
+      const map =
+        new Map();
 
 
-      if (!map.has(franchise)) {
+      rows.forEach(row => {
 
-        map.set(
-          franchise,
-          {
+        const franchise =
+          getFranchise(row);
+
+
+        if (!franchise) {
+          return;
+        }
+
+
+        if (!map.has(franchise)) {
+
+          map.set(
             franchise,
-            clients: 0,
-            billing: 0,
-            franchiseShare: 0,
-            franchiseExpenditure: 0,
-            netAmount: 0
-          }
+            {
+              franchise,
+              clients: 0,
+              billing: 0,
+              franchiseShare: 0,
+              franchiseExpenditure: 0,
+              netAmount: 0
+            }
+          );
+
+        }
+
+
+        const data =
+          map.get(franchise);
+
+
+        /*
+         * Main table uses the selected
+         * Financial Year and Info filter.
+         */
+
+        if (
+          selectedFinancialYear &&
+          getFinancialYear(row) !==
+            selectedFinancialYear
+        ) {
+
+          return;
+
+        }
+
+
+        const financialValues =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
+
+
+        data.clients += 1;
+
+
+        data.billing +=
+          financialValues.billing;
+
+
+        data.franchiseShare +=
+          getFranchiseeShare(row);
+
+
+        data.franchiseExpenditure +=
+          financialValues.franchiseExpenditure;
+
+
+        data.netAmount +=
+          financialValues.netAmount;
+
+      });
+
+
+      return Array.from(
+        map.values()
+      )
+        .filter(
+          item =>
+            item.clients > 0
+        )
+        .sort(
+          (a, b) =>
+            b.clients - a.clients
         );
 
-      }
-
-
-      const data =
-        map.get(franchise);
-
-
-      data.clients += 1;
-
-      data.billing +=
-        getBilling(row);
-
-      data.franchiseShare +=
-        getFranchiseeShare(row);
-
-      data.franchiseExpenditure +=
-        getFranchiseExpenditure(row);
-
-      data.netAmount +=
-        getNetAmount(row);
-
-    });
-
-
-    return Array.from(
-      map.values()
-    ).sort(
-      (a, b) =>
-        b.clients - a.clients
-    );
-
-  }, [rows]);
+    }, [
+      rows,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
 
 
   /* =======================================================
      FINANCIAL YEARS
   ======================================================= */
 
-  const financialYears = useMemo(() => {
+  const financialYears =
+    useMemo(() => {
 
-    const years =
-      new Set();
-
-
-    rows.forEach(row => {
-
-      const year =
-        getFinancialYear(row);
-
-      if (year) {
-        years.add(year);
-      }
-
-    });
+      const years =
+        new Set();
 
 
-    return Array.from(
-      years
-    ).sort((a, b) => {
+      rows.forEach(row => {
 
-      const yearA =
-        Number(
-          String(a).slice(0, 4)
-        );
+        const year =
+          getFinancialYear(row);
 
-      const yearB =
-        Number(
-          String(b).slice(0, 4)
-        );
 
-      return yearA - yearB;
+        if (year) {
+          years.add(year);
+        }
 
-    });
+      });
 
-  }, [rows]);
+
+      return Array.from(years)
+        .sort((a, b) => {
+
+          const yearA =
+            Number(
+              String(a).slice(0, 4)
+            );
+
+
+          const yearB =
+            Number(
+              String(b).slice(0, 4)
+            );
+
+
+          return yearA - yearB;
+
+        });
+
+    }, [rows]);
 
 
   /* =======================================================
      SELECTED FRANCHISE ROWS
   ======================================================= */
 
-  const selectedRows = useMemo(() => {
+  const selectedRows =
+    useMemo(() => {
 
-    if (!selectedFranchise) {
-      return [];
-    }
+      if (!selectedFranchise) {
+        return [];
+      }
 
 
-    return rows.filter(
-      row =>
-        getFranchise(row) ===
-        selectedFranchise
-    );
+      return rows.filter(
+        row => {
 
-  }, [
-    rows,
-    selectedFranchise
-  ]);
+          if (
+            getFranchise(row) !==
+            selectedFranchise
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            selectedFinancialYear &&
+            getFinancialYear(row) !==
+              selectedFinancialYear
+          ) {
+
+            return false;
+
+          }
+
+
+          return true;
+
+        }
+      );
+
+    }, [
+      rows,
+      selectedFranchise,
+      selectedFinancialYear
+    ]);
 
 
   /* =======================================================
@@ -572,27 +917,40 @@ function FranchisePerformance() {
 
       selectedRows.forEach(row => {
 
-        const billing =
-          getBilling(row);
-
-        const franchiseShare =
-          getFranchiseeShare(row);
-
-        const franchiseExpenditure =
-          getFranchiseExpenditure(row);
+        const values =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
 
 
         totalBilling +=
-          billing;
+          values.billing;
 
-        totalFranchiseShare +=
-          franchiseShare;
+
+        /*
+         * Franchisee Share is included
+         * in Net Amount calculation only
+         * when status is All or R.
+         */
+
+        if (
+          !selectedInfoStatus ||
+          selectedInfoStatus === "R"
+        ) {
+
+          totalFranchiseShare +=
+            getFranchiseeShare(row);
+
+        }
+
 
         totalFranchiseExpenditure +=
-          franchiseExpenditure;
+          values.franchiseExpenditure;
+
 
         netAmount +=
-          billing - franchiseShare;
+          values.netAmount;
 
       });
 
@@ -609,275 +967,313 @@ function FranchisePerformance() {
 
       };
 
-    }, [selectedRows]);
+    }, [
+      selectedRows,
+      selectedInfoStatus
+    ]);
 
 
   /* =======================================================
      BEST INDUSTRY
   ======================================================= */
 
-  const bestIndustry = useMemo(() => {
+  const bestIndustry =
+    useMemo(() => {
 
-    const counts =
-      new Map();
-
-
-    selectedRows.forEach(row => {
-
-      const industry =
-        getIndustry(row);
-
-      if (!industry) {
-        return;
-      }
+      const counts =
+        new Map();
 
 
-      counts.set(
-        industry,
-        (counts.get(industry) || 0) + 1
-      );
+      selectedRows.forEach(row => {
 
-    });
+        const industry =
+          getIndustry(row);
 
 
-    let best = "";
-
-    let highest = 0;
-
-
-    counts.forEach(
-      (count, industry) => {
-
-        if (count > highest) {
-
-          highest = count;
-
-          best = industry;
-
+        if (!industry) {
+          return;
         }
 
-      }
-    );
+
+        counts.set(
+          industry,
+          (counts.get(industry) || 0) + 1
+        );
+
+      });
 
 
-    return best || "—";
+      let best = "";
 
-  }, [selectedRows]);
+      let highest = 0;
+
+
+      counts.forEach(
+        (count, industry) => {
+
+          if (count > highest) {
+
+            highest = count;
+
+            best = industry;
+
+          }
+
+        }
+      );
+
+
+      return best || "—";
+
+    }, [selectedRows]);
 
 
   /* =======================================================
      BEST CITY
   ======================================================= */
 
-  const bestCity = useMemo(() => {
+  const bestCity =
+    useMemo(() => {
 
-    const counts =
-      new Map();
-
-
-    selectedRows.forEach(row => {
-
-      const city =
-        getCity(row);
-
-      if (!city) {
-        return;
-      }
+      const counts =
+        new Map();
 
 
-      counts.set(
-        city,
-        (counts.get(city) || 0) + 1
-      );
+      selectedRows.forEach(row => {
 
-    });
+        const city =
+          getCity(row);
 
 
-    let best = "";
-
-    let highest = 0;
-
-
-    counts.forEach(
-      (count, city) => {
-
-        if (count > highest) {
-
-          highest = count;
-
-          best = city;
-
+        if (!city) {
+          return;
         }
 
-      }
-    );
+
+        counts.set(
+          city,
+          (counts.get(city) || 0) + 1
+        );
+
+      });
 
 
-    return best || "—";
+      let best = "";
 
-  }, [selectedRows]);
+      let highest = 0;
+
+
+      counts.forEach(
+        (count, city) => {
+
+          if (count > highest) {
+
+            highest = count;
+
+            best = city;
+
+          }
+
+        }
+      );
+
+
+      return best || "—";
+
+    }, [selectedRows]);
 
 
   /* =======================================================
      YEARLY REPORT
   ======================================================= */
 
-  const yearlyReportData = useMemo(() => {
+  const yearlyReportData =
+    useMemo(() => {
 
-    const map =
-      new Map();
-
-
-    selectedRows.forEach(row => {
-
-      const year =
-        getFinancialYear(row);
-
-      if (!year) {
-        return;
-      }
+      const map =
+        new Map();
 
 
-      if (!map.has(year)) {
+      selectedRows.forEach(row => {
 
-        map.set(
-          year,
-          {
+        const year =
+          getFinancialYear(row);
+
+
+        if (!year) {
+          return;
+        }
+
+
+        if (!map.has(year)) {
+
+          map.set(
             year,
-            clients: 0,
-            billing: 0
-          }
-        );
+            {
+              year,
+              clients: 0,
+              billing: 0
+            }
+          );
 
-      }
-
-
-      const data =
-        map.get(year);
+        }
 
 
-      data.clients += 1;
-
-      data.billing +=
-        getBilling(row);
-
-    });
+        const data =
+          map.get(year);
 
 
-    return Array.from(
-      map.values()
-    ).sort((a, b) => {
+        const values =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
 
-      const yearA =
-        Number(
-          String(a.year).slice(0, 4)
-        );
 
-      const yearB =
-        Number(
-          String(b.year).slice(0, 4)
-        );
+        data.clients += 1;
 
-      return yearA - yearB;
+        data.billing +=
+          values.billing;
 
-    });
+      });
 
-  }, [selectedRows]);
+
+      return Array.from(
+        map.values()
+      ).sort((a, b) => {
+
+        const yearA =
+          Number(
+            String(a.year).slice(0, 4)
+          );
+
+
+        const yearB =
+          Number(
+            String(b.year).slice(0, 4)
+          );
+
+
+        return yearA - yearB;
+
+      });
+
+    }, [
+      selectedRows,
+      selectedInfoStatus
+    ]);
 
 
   /* =======================================================
      MONTHLY REPORT
   ======================================================= */
 
-  const monthlyReportData = useMemo(() => {
+  const monthlyReportData =
+    useMemo(() => {
 
-    if (!selectedFinancialYear) {
-      return [];
-    }
-
-
-    const monthMap =
-      new Map();
-
-
-    financialMonths.forEach(
-      (month, index) => {
-
-        monthMap.set(
-          index + 1,
-          {
-            month: month.full,
-            monthShort: month.short,
-            clients: 0,
-            billing: 0
-          }
-        );
-
-      }
-    );
-
-
-    selectedRows.forEach(row => {
-
-      const year =
-        getFinancialYear(row);
-
-      if (
-        year !==
-        selectedFinancialYear
-      ) {
-        return;
+      if (!selectedFinancialYear) {
+        return [];
       }
 
 
-      const month =
-        getMonth(row);
+      const monthMap =
+        new Map();
 
 
-      if (!monthMap.has(month)) {
-        return;
-      }
+      financialMonths.forEach(
+        (month, index) => {
+
+          monthMap.set(
+            index + 1,
+            {
+              month: month.full,
+              monthShort: month.short,
+              clients: 0,
+              billing: 0
+            }
+          );
+
+        }
+      );
 
 
-      const data =
-        monthMap.get(month);
+      selectedRows.forEach(row => {
+
+        const year =
+          getFinancialYear(row);
 
 
-      data.clients += 1;
+        if (
+          year !==
+          selectedFinancialYear
+        ) {
 
-      data.billing +=
-        getBilling(row);
+          return;
 
-    });
-
-
-    const orderedMonths = [
-
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      1,
-      2,
-      3
-
-    ];
+        }
 
 
-    return orderedMonths.map(
-      month =>
-        monthMap.get(month)
-    );
+        const month =
+          getMonth(row);
 
-  }, [
-    selectedRows,
-    selectedFinancialYear
-  ]);
+
+        if (
+          !monthMap.has(month)
+        ) {
+
+          return;
+
+        }
+
+
+        const data =
+          monthMap.get(month);
+
+
+        const values =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
+
+
+        data.clients += 1;
+
+
+        data.billing +=
+          values.billing;
+
+      });
+
+
+      const orderedMonths = [
+
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        1,
+        2,
+        3
+
+      ];
+
+
+      return orderedMonths.map(
+        month =>
+          monthMap.get(month)
+      );
+
+    }, [
+      selectedRows,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
 
 
   /* =======================================================
@@ -902,9 +1298,9 @@ function FranchisePerformance() {
       franchise
     );
 
-    setSelectedFinancialYear(
-      ""
-    );
+    setSelectedFinancialYear("");
+
+    setSelectedInfoStatus("");
 
   }
 
@@ -918,6 +1314,8 @@ function FranchisePerformance() {
     setSelectedFranchise("");
 
     setSelectedFinancialYear("");
+
+    setSelectedInfoStatus("");
 
   }
 
@@ -993,6 +1391,100 @@ function FranchisePerformance() {
         </div>
 
 
+        {/* =================================================
+            MAIN FILTERS
+        ================================================= */}
+
+        <div
+          className="franchise-report-controls"
+          style={{
+            marginBottom: "20px"
+          }}
+        >
+
+          <div>
+
+            <label>
+              Financial Year
+            </label>
+
+            <select
+              value={
+                selectedFinancialYear
+              }
+              onChange={event =>
+                setSelectedFinancialYear(
+                  event.target.value
+                )
+              }
+            >
+
+              <option value="">
+                All Financial Years
+              </option>
+
+              {financialYears.map(
+                year => (
+
+                  <option
+                    key={year}
+                    value={year}
+                  >
+                    {year}
+                  </option>
+
+                )
+              )}
+
+            </select>
+
+          </div>
+
+
+          <div>
+
+            <label>
+              Info Status
+            </label>
+
+            <select
+              value={
+                selectedInfoStatus
+              }
+              onChange={event =>
+                setSelectedInfoStatus(
+                  event.target.value
+                )
+              }
+            >
+
+              <option value="">
+                All
+              </option>
+
+              <option value="R">
+                R
+              </option>
+
+              <option value="RV">
+                RV
+              </option>
+
+              <option value="C">
+                C
+              </option>
+
+              <option value="CN">
+                CN
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
         <div className="franchise-table-wrapper">
 
           <table className="franchise-table">
@@ -1061,17 +1553,21 @@ function FranchisePerformance() {
                         <div className="franchise-name">
 
                           <div className="franchise-avatar">
+
                             {
                               franchise.franchise
                                 .charAt(0)
                                 .toUpperCase()
                             }
+
                           </div>
 
                           <span>
+
                             {
                               franchise.franchise
                             }
+
                           </span>
 
                         </div>
@@ -1410,6 +1906,49 @@ function FranchisePerformance() {
               </div>
 
 
+              <div>
+
+                <label>
+                  Info Status
+                </label>
+
+
+                <select
+                  value={
+                    selectedInfoStatus
+                  }
+                  onChange={event =>
+                    setSelectedInfoStatus(
+                      event.target.value
+                    )
+                  }
+                >
+
+                  <option value="">
+                    All
+                  </option>
+
+                  <option value="R">
+                    R
+                  </option>
+
+                  <option value="RV">
+                    RV
+                  </option>
+
+                  <option value="C">
+                    C
+                  </option>
+
+                  <option value="CN">
+                    CN
+                  </option>
+
+                </select>
+
+              </div>
+
+
               <div className="franchise-report-period">
 
                 <span>
@@ -1417,11 +1956,13 @@ function FranchisePerformance() {
                 </span>
 
                 <strong>
+
                   {
                     selectedFinancialYear
                       ? selectedFinancialYear
                       : "Yearly"
                   }
+
                 </strong>
 
               </div>
@@ -1454,11 +1995,13 @@ function FranchisePerformance() {
                   </div>
 
                   <span>
+
                     {
                       selectedFinancialYear
                         ? "Monthly"
                         : "Yearly"
                     }
+
                   </span>
 
                 </div>
@@ -1565,11 +2108,13 @@ function FranchisePerformance() {
                   </div>
 
                   <span>
+
                     {
                       selectedFinancialYear
                         ? "Monthly"
                         : "Yearly"
                     }
+
                   </span>
 
                 </div>
