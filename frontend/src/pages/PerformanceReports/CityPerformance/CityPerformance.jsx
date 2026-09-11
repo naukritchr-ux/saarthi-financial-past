@@ -47,6 +47,7 @@ function CityPerformance() {
      ============================================================ */
 
   const normalizeValue = (value) => {
+
     if (
       value === null ||
       value === undefined
@@ -55,19 +56,25 @@ function CityPerformance() {
     }
 
     return String(value).trim();
+
   };
 
 
   const getInfoStatus = (row) => {
 
-    return normalizeValue(row["Info"]).toUpperCase();
+    return normalizeValue(
+      row["Info"]
+    ).toUpperCase();
 
   };
 
 
   const getCity = (row) => {
 
-    const city = normalizeValue(row["City"]);
+    const city =
+      normalizeValue(
+        row["City"]
+      );
 
     return city || "Unknown";
 
@@ -77,7 +84,9 @@ function CityPerformance() {
   const getBilling = (row) => {
 
     const value = Number(
-      String(row["Total Bill Amount"] ?? "")
+      String(
+        row["Total Bill Amount"] ?? ""
+      )
         .replace(/,/g, "")
         .replace(/[₹$]/g, "")
         .trim()
@@ -99,15 +108,22 @@ function CityPerformance() {
       return "Unknown";
     }
 
-    const date = new Date(dateValue);
+    const date =
+      new Date(dateValue);
 
-    if (Number.isNaN(date.getTime())) {
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
       return "Unknown";
     }
 
-    const year = date.getFullYear();
+    const year =
+      date.getFullYear();
 
-    const month = date.getMonth() + 1;
+    const month =
+      date.getMonth() + 1;
 
     if (month >= 4) {
       return `${year}-${year + 1}`;
@@ -120,18 +136,24 @@ function CityPerformance() {
 
   const formatCurrency = (value) => {
 
-    const amount = Number(value) || 0;
+    const amount =
+      Number(value) || 0;
 
-    return `₹${amount.toLocaleString("en-IN", {
-      maximumFractionDigits: 2
-    })}`;
+    return `₹${amount.toLocaleString(
+      "en-IN",
+      {
+        maximumFractionDigits: 2
+      }
+    )}`;
 
   };
 
 
   const formatNumber = (value) => {
 
-    return Number(value || 0).toLocaleString(
+    return Number(
+      value || 0
+    ).toLocaleString(
       "en-IN"
     );
 
@@ -140,7 +162,7 @@ function CityPerformance() {
 
   /* ============================================================
      FINANCIAL CALCULATION
-     
+
      ALL:
        R + RV + C + CN
        Billing = actual billing
@@ -173,9 +195,11 @@ function CityPerformance() {
     infoFilter = ""
   ) => {
 
-    const info = getInfoStatus(row);
+    const info =
+      getInfoStatus(row);
 
-    const billing = getBilling(row);
+    const billing =
+      getBilling(row);
 
 
     /* ---------------- ALL ---------------- */
@@ -204,7 +228,9 @@ function CityPerformance() {
 
     /* ---------------- R ---------------- */
 
-    if (infoFilter === "R") {
+    if (
+      infoFilter === "R"
+    ) {
 
       if (info !== "R") {
 
@@ -239,7 +265,9 @@ function CityPerformance() {
 
     /* ---------------- RV ---------------- */
 
-    if (infoFilter === "RV") {
+    if (
+      infoFilter === "RV"
+    ) {
 
       if (info !== "RV") {
 
@@ -270,7 +298,9 @@ function CityPerformance() {
 
     /* ---------------- C ---------------- */
 
-    if (infoFilter === "C") {
+    if (
+      infoFilter === "C"
+    ) {
 
       if (info !== "C") {
 
@@ -301,7 +331,9 @@ function CityPerformance() {
 
     /* ---------------- CN ---------------- */
 
-    if (infoFilter === "CN") {
+    if (
+      infoFilter === "CN"
+    ) {
 
       if (info !== "CN") {
 
@@ -349,21 +381,27 @@ function CityPerformance() {
 
   const financialYears = useMemo(() => {
 
-    const years = new Set();
+    const years =
+      new Set();
 
     rows.forEach((row) => {
 
       const year =
         getFinancialYear(row);
 
-      if (year !== "Unknown") {
+      if (
+        year !== "Unknown"
+      ) {
+
         years.add(year);
+
       }
 
     });
 
     return Array.from(years).sort(
-      (a, b) => b.localeCompare(a)
+      (a, b) =>
+        b.localeCompare(a)
     );
 
   }, [rows]);
@@ -481,21 +519,23 @@ function CityPerformance() {
      SELECTED CITY DATA
      ============================================================ */
 
-  const selectedCityRows = useMemo(() => {
+  const selectedCityRows =
+    useMemo(() => {
 
-    if (!selectedCity) {
-      return [];
-    }
+      if (!selectedCity) {
+        return [];
+      }
 
-    return filteredRows.filter(
-      (row) =>
-        getCity(row) === selectedCity
-    );
+      return filteredRows.filter(
+        (row) =>
+          getCity(row) ===
+          selectedCity
+      );
 
-  }, [
-    filteredRows,
-    selectedCity
-  ]);
+    }, [
+      filteredRows,
+      selectedCity
+    ]);
 
 
   /* ============================================================
@@ -568,10 +608,12 @@ function CityPerformance() {
             row["Industry"]
           ) || "Unknown";
 
+
         const teamLeader =
           normalizeValue(
             row["Team Leader"]
           ) || "Unknown";
+
 
         const bdMember =
           normalizeValue(
@@ -580,13 +622,24 @@ function CityPerformance() {
 
 
         industryCount[industry] =
-          (industryCount[industry] || 0) + 1;
+          (
+            industryCount[industry] ||
+            0
+          ) + 1;
+
 
         teamLeaderCount[teamLeader] =
-          (teamLeaderCount[teamLeader] || 0) + 1;
+          (
+            teamLeaderCount[teamLeader] ||
+            0
+          ) + 1;
+
 
         bdMemberCount[bdMember] =
-          (bdMemberCount[bdMember] || 0) + 1;
+          (
+            bdMemberCount[bdMember] ||
+            0
+          ) + 1;
 
       }
     );
@@ -602,7 +655,8 @@ function CityPerformance() {
       }
 
       entries.sort(
-        (a, b) => b[1] - a[1]
+        (a, b) =>
+          b[1] - a[1]
       );
 
       return entries[0][0];
@@ -622,13 +676,19 @@ function CityPerformance() {
       netAmount,
 
       topIndustry:
-        getTopValue(industryCount),
+        getTopValue(
+          industryCount
+        ),
 
       topTeamLeader:
-        getTopValue(teamLeaderCount),
+        getTopValue(
+          teamLeaderCount
+        ),
 
       topBDMember:
-        getTopValue(bdMemberCount)
+        getTopValue(
+          bdMemberCount
+        )
 
     };
 
@@ -643,357 +703,387 @@ function CityPerformance() {
      YEARLY CLIENT DATA
      ============================================================ */
 
-  const yearlyClientData = useMemo(() => {
+  const yearlyClientData =
+    useMemo(() => {
 
-    if (!selectedCity) {
-      return [];
-    }
-
-
-    const map = {};
-
-
-    selectedCityRows.forEach(
-      (row) => {
-
-        const year =
-          getFinancialYear(row);
-
-        if (
-          year === "Unknown"
-        ) {
-          return;
-        }
-
-
-        if (!map[year]) {
-          map[year] = {
-            year,
-            clients: 0
-          };
-        }
-
-
-        map[year].clients += 1;
-
+      if (!selectedCity) {
+        return [];
       }
-    );
 
 
-    return Object.values(map)
-      .sort(
-        (a, b) =>
-          a.year.localeCompare(b.year)
+      const map = {};
+
+
+      selectedCityRows.forEach(
+        (row) => {
+
+          const year =
+            getFinancialYear(row);
+
+          if (
+            year === "Unknown"
+          ) {
+            return;
+          }
+
+
+          if (!map[year]) {
+
+            map[year] = {
+
+              year,
+
+              clients: 0
+
+            };
+
+          }
+
+
+          map[year].clients += 1;
+
+        }
       );
 
-  }, [
-    selectedCity,
-    selectedCityRows
-  ]);
+
+      return Object.values(map)
+        .sort(
+          (a, b) =>
+            a.year.localeCompare(
+              b.year
+            )
+        );
+
+    }, [
+      selectedCity,
+      selectedCityRows
+    ]);
 
 
   /* ============================================================
      YEARLY BILLING DATA
      ============================================================ */
 
-  const yearlyBillingData = useMemo(() => {
+  const yearlyBillingData =
+    useMemo(() => {
 
-    if (!selectedCity) {
-      return [];
-    }
-
-
-    const map = {};
-
-
-    selectedCityRows.forEach(
-      (row) => {
-
-        const year =
-          getFinancialYear(row);
-
-        if (
-          year === "Unknown"
-        ) {
-          return;
-        }
-
-
-        if (!map[year]) {
-
-          map[year] = {
-
-            year,
-
-            billing: 0
-
-          };
-
-        }
-
-
-        const financial =
-          getFinancialValues(
-            row,
-            selectedInfoStatus === "All"
-              ? ""
-              : selectedInfoStatus
-          );
-
-
-        map[year].billing +=
-          financial.billing;
-
+      if (!selectedCity) {
+        return [];
       }
-    );
 
 
-    return Object.values(map)
-      .sort(
-        (a, b) =>
-          a.year.localeCompare(b.year)
+      const map = {};
+
+
+      selectedCityRows.forEach(
+        (row) => {
+
+          const year =
+            getFinancialYear(row);
+
+          if (
+            year === "Unknown"
+          ) {
+            return;
+          }
+
+
+          if (!map[year]) {
+
+            map[year] = {
+
+              year,
+
+              billing: 0
+
+            };
+
+          }
+
+
+          const financial =
+            getFinancialValues(
+              row,
+              selectedInfoStatus === "All"
+                ? ""
+                : selectedInfoStatus
+            );
+
+
+          map[year].billing +=
+            financial.billing;
+
+        }
       );
 
-  }, [
-    selectedCity,
-    selectedCityRows,
-    selectedInfoStatus
-  ]);
+
+      return Object.values(map)
+        .sort(
+          (a, b) =>
+            a.year.localeCompare(
+              b.year
+            )
+        );
+
+    }, [
+      selectedCity,
+      selectedCityRows,
+      selectedInfoStatus
+    ]);
 
 
   /* ============================================================
      MONTHLY CLIENT DATA
      ============================================================ */
 
-  const monthlyClientData = useMemo(() => {
+  const monthlyClientData =
+    useMemo(() => {
 
-    if (!selectedCity) {
-      return [];
-    }
-
-
-    const months = [
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-      "Jan",
-      "Feb",
-      "Mar"
-    ];
-
-
-    const map = {};
-
-
-    months.forEach(
-      (month) => {
-
-        map[month] = {
-
-          month,
-
-          clients: 0
-
-        };
-
+      if (!selectedCity) {
+        return [];
       }
-    );
 
 
-    selectedCityRows.forEach(
-      (row) => {
+      const months = [
 
-        const dateValue =
-          row["Date Client Acquired"];
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar"
 
-
-        if (!dateValue) {
-          return;
-        }
-
-
-        const date =
-          new Date(dateValue);
-
-
-        if (
-          Number.isNaN(
-            date.getTime()
-          )
-        ) {
-          return;
-        }
+      ];
 
 
-        const monthIndex =
-          date.getMonth();
+      const map = {};
 
 
-        const month =
-          monthIndex >= 3
-            ? months[monthIndex - 3]
-            : months[monthIndex + 9];
+      months.forEach(
+        (month) => {
 
+          map[month] = {
 
-        if (map[month]) {
+            month,
 
-          map[month].clients += 1;
+            clients: 0
+
+          };
 
         }
-
-      }
-    );
+      );
 
 
-    return Object.values(map);
+      selectedCityRows.forEach(
+        (row) => {
 
-  }, [
-    selectedCity,
-    selectedCityRows
-  ]);
+          const dateValue =
+            row[
+              "Date Client Acquired"
+            ];
+
+
+          if (!dateValue) {
+            return;
+          }
+
+
+          const date =
+            new Date(dateValue);
+
+
+          if (
+            Number.isNaN(
+              date.getTime()
+            )
+          ) {
+            return;
+          }
+
+
+          const monthIndex =
+            date.getMonth();
+
+
+          const month =
+            monthIndex >= 3
+              ? months[
+                  monthIndex - 3
+                ]
+              : months[
+                  monthIndex + 9
+                ];
+
+
+          if (map[month]) {
+
+            map[month].clients += 1;
+
+          }
+
+        }
+      );
+
+
+      return Object.values(map);
+
+    }, [
+      selectedCity,
+      selectedCityRows
+    ]);
 
 
   /* ============================================================
      MONTHLY BILLING DATA
      ============================================================ */
 
-  const monthlyBillingData = useMemo(() => {
+  const monthlyBillingData =
+    useMemo(() => {
 
-    if (!selectedCity) {
-      return [];
-    }
-
-
-    const months = [
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-      "Jan",
-      "Feb",
-      "Mar"
-    ];
-
-
-    const map = {};
-
-
-    months.forEach(
-      (month) => {
-
-        map[month] = {
-
-          month,
-
-          billing: 0
-
-        };
-
+      if (!selectedCity) {
+        return [];
       }
-    );
 
 
-    selectedCityRows.forEach(
-      (row) => {
+      const months = [
 
-        const dateValue =
-          row["Date Client Acquired"];
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar"
 
-
-        if (!dateValue) {
-          return;
-        }
-
-
-        const date =
-          new Date(dateValue);
-
-
-        if (
-          Number.isNaN(
-            date.getTime()
-          )
-        ) {
-          return;
-        }
+      ];
 
 
-        const monthIndex =
-          date.getMonth();
+      const map = {};
 
 
-        const month =
-          monthIndex >= 3
-            ? months[monthIndex - 3]
-            : months[monthIndex + 9];
+      months.forEach(
+        (month) => {
 
+          map[month] = {
 
-        const financial =
-          getFinancialValues(
-            row,
-            selectedInfoStatus === "All"
-              ? ""
-              : selectedInfoStatus
-          );
+            month,
 
+            billing: 0
 
-        if (map[month]) {
-
-          map[month].billing +=
-            financial.billing;
+          };
 
         }
-
-      }
-    );
+      );
 
 
-    return Object.values(map);
+      selectedCityRows.forEach(
+        (row) => {
 
-  }, [
-    selectedCity,
-    selectedCityRows,
-    selectedInfoStatus
-  ]);
+          const dateValue =
+            row[
+              "Date Client Acquired"
+            ];
+
+
+          if (!dateValue) {
+            return;
+          }
+
+
+          const date =
+            new Date(dateValue);
+
+
+          if (
+            Number.isNaN(
+              date.getTime()
+            )
+          ) {
+            return;
+          }
+
+
+          const monthIndex =
+            date.getMonth();
+
+
+          const month =
+            monthIndex >= 3
+              ? months[
+                  monthIndex - 3
+                ]
+              : months[
+                  monthIndex + 9
+                ];
+
+
+          const financial =
+            getFinancialValues(
+              row,
+              selectedInfoStatus === "All"
+                ? ""
+                : selectedInfoStatus
+            );
+
+
+          if (map[month]) {
+
+            map[month].billing +=
+              financial.billing;
+
+          }
+
+        }
+      );
+
+
+      return Object.values(map);
+
+    }, [
+      selectedCity,
+      selectedCityRows,
+      selectedInfoStatus
+    ]);
 
 
   /* ============================================================
      REPORT DATA BASED ON REPORT YEAR
      ============================================================ */
 
-  const reportYearRows = useMemo(() => {
+  const reportYearRows =
+    useMemo(() => {
 
-    if (
-      reportYear ===
-      "All Financial Years"
-    ) {
+      if (
+        reportYear ===
+        "All Financial Years"
+      ) {
 
-      return selectedCityRows;
+        return selectedCityRows;
 
-    }
+      }
 
 
-    return selectedCityRows.filter(
-      (row) =>
-        getFinancialYear(row) ===
-        reportYear
-    );
+      return selectedCityRows.filter(
+        (row) =>
+          getFinancialYear(row) ===
+          reportYear
+      );
 
-  }, [
-    selectedCityRows,
-    reportYear
-  ]);
+    }, [
+      selectedCityRows,
+      reportYear
+    ]);
 
 
   /* ============================================================
@@ -1138,6 +1228,7 @@ function CityPerformance() {
             <span className="city-member-count">
 
               {cityData.length}{" "}
+
               {cityData.length === 1
                 ? "City"
                 : "Cities"}
@@ -1146,93 +1237,101 @@ function CityPerformance() {
 
           </div>
 
+        </div>
+
+
+        {/* ====================================================
+            FILTERS ABOVE TABLE
+        ==================================================== */}
+
+        <div className="city-performance-filters">
+
 
           {/* ==================================================
-              FILTERS
+              FINANCIAL YEAR
           ================================================== */}
 
-          <div className="city-header-filters">
+          <div className="city-filter-group">
+
+            <label>
+              Financial Year
+            </label>
+
+            <select
+              value={
+                selectedFinancialYear
+              }
+              onChange={(e) =>
+                setSelectedFinancialYear(
+                  e.target.value
+                )
+              }
+            >
+
+              <option value="All Financial Years">
+                All Financial Years
+              </option>
+
+              {financialYears.map(
+                (year) => (
+
+                  <option
+                    key={year}
+                    value={year}
+                  >
+                    {year}
+                  </option>
+
+                )
+              )}
+
+            </select>
+
+          </div>
 
 
-            <div className="city-filter-group">
+          {/* ==================================================
+              INFO STATUS
+          ================================================== */}
 
-              <label>
-                Financial Year
-              </label>
+          <div className="city-filter-group">
 
-              <select
-                value={
-                  selectedFinancialYear
-                }
-                onChange={(e) =>
-                  setSelectedFinancialYear(
-                    e.target.value
-                  )
-                }
-              >
+            <label>
+              Info Status
+            </label>
 
-                <option>
-                  All Financial Years
-                </option>
+            <select
+              value={
+                selectedInfoStatus
+              }
+              onChange={(e) =>
+                setSelectedInfoStatus(
+                  e.target.value
+                )
+              }
+            >
 
-                {financialYears.map(
-                  (year) => (
+              <option value="All">
+                All
+              </option>
 
-                    <option
-                      key={year}
-                      value={year}
-                    >
-                      {year}
-                    </option>
+              <option value="R">
+                R
+              </option>
 
-                  )
-                )}
+              <option value="RV">
+                RV
+              </option>
 
-              </select>
+              <option value="C">
+                C
+              </option>
 
-            </div>
+              <option value="CN">
+                CN
+              </option>
 
-
-            <div className="city-filter-group">
-
-              <label>
-                Info Status
-              </label>
-
-              <select
-                value={
-                  selectedInfoStatus
-                }
-                onChange={(e) =>
-                  setSelectedInfoStatus(
-                    e.target.value
-                  )
-                }
-              >
-
-                <option value="All">
-                  All
-                </option>
-
-                <option value="R">
-                  R
-                </option>
-
-                <option value="RV">
-                  RV
-                </option>
-
-                <option value="C">
-                  C
-                </option>
-
-                <option value="CN">
-                  CN
-                </option>
-
-              </select>
-
-            </div>
+            </select>
 
           </div>
 
