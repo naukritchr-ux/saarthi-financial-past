@@ -7,13 +7,17 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid,
+  CartesianGrid
 } from "recharts";
 
-import { useData } from "../../../context/DataContext";
+import { useData } from "../../context/DataContext";
 
 import "./IndustryPerformance.css";
 
+
+/* ============================================================
+   FINANCIAL MONTHS
+   ============================================================ */
 
 const financialMonths = [
   { full: "April", short: "Apr" },
@@ -27,1166 +31,634 @@ const financialMonths = [
   { full: "December", short: "Dec" },
   { full: "January", short: "Jan" },
   { full: "February", short: "Feb" },
-  { full: "March", short: "Mar" },
+  { full: "March", short: "Mar" }
 ];
 
 
-// ---------------------------------------------------------
-// NUMBER HELPERS
-// ---------------------------------------------------------
+/* ============================================================
+   HELPERS
+   ============================================================ */
 
-function toNumber(value) {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
+const toNumber = (value) => {
+  if (value === null || value === undefined || value === "") {
     return 0;
   }
 
-  if (typeof value === "number") {
-    return Number.isFinite(value)
-      ? value
-      : 0;
-  }
-
-  const cleanedValue = String(value)
+  const cleaned = String(value)
+    .replace(/₹/g, "")
     .replace(/,/g, "")
-    .replace(/[₹$€£]/g, "")
     .replace(/%/g, "")
     .trim();
 
-  const number = Number(cleanedValue);
+  const number = Number(cleaned);
 
-  return Number.isFinite(number)
-    ? number
-    : 0;
-}
+  return Number.isFinite(number) ? number : 0;
+};
 
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(toNumber(value));
-}
+const formatCurrency = (value) => {
+  return `₹${toNumber(value).toLocaleString("en-IN", {
+    maximumFractionDigits: 2
+  })}`;
+};
 
 
-// ---------------------------------------------------------
-// DATA HELPERS
-// ---------------------------------------------------------
-
-function getIndustry(row) {
-  return String(
+const getIndustry = (row) => {
+  return (
     row?.industry ??
-      row?.["Industry"] ??
-      ""
-  ).trim();
-}
+    row?.["Industry"] ??
+    "Unknown"
+  );
+};
 
 
-function getSubIndustry(row) {
-  return String(
+const getSubIndustry = (row) => {
+  return (
     row?.sub_industry ??
-      row?.["Sub Industry"] ??
-      ""
-  ).trim();
-}
+    row?.["Sub Industry"] ??
+    "Unknown"
+  );
+};
 
 
-function getTeamLeader(row) {
-  return String(
+const getTeamLeader = (row) => {
+  return (
     row?.team_leader ??
-      row?.["Team Leader"] ??
-      ""
-  ).trim();
-}
+    row?.["Team Leader"] ??
+    "Unknown"
+  );
+};
 
 
-function getBDMember(row) {
-  return String(
+const getBDMember = (row) => {
+  return (
     row?.bd_member ??
-      row?.["BD Member"] ??
-      ""
-  ).trim();
-}
+    row?.["BD Member"] ??
+    "Unknown"
+  );
+};
 
 
-// ---------------------------------------------------------
-// BILLING
-// IMPORTANT:
-// Billing is taken ONLY from total_bill_amount.
-// No TANN / TDS is used.
-// ---------------------------------------------------------
+/* ============================================================
+   IMPORTANT:
+   BILLING MUST COME FROM total_bill_amount
+   ============================================================ */
 
-function getBilling(row) {
+const getBilling = (row) => {
   return toNumber(
     row?.total_bill_amount ??
-      row?.["Total Bill Amount"] ??
-      0
+    row?.["Total Bill Amount"] ??
+    0
   );
-}
+};
 
 
-// ---------------------------------------------------------
-// FRANCHISE SHARE
-// ---------------------------------------------------------
-
-function getFranchiseeShare(row) {
+const getFranchiseeShare = (row) => {
   return toNumber(
     row?.franchisee_share ??
-      row?.["Franchisee Share"] ??
-      0
+    row?.["Franchisee Share"] ??
+    0
   );
-}
+};
 
 
-// ---------------------------------------------------------
-// INFO STATUS
-// ---------------------------------------------------------
-
-function getInfoStatus(row) {
+const getInfoStatus = (row) => {
   return String(
     row?.info ??
-      row?.["Info"] ??
-      ""
+    row?.["Info"] ??
+    row?.["Info Status"] ??
+    ""
   )
     .trim()
     .toUpperCase();
-}
+};
 
 
-// ---------------------------------------------------------
-// FINANCIAL CALCULATION
-//
-// ALL:
-// Billing = R + RV + C + CN
-// Net = Billing - Franchise Share
-// Expenditure = 5% of Billing
-//
-// R:
-// Billing = R
-// Net = R Billing - R Franchise Share
-// Expenditure = 5% of R Billing
-//
-// RV / C / CN:
-// Billing = selected status billing
-// Net = 0
-// Expenditure = 5% of selected status billing
-// ---------------------------------------------------------
+/* ============================================================
+   FINANCIAL VALUES
+   ============================================================ */
 
-function getFinancialValues(
-  row,
-  infoFilter = ""
-) {
-  const info = getInfoStatus(row);
+const getFinancialValues = (rows, infoStatus) => {
 
-  const billing = getBilling(row);
-
-  const franchiseeShare =
-    getFranchiseeShare(row);
-
-
-  // ALL
-  if (
-    !infoFilter ||
-    infoFilter === "ALL"
-  ) {
-    return {
-      billing,
-      netAmount:
-        billing - franchiseeShare,
-      industryExpenditure:
-        billing * 0.05,
-    };
-  }
-
-
-  // R
-  if (infoFilter === "R") {
-
-    if (info !== "R") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        industryExpenditure: 0,
-      };
-    }
-
-    return {
-      billing,
-      netAmount:
-        billing - franchiseeShare,
-      industryExpenditure:
-        billing * 0.05,
-    };
-  }
-
-
-  // RV
-  if (infoFilter === "RV") {
-
-    if (info !== "RV") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        industryExpenditure: 0,
-      };
-    }
-
-    return {
-      billing,
-      netAmount: 0,
-      industryExpenditure:
-        billing * 0.05,
-    };
-  }
-
-
-  // C
-  if (infoFilter === "C") {
-
-    if (info !== "C") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        industryExpenditure: 0,
-      };
-    }
-
-    return {
-      billing,
-      netAmount: 0,
-      industryExpenditure:
-        billing * 0.05,
-    };
-  }
-
-
-  // CN
-  if (infoFilter === "CN") {
-
-    if (info !== "CN") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        industryExpenditure: 0,
-      };
-    }
-
-    return {
-      billing,
-      netAmount: 0,
-      industryExpenditure:
-        billing * 0.05,
-    };
-  }
-
-
-  return {
-    billing: 0,
-    netAmount: 0,
-    industryExpenditure: 0,
-  };
-}
-
-
-function getClientAcquiredDate(row) {
-  return (
-    row?.date_client_acquired ??
-    row?.["Date Client Acquired"] ??
-    ""
-  );
-}
-
-
-// ---------------------------------------------------------
-// FINANCIAL YEAR
-// ---------------------------------------------------------
-
-function getFinancialYear(row) {
-  const dateValue =
-    getClientAcquiredDate(row);
-
-  if (dateValue) {
-
-    const date = new Date(dateValue);
-
-    if (!Number.isNaN(date.getTime())) {
-
-      const month =
-        date.getMonth() + 1;
-
-      const year =
-        date.getFullYear();
-
-      if (month >= 4) {
-
-        return `${year}-${String(
-          year + 1
-        ).slice(-2)}`;
-
-      }
-
-      return `${year - 1}-${String(
-        year
-      ).slice(-2)}`;
-    }
-  }
-
-
-  const acquiredYear =
-    row?.acquired_year ??
-    row?.["Aquired Year"] ??
-    row?.["Acquired Year"];
-
-
-  if (
-    acquiredYear !== undefined &&
-    acquiredYear !== null &&
-    acquiredYear !== ""
-  ) {
-
-    const year =
-      Number(acquiredYear);
-
-    if (
-      Number.isFinite(year) &&
-      year > 1900
-    ) {
-
-      return `${year}-${String(
-        year + 1
-      ).slice(-2)}`;
-    }
-  }
-
-
-  return "";
-}
-
-
-// ---------------------------------------------------------
-// MONTH
-// ---------------------------------------------------------
-
-function getMonth(row) {
-
-  const dateValue =
-    getClientAcquiredDate(row);
-
-  if (!dateValue) {
-    return "";
-  }
-
-  const date =
-    new Date(dateValue);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return "";
-  }
-
-  return date.getMonth() + 1;
-}
-
-
-// ---------------------------------------------------------
-// MOST FREQUENT VALUE
-// ---------------------------------------------------------
-
-function getMostFrequent(
-  rows,
-  getter
-) {
-
-  const countMap =
-    new Map();
-
+  let totalBilling = 0;
+  let totalFranchiseShare = 0;
 
   rows.forEach((row) => {
 
-    const value =
-      getter(row);
+    const status = getInfoStatus(row);
 
-    if (!value) {
+    const billing = getBilling(row);
+
+    const matchesInfo =
+      !infoStatus ||
+      infoStatus === "All" ||
+      status === infoStatus;
+
+    if (!matchesInfo) {
       return;
     }
 
+    totalBilling += billing;
 
-    countMap.set(
-      value,
-      (
-        countMap.get(value) ||
-        0
-      ) + 1
-    );
+    /*
+      Franchise share is applicable only for R.
+    */
 
+    if (
+      !infoStatus ||
+      infoStatus === "All" ||
+      infoStatus === "R"
+    ) {
+      if (status === "R") {
+        totalFranchiseShare += getFranchiseeShare(row);
+      }
+    }
   });
 
 
-  let bestValue = "";
+  /*
+    Net Amount:
+    All / R = Billing - Franchise Share
+    RV / C / CN = 0
+  */
 
-  let highestCount = 0;
+  const netAmount =
+    infoStatus === "RV" ||
+    infoStatus === "C" ||
+    infoStatus === "CN"
+      ? 0
+      : totalBilling - totalFranchiseShare;
 
 
-  countMap.forEach(
-    (count, value) => {
+  /*
+    EXPENDITURE:
+    All / R = 5% of billing
+    RV / C / CN = 0
+  */
 
-      if (
-        count >
-        highestCount
-      ) {
-
-        highestCount =
-          count;
-
-        bestValue =
-          value;
-      }
-
-    }
-  );
+  const industryExpenditure =
+    infoStatus === "RV" ||
+    infoStatus === "C" ||
+    infoStatus === "CN"
+      ? 0
+      : totalBilling * 0.05;
 
 
   return {
-    value: bestValue,
-    count: highestCount,
+    totalBilling,
+    totalFranchiseShare,
+    netAmount,
+    industryExpenditure
   };
-}
+};
 
 
-// ---------------------------------------------------------
-// CUSTOM TOOLTIP
-// ---------------------------------------------------------
+/* ============================================================
+   DATE HELPERS
+   ============================================================ */
 
-function IndustryTooltip({
-  active,
-  payload,
-  label,
-}) {
+const getClientAcquiredDate = (row) => {
 
-  if (
-    !active ||
-    !payload ||
-    payload.length === 0
-  ) {
+  return (
+    row?.date_client_acquired ??
+    row?.["Date Client Acquired"] ??
+    row?.client_acquired_date ??
+    row?.["Client Acquired Date"] ??
+    null
+  );
+};
+
+
+const getFinancialYear = (dateValue) => {
+
+  if (!dateValue) {
     return null;
   }
 
+  const date = new Date(dateValue);
 
-  const industry =
-    payload[0]?.payload?.industry;
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
 
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+
+  if (month >= 4) {
+    return `${year}-${String(year + 1).slice(-2)}`;
+  }
+
+  return `${year - 1}-${String(year).slice(-2)}`;
+};
+
+
+const getMonth = (dateValue) => {
+
+  if (!dateValue) {
+    return null;
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return financialMonths[date.getMonth() >= 3
+    ? date.getMonth() - 3
+    : date.getMonth() + 9
+  ]?.full;
+};
+
+
+/* ============================================================
+   FREQUENCY
+   ============================================================ */
+
+const getMostFrequent = (values) => {
+
+  if (!values || values.length === 0) {
+    return "N/A";
+  }
+
+  const counts = {};
+
+  values.forEach((value) => {
+
+    const cleaned =
+      value === null ||
+      value === undefined ||
+      String(value).trim() === ""
+        ? "Unknown"
+        : String(value).trim();
+
+    counts[cleaned] =
+      (counts[cleaned] || 0) + 1;
+  });
+
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+};
+
+
+/* ============================================================
+   TOOLTIP
+   ============================================================ */
+
+const IndustryTooltip = ({
+  active,
+  payload,
+  label
+}) => {
+
+  if (!active || !payload || payload.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="industry-modern-tooltip">
+    <div className="industry-chart-tooltip">
 
-      <div className="industry-tooltip-label">
-        {label}
-      </div>
+      <strong>{label}</strong>
 
+      {payload.map((item, index) => (
 
-      {industry && (
-        <div className="industry-tooltip-industry">
-          {industry}
+        <div key={index}>
+          {item.name}:{" "}
+          {item.name === "Total Billing"
+            ? formatCurrency(item.value)
+            : item.value}
         </div>
-      )}
 
-
-      {payload.map(
-        (item, index) => (
-
-          <div
-            className="industry-tooltip-row"
-            key={index}
-          >
-
-            <span>
-              {item.name}
-            </span>
-
-
-            <strong>
-
-              {item.name ===
-                "Total Billing"
-                ? formatCurrency(
-                    item.value
-                  )
-                : Number(
-                    item.value || 0
-                  ).toLocaleString(
-                    "en-IN"
-                  )}
-
-            </strong>
-
-          </div>
-
-        )
-      )}
+      ))}
 
     </div>
   );
-}
+};
 
 
-// ---------------------------------------------------------
-// MAIN COMPONENT
-// ---------------------------------------------------------
+/* ============================================================
+   COMPONENT
+   ============================================================ */
 
 function IndustryPerformance() {
 
-  const {
-    rows = []
-  } = useData();
+  const { rows } = useData();
+
+  const [selectedIndustry, setSelectedIndustry] =
+    useState(null);
+
+  const [selectedFinancialYear, setSelectedFinancialYear] =
+    useState("");
+
+  const [selectedInfoStatus, setSelectedInfoStatus] =
+    useState("");
 
 
-  const [
-    selectedIndustry,
-    setSelectedIndustry,
-  ] = useState("");
+  /* ============================================================
+     INDUSTRY DATA
+     ============================================================ */
+
+  const industryData = useMemo(() => {
+
+    if (!rows || rows.length === 0) {
+      return [];
+    }
+
+    const grouped = {};
+
+    rows.forEach((row) => {
+
+      const industry = getIndustry(row);
+
+      if (!grouped[industry]) {
+        grouped[industry] = [];
+      }
+
+      grouped[industry].push(row);
+    });
 
 
-  const [
-    selectedFinancialYear,
-    setSelectedFinancialYear,
-  ] = useState("");
+    return Object.entries(grouped)
+      .map(([industry, industryRows]) => {
+
+        const filteredRows =
+          selectedFinancialYear
+            ? industryRows.filter(
+                (row) =>
+                  getFinancialYear(
+                    getClientAcquiredDate(row)
+                  ) === selectedFinancialYear
+              )
+            : industryRows;
 
 
-  const [
-    selectedInfoStatus,
-    setSelectedInfoStatus,
-  ] = useState("");
-
-
-  // -------------------------------------------------------
-  // INDUSTRY TABLE DATA
-  // -------------------------------------------------------
-
-  const industryData =
-    useMemo(() => {
-
-      const industryMap =
-        new Map();
-
-
-      rows.forEach((row) => {
-
-        const industry =
-          getIndustry(row);
-
-
-        if (!industry) {
-          return;
-        }
-
-
-        if (
-          !industryMap.has(
-            industry
-          )
-        ) {
-
-          industryMap.set(
-            industry,
-            {
-              industry,
-              clients: 0,
-              billing: 0,
-              netAmount: 0,
-              industryExpenditure: 0,
-            }
-          );
-
-        }
-
-
-        const data =
-          industryMap.get(
-            industry
-          );
-
-
-        if (
-          selectedFinancialYear &&
-          getFinancialYear(row) !==
-            selectedFinancialYear
-        ) {
-          return;
-        }
-
-
-        const financialValues =
+        const financial =
           getFinancialValues(
-            row,
+            filteredRows,
             selectedInfoStatus
           );
 
 
-        data.clients += 1;
+        return {
+          industry,
+          clients: filteredRows.length,
+          totalBilling: financial.totalBilling,
+          netAmount: financial.netAmount,
+          industryExpenditure:
+            financial.industryExpenditure
+        };
+      })
+      .filter(
+        (item) => item.clients > 0
+      );
+
+  }, [
+    rows,
+    selectedFinancialYear,
+    selectedInfoStatus
+  ]);
 
 
-        data.billing +=
-          financialValues.billing;
+  /* ============================================================
+     FINANCIAL YEARS
+     ============================================================ */
 
+  const financialYears = useMemo(() => {
 
-        data.netAmount +=
-          financialValues.netAmount;
+    if (!rows || rows.length === 0) {
+      return [];
+    }
 
+    const years = new Set();
 
-        data.industryExpenditure +=
-          financialValues.industryExpenditure;
+    rows.forEach((row) => {
 
-      });
-
-
-      return Array.from(
-        industryMap.values()
-      )
-        .filter(
-          item =>
-            item.clients > 0
-        )
-        .sort(
-          (a, b) =>
-            b.clients - a.clients
+      const year =
+        getFinancialYear(
+          getClientAcquiredDate(row)
         );
 
-    }, [
-      rows,
-      selectedFinancialYear,
-      selectedInfoStatus,
-    ]);
-
-
-  // -------------------------------------------------------
-  // FINANCIAL YEARS
-  // -------------------------------------------------------
-
-  const financialYears =
-    useMemo(() => {
-
-      const years =
-        new Set();
-
-
-      rows.forEach((row) => {
-
-        const year =
-          getFinancialYear(row);
-
-
-        if (year) {
-          years.add(year);
-        }
-
-      });
-
-
-      return Array.from(
-        years
-      ).sort(
-        (a, b) => {
-
-          const yearA =
-            Number(
-              String(a).slice(
-                0,
-                4
-              )
-            );
-
-
-          const yearB =
-            Number(
-              String(b).slice(
-                0,
-                4
-              )
-            );
-
-
-          return (
-            yearA - yearB
-          );
-        }
-      );
-
-    }, [rows]);
-
-
-  // -------------------------------------------------------
-  // SELECTED INDUSTRY ROWS
-  // -------------------------------------------------------
-
-  const selectedRows =
-    useMemo(() => {
-
-      if (!selectedIndustry) {
-        return [];
+      if (year) {
+        years.add(year);
       }
+    });
+
+    return Array.from(years).sort();
+
+  }, [rows]);
 
 
-      return rows.filter(
-        (row) => {
+  /* ============================================================
+     SELECTED ROWS
+     ============================================================ */
 
-          if (
-            getIndustry(row) !==
-            selectedIndustry
-          ) {
-            return false;
-          }
+  const selectedRows = useMemo(() => {
+
+    if (!selectedIndustry) {
+      return [];
+    }
+
+    return (rows || []).filter((row) => {
+
+      const industryMatch =
+        getIndustry(row) === selectedIndustry;
+
+      const yearMatch =
+        !selectedFinancialYear ||
+        getFinancialYear(
+          getClientAcquiredDate(row)
+        ) === selectedFinancialYear;
+
+      return industryMatch && yearMatch;
+    });
+
+  }, [
+    rows,
+    selectedIndustry,
+    selectedFinancialYear
+  ]);
 
 
-          if (
-            selectedFinancialYear &&
-            getFinancialYear(row) !==
-              selectedFinancialYear
-          ) {
-            return false;
-          }
-
-
-          return true;
-        }
-      );
-
-    }, [
-      rows,
-      selectedIndustry,
-      selectedFinancialYear,
-    ]);
-
-
-  // -------------------------------------------------------
-  // ENQUIRY COUNT
-  // -------------------------------------------------------
+  /* ============================================================
+     ENQUIRY COUNT
+     ============================================================ */
 
   const enquiryCount =
-    useMemo(() => {
-
-      return selectedRows.length;
-
-    }, [selectedRows]);
+    selectedRows.length;
 
 
-  // -------------------------------------------------------
-  // PERFORMANCE SUMMARY
-  // -------------------------------------------------------
+  /* ============================================================
+     PERFORMANCE SUMMARY
+     ============================================================ */
 
-  const performanceSummary =
-    useMemo(() => {
+  const performanceSummary = useMemo(() => {
 
-      let totalBilling = 0;
-
-      let totalFranchiseShare = 0;
-
-      let netAmount = 0;
-
-      let industryExpenditure = 0;
-
-
-      selectedRows.forEach(
-        (row) => {
-
-          const financialValues =
-            getFinancialValues(
-              row,
-              selectedInfoStatus
-            );
-
-
-          totalBilling +=
-            financialValues.billing;
-
-
-          if (
-            !selectedInfoStatus ||
-            selectedInfoStatus === "R"
-          ) {
-
-            totalFranchiseShare +=
-              getFranchiseeShare(
-                row
-              );
-
-          }
-
-
-          netAmount +=
-            financialValues.netAmount;
-
-
-          industryExpenditure +=
-            financialValues.industryExpenditure;
-
-        }
+    const financial =
+      getFinancialValues(
+        selectedRows,
+        selectedInfoStatus
       );
 
+    return financial;
 
-      return {
-        industry:
-          selectedIndustry,
-
-        totalBilling,
-
-        totalFranchiseShare,
-
-        netAmount,
-
-        industryExpenditure,
-      };
-
-    }, [
-      selectedRows,
-      selectedIndustry,
-      selectedInfoStatus,
-    ]);
+  }, [
+    selectedRows,
+    selectedInfoStatus
+  ]);
 
 
-  // -------------------------------------------------------
-  // SUB INDUSTRIES
-  // -------------------------------------------------------
+  /* ============================================================
+     SUB INDUSTRY DATA
+     ============================================================ */
 
-  const subIndustryData =
-    useMemo(() => {
+  const subIndustryData = useMemo(() => {
 
-      const subIndustryMap =
-        new Map();
+    const grouped = {};
 
+    selectedRows.forEach((row) => {
 
-      selectedRows.forEach(
-        (row) => {
+      const subIndustry =
+        getSubIndustry(row);
 
-          const subIndustry =
-            getSubIndustry(row);
+      grouped[subIndustry] =
+        (grouped[subIndustry] || 0) + 1;
+    });
 
+    return Object.entries(grouped)
+      .map(([name, value]) => ({
+        name,
+        value
+      }))
+      .sort((a, b) => b.value - a.value);
 
-          if (!subIndustry) {
-            return;
-          }
-
-
-          subIndustryMap.set(
-            subIndustry,
-            (
-              subIndustryMap.get(
-                subIndustry
-              ) || 0
-            ) + 1
-          );
-
-        }
-      );
+  }, [selectedRows]);
 
 
-      return Array.from(
-        subIndustryMap.entries()
+  /* ============================================================
+     TEAM LEADER / BD MEMBER
+     ============================================================ */
+
+  const teamLeader = getMostFrequent(
+    selectedRows.map(getTeamLeader)
+  );
+
+
+  const bdMember = getMostFrequent(
+    selectedRows.map(getBDMember)
+  );
+
+
+  /* ============================================================
+     YEARLY REPORT
+     ============================================================ */
+
+  const yearlyReportData = useMemo(() => {
+
+    if (!selectedIndustry) {
+      return [];
+    }
+
+    const grouped = {};
+
+    selectedRows.forEach((row) => {
+
+      const date =
+        getClientAcquiredDate(row);
+
+      if (!date) {
+        return;
+      }
+
+      const year =
+        getFinancialYear(date);
+
+      if (!year) {
+        return;
+      }
+
+      if (!grouped[year]) {
+        grouped[year] = [];
+      }
+
+      grouped[year].push(row);
+    });
+
+
+    return Object.entries(grouped)
+      .sort(([a], [b]) =>
+        a.localeCompare(b)
       )
-        .map(
-          ([name, count]) => ({
-            name,
-            count,
-          })
-        )
-        .sort(
-          (a, b) =>
-            b.count - a.count
-        );
+      .map(([year, yearRows]) => {
 
-    }, [selectedRows]);
-
-
-  // -------------------------------------------------------
-  // TEAM LEADER
-  // -------------------------------------------------------
-
-  const teamLeader =
-    useMemo(() => {
-
-      return getMostFrequent(
-        selectedRows,
-        getTeamLeader
-      );
-
-    }, [selectedRows]);
-
-
-  // -------------------------------------------------------
-  // BD MEMBER
-  // -------------------------------------------------------
-
-  const bdMember =
-    useMemo(() => {
-
-      return getMostFrequent(
-        selectedRows,
-        getBDMember
-      );
-
-    }, [selectedRows]);
-
-
-  // -------------------------------------------------------
-  // YEARLY REPORT
-  // -------------------------------------------------------
-
-  const yearlyReportData =
-    useMemo(() => {
-
-      const yearMap =
-        new Map();
-
-
-      rows.forEach((row) => {
-
-        const year =
-          getFinancialYear(row);
-
-
-        const industry =
-          getIndustry(row);
-
-
-        if (
-          !year ||
-          !industry
-        ) {
-          return;
-        }
-
-
-        if (
-          selectedIndustry &&
-          industry !== selectedIndustry
-        ) {
-          return;
-        }
-
-
-        if (
-          !yearMap.has(year)
-        ) {
-
-          yearMap.set(
-            year,
-            {
-              industry,
-              clients: 0,
-              billing: 0,
-            }
+        const financial =
+          getFinancialValues(
+            yearRows,
+            selectedInfoStatus
           );
 
-        }
+        return {
+          period: year,
+          clients: yearRows.length,
+          totalBilling:
+            financial.totalBilling
+        };
+      });
+
+  }, [
+    selectedRows,
+    selectedIndustry,
+    selectedInfoStatus
+  ]);
 
 
-        const data =
-          yearMap.get(year);
+  /* ============================================================
+     MONTHLY REPORT
+     ============================================================ */
+
+  const monthlyReportData = useMemo(() => {
+
+    if (
+      !selectedIndustry ||
+      !selectedFinancialYear
+    ) {
+      return [];
+    }
+
+    return financialMonths.map(
+      (month) => {
+
+        const monthRows =
+          selectedRows.filter(
+            (row) =>
+              getMonth(
+                getClientAcquiredDate(row)
+              ) === month.full
+          );
 
 
-        const financialValues =
+        const financial =
           getFinancialValues(
-            row,
+            monthRows,
             selectedInfoStatus
           );
 
 
-        data.clients += 1;
-
-
-        data.billing +=
-          financialValues.billing;
-
-      });
-
-
-      return Array.from(
-        yearMap.entries()
-      )
-        .map(
-          ([year, data]) => ({
-            year,
-            industry:
-              selectedIndustry ||
-              data.industry,
-            clients:
-              data.clients,
-            billing:
-              data.billing,
-          })
-        )
-        .sort(
-          (a, b) => {
-
-            const yearA =
-              Number(
-                String(a.year).slice(
-                  0,
-                  4
-                )
-              );
-
-
-            const yearB =
-              Number(
-                String(b.year).slice(
-                  0,
-                  4
-                )
-              );
-
-
-            return (
-              yearA - yearB
-            );
-          }
-        );
-
-    }, [
-      rows,
-      selectedIndustry,
-      selectedInfoStatus,
-    ]);
-
-
-  // -------------------------------------------------------
-  // MONTHLY REPORT
-  // -------------------------------------------------------
-
-  const monthlyReportData =
-    useMemo(() => {
-
-      if (
-        !selectedFinancialYear
-      ) {
-        return [];
+        return {
+          period: month.short,
+          clients: monthRows.length,
+          totalBilling:
+            financial.totalBilling
+        };
       }
+    );
 
+  }, [
+    selectedRows,
+    selectedIndustry,
+    selectedFinancialYear,
+    selectedInfoStatus
+  ]);
 
-      const monthNumbers = [
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        1,
-        2,
-        3,
-      ];
-
-
-      return monthNumbers.map(
-        (
-          monthNumber,
-          index
-        ) => {
-
-          const monthInfo =
-            financialMonths[
-              index
-            ];
-
-
-          const monthRows =
-            rows.filter((row) => {
-
-              if (
-                getFinancialYear(
-                  row
-                ) !==
-                  selectedFinancialYear
-              ) {
-                return false;
-              }
-
-
-              if (
-                getMonth(row) !==
-                monthNumber
-              ) {
-                return false;
-              }
-
-
-              if (
-                selectedIndustry &&
-                getIndustry(row) !==
-                  selectedIndustry
-              ) {
-                return false;
-              }
-
-
-              return true;
-
-            });
-
-
-          let clients = 0;
-
-          let billing = 0;
-
-
-          monthRows.forEach(
-            (row) => {
-
-              const financialValues =
-                getFinancialValues(
-                  row,
-                  selectedInfoStatus
-                );
-
-
-              clients += 1;
-
-
-              billing +=
-                financialValues.billing;
-
-            }
-          );
-
-
-          return {
-            month:
-              monthInfo.full,
-
-            monthShort:
-              monthInfo.short,
-
-            industry:
-              selectedIndustry ||
-              "All Industries",
-
-            clients,
-
-            billing,
-          };
-
-        }
-      );
-
-    }, [
-      rows,
-      selectedFinancialYear,
-      selectedIndustry,
-      selectedInfoStatus,
-    ]);
-
-
-  // -------------------------------------------------------
-  // REPORT DATA
-  // -------------------------------------------------------
 
   const reportData =
     selectedFinancialYear
@@ -1194,63 +666,56 @@ function IndustryPerformance() {
       : yearlyReportData;
 
 
-  // -------------------------------------------------------
-  // OPEN MODAL
-  // -------------------------------------------------------
+  /* ============================================================
+     VIEW PERFORMANCE
+     ============================================================ */
 
-  function handleViewPerformance(
+  const handleViewPerformance = (
     industry
-  ) {
+  ) => {
 
-    setSelectedIndustry(
-      industry
-    );
-
+    setSelectedIndustry(industry);
     setSelectedFinancialYear("");
-
     setSelectedInfoStatus("");
-  }
+
+  };
 
 
-  // -------------------------------------------------------
-  // CLOSE MODAL
-  // -------------------------------------------------------
+  /* ============================================================
+     CLOSE MODAL
+     ============================================================ */
 
-  function handleCloseModal() {
+  const handleCloseModal = () => {
 
-    setSelectedIndustry("");
-
+    setSelectedIndustry(null);
     setSelectedFinancialYear("");
-
     setSelectedInfoStatus("");
-  }
+
+  };
 
 
-  // -------------------------------------------------------
-  // JSX
-  // -------------------------------------------------------
+  /* ============================================================
+     RENDER
+     ============================================================ */
 
   return (
-    <div className="industry-performance-page">
+    <div className="industry-performance">
 
-      {/* PAGE HEADER */}
+      {/* ======================================================
+          HEADER
+          ====================================================== */}
 
-      <div className="industry-page-header">
+      <div className="industry-performance-header">
 
         <div>
 
-          <div className="industry-page-eyebrow">
-            PERFORMANCE ANALYTICS
-          </div>
-
-          <h1>
+          <h2>
             Industry Performance
-          </h1>
+          </h2>
 
           <p>
-            Monitor industry-wise client
-            acquisition, billing and
-            financial performance.
+            Industry-wise client and financial
+            performance analysis
           </p>
 
         </div>
@@ -1258,118 +723,94 @@ function IndustryPerformance() {
       </div>
 
 
-      {/* MAIN TABLE */}
+      {/* ======================================================
+          MAIN FILTERS
+          ====================================================== */}
+
+      <div className="industry-filters">
+
+        <div className="industry-filter-group">
+
+          <label>
+            Financial Year
+          </label>
+
+          <select
+            value={selectedFinancialYear}
+            onChange={(e) =>
+              setSelectedFinancialYear(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="">
+              All Financial Years
+            </option>
+
+            {financialYears.map((year) => (
+
+              <option
+                key={year}
+                value={year}
+              >
+                FY {year}
+              </option>
+
+            ))}
+
+          </select>
+
+        </div>
+
+
+        <div className="industry-filter-group">
+
+          <label>
+            Info Status
+          </label>
+
+          <select
+            value={selectedInfoStatus}
+            onChange={(e) =>
+              setSelectedInfoStatus(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="">
+              All
+            </option>
+
+            <option value="R">
+              R
+            </option>
+
+            <option value="RV">
+              RV
+            </option>
+
+            <option value="C">
+              C
+            </option>
+
+            <option value="CN">
+              CN
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      {/* ======================================================
+          MAIN TABLE
+          ====================================================== */}
 
       <div className="industry-table-card">
-
-        <div className="industry-table-header">
-
-          <div>
-
-            <h2>
-              Industry Performance
-            </h2>
-
-            <span className="industry-count">
-              {industryData.length} Industries
-            </span>
-
-          </div>
-
-        </div>
-
-
-        {/* MAIN FILTERS */}
-
-        <div
-          className="industry-report-controls"
-          style={{
-            marginBottom: "20px",
-          }}
-        >
-
-          <div className="industry-report-period">
-
-            <label>
-              Financial Year
-            </label>
-
-            <select
-              value={
-                selectedFinancialYear
-              }
-              onChange={(event) =>
-                setSelectedFinancialYear(
-                  event.target.value
-                )
-              }
-            >
-
-              <option value="">
-                All Financial Years
-              </option>
-
-              {financialYears.map(
-                (year) => (
-
-                  <option
-                    key={year}
-                    value={year}
-                  >
-                    {year}
-                  </option>
-
-                )
-              )}
-
-            </select>
-
-          </div>
-
-
-          <div className="industry-report-period">
-
-            <label>
-              Info Status
-            </label>
-
-            <select
-              value={
-                selectedInfoStatus
-              }
-              onChange={(event) =>
-                setSelectedInfoStatus(
-                  event.target.value
-                )
-              }
-            >
-
-              <option value="">
-                All
-              </option>
-
-              <option value="R">
-                R
-              </option>
-
-              <option value="RV">
-                RV
-              </option>
-
-              <option value="C">
-                C
-              </option>
-
-              <option value="CN">
-                CN
-              </option>
-
-            </select>
-
-          </div>
-
-        </div>
-
 
         <div className="industry-table-wrapper">
 
@@ -1407,10 +848,60 @@ function IndustryPerformance() {
 
             </thead>
 
-
             <tbody>
 
-              {industryData.length === 0 ? (
+              {industryData.length > 0 ? (
+
+                industryData.map((item) => (
+
+                  <tr key={item.industry}>
+
+                    <td>
+                      {item.industry}
+                    </td>
+
+                    <td>
+                      {item.clients}
+                    </td>
+
+                    <td>
+                      {formatCurrency(
+                        item.totalBilling
+                      )}
+                    </td>
+
+                    <td>
+                      {formatCurrency(
+                        item.netAmount
+                      )}
+                    </td>
+
+                    <td>
+                      {formatCurrency(
+                        item.industryExpenditure
+                      )}
+                    </td>
+
+                    <td>
+
+                      <button
+                        className="industry-view-btn"
+                        onClick={() =>
+                          handleViewPerformance(
+                            item.industry
+                          )
+                        }
+                      >
+                        View Performance
+                      </button>
+
+                    </td>
+
+                  </tr>
+
+                ))
+
+              ) : (
 
                 <tr>
 
@@ -1418,117 +909,10 @@ function IndustryPerformance() {
                     colSpan="6"
                     className="industry-empty"
                   >
-                    No industry data available.
+                    No industry data available
                   </td>
 
                 </tr>
-
-              ) : (
-
-                industryData.map(
-                  (industry) => (
-
-                    <tr
-                      key={
-                        industry.industry
-                      }
-                    >
-
-                      <td>
-
-                        <div className="industry-name">
-
-                          <div className="industry-avatar">
-
-                            {industry.industry
-                              .charAt(0)
-                              .toUpperCase()}
-
-                          </div>
-
-                          <span>
-                            {industry.industry}
-                          </span>
-
-                        </div>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="industry-client-count">
-                          {industry.clients}
-                        </span>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="industry-billing-value">
-
-                          {formatCurrency(
-                            industry.billing
-                          )}
-
-                        </span>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="industry-net-value">
-
-                          {formatCurrency(
-                            industry.netAmount
-                          )}
-
-                        </span>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="industry-net-value">
-
-                          {formatCurrency(
-                            industry.industryExpenditure
-                          )}
-
-                        </span>
-
-                      </td>
-
-
-                      <td>
-
-                        <button
-                          type="button"
-                          className="industry-view-performance-btn"
-                          onClick={() =>
-                            handleViewPerformance(
-                              industry.industry
-                            )
-                          }
-                        >
-
-                          View
-
-                          <span className="industry-view-arrow">
-                            →
-                          </span>
-
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  )
-                )
 
               )}
 
@@ -1541,55 +925,37 @@ function IndustryPerformance() {
       </div>
 
 
-      {/* PERFORMANCE MODAL */}
+      {/* ======================================================
+          PERFORMANCE MODAL
+          ====================================================== */}
 
       {selectedIndustry && (
 
-        <div
-          className="industry-performance-overlay"
-          onClick={
-            handleCloseModal
-          }
-        >
+        <div className="industry-modal-overlay">
 
-          <div
-            className="industry-performance-modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
+          <div className="industry-modal">
 
-
-            {/* MODAL HEADER */}
+            {/* =================================================
+                MODAL HEADER
+                ================================================= */}
 
             <div className="industry-modal-header">
 
               <div>
 
-                <div className="industry-modal-eyebrow">
-                  PERFORMANCE REPORT
-                </div>
-
                 <h2>
-                  {selectedIndustry}
+                  PERFORMANCE REPORT
                 </h2>
 
                 <p>
-                  Industry performance
-                  analysis and financial
-                  trends
+                  {selectedIndustry}
                 </p>
 
               </div>
 
-
               <button
-                type="button"
-                className="industry-modal-close"
-                onClick={
-                  handleCloseModal
-                }
-                aria-label="Close"
+                className="industry-close-btn"
+                onClick={handleCloseModal}
               >
                 ×
               </button>
@@ -1597,220 +963,119 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* SUMMARY CARDS */}
+            {/* =================================================
+                SUMMARY
+                ================================================= */}
 
             <div className="industry-summary-grid">
 
+              <div className="industry-summary-card">
 
-              {/* INDUSTRY */}
-
-              <div className="industry-summary-card industry-top-industry-card">
-
-                <span className="industry-summary-label">
+                <span>
                   Industry
                 </span>
 
-                <strong className="industry-summary-text">
-
-                  {performanceSummary.industry ||
-                    "—"}
-
+                <strong>
+                  {selectedIndustry}
                 </strong>
-
-
-                {subIndustryData.length >
-                  0 && (
-
-                  <div className="industry-sub-industry-list">
-
-                    {subIndustryData.map(
-                      (subIndustry) => (
-
-                        <span
-                          key={
-                            subIndustry.name
-                          }
-                          className="industry-sub-industry-tag"
-                        >
-
-                          {subIndustry.name}
-
-                          <small>
-                            {subIndustry.count}
-                          </small>
-
-                        </span>
-
-                      )
-                    )}
-
-                  </div>
-
-                )}
 
               </div>
 
 
-              {/* TOTAL BILLING */}
-
               <div className="industry-summary-card">
 
-                <span className="industry-summary-label">
+                <span>
                   Total Billing
                 </span>
 
-                <strong className="industry-summary-value">
-
+                <strong>
                   {formatCurrency(
                     performanceSummary.totalBilling
                   )}
-
                 </strong>
 
               </div>
 
 
-              {/* TEAM LEADER */}
-
               <div className="industry-summary-card">
 
-                <span className="industry-summary-label">
+                <span>
                   Team Leader
                 </span>
 
-                <strong className="industry-summary-text">
-
-                  {teamLeader.value ||
-                    "—"}
-
+                <strong>
+                  {teamLeader}
                 </strong>
-
-
-                {teamLeader.count >
-                  0 && (
-
-                  <small className="industry-summary-count">
-
-                    {teamLeader.count} acquired
-                    clients
-
-                  </small>
-
-                )}
 
               </div>
 
 
-              {/* BD MEMBER */}
-
               <div className="industry-summary-card">
 
-                <span className="industry-summary-label">
+                <span>
                   BD Member
                 </span>
 
-                <strong className="industry-summary-text">
-
-                  {bdMember.value ||
-                    "—"}
-
-                </strong>
-
-
-                {bdMember.count >
-                  0 && (
-
-                  <small className="industry-summary-count">
-
-                    {bdMember.count} acquired
-                    clients
-
-                  </small>
-
-                )}
-
-              </div>
-
-
-              {/* ENQUIRIES */}
-
-              <div className="industry-summary-card industry-enquiry-card">
-
-                <span className="industry-summary-label">
-                  Enquiries
-                </span>
-
-                <strong className="industry-summary-value">
-
-                  {enquiryCount.toLocaleString(
-                    "en-IN"
-                  )}
-
-                </strong>
-
-                <small className="industry-summary-count">
-                  Total enquiries
-                </small>
-
-              </div>
-
-
-              {/* FRANCHISE SHARE */}
-
-              <div className="industry-summary-card industry-share-card">
-
-                <span className="industry-summary-label">
-                  Franchise Share Claimed
-                </span>
-
-                <strong className="industry-summary-value">
-
-                  {formatCurrency(
-                    performanceSummary.totalFranchiseShare
-                  )}
-
+                <strong>
+                  {bdMember}
                 </strong>
 
               </div>
 
-
-              {/* INDUSTRY EXPENDITURE */}
 
               <div className="industry-summary-card">
 
-                <span className="industry-summary-label">
-                  Industry Expenditure
+                <span>
+                  Enquiries
                 </span>
 
-                <strong className="industry-summary-value">
-
-                  {formatCurrency(
-                    performanceSummary.industryExpenditure
-                  )}
-
+                <strong>
+                  {enquiryCount}
                 </strong>
-
-                <small>
-                  5% of Gross Revenue
-                </small>
 
               </div>
 
 
-              {/* NET AMOUNT */}
+              <div className="industry-summary-card">
 
-              <div className="industry-summary-card industry-net-card">
+                <span>
+                  Franchise Share Claimed
+                </span>
 
-                <span className="industry-summary-label">
+                <strong>
+                  {formatCurrency(
+                    performanceSummary.totalFranchiseShare
+                  )}
+                </strong>
+
+              </div>
+
+
+              <div className="industry-summary-card">
+
+                <span>
+                  Industry Expenditure
+                </span>
+
+                <strong>
+                  {formatCurrency(
+                    performanceSummary.industryExpenditure
+                  )}
+                </strong>
+
+              </div>
+
+
+              <div className="industry-summary-card">
+
+                <span>
                   Net Amount
                 </span>
 
-                <strong className="industry-summary-value">
-
+                <strong>
                   {formatCurrency(
                     performanceSummary.netAmount
                   )}
-
                 </strong>
 
               </div>
@@ -1818,32 +1083,30 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* REPORT CONTROLS */}
+            {/* =================================================
+                REPORT CONTROLS
+                ================================================= */}
 
             <div className="industry-report-controls">
 
-              <div className="industry-report-period">
+              <div>
 
-                <label htmlFor="industry-financial-year">
+                <label>
                   Financial Year
                 </label>
 
                 <select
-                  id="industry-financial-year"
-                  value={
-                    selectedFinancialYear
-                  }
-                  onChange={(event) =>
+                  value={selectedFinancialYear}
+                  onChange={(e) =>
                     setSelectedFinancialYear(
-                      event.target.value
+                      e.target.value
                     )
                   }
                 >
 
                   <option value="">
-                    None
+                    All Financial Years
                   </option>
-
 
                   {financialYears.map(
                     (year) => (
@@ -1852,7 +1115,7 @@ function IndustryPerformance() {
                         key={year}
                         value={year}
                       >
-                        {year}
+                        FY {year}
                       </option>
 
                     )
@@ -1863,19 +1126,17 @@ function IndustryPerformance() {
               </div>
 
 
-              <div className="industry-report-period">
+              <div>
 
                 <label>
                   Info Status
                 </label>
 
                 <select
-                  value={
-                    selectedInfoStatus
-                  }
-                  onChange={(event) =>
+                  value={selectedInfoStatus}
+                  onChange={(e) =>
                     setSelectedInfoStatus(
-                      event.target.value
+                      e.target.value
                     )
                   }
                 >
@@ -1905,281 +1166,169 @@ function IndustryPerformance() {
               </div>
 
 
-              <div className="industry-report-period">
+              <div>
 
-                <span>
+                <label>
                   Report Period
-                </span>
+                </label>
 
-                <strong>
+                <div className="industry-report-period">
 
+                  {selectedFinancialYear
+                    ? `FY ${selectedFinancialYear} Monthly`
+                    : "Yearly Report"}
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* =================================================
+                CHART 1
+                ================================================= */}
+
+            <div className="industry-chart-card">
+
+              <div className="industry-chart-header">
+
+                <h3>
+                  Client Acquired
+                </h3>
+
+                <small>
                   {selectedFinancialYear
                     ? "Monthly"
                     : "Yearly"}
-
-                </strong>
+                </small>
 
               </div>
+
+              <ResponsiveContainer
+                width="100%"
+                height={320}
+              >
+
+                <BarChart
+                  data={reportData}
+                  margin={{
+                    top: 20,
+                    right: 20,
+                    left: 10,
+                    bottom: 20
+                  }}
+                >
+
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                  />
+
+                  <XAxis
+                    dataKey="period"
+                  />
+
+                  <YAxis />
+
+                  <Tooltip
+                    content={
+                      <IndustryTooltip />
+                    }
+                  />
+
+                  <Bar
+                    dataKey="clients"
+                    name="Clients"
+                    radius={[6, 6, 0, 0]}
+                  />
+
+                </BarChart>
+
+              </ResponsiveContainer>
 
             </div>
 
 
-            {/* GRAPHS */}
+            {/* =================================================
+                CHART 2
+                ================================================= */}
 
-            <div className="industry-report-graphs">
+            <div className="industry-chart-card">
 
+              <div className="industry-chart-header">
 
-              {/* CLIENT ACQUIRED GRAPH */}
+                <h3>
+                  Total Billing
+                </h3>
 
-              <div className="industry-chart-card">
-
-                <div className="industry-chart-heading">
-
-                  <div>
-
-                    <span className="industry-chart-indicator industry-client-indicator"></span>
-
-                    <h3>
-                      Client Acquired
-                    </h3>
-
-                  </div>
-
-                  <span>
-
-                    {selectedFinancialYear
-                      ? "Monthly"
-                      : "Yearly"}
-
-                  </span>
-
-                </div>
-
-
-                <div className="industry-chart-container">
-
-                  {reportData.length === 0 ? (
-
-                    <div className="industry-no-chart-data">
-                      No report data available.
-                    </div>
-
-                  ) : (
-
-                    <ResponsiveContainer
-                      width="100%"
-                      height="100%"
-                    >
-
-                      <BarChart
-                        data={reportData}
-                        margin={{
-                          top: 15,
-                          right: 10,
-                          left: 0,
-                          bottom: 5,
-                        }}
-                      >
-
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          vertical={false}
-                        />
-
-
-                        <XAxis
-                          dataKey={
-                            selectedFinancialYear
-                              ? "monthShort"
-                              : "year"
-                          }
-                          tick={{
-                            fontSize: 12,
-                          }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-
-
-                        <YAxis
-                          allowDecimals={false}
-                          tick={{
-                            fontSize: 12,
-                          }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-
-
-                        <Tooltip
-                          content={
-                            <IndustryTooltip />
-                          }
-                        />
-
-
-                        <Bar
-                          dataKey="clients"
-                          name="Client Acquired"
-                          fill="#B78A34"
-                          radius={[
-                            6,
-                            6,
-                            0,
-                            0,
-                          ]}
-                          barSize={32}
-                        />
-
-                      </BarChart>
-
-                    </ResponsiveContainer>
-
-                  )}
-
-                </div>
+                <small>
+                  {selectedFinancialYear
+                    ? "Monthly"
+                    : "Yearly"}
+                </small>
 
               </div>
 
+              <ResponsiveContainer
+                width="100%"
+                height={320}
+              >
 
-              {/* TOTAL BILLING GRAPH */}
+                <BarChart
+                  data={reportData}
+                  margin={{
+                    top: 20,
+                    right: 20,
+                    left: 10,
+                    bottom: 20
+                  }}
+                >
 
-              <div className="industry-chart-card">
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                  />
 
-                <div className="industry-chart-heading">
+                  <XAxis
+                    dataKey="period"
+                  />
 
-                  <div>
+                  <YAxis />
 
-                    <span className="industry-chart-indicator industry-billing-indicator"></span>
+                  <Tooltip
+                    content={
+                      <IndustryTooltip />
+                    }
+                  />
 
-                    <h3>
-                      Total Billing
-                    </h3>
+                  <Bar
+                    dataKey="totalBilling"
+                    name="Total Billing"
+                    radius={[6, 6, 0, 0]}
+                  />
 
-                  </div>
+                </BarChart>
 
-                  <span>
-
-                    {selectedFinancialYear
-                      ? "Monthly"
-                      : "Yearly"}
-
-                  </span>
-
-                </div>
-
-
-                <div className="industry-chart-container">
-
-                  {reportData.length === 0 ? (
-
-                    <div className="industry-no-chart-data">
-                      No report data available.
-                    </div>
-
-                  ) : (
-
-                    <ResponsiveContainer
-                      width="100%"
-                      height="100%"
-                    >
-
-                      <BarChart
-                        data={reportData}
-                        margin={{
-                          top: 15,
-                          right: 10,
-                          left: 0,
-                          bottom: 5,
-                        }}
-                      >
-
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          vertical={false}
-                        />
-
-
-                        <XAxis
-                          dataKey={
-                            selectedFinancialYear
-                              ? "monthShort"
-                              : "year"
-                          }
-                          tick={{
-                            fontSize: 12,
-                          }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-
-
-                        <YAxis
-                          tick={{
-                            fontSize: 12,
-                          }}
-                          tickLine={false}
-                          axisLine={false}
-                          tickFormatter={(value) =>
-                            `₹${(
-                              value / 100000
-                            ).toFixed(0)}L`
-                          }
-                        />
-
-
-                        <Tooltip
-                          content={
-                            <IndustryTooltip />
-                          }
-                        />
-
-
-                        <Bar
-                          dataKey="billing"
-                          name="Total Billing"
-                          fill="#26734D"
-                          radius={[
-                            6,
-                            6,
-                            0,
-                            0,
-                          ]}
-                          barSize={32}
-                        />
-
-                      </BarChart>
-
-                    </ResponsiveContainer>
-
-                  )}
-
-                </div>
-
-              </div>
+              </ResponsiveContainer>
 
             </div>
 
 
-            {/* MODAL FOOTER */}
+            {/* =================================================
+                FOOTER
+                ================================================= */}
 
             <div className="industry-modal-footer">
 
               <span>
 
                 {selectedFinancialYear
-                  ? `Monthly report for ${selectedFinancialYear}`
+                  ? `Monthly report for FY ${selectedFinancialYear}`
                   : "Yearly performance report"}
 
               </span>
 
-
               <button
-                type="button"
-                className="industry-footer-close"
-                onClick={
-                  handleCloseModal
-                }
+                onClick={handleCloseModal}
               >
                 Close
               </button>
