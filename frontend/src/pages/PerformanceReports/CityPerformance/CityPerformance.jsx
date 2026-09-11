@@ -147,35 +147,264 @@ function getBDMember(row) {
 }
 
 
+/*
+ * BILLING
+ *
+ * Billing must come only from
+ * total_bill_amount.
+ *
+ * TANN and TDS are NOT used.
+ */
+
 function getBilling(row) {
 
   return toNumber(
     row?.total_bill_amount ??
-    row?.["Total Bill Amount"]
+    row?.["Total Bill Amount"] ??
+    0
   );
 
 }
 
+
+/*
+ * FRANCHISE SHARE
+ */
 
 function getFranchiseeShare(row) {
 
   return toNumber(
     row?.franchisee_share ??
-    row?.["Franchisee Share"]
+    row?.["Franchisee Share"] ??
+    0
   );
 
 }
 
 
-function getNetAmount(row) {
+/*
+ * INFO STATUS
+ */
 
-  return (
-    getBilling(row) -
-    getFranchiseeShare(row)
-  );
+function getInfoStatus(row) {
+
+  return String(
+    row?.info ??
+    row?.["Info"] ??
+    row?.["Info Status"] ??
+    ""
+  )
+    .trim()
+    .toUpperCase();
 
 }
 
+
+/*
+ * FINANCIAL VALUES
+ *
+ * ALL
+ * Billing = R + RV + C + CN
+ * Net Amount = Billing - Franchise Share
+ * Expenditure = 5% of Gross Revenue
+ *
+ * R
+ * Billing = R Billing
+ * Net Amount = R Billing - R Franchise Share
+ * Expenditure = 5% of R Billing
+ *
+ * RV / C / CN
+ * Billing = selected status Billing
+ * Net Amount = 0
+ * Expenditure = 5% of selected status Billing
+ */
+
+function getFinancialValues(
+  row,
+  infoFilter = ""
+) {
+
+  const info =
+    getInfoStatus(row);
+
+  const billing =
+    getBilling(row);
+
+  const franchiseeShare =
+    getFranchiseeShare(row);
+
+
+  if (
+    !infoFilter ||
+    infoFilter === "ALL"
+  ) {
+
+    return {
+
+      billing,
+
+      netAmount:
+        billing -
+        franchiseeShare,
+
+      cityExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  if (
+    infoFilter === "R"
+  ) {
+
+    if (info !== "R") {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        cityExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing,
+
+      netAmount:
+        billing -
+        franchiseeShare,
+
+      cityExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  if (
+    infoFilter === "RV"
+  ) {
+
+    if (info !== "RV") {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        cityExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing,
+
+      netAmount: 0,
+
+      cityExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  if (
+    infoFilter === "C"
+  ) {
+
+    if (info !== "C") {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        cityExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing,
+
+      netAmount: 0,
+
+      cityExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  if (
+    infoFilter === "CN"
+  ) {
+
+    if (info !== "CN") {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        cityExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing,
+
+      netAmount: 0,
+
+      cityExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  return {
+
+    billing: 0,
+
+    netAmount: 0,
+
+    cityExpenditure: 0
+
+  };
+
+}
+
+
+/*
+ * CLIENT ACQUIRED DATE
+ */
 
 function getClientAcquiredDate(row) {
 
@@ -188,6 +417,10 @@ function getClientAcquiredDate(row) {
 }
 
 
+/*
+ * FINANCIAL YEAR
+ */
+
 function getFinancialYear(row) {
 
   const dateValue =
@@ -195,18 +428,34 @@ function getFinancialYear(row) {
 
   if (dateValue) {
 
-    const date = new Date(dateValue);
+    const date =
+      new Date(dateValue);
 
-    if (!Number.isNaN(date.getTime())) {
+    if (
+      !Number.isNaN(
+        date.getTime()
+      )
+    ) {
 
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
+      const year =
+        date.getFullYear();
+
+      const month =
+        date.getMonth() + 1;
+
 
       if (month >= 4) {
-        return `${year}-${String(year + 1).slice(-2)}`;
+
+        return `${year}-${String(
+          year + 1
+        ).slice(-2)}`;
+
       }
 
-      return `${year - 1}-${String(year).slice(-2)}`;
+
+      return `${year - 1}-${String(
+        year
+      ).slice(-2)}`;
 
     }
 
@@ -219,10 +468,16 @@ function getFinancialYear(row) {
     row?.acquired_year ??
     "";
 
-  return String(acquiredYear).trim();
+  return String(
+    acquiredYear
+  ).trim();
 
 }
 
+
+/*
+ * MONTH
+ */
 
 function getMonth(row) {
 
@@ -233,20 +488,37 @@ function getMonth(row) {
     return null;
   }
 
-  const date = new Date(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
+  const date =
+    new Date(dateValue);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return null;
   }
 
-  return date.getMonth() + 1;
+
+  return (
+    date.getMonth() + 1
+  );
 
 }
 
 
-function getMostFrequent(rows, getter) {
+/*
+ * MOST FREQUENT VALUE
+ */
 
-  const countMap = new Map();
+function getMostFrequent(
+  rows,
+  getter
+) {
+
+  const countMap =
+    new Map();
 
 
   rows.forEach(row => {
@@ -257,6 +529,7 @@ function getMostFrequent(rows, getter) {
     if (!value) {
       return;
     }
+
 
     countMap.set(
       value,
@@ -273,10 +546,16 @@ function getMostFrequent(rows, getter) {
   countMap.forEach(
     (count, value) => {
 
-      if (count > highestCount) {
+      if (
+        count >
+        highestCount
+      ) {
 
-        highestCount = count;
-        bestValue = value;
+        highestCount =
+          count;
+
+        bestValue =
+          value;
 
       }
 
@@ -285,12 +564,20 @@ function getMostFrequent(rows, getter) {
 
 
   return {
+
     value: bestValue,
-    count: highestCount
+
+    count:
+      highestCount
+
   };
 
 }
 
+
+/*
+ * CITY TOOLTIP
+ */
 
 function CityTooltip({
   active,
@@ -345,7 +632,9 @@ function CityTooltip({
 
               {item.dataKey === "billing"
                 ? formatCurrency(item.value)
-                : Number(item.value || 0).toLocaleString("en-IN")
+                : Number(
+                    item.value || 0
+                  ).toLocaleString("en-IN")
               }
 
             </strong>
@@ -361,6 +650,10 @@ function CityTooltip({
 
 }
 
+
+/*
+ * CITY PERFORMANCE
+ */
 
 function CityPerformance() {
 
@@ -381,13 +674,22 @@ function CityPerformance() {
   ] = useState("");
 
 
+  const [
+    selectedInfoStatus,
+    setSelectedInfoStatus
+  ] = useState("");
+
+
   /*
    * CITY TABLE DATA
+   *
+   * Default table uses ALL Info Status.
    */
 
   const cityData = useMemo(() => {
 
-    const cityMap = new Map();
+    const cityMap =
+      new Map();
 
 
     rows.forEach(row => {
@@ -408,7 +710,8 @@ function CityPerformance() {
             city,
             clients: 0,
             billing: 0,
-            netAmount: 0
+            netAmount: 0,
+            cityExpenditure: 0
           }
         );
 
@@ -421,20 +724,36 @@ function CityPerformance() {
 
       data.clients += 1;
 
+
+      const financialValues =
+        getFinancialValues(
+          row,
+          "ALL"
+        );
+
+
       data.billing +=
-        getBilling(row);
+        financialValues.billing;
+
 
       data.netAmount +=
-        getNetAmount(row);
+        financialValues.netAmount;
+
+
+      data.cityExpenditure +=
+        financialValues.cityExpenditure;
 
     });
 
 
     return Array
-      .from(cityMap.values())
+      .from(
+        cityMap.values()
+      )
       .sort(
         (a, b) =>
-          b.clients - a.clients
+          b.clients -
+          a.clients
       );
 
   }, [rows]);
@@ -444,222 +763,549 @@ function CityPerformance() {
    * FINANCIAL YEARS
    */
 
-  const financialYears = useMemo(() => {
+  const financialYears =
+    useMemo(() => {
 
-    const years =
-      new Set();
-
-
-    rows.forEach(row => {
-
-      const year =
-        getFinancialYear(row);
-
-      if (year) {
-        years.add(year);
-      }
-
-    });
+      const years =
+        new Set();
 
 
-    return Array
-      .from(years)
-      .sort((a, b) => {
+      rows.forEach(row => {
 
-        return (
-          Number(
-            String(a).slice(0, 4)
-          ) -
-          Number(
-            String(b).slice(0, 4)
-          )
-        );
+        const year =
+          getFinancialYear(row);
+
+        if (year) {
+
+          years.add(year);
+
+        }
 
       });
 
-  }, [rows]);
+
+      return Array
+        .from(years)
+        .sort((a, b) => {
+
+          return (
+            Number(
+              String(a)
+                .slice(0, 4)
+            ) -
+            Number(
+              String(b)
+                .slice(0, 4)
+            )
+          );
+
+        });
+
+    }, [rows]);
 
 
   /*
    * SELECTED CITY ROWS
+   *
+   * Financial Year and
+   * Info Status filters are
+   * applied here.
    */
 
-  const selectedRows = useMemo(() => {
+  const selectedRows =
+    useMemo(() => {
 
-    if (!selectedCity) {
-      return [];
-    }
+      if (!selectedCity) {
+
+        return [];
+
+      }
 
 
-    return rows.filter(
-      row =>
-        getCity(row) ===
-        selectedCity
-    );
+      return rows.filter(row => {
 
-  }, [
-    rows,
-    selectedCity
-  ]);
+        const cityMatches =
+          getCity(row) ===
+          selectedCity;
+
+
+        if (!cityMatches) {
+
+          return false;
+
+        }
+
+
+        if (
+          selectedFinancialYear &&
+          getFinancialYear(row) !==
+            selectedFinancialYear
+        ) {
+
+          return false;
+
+        }
+
+
+        if (
+          selectedInfoStatus &&
+          selectedInfoStatus !== "ALL" &&
+          getInfoStatus(row) !==
+            selectedInfoStatus
+        ) {
+
+          return false;
+
+        }
+
+
+        return true;
+
+      });
+
+    }, [
+      rows,
+      selectedCity,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
 
 
   /*
    * ENQUIRIES COUNT
-   *
-   * Each row belonging to the
-   * selected city is counted as
-   * one enquiry.
    */
 
-  const enquiryCount = useMemo(() => {
+  const enquiryCount =
+    useMemo(() => {
 
-    return selectedRows.length;
+      return selectedRows.length;
 
-  }, [selectedRows]);
+    }, [selectedRows]);
 
 
   /*
-   * MODAL SUMMARY
+   * TOTAL BILLING
    */
 
-  const totalBilling = useMemo(() => {
+  const totalBilling =
+    useMemo(() => {
 
-    return selectedRows.reduce(
-      (total, row) =>
-        total + getBilling(row),
-      0
-    );
+      return selectedRows.reduce(
+        (total, row) => {
 
-  }, [selectedRows]);
+          const values =
+            getFinancialValues(
+              row,
+              selectedInfoStatus
+            );
 
+          return (
+            total +
+            values.billing
+          );
 
-  const totalFranchiseShare = useMemo(() => {
+        },
+        0
+      );
 
-    return selectedRows.reduce(
-      (total, row) =>
-        total +
-        getFranchiseeShare(row),
-      0
-    );
-
-  }, [selectedRows]);
-
-
-  const totalNetAmount = useMemo(() => {
-
-    return selectedRows.reduce(
-      (total, row) =>
-        total +
-        getNetAmount(row),
-      0
-    );
-
-  }, [selectedRows]);
-
-
-  const topTeamLeader = useMemo(() => {
-
-    return getMostFrequent(
+    }, [
       selectedRows,
-      getTeamLeader
-    );
-
-  }, [selectedRows]);
+      selectedInfoStatus
+    ]);
 
 
-  const topBDMember = useMemo(() => {
+  /*
+   * TOTAL FRANCHISE SHARE
+   *
+   * For R and ALL, franchise
+   * share contributes to net amount.
+   *
+   * For RV/C/CN net amount is zero,
+   * but the actual franchise share
+   * is still displayed.
+   */
 
-    return getMostFrequent(
+  const totalFranchiseShare =
+    useMemo(() => {
+
+      return selectedRows.reduce(
+        (total, row) =>
+          total +
+          getFranchiseeShare(row),
+        0
+      );
+
+    }, [selectedRows]);
+
+
+  /*
+   * TOTAL NET AMOUNT
+   */
+
+  const totalNetAmount =
+    useMemo(() => {
+
+      return selectedRows.reduce(
+        (total, row) => {
+
+          const values =
+            getFinancialValues(
+              row,
+              selectedInfoStatus
+            );
+
+          return (
+            total +
+            values.netAmount
+          );
+
+        },
+        0
+      );
+
+    }, [
       selectedRows,
-      getBDMember
-    );
+      selectedInfoStatus
+    ]);
 
-  }, [selectedRows]);
+
+  /*
+   * CITY EXPENDITURE
+   *
+   * 5% of gross revenue.
+   */
+
+  const totalCityExpenditure =
+    useMemo(() => {
+
+      return selectedRows.reduce(
+        (total, row) => {
+
+          const values =
+            getFinancialValues(
+              row,
+              selectedInfoStatus
+            );
+
+          return (
+            total +
+            values.cityExpenditure
+          );
+
+        },
+        0
+      );
+
+    }, [
+      selectedRows,
+      selectedInfoStatus
+    ]);
+
+
+  /*
+   * TOP TEAM LEADER
+   */
+
+  const topTeamLeader =
+    useMemo(() => {
+
+      return getMostFrequent(
+        selectedRows,
+        getTeamLeader
+      );
+
+    }, [selectedRows]);
+
+
+  /*
+   * TOP BD MEMBER
+   */
+
+  const topBDMember =
+    useMemo(() => {
+
+      return getMostFrequent(
+        selectedRows,
+        getBDMember
+      );
+
+    }, [selectedRows]);
 
 
   /*
    * YEARLY REPORT
    *
    * For every financial year,
-   * show only the city having the
-   * highest acquired-client count.
+   * show only the city having
+   * the highest acquired-client
+   * count.
+   *
+   * Info Status filter is applied.
    */
 
-  const yearlyReportData = useMemo(() => {
+  const yearlyReportData =
+    useMemo(() => {
 
-    const yearMap = new Map();
-
-
-    rows.forEach(row => {
-
-      const year =
-        getFinancialYear(row);
-
-      const city =
-        getCity(row);
+      const yearMap =
+        new Map();
 
 
-      if (
-        !year ||
-        !city
-      ) {
-        return;
-      }
+      rows.forEach(row => {
+
+        const year =
+          getFinancialYear(row);
+
+        const city =
+          getCity(row);
 
 
-      if (!yearMap.has(year)) {
+        if (
+          !year ||
+          !city
+        ) {
 
-        yearMap.set(
-          year,
-          new Map()
-        );
+          return;
 
-      }
-
-
-      const cityMap =
-        yearMap.get(year);
+        }
 
 
-      if (!cityMap.has(city)) {
+        if (
+          selectedInfoStatus &&
+          selectedInfoStatus !== "ALL" &&
+          getInfoStatus(row) !==
+            selectedInfoStatus
+        ) {
 
-        cityMap.set(
-          city,
-          {
+          return;
+
+        }
+
+
+        if (!yearMap.has(year)) {
+
+          yearMap.set(
+            year,
+            new Map()
+          );
+
+        }
+
+
+        const cityMap =
+          yearMap.get(year);
+
+
+        if (!cityMap.has(city)) {
+
+          cityMap.set(
             city,
-            clients: 0,
-            billing: 0
+            {
+              city,
+              clients: 0,
+              billing: 0
+            }
+          );
+
+        }
+
+
+        const data =
+          cityMap.get(city);
+
+
+        data.clients += 1;
+
+
+        const financialValues =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
+
+
+        data.billing +=
+          financialValues.billing;
+
+      });
+
+
+      return Array
+        .from(
+          yearMap.entries()
+        )
+        .sort(
+          (a, b) =>
+            Number(
+              String(a[0])
+                .slice(0, 4)
+            ) -
+            Number(
+              String(b[0])
+                .slice(0, 4)
+            )
+        )
+        .map(
+          ([year, cityMap]) => {
+
+            const cities =
+              Array.from(
+                cityMap.values()
+              );
+
+
+            cities.sort(
+              (a, b) =>
+                b.clients -
+                a.clients
+            );
+
+
+            const topCity =
+              cities[0];
+
+
+            if (!topCity) {
+
+              return null;
+
+            }
+
+
+            return {
+
+              year,
+
+              city:
+                topCity.city,
+
+              clients:
+                topCity.clients,
+
+              billing:
+                topCity.billing
+
+            };
+
           }
-        );
+        )
+        .filter(Boolean);
+
+    }, [
+      rows,
+      selectedInfoStatus
+    ]);
+
+
+  /*
+   * MONTHLY REPORT
+   *
+   * For selected FY, show only
+   * the city having the highest
+   * acquired-client count for
+   * each month.
+   */
+
+  const monthlyReportData =
+    useMemo(() => {
+
+      if (!selectedFinancialYear) {
+
+        return [];
 
       }
 
 
-      const data =
-        cityMap.get(city);
+      return financialMonths.map(
+        month => {
+
+          const monthRows =
+            rows.filter(row => {
+
+              const year =
+                getFinancialYear(row);
+
+              const rowMonth =
+                getMonth(row);
 
 
-      data.clients += 1;
+              if (
+                year !==
+                  selectedFinancialYear ||
+                rowMonth !==
+                  month.number
+              ) {
 
-      data.billing +=
-        getBilling(row);
+                return false;
 
-    });
+              }
 
 
-    return Array
-      .from(yearMap.entries())
-      .sort(
-        (a, b) =>
-          Number(
-            String(a[0]).slice(0, 4)
-          ) -
-          Number(
-            String(b[0]).slice(0, 4)
-          )
-      )
-      .map(
-        ([year, cityMap]) => {
+              if (
+                selectedInfoStatus &&
+                selectedInfoStatus !== "ALL" &&
+                getInfoStatus(row) !==
+                  selectedInfoStatus
+              ) {
+
+                return false;
+
+              }
+
+
+              return true;
+
+            });
+
+
+          const cityMap =
+            new Map();
+
+
+          monthRows.forEach(row => {
+
+            const city =
+              getCity(row);
+
+            if (!city) {
+
+              return;
+
+            }
+
+
+            if (!cityMap.has(city)) {
+
+              cityMap.set(
+                city,
+                {
+                  city,
+                  clients: 0,
+                  billing: 0
+                }
+              );
+
+            }
+
+
+            const data =
+              cityMap.get(city);
+
+
+            data.clients += 1;
+
+
+            const financialValues =
+              getFinancialValues(
+                row,
+                selectedInfoStatus
+              );
+
+
+            data.billing +=
+              financialValues.billing;
+
+          });
+
 
           const cities =
             Array.from(
@@ -678,154 +1324,36 @@ function CityPerformance() {
             cities[0];
 
 
-          if (!topCity) {
-            return null;
-          }
-
-
           return {
 
-            year,
+            month:
+              month.name,
+
+            monthShort:
+              month.short,
 
             city:
-              topCity.city,
+              topCity?.city ||
+              "—",
 
             clients:
-              topCity.clients,
+              topCity?.clients ||
+              0,
 
             billing:
-              topCity.billing
+              topCity?.billing ||
+              0
 
           };
 
         }
-      )
-      .filter(Boolean);
+      );
 
-  }, [rows]);
-
-
-  /*
-   * MONTHLY REPORT
-   *
-   * For selected FY, show only
-   * the city having the highest
-   * acquired-client count for
-   * each month.
-   */
-
-  const monthlyReportData = useMemo(() => {
-
-    if (!selectedFinancialYear) {
-      return [];
-    }
-
-
-    return financialMonths.map(
-      month => {
-
-        const monthRows =
-          rows.filter(row => {
-
-            const year =
-              getFinancialYear(row);
-
-            const rowMonth =
-              getMonth(row);
-
-            return (
-              year ===
-                selectedFinancialYear &&
-              rowMonth ===
-                month.number
-            );
-
-          });
-
-
-        const cityMap =
-          new Map();
-
-
-        monthRows.forEach(row => {
-
-          const city =
-            getCity(row);
-
-          if (!city) {
-            return;
-          }
-
-
-          if (!cityMap.has(city)) {
-
-            cityMap.set(
-              city,
-              {
-                city,
-                clients: 0,
-                billing: 0
-              }
-            );
-
-          }
-
-
-          const data =
-            cityMap.get(city);
-
-
-          data.clients += 1;
-
-          data.billing +=
-            getBilling(row);
-
-        });
-
-
-        const cities =
-          Array.from(
-            cityMap.values()
-          );
-
-
-        cities.sort(
-          (a, b) =>
-            b.clients -
-            a.clients
-        );
-
-
-        const topCity =
-          cities[0];
-
-
-        return {
-
-          month:
-            month.name,
-
-          monthShort:
-            month.short,
-
-          city:
-            topCity?.city || "—",
-
-          clients:
-            topCity?.clients || 0,
-
-          billing:
-            topCity?.billing || 0
-
-        };
-
-      }
-    );
-
-  }, [
-    rows,
-    selectedFinancialYear
-  ]);
+    }, [
+      rows,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
 
 
   /*
@@ -842,7 +1370,9 @@ function CityPerformance() {
    * OPEN MODAL
    */
 
-  function openCityPerformance(city) {
+  function openCityPerformance(
+    city
+  ) {
 
     setSelectedCity(city);
 
@@ -858,6 +1388,8 @@ function CityPerformance() {
     setSelectedCity("");
 
     setSelectedFinancialYear("");
+
+    setSelectedInfoStatus("");
 
   }
 
@@ -939,6 +1471,10 @@ function CityPerformance() {
                 </th>
 
                 <th>
+                  City Expenditure
+                </th>
+
+                <th>
                   Performance
                 </th>
 
@@ -950,9 +1486,11 @@ function CityPerformance() {
             <tbody>
 
               {cityData.map(
-                (item, index) => (
+                (item) => (
 
-                  <tr key={item.city}>
+                  <tr
+                    key={item.city}
+                  >
 
                     <td>
 
@@ -976,7 +1514,11 @@ function CityPerformance() {
                     <td>
 
                       <span className="city-client-count">
-                        {item.clients.toLocaleString("en-IN")}
+
+                        {item.clients.toLocaleString(
+                          "en-IN"
+                        )}
+
                       </span>
 
                     </td>
@@ -985,9 +1527,11 @@ function CityPerformance() {
                     <td>
 
                       <span className="city-billing-value">
+
                         {formatCurrency(
                           item.billing
                         )}
+
                       </span>
 
                     </td>
@@ -996,9 +1540,24 @@ function CityPerformance() {
                     <td>
 
                       <span className="city-net-value">
+
                         {formatCurrency(
                           item.netAmount
                         )}
+
+                      </span>
+
+                    </td>
+
+
+                    <td>
+
+                      <span className="city-net-value">
+
+                        {formatCurrency(
+                          item.cityExpenditure
+                        )}
+
                       </span>
 
                     </td>
@@ -1037,7 +1596,7 @@ function CityPerformance() {
                 <tr>
 
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="city-empty"
                   >
                     No city data available.
@@ -1062,7 +1621,9 @@ function CityPerformance() {
 
         <div
           className="city-performance-overlay"
-          onClick={closeCityPerformance}
+          onClick={
+            closeCityPerformance
+          }
         >
 
           <div
@@ -1093,7 +1654,9 @@ function CityPerformance() {
               <button
                 type="button"
                 className="city-modal-close"
-                onClick={closeCityPerformance}
+                onClick={
+                  closeCityPerformance
+                }
               >
                 ×
               </button>
@@ -1130,9 +1693,11 @@ function CityPerformance() {
                 </span>
 
                 <span className="city-summary-value">
+
                   {formatCurrency(
                     totalBilling
                   )}
+
                 </span>
 
               </div>
@@ -1157,7 +1722,9 @@ function CityPerformance() {
 
                   <span className="city-summary-count">
 
-                    {topTeamLeader.count} clients
+                    {topTeamLeader.count}
+                    {" "}
+                    clients
 
                   </span>
 
@@ -1185,7 +1752,9 @@ function CityPerformance() {
 
                   <span className="city-summary-count">
 
-                    {topBDMember.count} clients
+                    {topBDMember.count}
+                    {" "}
+                    clients
 
                   </span>
 
@@ -1203,7 +1772,11 @@ function CityPerformance() {
                 </span>
 
                 <span className="city-summary-value">
-                  {enquiryCount.toLocaleString("en-IN")}
+
+                  {enquiryCount.toLocaleString(
+                    "en-IN"
+                  )}
+
                 </span>
 
                 <span className="city-summary-count">
@@ -1227,6 +1800,29 @@ function CityPerformance() {
                     totalFranchiseShare
                   )}
 
+                </span>
+
+              </div>
+
+
+              {/* CITY EXPENDITURE */}
+
+              <div className="city-summary-card">
+
+                <span className="city-summary-label">
+                  City Expenditure
+                </span>
+
+                <span className="city-summary-value">
+
+                  {formatCurrency(
+                    totalCityExpenditure
+                  )}
+
+                </span>
+
+                <span className="city-summary-count">
+                  5% of Gross Revenue
                 </span>
 
               </div>
@@ -1257,6 +1853,9 @@ function CityPerformance() {
             {/* REPORT CONTROLS */}
 
             <div className="city-report-controls">
+
+
+              {/* FINANCIAL YEAR */}
 
               <div>
 
@@ -1291,6 +1890,50 @@ function CityPerformance() {
 
                     )
                   )}
+
+                </select>
+
+              </div>
+
+
+              {/* INFO STATUS */}
+
+              <div>
+
+                <span className="city-summary-label">
+                  Info Status
+                </span>
+
+                <select
+                  value={
+                    selectedInfoStatus
+                  }
+                  onChange={event =>
+                    setSelectedInfoStatus(
+                      event.target.value
+                    )
+                  }
+                >
+
+                  <option value="">
+                    All
+                  </option>
+
+                  <option value="R">
+                    R
+                  </option>
+
+                  <option value="RV">
+                    RV
+                  </option>
+
+                  <option value="C">
+                    C
+                  </option>
+
+                  <option value="CN">
+                    CN
+                  </option>
 
                 </select>
 
@@ -1507,7 +2150,9 @@ function CityPerformance() {
               <button
                 type="button"
                 className="city-footer-close"
-                onClick={closeCityPerformance}
+                onClick={
+                  closeCityPerformance
+                }
               >
                 Close
               </button>
