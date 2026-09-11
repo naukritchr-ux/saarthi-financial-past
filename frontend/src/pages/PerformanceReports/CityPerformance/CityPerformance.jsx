@@ -1,7 +1,4 @@
-import {
-  useMemo,
-  useState
-} from "react";
+import { useMemo, useState } from "react";
 
 import {
   BarChart,
@@ -13,74 +10,36 @@ import {
   CartesianGrid
 } from "recharts";
 
-import {
-  useData
-} from "../../../context/DataContext";
+import { useData } from "../../../context/DataContext";
 
 import "./CityPerformance.css";
 
 
-/* =========================================================
-   FINANCIAL YEAR MONTHS
-========================================================= */
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
 
 const financialMonths = [
-  {
-    full: "April",
-    short: "Apr"
-  },
-  {
-    full: "May",
-    short: "May"
-  },
-  {
-    full: "June",
-    short: "Jun"
-  },
-  {
-    full: "July",
-    short: "Jul"
-  },
-  {
-    full: "August",
-    short: "Aug"
-  },
-  {
-    full: "September",
-    short: "Sep"
-  },
-  {
-    full: "October",
-    short: "Oct"
-  },
-  {
-    full: "November",
-    short: "Nov"
-  },
-  {
-    full: "December",
-    short: "Dec"
-  },
-  {
-    full: "January",
-    short: "Jan"
-  },
-  {
-    full: "February",
-    short: "Feb"
-  },
-  {
-    full: "March",
-    short: "Mar"
-  }
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+  "January",
+  "February",
+  "March"
 ];
 
 
-/* =========================================================
-   NUMBER HELPER
-========================================================= */
+/* ============================================================
+   HELPER FUNCTIONS
+   ============================================================ */
 
-function toNumber(value) {
+const toNumber = (value) => {
 
   if (
     value === null ||
@@ -90,118 +49,69 @@ function toNumber(value) {
     return 0;
   }
 
-  if (typeof value === "number") {
+  const cleaned = String(value).replace(/[₹,\s]/g, "");
 
-    return Number.isFinite(value)
-      ? value
-      : 0;
-
-  }
-
-  const cleanedValue = String(value)
-    .replace(/,/g, "")
-    .replace(/[₹$€£]/g, "")
-    .replace(/%/g, "")
-    .trim();
-
-  const number =
-    Number(cleanedValue);
+  const number = Number(cleaned);
 
   return Number.isFinite(number)
     ? number
     : 0;
-
-}
-
-
-/* =========================================================
-   CURRENCY FORMAT
-========================================================= */
-
-function formatCurrency(value) {
-
-  return new Intl.NumberFormat(
-    "en-IN",
-    {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0
-    }
-  ).format(
-    toNumber(value)
-  );
-
-}
+};
 
 
-/* =========================================================
-   GET CITY
-========================================================= */
+const formatCurrency = (value) => {
 
-function getCity(row) {
+  const number = toNumber(value);
+
+  return `₹${number.toLocaleString("en-IN", {
+    maximumFractionDigits: 2
+  })}`;
+};
+
+
+const getCity = (row) => {
 
   return String(
     row?.city ??
-    row?.["City"] ??
+    row?.City ??
     ""
-  ).trim();
+  ).trim() || "Unknown";
+};
 
-}
 
-
-/* =========================================================
-   GET INDUSTRY
-========================================================= */
-
-function getIndustry(row) {
+const getIndustry = (row) => {
 
   return String(
     row?.industry ??
-    row?.["Industry"] ??
+    row?.Industry ??
     ""
-  ).trim();
+  ).trim() || "Unknown";
+};
 
-}
 
-
-/* =========================================================
-   GET TEAM LEADER
-========================================================= */
-
-function getTeamLeader(row) {
+const getTeamLeader = (row) => {
 
   return String(
     row?.team_leader ??
     row?.["Team Leader"] ??
+    row?.teamLeader ??
     ""
-  ).trim();
+  ).trim() || "Unknown";
+};
 
-}
 
-
-/* =========================================================
-   GET BD MEMBER
-========================================================= */
-
-function getBDMember(row) {
+const getBDMember = (row) => {
 
   return String(
     row?.bd_member ??
     row?.["BD Member"] ??
+    row?.bdMember ??
     ""
-  ).trim();
+  ).trim() || "Unknown";
+};
 
-}
 
-
-/* =========================================================
-   GET INFO STATUS
-
-   DATABASE FIELD:
-   info
-========================================================= */
-
-function getInfoStatus(row) {
+const getInfoStatus = (row) => {
 
   return String(
     row?.info ??
@@ -211,427 +121,371 @@ function getInfoStatus(row) {
   )
     .trim()
     .toUpperCase();
+};
 
-}
 
-
-/* =========================================================
-   GET BILLING
-
-   DATABASE FIELD:
-   total_bill_amount
-========================================================= */
-
-function getBilling(row) {
+const getBilling = (row) => {
 
   return toNumber(
     row?.total_bill_amount ??
     row?.["Total Bill Amount"] ??
     0
   );
+};
 
-}
 
-
-/* =========================================================
-   GET FINANCIAL VALUES
+/* ============================================================
+   FINANCIAL CALCULATION
+   ============================================================
 
    ALL:
-   Billing = R + RV + C + CN
-   Expenditure = Billing × 5%
-   Net = Billing - Expenditure
+   R + RV + C + CN
+   Billing = total_bill_amount
+   Expenditure = 5%
+   Net Amount = Billing - Expenditure
 
    R:
-   Billing = R
-   Expenditure = R × 5%
-   Net = R - Expenditure
+   Billing = total_bill_amount
+   Expenditure = 5%
+   Net Amount = Billing - Expenditure
 
    RV:
-   Billing = RV
-   Expenditure = 0
-   Net = RV
+   Billing = total_bill_amount
+   Net Amount = 0
 
    C:
-   Billing = C
-   Expenditure = 0
-   Net = C
+   Billing = total_bill_amount
+   Net Amount = 0
 
    CN:
-   Billing = CN
-   Expenditure = 0
-   Net = CN
-========================================================= */
+   Billing = total_bill_amount
+   Net Amount = 0
 
-function getFinancialValues(
-  row,
-  infoFilter = ""
-) {
+   Franchise Share is NOT used.
+   ============================================================ */
 
-  const info =
-    getInfoStatus(row);
+function getFinancialValues(row, infoFilter = "") {
 
-  const billing =
-    getBilling(row);
+  const info = getInfoStatus(row);
+
+  const billing = getBilling(row);
 
 
-  /* =======================================================
-     ALL
-  ======================================================= */
+  /* ALL */
 
   if (
     !infoFilter ||
     infoFilter === "ALL"
   ) {
 
-    const expenditure =
-      billing * 0.05;
+    const expenditure = billing * 0.05;
 
     return {
-
-      billing,
-
-      netAmount:
-        billing - expenditure,
-
-      cityExpenditure:
-        expenditure
-
+      billing: billing,
+      netAmount: billing - expenditure,
+      franchiseExpenditure: expenditure
     };
-
   }
 
 
-  /* =======================================================
-     R
-  ======================================================= */
+  /* R */
 
-  if (
-    infoFilter === "R"
-  ) {
+  if (infoFilter === "R") {
 
     if (info !== "R") {
 
       return {
-
         billing: 0,
-
         netAmount: 0,
-
-        cityExpenditure: 0
-
+        franchiseExpenditure: 0
       };
-
     }
 
-    const expenditure =
-      billing * 0.05;
+    const expenditure = billing * 0.05;
 
     return {
-
-      billing,
-
-      netAmount:
-        billing - expenditure,
-
-      cityExpenditure:
-        expenditure
-
+      billing: billing,
+      netAmount: billing - expenditure,
+      franchiseExpenditure: expenditure
     };
-
   }
 
 
-  /* =======================================================
-     RV
-  ======================================================= */
+  /* RV */
 
-  if (
-    infoFilter === "RV"
-  ) {
+  if (infoFilter === "RV") {
 
     if (info !== "RV") {
 
       return {
-
         billing: 0,
-
         netAmount: 0,
-
-        cityExpenditure: 0
-
+        franchiseExpenditure: 0
       };
-
     }
 
     return {
-
-      billing,
-
-      netAmount: billing,
-
-      cityExpenditure: 0
-
+      billing: billing,
+      netAmount: 0,
+      franchiseExpenditure: 0
     };
-
   }
 
 
-  /* =======================================================
-     C
-  ======================================================= */
+  /* C */
 
-  if (
-    infoFilter === "C"
-  ) {
+  if (infoFilter === "C") {
 
     if (info !== "C") {
 
       return {
-
         billing: 0,
-
         netAmount: 0,
-
-        cityExpenditure: 0
-
+        franchiseExpenditure: 0
       };
-
     }
 
     return {
-
-      billing,
-
-      netAmount: billing,
-
-      cityExpenditure: 0
-
+      billing: billing,
+      netAmount: 0,
+      franchiseExpenditure: 0
     };
-
   }
 
 
-  /* =======================================================
-     CN
-  ======================================================= */
+  /* CN */
 
-  if (
-    infoFilter === "CN"
-  ) {
+  if (infoFilter === "CN") {
 
     if (info !== "CN") {
 
       return {
-
         billing: 0,
-
         netAmount: 0,
-
-        cityExpenditure: 0
-
+        franchiseExpenditure: 0
       };
-
     }
 
     return {
-
-      billing,
-
-      netAmount: billing,
-
-      cityExpenditure: 0
-
+      billing: billing,
+      netAmount: 0,
+      franchiseExpenditure: 0
     };
-
   }
 
 
   return {
-
     billing: 0,
-
     netAmount: 0,
-
-    cityExpenditure: 0
-
+    franchiseExpenditure: 0
   };
-
 }
 
 
-/* =========================================================
-   GET CLIENT ACQUIRED DATE
-========================================================= */
+/* ============================================================
+   DATE HELPERS
+   ============================================================ */
 
-function getClientAcquiredDate(row) {
+const getClientAcquiredDate = (row) => {
 
   return (
     row?.date_client_acquired ??
     row?.["Date Client Acquired"] ??
+    row?.client_acquired_date ??
+    row?.["Client Acquired Date"] ??
+    row?.acquisition_date ??
+    row?.["Acquisition Date"] ??
     ""
   );
+};
 
-}
+
+const parseDate = (value) => {
+
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime())
+      ? null
+      : value;
+  }
+
+  const stringValue = String(value).trim();
+
+  if (!stringValue) {
+    return null;
+  }
 
 
-/* =========================================================
-   GET FINANCIAL YEAR
-========================================================= */
+  /* Excel serial date */
 
-function getFinancialYear(row) {
+  if (/^\d+(\.\d+)?$/.test(stringValue)) {
 
-  const dateValue =
-    getClientAcquiredDate(row);
-
-  if (dateValue) {
-
-    const date =
-      new Date(dateValue);
+    const serial = Number(stringValue);
 
     if (
-      !Number.isNaN(
-        date.getTime()
-      )
+      serial > 20000 &&
+      serial < 60000
     ) {
 
-      const month =
-        date.getMonth() + 1;
+      const excelDate =
+        new Date(
+          Date.UTC(
+            1899,
+            11,
+            30
+          )
+        );
 
-      const year =
-        date.getFullYear();
+      excelDate.setUTCDate(
+        excelDate.getUTCDate() + serial
+      );
 
-      if (month >= 4) {
-
-        return `${year}-${String(
-          year + 1
-        ).slice(-2)}`;
-
-      }
-
-      return `${year - 1}-${String(
-        year
-      ).slice(-2)}`;
-
+      return excelDate;
     }
-
   }
 
 
-  const acquiredYear =
-    row?.acquired_year ??
-    row?.["Aquired Year"] ??
-    row?.["Acquired Year"];
+  /* yyyy-mm-dd */
 
-  if (
-    acquiredYear !== undefined &&
-    acquiredYear !== null &&
-    acquiredYear !== ""
-  ) {
+  let match = stringValue.match(
+    /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/
+  );
 
-    const year =
-      Number(acquiredYear);
+  if (match) {
 
-    if (
-      Number.isFinite(year) &&
-      year > 1900
-    ) {
+    const year = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const day = Number(match[3]);
 
-      return `${year}-${String(
-        year + 1
-      ).slice(-2)}`;
+    const date = new Date(
+      year,
+      month,
+      day
+    );
 
+    return Number.isNaN(date.getTime())
+      ? null
+      : date;
+  }
+
+
+  /* dd-mm-yyyy / dd/mm/yyyy */
+
+  match = stringValue.match(
+    /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/
+  );
+
+  if (match) {
+
+    const day = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const year = Number(match[3]);
+
+    const date = new Date(
+      year,
+      month,
+      day
+    );
+
+    return Number.isNaN(date.getTime())
+      ? null
+      : date;
+  }
+
+
+  const date = new Date(stringValue);
+
+  return Number.isNaN(date.getTime())
+    ? null
+    : date;
+};
+
+
+const getFinancialYear = (dateValue) => {
+
+  const date = parseDate(dateValue);
+
+  if (!date) {
+    return "Unknown";
+  }
+
+  const year = date.getFullYear();
+
+  const month = date.getMonth() + 1;
+
+  if (month >= 4) {
+
+    return `${year}-${String(
+      year + 1
+    ).slice(-2)}`;
+  }
+
+  return `${year - 1}-${String(
+    year
+  ).slice(-2)}`;
+};
+
+
+const getMonth = (dateValue) => {
+
+  const date = parseDate(dateValue);
+
+  if (!date) {
+    return "Unknown";
+  }
+
+  return date.toLocaleString(
+    "en-IN",
+    {
+      month: "long"
     }
-
-  }
-
-  return "";
-
-}
+  );
+};
 
 
-/* =========================================================
-   GET MONTH
-========================================================= */
-
-function getMonth(row) {
-
-  const dateValue =
-    getClientAcquiredDate(row);
-
-  if (!dateValue) {
-    return "";
-  }
-
-  const date =
-    new Date(dateValue);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return "";
-  }
-
-  return date.getMonth() + 1;
-
-}
-
-
-/* =========================================================
+/* ============================================================
    MOST FREQUENT
-========================================================= */
+   ============================================================ */
 
-function getMostFrequent(
+const getMostFrequent = (
   rows,
   getter
-) {
+) => {
 
-  const counts =
-    new Map();
+  const counts = {};
 
-  rows.forEach(row => {
+  rows.forEach((row) => {
 
-    const value =
-      getter(row);
+    const value = getter(row);
 
     if (!value) {
       return;
     }
 
-    counts.set(
-      value,
-      (counts.get(value) || 0) + 1
-    );
-
+    counts[value] =
+      (counts[value] || 0) + 1;
   });
 
-  let best = "";
 
-  let highest = 0;
-
-  counts.forEach(
-    (count, value) => {
-
-      if (count > highest) {
-
-        highest = count;
-
-        best = value;
-
-      }
-
-    }
+  const sorted = Object.entries(
+    counts
+  ).sort(
+    (a, b) => b[1] - a[1]
   );
 
-  return best || "—";
 
-}
+  return sorted.length
+    ? sorted[0][0]
+    : "N/A";
+};
 
 
-/* =========================================================
-   CUSTOM TOOLTIP
-========================================================= */
+/* ============================================================
+   TOOLTIP
+   ============================================================ */
 
 function CityTooltip({
   active,
@@ -644,25 +498,22 @@ function CityTooltip({
     !payload ||
     !payload.length
   ) {
-
     return null;
-
   }
 
   return (
+    <div className="city-chart-tooltip">
 
-    <div className="city-modern-tooltip">
-
-      <div className="city-tooltip-label">
+      <p className="city-tooltip-title">
         {label}
-      </div>
+      </p>
 
       {payload.map(
         (item, index) => (
 
-          <div
-            className="city-tooltip-row"
+          <p
             key={index}
+            className="city-tooltip-row"
           >
 
             <span>
@@ -670,39 +521,37 @@ function CityTooltip({
             </span>
 
             <strong>
-
-              {item.name === "Total Billing"
-                ? formatCurrency(item.value)
+              {item.name ===
+              "Total Billing"
+                ? formatCurrency(
+                    item.value
+                  )
                 : item.value}
-
             </strong>
 
-          </div>
-
+          </p>
         )
       )}
 
     </div>
-
   );
-
 }
 
 
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
+/* ============================================================
+   COMPONENT
+   ============================================================ */
 
 function CityPerformance() {
 
   const {
-    rows = []
+    data
   } = useData();
 
 
-  /* =======================================================
+  /* ==========================================================
      STATE
-  ======================================================= */
+     ========================================================== */
 
   const [
     selectedCity,
@@ -712,534 +561,534 @@ function CityPerformance() {
   const [
     selectedFinancialYear,
     setSelectedFinancialYear
-  ] = useState("");
+  ] = useState(
+    "All Financial Years"
+  );
 
   const [
     selectedInfoStatus,
     setSelectedInfoStatus
-  ] = useState("");
+  ] = useState("All");
+
+  const [
+    showModal,
+    setShowModal
+  ] = useState(false);
 
 
-  /* =======================================================
-     CITY SUMMARY TABLE
-  ======================================================= */
+  /* ==========================================================
+     SAFE ROWS
+     ========================================================== */
 
-  const cityData =
-    useMemo(() => {
+  const rows = useMemo(() => {
 
-      const map =
-        new Map();
+    if (!Array.isArray(data)) {
+      return [];
+    }
 
-      rows.forEach(row => {
+    return data;
 
-        const city =
-          getCity(row);
-
-        if (!city) {
-          return;
-        }
-
-        if (!map.has(city)) {
-
-          map.set(
-            city,
-            {
-              city,
-              clients: 0,
-              billing: 0,
-              cityExpenditure: 0,
-              netAmount: 0
-            }
-          );
-
-        }
-
-        const data =
-          map.get(city);
+  }, [data]);
 
 
-        if (
-          selectedFinancialYear &&
-          getFinancialYear(row) !==
-            selectedFinancialYear
-        ) {
+  /* ==========================================================
+     FINANCIAL YEARS
+     ========================================================== */
 
-          return;
+  const financialYears = useMemo(() => {
 
-        }
+    const years = new Set();
 
+    rows.forEach((row) => {
 
-        const financialValues =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
-
-
-        /*
-         * When a specific Info Status
-         * is selected, only that status
-         * contributes to client count.
-         */
-
-        if (
-          selectedInfoStatus &&
-          getInfoStatus(row) !==
-            selectedInfoStatus
-        ) {
-
-          return;
-
-        }
-
-
-        data.clients += 1;
-
-        data.billing +=
-          financialValues.billing;
-
-        data.cityExpenditure +=
-          financialValues.cityExpenditure;
-
-        data.netAmount +=
-          financialValues.netAmount;
-
-      });
-
-
-      return Array.from(
-        map.values()
-      )
-        .filter(
-          item =>
-            item.clients > 0
-        )
-        .sort(
-          (a, b) =>
-            b.clients - a.clients
+      const year =
+        getFinancialYear(
+          getClientAcquiredDate(row)
         );
 
-    }, [
-      rows,
-      selectedFinancialYear,
-      selectedInfoStatus
-    ]);
-
-
-  /* =======================================================
-     FINANCIAL YEARS
-  ======================================================= */
-
-  const financialYears =
-    useMemo(() => {
-
-      const years =
-        new Set();
-
-      rows.forEach(row => {
-
-        const year =
-          getFinancialYear(row);
-
-        if (year) {
-          years.add(year);
-        }
-
-      });
-
-      return Array.from(years)
-        .sort((a, b) => {
-
-          const yearA =
-            Number(
-              String(a).slice(0, 4)
-            );
-
-          const yearB =
-            Number(
-              String(b).slice(0, 4)
-            );
-
-          return yearA - yearB;
-
-        });
-
-    }, [rows]);
-
-
-  /* =======================================================
-     SELECTED CITY ROWS
-  ======================================================= */
-
-  const selectedRows =
-    useMemo(() => {
-
-      if (!selectedCity) {
-        return [];
+      if (
+        year &&
+        year !== "Unknown"
+      ) {
+        years.add(year);
       }
-
-      return rows.filter(
-        row => {
-
-          if (
-            getCity(row) !==
-            selectedCity
-          ) {
-
-            return false;
-
-          }
-
-          if (
-            selectedFinancialYear &&
-            getFinancialYear(row) !==
-              selectedFinancialYear
-          ) {
-
-            return false;
-
-          }
-
-          if (
-            selectedInfoStatus &&
-            getInfoStatus(row) !==
-              selectedInfoStatus
-          ) {
-
-            return false;
-
-          }
-
-          return true;
-
-        }
-      );
-
-    }, [
-      rows,
-      selectedCity,
-      selectedFinancialYear,
-      selectedInfoStatus
-    ]);
+    });
 
 
-  /* =======================================================
-     PERFORMANCE SUMMARY
-  ======================================================= */
-
-  const performanceSummary =
-    useMemo(() => {
-
-      let totalBilling = 0;
-
-      let totalCityExpenditure = 0;
-
-      let netAmount = 0;
-
-      selectedRows.forEach(row => {
-
-        const values =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
-
-        totalBilling +=
-          values.billing;
-
-        totalCityExpenditure +=
-          values.cityExpenditure;
-
-        netAmount +=
-          values.netAmount;
-
-      });
-
-      return {
-
-        totalBilling,
-
-        totalCityExpenditure,
-
-        netAmount
-
-      };
-
-    }, [
-      selectedRows,
-      selectedInfoStatus
-    ]);
-
-
-  /* =======================================================
-     BEST INDUSTRY
-  ======================================================= */
-
-  const bestIndustry =
-    useMemo(() => {
-
-      return getMostFrequent(
-        selectedRows,
-        getIndustry
-      );
-
-    }, [
-      selectedRows
-    ]);
-
-
-  /* =======================================================
-     BEST TEAM LEADER
-  ======================================================= */
-
-  const bestTeamLeader =
-    useMemo(() => {
-
-      return getMostFrequent(
-        selectedRows,
-        getTeamLeader
-      );
-
-    }, [
-      selectedRows
-    ]);
-
-
-  /* =======================================================
-     YEARLY REPORT
-  ======================================================= */
-
-  const yearlyReportData =
-    useMemo(() => {
-
-      const map =
-        new Map();
-
-      selectedRows.forEach(row => {
-
-        const year =
-          getFinancialYear(row);
-
-        if (!year) {
-          return;
-        }
-
-        if (!map.has(year)) {
-
-          map.set(
-            year,
-            {
-              year,
-              clients: 0,
-              billing: 0
-            }
-          );
-
-        }
-
-        const data =
-          map.get(year);
-
-        const values =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
-
-        data.clients += 1;
-
-        data.billing +=
-          values.billing;
-
-      });
-
-
-      return Array.from(
-        map.values()
-      ).sort((a, b) => {
+    return Array.from(years).sort(
+      (a, b) => {
 
         const yearA =
-          Number(
-            String(a.year).slice(0, 4)
-          );
+          Number(a.split("-")[0]);
 
         const yearB =
-          Number(
-            String(b.year).slice(0, 4)
-          );
+          Number(b.split("-")[0]);
 
-        return yearA - yearB;
+        return yearB - yearA;
+      }
+    );
 
-      });
-
-    }, [
-      selectedRows,
-      selectedInfoStatus
-    ]);
+  }, [rows]);
 
 
-  /* =======================================================
-     MONTHLY REPORT
-  ======================================================= */
+  /* ==========================================================
+     FILTERED ROWS FOR MAIN TABLE
+     ========================================================== */
 
-  const monthlyReportData =
-    useMemo(() => {
+  const filteredRows = useMemo(() => {
 
-      if (!selectedFinancialYear) {
-        return [];
+    return rows.filter((row) => {
+
+      const rowYear =
+        getFinancialYear(
+          getClientAcquiredDate(row)
+        );
+
+
+      const rowInfo =
+        getInfoStatus(row);
+
+
+      const yearMatch =
+        selectedFinancialYear ===
+          "All Financial Years" ||
+        rowYear ===
+          selectedFinancialYear;
+
+
+      const infoMatch =
+        selectedInfoStatus === "All" ||
+        rowInfo ===
+          selectedInfoStatus.toUpperCase();
+
+
+      return (
+        yearMatch &&
+        infoMatch
+      );
+
+    });
+
+  }, [
+    rows,
+    selectedFinancialYear,
+    selectedInfoStatus
+  ]);
+
+
+  /* ==========================================================
+     CITY DATA
+     ========================================================== */
+
+  const cityData = useMemo(() => {
+
+    const map = {};
+
+
+    filteredRows.forEach((row) => {
+
+      const city =
+        getCity(row);
+
+
+      if (!map[city]) {
+
+        map[city] = {
+
+          city,
+
+          clients: 0,
+
+          billing: 0,
+
+          netAmount: 0
+
+        };
       }
 
-      const monthMap =
-        new Map();
 
-      financialMonths.forEach(
-        (month, index) => {
+      const financial =
+        getFinancialValues(
+          row,
+          selectedInfoStatus === "All"
+            ? "ALL"
+            : selectedInfoStatus.toUpperCase()
+        );
 
-          monthMap.set(
-            index + 1,
-            {
-              month: month.full,
-              monthShort: month.short,
-              clients: 0,
-              billing: 0
-            }
-          );
 
-        }
+      map[city].clients += 1;
+
+      map[city].billing +=
+        financial.billing;
+
+      map[city].netAmount +=
+        financial.netAmount;
+
+    });
+
+
+    return Object.values(map).sort(
+      (a, b) =>
+        b.billing - a.billing
+    );
+
+  }, [
+    filteredRows,
+    selectedInfoStatus
+  ]);
+
+
+  /* ==========================================================
+     SELECTED CITY ROWS
+     ========================================================== */
+
+  const selectedRows = useMemo(() => {
+
+    if (!selectedCity) {
+      return [];
+    }
+
+
+    return rows.filter((row) => {
+
+      const cityMatch =
+        getCity(row) ===
+        selectedCity;
+
+
+      const rowYear =
+        getFinancialYear(
+          getClientAcquiredDate(row)
+        );
+
+
+      const rowInfo =
+        getInfoStatus(row);
+
+
+      const yearMatch =
+        selectedFinancialYear ===
+          "All Financial Years" ||
+        rowYear ===
+          selectedFinancialYear;
+
+
+      const infoMatch =
+        selectedInfoStatus === "All" ||
+        rowInfo ===
+          selectedInfoStatus.toUpperCase();
+
+
+      return (
+        cityMatch &&
+        yearMatch &&
+        infoMatch
       );
 
+    });
 
-      selectedRows.forEach(row => {
-
-        const year =
-          getFinancialYear(row);
-
-        if (
-          year !==
-          selectedFinancialYear
-        ) {
-
-          return;
-
-        }
-
-        const month =
-          getMonth(row);
-
-        if (
-          !monthMap.has(month)
-        ) {
-
-          return;
-
-        }
-
-        const data =
-          monthMap.get(month);
-
-        const values =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
-
-        data.clients += 1;
-
-        data.billing +=
-          values.billing;
-
-      });
+  }, [
+    rows,
+    selectedCity,
+    selectedFinancialYear,
+    selectedInfoStatus
+  ]);
 
 
-      const orderedMonths = [
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        1,
-        2,
-        3
-      ];
+  /* ==========================================================
+     PERFORMANCE SUMMARY
+     ========================================================== */
+
+  const performanceSummary = useMemo(() => {
+
+    let billing = 0;
+
+    let netAmount = 0;
+
+    let clients = 0;
 
 
-      return orderedMonths.map(
-        month =>
-          monthMap.get(month)
-      );
+    selectedRows.forEach((row) => {
 
-    }, [
+      const financial =
+        getFinancialValues(
+          row,
+          selectedInfoStatus === "All"
+            ? "ALL"
+            : selectedInfoStatus.toUpperCase()
+        );
+
+
+      billing +=
+        financial.billing;
+
+      netAmount +=
+        financial.netAmount;
+
+      clients += 1;
+
+    });
+
+
+    return {
+      clients,
+      billing,
+      netAmount
+    };
+
+  }, [
+    selectedRows,
+    selectedInfoStatus
+  ]);
+
+
+  /* ==========================================================
+     BEST INDUSTRY
+     ========================================================== */
+
+  const bestIndustry = useMemo(() => {
+
+    return getMostFrequent(
       selectedRows,
-      selectedFinancialYear,
-      selectedInfoStatus
-    ]);
+      getIndustry
+    );
+
+  }, [selectedRows]);
 
 
-  /* =======================================================
+  /* ==========================================================
+     BEST TEAM LEADER
+     ========================================================== */
+
+  const bestTeamLeader = useMemo(() => {
+
+    return getMostFrequent(
+      selectedRows,
+      getTeamLeader
+    );
+
+  }, [selectedRows]);
+
+
+  /* ==========================================================
+     BEST BD MEMBER
+     ========================================================== */
+
+  const bestBDMember = useMemo(() => {
+
+    return getMostFrequent(
+      selectedRows,
+      getBDMember
+    );
+
+  }, [selectedRows]);
+
+
+  /* ==========================================================
+     YEARLY REPORT
+     ========================================================== */
+
+  const yearlyReport = useMemo(() => {
+
+    const map = {};
+
+
+    selectedRows.forEach((row) => {
+
+      const year =
+        getFinancialYear(
+          getClientAcquiredDate(row)
+        );
+
+
+      if (year === "Unknown") {
+        return;
+      }
+
+
+      if (!map[year]) {
+
+        map[year] = {
+
+          year,
+
+          clients: 0,
+
+          billing: 0,
+
+          netAmount: 0
+
+        };
+      }
+
+
+      const financial =
+        getFinancialValues(
+          row,
+          selectedInfoStatus === "All"
+            ? "ALL"
+            : selectedInfoStatus.toUpperCase()
+        );
+
+
+      map[year].clients += 1;
+
+      map[year].billing +=
+        financial.billing;
+
+      map[year].netAmount +=
+        financial.netAmount;
+
+    });
+
+
+    return Object.values(map).sort(
+      (a, b) =>
+        Number(
+          a.year.split("-")[0]
+        ) -
+        Number(
+          b.year.split("-")[0]
+        )
+    );
+
+  }, [
+    selectedRows,
+    selectedInfoStatus
+  ]);
+
+
+  /* ==========================================================
+     MONTHLY REPORT
+     ========================================================== */
+
+  const monthlyReport = useMemo(() => {
+
+    const map = {};
+
+
+    financialMonths.forEach(
+      (month) => {
+
+        map[month] = {
+
+          month,
+
+          clients: 0,
+
+          billing: 0,
+
+          netAmount: 0
+
+        };
+      }
+    );
+
+
+    selectedRows.forEach((row) => {
+
+      const month =
+        getMonth(
+          getClientAcquiredDate(row)
+        );
+
+
+      if (
+        !map[month]
+      ) {
+        return;
+      }
+
+
+      const financial =
+        getFinancialValues(
+          row,
+          selectedInfoStatus === "All"
+            ? "ALL"
+            : selectedInfoStatus.toUpperCase()
+        );
+
+
+      map[month].clients += 1;
+
+      map[month].billing +=
+        financial.billing;
+
+      map[month].netAmount +=
+        financial.netAmount;
+
+    });
+
+
+    return financialMonths.map(
+      (month) =>
+        map[month]
+    );
+
+  }, [
+    selectedRows,
+    selectedInfoStatus
+  ]);
+
+
+  /* ==========================================================
      REPORT DATA
-  ======================================================= */
+     ========================================================== */
 
-  const reportData =
-    selectedFinancialYear
-      ? monthlyReportData
-      : yearlyReportData;
+  const reportData = useMemo(() => {
+
+    return yearlyReport.length
+      ? yearlyReport
+      : [];
+
+  }, [yearlyReport]);
 
 
-  /* =======================================================
-     OPEN MODAL
-  ======================================================= */
+  /* ==========================================================
+     OPEN PERFORMANCE
+     ========================================================== */
 
-  function handleViewPerformance(
+  const handleViewPerformance = (
     city
-  ) {
+  ) => {
 
     setSelectedCity(city);
 
-    setSelectedFinancialYear("");
-
-    setSelectedInfoStatus("");
-
-  }
+    setShowModal(true);
+  };
 
 
-  /* =======================================================
+  /* ==========================================================
      CLOSE MODAL
-  ======================================================= */
+     ========================================================== */
 
-  function handleCloseModal() {
+  const handleCloseModal = () => {
+
+    setShowModal(false);
 
     setSelectedCity("");
-
-    setSelectedFinancialYear("");
-
-    setSelectedInfoStatus("");
-
-  }
+  };
 
 
-  /* =======================================================
+  /* ==========================================================
      RENDER
-  ======================================================= */
+     ========================================================== */
 
   return (
 
     <div className="city-performance-page">
 
 
-      {/* ===================================================
+      {/* ======================================================
           PAGE HEADER
-      =================================================== */}
+          ====================================================== */}
 
       <div className="city-page-header">
 
         <div>
 
           <div className="city-page-eyebrow">
-            PERFORMANCE ANALYTICS
+            PERFORMANCE REPORT
           </div>
 
           <h1>
@@ -1247,8 +1096,9 @@ function CityPerformance() {
           </h1>
 
           <p>
-            Monitor city acquisition,
-            billing and financial performance.
+            Analyse client acquisition,
+            billing and financial
+            performance city-wise.
           </p>
 
         </div>
@@ -1256,11 +1106,12 @@ function CityPerformance() {
       </div>
 
 
-      {/* ===================================================
-          MAIN TABLE
-      =================================================== */}
+      {/* ======================================================
+          MAIN TABLE CARD
+          ====================================================== */}
 
       <div className="city-table-card">
+
 
         <div className="city-table-header">
 
@@ -1270,120 +1121,108 @@ function CityPerformance() {
               City Performance
             </h2>
 
-            <p>
-              Complete city-wise
-              performance overview
-            </p>
-
-          </div>
-
-
-          <div className="city-member-count">
-
-            {cityData.length}
-
-            <span>
-              Cities
+            <span className="city-member-count">
+              {cityData.length} Cities
             </span>
 
           </div>
 
-        </div>
+
+          {/* ==================================================
+              FILTERS
+              ================================================== */}
+
+          <div className="city-table-filters">
 
 
-        {/* =================================================
-            MAIN FILTERS
-        ================================================= */}
+            <div className="city-filter-group">
 
-        <div
-          className="city-report-controls"
-          style={{
-            marginBottom: "20px"
-          }}
-        >
+              <label>
+                Financial Year
+              </label>
 
-          <div>
+              <select
+                value={
+                  selectedFinancialYear
+                }
+                onChange={(e) =>
+                  setSelectedFinancialYear(
+                    e.target.value
+                  )
+                }
+              >
 
-            <label>
-              Financial Year
-            </label>
+                <option>
+                  All Financial Years
+                </option>
 
-            <select
-              value={
-                selectedFinancialYear
-              }
-              onChange={event =>
-                setSelectedFinancialYear(
-                  event.target.value
-                )
-              }
-            >
+                {financialYears.map(
+                  (year) => (
 
-              <option value="">
-                All Financial Years
-              </option>
+                    <option
+                      key={year}
+                      value={year}
+                    >
+                      {year}
+                    </option>
 
-              {financialYears.map(
-                year => (
+                  )
+                )}
 
-                  <option
-                    key={year}
-                    value={year}
-                  >
-                    {year}
-                  </option>
+              </select>
 
-                )
-              )}
-
-            </select>
-
-          </div>
+            </div>
 
 
-          <div>
+            <div className="city-filter-group">
 
-            <label>
-              Info Status
-            </label>
+              <label>
+                Info Status
+              </label>
 
-            <select
-              value={
-                selectedInfoStatus
-              }
-              onChange={event =>
-                setSelectedInfoStatus(
-                  event.target.value
-                )
-              }
-            >
+              <select
+                value={
+                  selectedInfoStatus
+                }
+                onChange={(e) =>
+                  setSelectedInfoStatus(
+                    e.target.value
+                  )
+                }
+              >
 
-              <option value="">
-                All
-              </option>
+                <option value="All">
+                  All
+                </option>
 
-              <option value="R">
-                R
-              </option>
+                <option value="R">
+                  R
+                </option>
 
-              <option value="RV">
-                RV
-              </option>
+                <option value="RV">
+                  RV
+                </option>
 
-              <option value="C">
-                C
-              </option>
+                <option value="C">
+                  C
+                </option>
 
-              <option value="CN">
-                CN
-              </option>
+                <option value="CN">
+                  CN
+                </option>
 
-            </select>
+              </select>
+
+            </div>
 
           </div>
 
         </div>
 
+
+        {/* ====================================================
+            TABLE
+            ==================================================== */}
 
         <div className="city-table-wrapper">
 
@@ -1398,7 +1237,7 @@ function CityPerformance() {
                 </th>
 
                 <th>
-                  Total Acquired Client
+                  Client Count
                 </th>
 
                 <th>
@@ -1410,11 +1249,7 @@ function CityPerformance() {
                 </th>
 
                 <th>
-                  City Expenditure
-                </th>
-
-                <th>
-                  Performance
+                  Action
                 </th>
 
               </tr>
@@ -1424,44 +1259,27 @@ function CityPerformance() {
 
             <tbody>
 
-              {cityData.length === 0 ? (
-
-                <tr>
-
-                  <td
-                    colSpan="6"
-                    className="city-empty"
-                  >
-                    No city data available.
-                  </td>
-
-                </tr>
-
-              ) : (
+              {cityData.length > 0 ? (
 
                 cityData.map(
-                  city => (
+                  (item) => (
 
                     <tr
-                      key={city.city}
+                      key={item.city}
                     >
 
                       <td>
 
-                        <div className="city-name">
+                        <div className="city-name-cell">
 
-                          <div className="city-avatar">
+                          <span className="city-avatar">
+                            {item.city
+                              .charAt(0)
+                              .toUpperCase()}
+                          </span>
 
-                            {
-                              city.city
-                                .charAt(0)
-                                .toUpperCase()
-                            }
-
-                          </div>
-
-                          <span>
-                            {city.city}
+                          <span className="city-name">
+                            {item.city}
                           </span>
 
                         </div>
@@ -1472,9 +1290,9 @@ function CityPerformance() {
                       <td>
 
                         <span className="city-client-count">
-
-                          {city.clients}
-
+                          {item.clients.toLocaleString(
+                            "en-IN"
+                          )}
                         </span>
 
                       </td>
@@ -1483,13 +1301,9 @@ function CityPerformance() {
                       <td>
 
                         <span className="city-billing-value">
-
-                          {
-                            formatCurrency(
-                              city.billing
-                            )
-                          }
-
+                          {formatCurrency(
+                            item.billing
+                          )}
                         </span>
 
                       </td>
@@ -1498,28 +1312,9 @@ function CityPerformance() {
                       <td>
 
                         <span className="city-net-value">
-
-                          {
-                            formatCurrency(
-                              city.netAmount
-                            )
-                          }
-
-                        </span>
-
-                      </td>
-
-
-                      <td>
-
-                        <span className="city-expenditure-value">
-
-                          {
-                            formatCurrency(
-                              city.cityExpenditure
-                            )
-                          }
-
+                          {formatCurrency(
+                            item.netAmount
+                          )}
                         </span>
 
                       </td>
@@ -1528,18 +1323,17 @@ function CityPerformance() {
                       <td>
 
                         <button
-                          type="button"
                           className="city-view-performance-btn"
                           onClick={() =>
                             handleViewPerformance(
-                              city.city
+                              item.city
                             )
                           }
                         >
 
-                          View
+                          View Performance
 
-                          <span className="city-view-arrow">
+                          <span className="city-btn-arrow">
                             →
                           </span>
 
@@ -1552,6 +1346,19 @@ function CityPerformance() {
                   )
                 )
 
+              ) : (
+
+                <tr>
+
+                  <td
+                    colSpan="5"
+                    className="city-empty"
+                  >
+                    No city data available.
+                  </td>
+
+                </tr>
+
               )}
 
             </tbody>
@@ -1563,11 +1370,11 @@ function CityPerformance() {
       </div>
 
 
-      {/* ===================================================
+      {/* ======================================================
           PERFORMANCE MODAL
-      =================================================== */}
+          ====================================================== */}
 
-      {selectedCity && (
+      {showModal && (
 
         <div
           className="city-performance-overlay"
@@ -1576,22 +1383,22 @@ function CityPerformance() {
 
           <div
             className="city-performance-modal"
-            onClick={event =>
-              event.stopPropagation()
+            onClick={(e) =>
+              e.stopPropagation()
             }
           >
 
 
-            {/* =============================================
+            {/* ==================================================
                 MODAL HEADER
-            ============================================= */}
+                ================================================== */}
 
             <div className="city-modal-header">
 
               <div>
 
                 <div className="city-modal-eyebrow">
-                  PERFORMANCE REPORT
+                  CITY PERFORMANCE
                 </div>
 
                 <h2>
@@ -1599,18 +1406,18 @@ function CityPerformance() {
                 </h2>
 
                 <p>
-                  City performance
-                  analysis and financial trends
+                  Detailed performance
+                  report for {selectedCity}.
                 </p>
 
               </div>
 
 
               <button
-                type="button"
                 className="city-modal-close"
-                onClick={handleCloseModal}
-                aria-label="Close"
+                onClick={
+                  handleCloseModal
+                }
               >
                 ×
               </button>
@@ -1618,44 +1425,27 @@ function CityPerformance() {
             </div>
 
 
-            {/* =============================================
+            {/* ==================================================
                 SUMMARY CARDS
-            ============================================= */}
+                ================================================== */}
 
             <div className="city-summary-grid">
 
 
-              {/* BEST INDUSTRY */}
-
               <div className="city-summary-card">
 
                 <span className="city-summary-label">
-                  Best Industry
+                  Client Count
                 </span>
 
-                <strong className="city-summary-text">
-                  {bestIndustry}
-                </strong>
+                <span className="city-summary-value">
+                  {performanceSummary.clients.toLocaleString(
+                    "en-IN"
+                  )}
+                </span>
 
               </div>
 
-
-              {/* BEST TEAM LEADER */}
-
-              <div className="city-summary-card">
-
-                <span className="city-summary-label">
-                  Best Team Leader
-                </span>
-
-                <strong className="city-summary-text">
-                  {bestTeamLeader}
-                </strong>
-
-              </div>
-
-
-              {/* TOTAL BILLING */}
 
               <div className="city-summary-card">
 
@@ -1663,172 +1453,98 @@ function CityPerformance() {
                   Total Billing
                 </span>
 
-                <strong className="city-summary-value">
-
-                  {
-                    formatCurrency(
-                      performanceSummary.totalBilling
-                    )
-                  }
-
-                </strong>
-
-              </div>
-
-
-              {/* CITY EXPENDITURE */}
-
-              <div className="city-summary-card">
-
-                <span className="city-summary-label">
-                  City Expenditure
+                <span className="city-summary-value">
+                  {formatCurrency(
+                    performanceSummary.billing
+                  )}
                 </span>
 
-                <strong className="city-summary-value">
-
-                  {
-                    formatCurrency(
-                      performanceSummary.totalCityExpenditure
-                    )
-                  }
-
-                </strong>
-
-                <small>
-                  5% of R / All Billing
-                </small>
-
               </div>
 
 
-              {/* NET AMOUNT */}
-
-              <div className="city-summary-card city-summary-net">
+              <div className="city-summary-card">
 
                 <span className="city-summary-label">
                   Net Amount
                 </span>
 
-                <strong className="city-summary-value">
-
-                  {
-                    formatCurrency(
-                      performanceSummary.netAmount
-                    )
-                  }
-
-                </strong>
+                <span className="city-summary-value city-summary-net">
+                  {formatCurrency(
+                    performanceSummary.netAmount
+                  )}
+                </span>
 
               </div>
 
 
+              <div className="city-summary-card">
+
+                <span className="city-summary-label">
+                  Top Industry
+                </span>
+
+                <span className="city-summary-text">
+                  {bestIndustry}
+                </span>
+
+              </div>
+
+
+              <div className="city-summary-card">
+
+                <span className="city-summary-label">
+                  Top Team Leader
+                </span>
+
+                <span className="city-summary-text">
+                  {bestTeamLeader}
+                </span>
+
+              </div>
+
+
+              <div className="city-summary-card">
+
+                <span className="city-summary-label">
+                  Top BD Member
+                </span>
+
+                <span className="city-summary-text">
+                  {bestBDMember}
+                </span>
+
+              </div>
+
             </div>
 
 
-            {/* =============================================
+            {/* ==================================================
                 REPORT CONTROLS
-            ============================================= */}
+                ================================================== */}
 
             <div className="city-report-controls">
 
               <div>
 
-                <label
-                  htmlFor="city-financial-year"
-                >
+                <span className="city-report-period-label">
                   Financial Year
-                </label>
+                </span>
 
-                <select
-                  id="city-financial-year"
-                  value={
-                    selectedFinancialYear
-                  }
-                  onChange={event =>
-                    setSelectedFinancialYear(
-                      event.target.value
-                    )
-                  }
-                >
-
-                  <option value="">
-                    None
-                  </option>
-
-                  {financialYears.map(
-                    year => (
-
-                      <option
-                        key={year}
-                        value={year}
-                      >
-                        {year}
-                      </option>
-
-                    )
-                  )}
-
-                </select>
+                <strong>
+                  {selectedFinancialYear}
+                </strong>
 
               </div>
 
 
               <div>
 
-                <label>
+                <span className="city-report-period-label">
                   Info Status
-                </label>
-
-                <select
-                  value={
-                    selectedInfoStatus
-                  }
-                  onChange={event =>
-                    setSelectedInfoStatus(
-                      event.target.value
-                    )
-                  }
-                >
-
-                  <option value="">
-                    All
-                  </option>
-
-                  <option value="R">
-                    R
-                  </option>
-
-                  <option value="RV">
-                    RV
-                  </option>
-
-                  <option value="C">
-                    C
-                  </option>
-
-                  <option value="CN">
-                    CN
-                  </option>
-
-                </select>
-
-              </div>
-
-
-              <div className="city-report-period">
-
-                <span>
-                  Report Period
                 </span>
 
                 <strong>
-
-                  {
-                    selectedFinancialYear
-                      ? selectedFinancialYear
-                      : "Yearly"
-                  }
-
+                  {selectedInfoStatus}
                 </strong>
 
               </div>
@@ -1836,92 +1552,66 @@ function CityPerformance() {
             </div>
 
 
-            {/* =============================================
-                GRAPHS
-            ============================================= */}
+            {/* ==================================================
+                REPORT GRAPHS
+                ================================================== */}
 
             <div className="city-report-graphs">
 
 
-              {/* CLIENT ACQUIRED */}
+              {/* ==================================================
+                  YEARLY CLIENT ACQUIRED
+                  ================================================== */}
 
               <div className="city-chart-card">
 
-                <div className="city-chart-heading">
+                <div className="city-chart-header">
 
                   <div>
-
-                    <span className="city-chart-indicator city-client-indicator"></span>
 
                     <h3>
                       Client Acquired
                     </h3>
 
+                    <p>
+                      Year-wise client
+                      acquisition
+                    </p>
+
                   </div>
-
-                  <span>
-
-                    {
-                      selectedFinancialYear
-                        ? "Monthly"
-                        : "Yearly"
-                    }
-
-                  </span>
 
                 </div>
 
 
                 <div className="city-chart-container">
 
-                  {reportData.length === 0 ? (
-
-                    <div className="city-no-chart-data">
-                      No report data available.
-                    </div>
-
-                  ) : (
+                  {reportData.length > 0 ? (
 
                     <ResponsiveContainer
                       width="100%"
-                      height="100%"
+                      height={320}
                     >
 
                       <BarChart
                         data={reportData}
                         margin={{
-                          top: 15,
-                          right: 10,
-                          left: 0,
-                          bottom: 5
+                          top: 10,
+                          right: 20,
+                          left: 10,
+                          bottom: 10
                         }}
                       >
 
                         <CartesianGrid
                           strokeDasharray="3 3"
-                          vertical={false}
                         />
 
                         <XAxis
-                          dataKey={
-                            selectedFinancialYear
-                              ? "monthShort"
-                              : "year"
-                          }
-                          tick={{
-                            fontSize: 12
-                          }}
-                          tickLine={false}
-                          axisLine={false}
+                          dataKey="year"
                         />
 
                         <YAxis
                           allowDecimals={false}
-                          tick={{
-                            fontSize: 12
-                          }}
-                          tickLine={false}
-                          axisLine={false}
                         />
 
                         <Tooltip
@@ -1932,20 +1622,24 @@ function CityPerformance() {
 
                         <Bar
                           dataKey="clients"
-                          name="Client Acquired"
-                          fill="#B78A34"
+                          name="Clients"
                           radius={[
                             6,
                             6,
                             0,
                             0
                           ]}
-                          barSize={32}
                         />
 
                       </BarChart>
 
                     </ResponsiveContainer>
+
+                  ) : (
+
+                    <div className="city-chart-no-data">
+                      No yearly data available.
+                    </div>
 
                   )}
 
@@ -1954,88 +1648,64 @@ function CityPerformance() {
               </div>
 
 
-              {/* TOTAL BILLING */}
+              {/* ==================================================
+                  YEARLY BILLING
+                  ================================================== */}
 
               <div className="city-chart-card">
 
-                <div className="city-chart-heading">
+                <div className="city-chart-header">
 
                   <div>
-
-                    <span className="city-chart-indicator city-billing-indicator"></span>
 
                     <h3>
                       Total Billing
                     </h3>
 
+                    <p>
+                      Year-wise billing
+                      performance
+                    </p>
+
                   </div>
-
-                  <span>
-
-                    {
-                      selectedFinancialYear
-                        ? "Monthly"
-                        : "Yearly"
-                    }
-
-                  </span>
 
                 </div>
 
 
                 <div className="city-chart-container">
 
-                  {reportData.length === 0 ? (
-
-                    <div className="city-no-chart-data">
-                      No report data available.
-                    </div>
-
-                  ) : (
+                  {reportData.length > 0 ? (
 
                     <ResponsiveContainer
                       width="100%"
-                      height="100%"
+                      height={320}
                     >
 
                       <BarChart
                         data={reportData}
                         margin={{
-                          top: 15,
-                          right: 10,
-                          left: 0,
-                          bottom: 5
+                          top: 10,
+                          right: 20,
+                          left: 10,
+                          bottom: 10
                         }}
                       >
 
                         <CartesianGrid
                           strokeDasharray="3 3"
-                          vertical={false}
                         />
 
                         <XAxis
-                          dataKey={
-                            selectedFinancialYear
-                              ? "monthShort"
-                              : "year"
-                          }
-                          tick={{
-                            fontSize: 12
-                          }}
-                          tickLine={false}
-                          axisLine={false}
+                          dataKey="year"
                         />
 
                         <YAxis
-                          tick={{
-                            fontSize: 12
-                          }}
-                          tickLine={false}
-                          axisLine={false}
-                          tickFormatter={value =>
-                            `₹${(
-                              value / 100000
-                            ).toFixed(0)}L`
+                          tickFormatter={(value) =>
+                            `₹${Number(
+                              value
+                            ).toLocaleString(
+                              "en-IN"
+                            )}`
                           }
                         />
 
@@ -2048,19 +1718,23 @@ function CityPerformance() {
                         <Bar
                           dataKey="billing"
                           name="Total Billing"
-                          fill="#26734D"
                           radius={[
                             6,
                             6,
                             0,
                             0
                           ]}
-                          barSize={32}
                         />
 
                       </BarChart>
 
                     </ResponsiveContainer>
+
+                  ) : (
+
+                    <div className="city-chart-no-data">
+                      No billing data available.
+                    </div>
 
                   )}
 
@@ -2069,35 +1743,194 @@ function CityPerformance() {
               </div>
 
 
+              {/* ==================================================
+                  MONTHLY CLIENT ACQUIRED
+                  ================================================== */}
+
+              <div className="city-chart-card">
+
+                <div className="city-chart-header">
+
+                  <div>
+
+                    <h3>
+                      Monthly Client Acquisition
+                    </h3>
+
+                    <p>
+                      Financial year monthly
+                      client acquisition
+                    </p>
+
+                  </div>
+
+                </div>
+
+
+                <div className="city-chart-container">
+
+                  <ResponsiveContainer
+                    width="100%"
+                    height={320}
+                  >
+
+                    <BarChart
+                      data={monthlyReport}
+                      margin={{
+                        top: 10,
+                        right: 20,
+                        left: 10,
+                        bottom: 50
+                      }}
+                    >
+
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                      />
+
+                      <XAxis
+                        dataKey="month"
+                        angle={-35}
+                        textAnchor="end"
+                        interval={0}
+                      />
+
+                      <YAxis
+                        allowDecimals={false}
+                      />
+
+                      <Tooltip
+                        content={
+                          <CityTooltip />
+                        }
+                      />
+
+                      <Bar
+                        dataKey="clients"
+                        name="Clients"
+                        radius={[
+                          6,
+                          6,
+                          0,
+                          0
+                        ]}
+                      />
+
+                    </BarChart>
+
+                  </ResponsiveContainer>
+
+                </div>
+
+              </div>
+
+
+              {/* ==================================================
+                  MONTHLY BILLING
+                  ================================================== */}
+
+              <div className="city-chart-card">
+
+                <div className="city-chart-header">
+
+                  <div>
+
+                    <h3>
+                      Monthly Billing
+                    </h3>
+
+                    <p>
+                      Financial year monthly
+                      billing
+                    </p>
+
+                  </div>
+
+                </div>
+
+
+                <div className="city-chart-container">
+
+                  <ResponsiveContainer
+                    width="100%"
+                    height={320}
+                  >
+
+                    <BarChart
+                      data={monthlyReport}
+                      margin={{
+                        top: 10,
+                        right: 20,
+                        left: 10,
+                        bottom: 50
+                      }}
+                    >
+
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                      />
+
+                      <XAxis
+                        dataKey="month"
+                        angle={-35}
+                        textAnchor="end"
+                        interval={0}
+                      />
+
+                      <YAxis
+                        tickFormatter={(value) =>
+                          `₹${Number(
+                            value
+                          ).toLocaleString(
+                            "en-IN"
+                          )}`
+                        }
+                      />
+
+                      <Tooltip
+                        content={
+                          <CityTooltip />
+                        }
+                      />
+
+                      <Bar
+                        dataKey="billing"
+                        name="Total Billing"
+                        radius={[
+                          6,
+                          6,
+                          0,
+                          0
+                        ]}
+                      />
+
+                    </BarChart>
+
+                  </ResponsiveContainer>
+
+                </div>
+
+              </div>
+
             </div>
 
 
-            {/* =============================================
+            {/* ==================================================
                 MODAL FOOTER
-            ============================================= */}
+                ================================================== */}
 
             <div className="city-modal-footer">
 
-              <span>
-
-                {
-                  selectedFinancialYear
-                    ? `Monthly report for ${selectedFinancialYear}`
-                    : "Yearly performance report"
-                }
-
-              </span>
-
               <button
-                type="button"
-                className="city-footer-close"
-                onClick={handleCloseModal}
+                className="city-modal-footer-close"
+                onClick={
+                  handleCloseModal
+                }
               >
-                Close
+                Close Report
               </button>
 
             </div>
-
 
           </div>
 
@@ -2106,9 +1939,7 @@ function CityPerformance() {
       )}
 
     </div>
-
   );
-
 }
 
 
