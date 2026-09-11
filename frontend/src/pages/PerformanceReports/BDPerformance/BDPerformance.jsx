@@ -102,12 +102,6 @@ function BDPerformance() {
 
   /* ============================================================
      BILLING
-
-     DATABASE FIELD:
-     total_bill_amount
-
-     NO TANN
-     NO TDS
      ============================================================ */
 
   const getBilling = (row) => {
@@ -123,9 +117,6 @@ function BDPerformance() {
 
   /* ============================================================
      FRANCHISEE SHARE
-
-     DATABASE FIELD:
-     franchisee_share
      ============================================================ */
 
   const getFranchiseeShare = (row) => {
@@ -370,31 +361,8 @@ function BDPerformance() {
 
   /* ============================================================
      FINANCIAL CALCULATION
-
-     ALL:
-       Billing = R + RV + C + CN
-       Net Amount = Billing - Franchisee Share
-       BD Expenditure = 5% Billing
-
-     R:
-       Billing = R Billing
-       Net Amount = R Billing - R Franchisee Share
-       BD Expenditure = 5% R Billing
-
-     RV:
-       Billing = RV Billing
-       Net Amount = 0
-       BD Expenditure = 0
-
-     C:
-       Billing = C Billing
-       Net Amount = 0
-       BD Expenditure = 0
-
-     CN:
-       Billing = CN Billing
-       Net Amount = 0
-       BD Expenditure = 0
+     
+     KEEPING YOUR EXISTING BD CALCULATION EXACTLY
      ============================================================ */
 
   const getFinancialValues = (
@@ -1261,12 +1229,16 @@ function BDPerformance() {
 
 
       {/* ======================================================
-          HEADER
+          PAGE HEADER
           ====================================================== */}
 
-      <div className="bd-performance-header">
+      <div className="bd-page-header">
 
         <div>
+
+          <div className="bd-page-eyebrow">
+            PERFORMANCE REPORT
+          </div>
 
           <h1>
             BD Member Performance
@@ -1284,114 +1256,133 @@ function BDPerformance() {
 
 
       {/* ======================================================
-          MAIN FILTERS
+          TABLE CARD
           ====================================================== */}
 
-      <div className="bd-performance-filters">
-
-        <div className="bd-filter-group">
-
-          <label>
-            Financial Year
-          </label>
-
-          <select
-            value={
-              selectedTableFinancialYear
-            }
-            onChange={(e) =>
-              setSelectedTableFinancialYear(
-                e.target.value
-              )
-            }
-          >
-
-            <option value="">
-              All Financial Years
-            </option>
-
-            {financialYears.map(
-              (year) => (
-
-                <option
-                  key={year}
-                  value={year}
-                >
-                  {year}
-                </option>
-
-              )
-            )}
-
-          </select>
-
-        </div>
+      <div className="bd-table-card">
 
 
-        <div className="bd-filter-group">
-
-          <label>
-            Info Status
-          </label>
-
-          <select
-            value={
-              selectedInfoStatus
-            }
-            onChange={(e) =>
-              setSelectedInfoStatus(
-                e.target.value
-              )
-            }
-          >
-
-            <option value="">
-              All
-            </option>
-
-            <option value="R">
-              R
-            </option>
-
-            <option value="RV">
-              RV
-            </option>
-
-            <option value="C">
-              C
-            </option>
-
-            <option value="CN">
-              CN
-            </option>
-
-          </select>
-
-        </div>
-
-      </div>
-
-
-      {/* ======================================================
-          MAIN TABLE
-          ====================================================== */}
-
-      <div className="bd-table-container">
+        {/* ====================================================
+            TABLE HEADER
+            ==================================================== */}
 
         <div className="bd-table-header">
 
-          <h2>
-            BD Member Performance
-          </h2>
+          <div>
 
-          <span>
-            {memberPerformance.length} BD Members
-          </span>
+            <h2>
+              BD Member Performance
+            </h2>
+
+            <span className="bd-member-count">
+
+              {memberPerformance.length}{" "}
+
+              {memberPerformance.length === 1
+                ? "BD Member"
+                : "BD Members"}
+
+            </span>
+
+          </div>
 
         </div>
 
 
-        <div className="table-responsive">
+        {/* ====================================================
+            FILTERS ABOVE TABLE
+            ==================================================== */}
+
+        <div className="bd-performance-filters">
+
+          <div className="bd-filter-group">
+
+            <label>
+              Financial Year
+            </label>
+
+            <select
+              value={
+                selectedTableFinancialYear
+              }
+              onChange={(e) =>
+                setSelectedTableFinancialYear(
+                  e.target.value
+                )
+              }
+            >
+
+              <option value="">
+                All Financial Years
+              </option>
+
+              {financialYears.map(
+                (year) => (
+
+                  <option
+                    key={year}
+                    value={year}
+                  >
+                    {year}
+                  </option>
+
+                )
+              )}
+
+            </select>
+
+          </div>
+
+
+          <div className="bd-filter-group">
+
+            <label>
+              Info Status
+            </label>
+
+            <select
+              value={
+                selectedInfoStatus
+              }
+              onChange={(e) =>
+                setSelectedInfoStatus(
+                  e.target.value
+                )
+              }
+            >
+
+              <option value="">
+                All
+              </option>
+
+              <option value="R">
+                R
+              </option>
+
+              <option value="RV">
+                RV
+              </option>
+
+              <option value="C">
+                C
+              </option>
+
+              <option value="CN">
+                CN
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        {/* ====================================================
+            MAIN TABLE
+            ==================================================== */}
+
+        <div className="bd-table-wrapper">
 
           <table className="bd-performance-table">
 
@@ -1404,7 +1395,7 @@ function BDPerformance() {
                 </th>
 
                 <th>
-                  TOTAL CLIENTS
+                  CLIENT COUNT
                 </th>
 
                 <th>
@@ -1416,7 +1407,7 @@ function BDPerformance() {
                 </th>
 
                 <th>
-                  BD EXPENDITURE
+                  EXPENDITURE
                 </th>
 
                 <th>
@@ -1442,42 +1433,85 @@ function BDPerformance() {
                     >
 
                       <td>
-                        {member.name}
+
+                        <div className="bd-name-cell">
+
+                          <div className="bd-avatar">
+
+                            {member.name
+                              .charAt(0)
+                              .toUpperCase()}
+
+                          </div>
+
+                          <span className="bd-name">
+                            {member.name}
+                          </span>
+
+                        </div>
+
                       </td>
 
-                      <td>
-                        {member.clients}
-                      </td>
 
                       <td>
-                        {fullCurrency(
-                          member.billing
-                        )}
+
+                        <span className="bd-client-count">
+                          {member.clients}
+                        </span>
+
                       </td>
 
-                      <td>
-                        {fullCurrency(
-                          member.netAmount
-                        )}
-                      </td>
 
                       <td>
-                        {fullCurrency(
-                          member.bdExpenditure
-                        )}
+
+                        <span className="bd-billing-value">
+                          {fullCurrency(
+                            member.billing
+                          )}
+                        </span>
+
                       </td>
+
+
+                      <td>
+
+                        <span className="bd-net-value">
+                          {fullCurrency(
+                            member.netAmount
+                          )}
+                        </span>
+
+                      </td>
+
+
+                      <td>
+
+                        <span className="bd-expenditure-value">
+                          {fullCurrency(
+                            member.bdExpenditure
+                          )}
+                        </span>
+
+                      </td>
+
 
                       <td>
 
                         <button
-                          className="view-performance-btn"
+                          className="bd-view-performance-btn"
                           onClick={() =>
                             openPerformance(
                               member
                             )
                           }
                         >
+
                           View Performance
+
+                          <span className="bd-btn-arrow">
+                            →
+                          </span>
+
                         </button>
 
                       </td>
@@ -1493,7 +1527,7 @@ function BDPerformance() {
 
                   <td
                     colSpan="6"
-                    className="no-data"
+                    className="bd-no-data"
                   >
                     No BD member data
                     available.
@@ -1519,12 +1553,12 @@ function BDPerformance() {
       {selectedMember && (
 
         <div
-          className="performance-modal-overlay"
+          className="bd-performance-overlay"
           onClick={closePerformance}
         >
 
           <div
-            className="performance-modal"
+            className="bd-performance-modal"
             onClick={(e) =>
               e.stopPropagation()
             }
@@ -1535,9 +1569,13 @@ function BDPerformance() {
                 MODAL HEADER
                 ================================================== */}
 
-            <div className="performance-modal-header">
+            <div className="bd-modal-header">
 
               <div>
+
+                <div className="bd-modal-eyebrow">
+                  BD MEMBER REPORT
+                </div>
 
                 <h2>
                   {selectedMember.name}
@@ -1552,7 +1590,7 @@ function BDPerformance() {
 
 
               <button
-                className="modal-close-btn"
+                className="bd-modal-close"
                 onClick={
                   closePerformance
                 }
@@ -1569,7 +1607,7 @@ function BDPerformance() {
 
             <div className="bd-modal-filters">
 
-              <div className="bd-year-control">
+              <div className="bd-modal-filter-group">
 
                 <label>
                   Financial Year
@@ -1608,7 +1646,7 @@ function BDPerformance() {
               </div>
 
 
-              <div className="bd-year-control">
+              <div className="bd-modal-filter-group">
 
                 <label>
                   Info Status
@@ -1656,9 +1694,10 @@ function BDPerformance() {
                 SUMMARY CARDS
                 ================================================== */}
 
-            <div className="performance-summary-grid">
+            <div className="bd-summary-grid">
 
-              <div className="performance-summary-card">
+
+              <div className="bd-summary-card">
 
                 <span>
                   Total Billing
@@ -1673,7 +1712,7 @@ function BDPerformance() {
               </div>
 
 
-              <div className="performance-summary-card">
+              <div className="bd-summary-card">
 
                 <span>
                   Net Amount
@@ -1688,7 +1727,7 @@ function BDPerformance() {
               </div>
 
 
-              <div className="performance-summary-card">
+              <div className="bd-summary-card">
 
                 <span>
                   BD Expenditure
@@ -1703,7 +1742,7 @@ function BDPerformance() {
               </div>
 
 
-              <div className="performance-summary-card">
+              <div className="bd-summary-card">
 
                 <span>
                   Best Industry
@@ -1716,7 +1755,7 @@ function BDPerformance() {
               </div>
 
 
-              <div className="performance-summary-card">
+              <div className="bd-summary-card">
 
                 <span>
                   Best City
@@ -1735,9 +1774,9 @@ function BDPerformance() {
                 YEARLY PERFORMANCE
                 ================================================== */}
 
-            <div className="performance-report-section">
+            <div className="bd-report-section">
 
-              <div className="performance-section-header">
+              <div className="bd-section-header">
 
                 <h3>
                   Yearly Performance
@@ -1746,9 +1785,9 @@ function BDPerformance() {
               </div>
 
 
-              <div className="table-responsive">
+              <div className="bd-report-table-wrapper">
 
-                <table className="performance-report-table">
+                <table className="bd-report-table">
 
                   <thead>
 
@@ -1821,7 +1860,7 @@ function BDPerformance() {
 
                         <td
                           colSpan="4"
-                          className="no-data"
+                          className="bd-no-data"
                         >
                           No yearly data
                           available.
@@ -1844,9 +1883,9 @@ function BDPerformance() {
                 MONTHLY PERFORMANCE
                 ================================================== */}
 
-            <div className="performance-report-section">
+            <div className="bd-report-section">
 
-              <div className="performance-section-header">
+              <div className="bd-section-header">
 
                 <h3>
                   Monthly Performance
@@ -1855,9 +1894,9 @@ function BDPerformance() {
               </div>
 
 
-              <div className="table-responsive">
+              <div className="bd-report-table-wrapper">
 
-                <table className="performance-report-table">
+                <table className="bd-report-table">
 
                   <thead>
 
@@ -1932,12 +1971,12 @@ function BDPerformance() {
 
 
             {/* ==================================================
-                PERFORMANCE CHART
+                MONTHLY BILLING GRAPH
                 ================================================== */}
 
-            <div className="performance-report-section">
+            <div className="bd-report-section">
 
-              <div className="performance-section-header">
+              <div className="bd-section-header">
 
                 <h3>
                   Monthly Billing Performance
@@ -1946,7 +1985,7 @@ function BDPerformance() {
               </div>
 
 
-              <div className="performance-chart">
+              <div className="bd-performance-chart">
 
                 {monthlyPerformance.map(
                   (item) => {
@@ -1964,13 +2003,13 @@ function BDPerformance() {
                     return (
 
                       <div
-                        className="chart-row"
+                        className="bd-chart-row"
                         key={
                           item.month
                         }
                       >
 
-                        <div className="chart-label">
+                        <div className="bd-chart-label">
 
                           <span>
                             {item.month}
@@ -1985,10 +2024,10 @@ function BDPerformance() {
                         </div>
 
 
-                        <div className="chart-track">
+                        <div className="bd-chart-track">
 
                           <div
-                            className="chart-bar"
+                            className="bd-chart-bar"
                             style={{
                               width:
                                 `${percentage}%`
@@ -2005,6 +2044,23 @@ function BDPerformance() {
                 )}
 
               </div>
+
+            </div>
+
+
+            {/* ==================================================
+                MODAL FOOTER
+                ================================================== */}
+
+            <div className="bd-modal-footer">
+
+              <span>
+                BD Member Performance Report
+              </span>
+
+              <span>
+                {selectedMember.name}
+              </span>
 
             </div>
 
