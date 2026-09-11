@@ -182,7 +182,20 @@ function BDPerformance() {
   }
 
 
+  function getBDExpenditure(row) {
+
+    // BD Expenditure = 5% of Gross Revenue
+    // Gross Revenue is treated as Total Billing
+
+    return getBilling(row) * 0.05;
+
+  }
+
+
   function getNetAmount(row) {
+
+    // Existing Net Amount formula:
+    // Total Billing - Franchisee Share
 
     return (
       getBilling(row) -
@@ -439,22 +452,32 @@ function BDPerformance() {
 
             billing: 0,
 
-            netAmount: 0
+            netAmount: 0,
+
+            bdExpenditure: 0
 
           };
 
         }
 
 
+        // Total acquired clients
         members[member].clients += 1;
 
 
+        // Gross Revenue / Total Billing
         members[member].billing +=
           getBilling(row);
 
 
+        // Net Amount
         members[member].netAmount +=
           getNetAmount(row);
+
+
+        // BD Expenditure = 5% of Gross Revenue
+        members[member].bdExpenditure +=
+          getBDExpenditure(row);
 
       });
 
@@ -509,16 +532,25 @@ function BDPerformance() {
 
       let netAmount = 0;
 
+      let bdExpenditure = 0;
+
 
       selectedMemberRows.forEach(
         row => {
 
+          // Gross Revenue
           billing +=
             getBilling(row);
 
 
+          // Net Amount
           netAmount +=
             getNetAmount(row);
+
+
+          // BD Expenditure
+          bdExpenditure +=
+            getBDExpenditure(row);
 
         }
       );
@@ -531,7 +563,9 @@ function BDPerformance() {
 
         billing,
 
-        netAmount
+        netAmount,
+
+        bdExpenditure
 
       };
 
@@ -1068,6 +1102,10 @@ function BDPerformance() {
                 </th>
 
                 <th>
+                  BD Expenditure
+                </th>
+
+                <th>
                   Performance
                 </th>
 
@@ -1161,6 +1199,21 @@ function BDPerformance() {
                       </td>
 
 
+                      {/* BD EXPENDITURE */}
+
+                      <td>
+
+                        <strong className="bd-expenditure-value">
+
+                          {formatCurrency(
+                            member.bdExpenditure
+                          )}
+
+                        </strong>
+
+                      </td>
+
+
                       {/* PERFORMANCE */}
 
                       <td>
@@ -1197,11 +1250,13 @@ function BDPerformance() {
                 <tr>
 
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="bd-empty-table"
                   >
+
                     No BD Member data
                     available.
+
                   </td>
 
                 </tr>
@@ -1267,7 +1322,9 @@ function BDPerformance() {
                 onClick={closePerformance}
                 aria-label="Close"
               >
+
                 ×
+
               </button>
 
             </div>
@@ -1339,13 +1396,15 @@ function BDPerformance() {
                 </span>
 
                 <strong className="billing-summary">
+
                   {formatCurrency(
                     performanceSummary.billing
                   )}
+
                 </strong>
 
                 <small>
-                  Total bill amount
+                  Gross Revenue
                 </small>
 
               </div>
@@ -1364,9 +1423,11 @@ function BDPerformance() {
                     ? "net-summary-positive"
                     : "net-summary-negative"
                 }>
+
                   {formatCurrency(
                     performanceSummary.netAmount
                   )}
+
                 </strong>
 
                 <small>
@@ -1374,6 +1435,30 @@ function BDPerformance() {
                 </small>
 
               </div>
+
+
+              {/* BD EXPENDITURE */}
+
+              <div className="bd-summary-card">
+
+                <span>
+                  BD EXPENDITURE
+                </span>
+
+                <strong className="bd-expenditure-summary">
+
+                  {formatCurrency(
+                    performanceSummary.bdExpenditure
+                  )}
+
+                </strong>
+
+                <small>
+                  5% of Gross Revenue
+                </small>
+
+              </div>
+
 
             </div>
 
@@ -1414,7 +1499,9 @@ function BDPerformance() {
                         key={year}
                         value={year}
                       >
+
                         FY {year}
+
                       </option>
 
                     )
@@ -1462,10 +1549,12 @@ function BDPerformance() {
                     </span>
 
                     <h3>
+
                       {selectedFinancialYear
                         ? "Monthly Client Acquired"
                         : "Yearly Client Acquired"
                       }
+
                     </h3>
 
                   </div>
@@ -1565,10 +1654,12 @@ function BDPerformance() {
                     </span>
 
                     <h3>
+
                       {selectedFinancialYear
                         ? "Monthly Total Billing"
                         : "Yearly Total Billing"
                       }
+
                     </h3>
 
                   </div>
@@ -1665,10 +1756,12 @@ function BDPerformance() {
             <div className="bd-modal-footer">
 
               <span>
+
                 {selectedFinancialYear
                   ? `Showing monthly performance for FY ${selectedFinancialYear}`
                   : "Showing yearly performance across all financial years"
                 }
+
               </span>
 
 
@@ -1676,7 +1769,9 @@ function BDPerformance() {
                 type="button"
                 onClick={closePerformance}
               >
+
                 Close
+
               </button>
 
             </div>
