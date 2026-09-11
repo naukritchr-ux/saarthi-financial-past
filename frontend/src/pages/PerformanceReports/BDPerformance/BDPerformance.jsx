@@ -93,8 +93,8 @@ function BDPerformance() {
   const getInfoStatus = (row) => {
 
     return String(
-      row.Info ??
       row["Info"] ??
+      row.info ??
       ""
     ).trim().toUpperCase();
   };
@@ -103,18 +103,19 @@ function BDPerformance() {
   /* ============================================================
      BILLING
 
-     ONLY BILLING FIELD IS USED.
+     DATABASE FIELD:
+     total_bill_amount
 
-     TANN and TDS are NOT USED.
+     NO TANN
+     NO TDS
      ============================================================ */
 
   const getBilling = (row) => {
 
     return toNumber(
-      row["Billing"] ??
-      row.billing ??
-      row["Total Billing"] ??
-      row.total_billing ??
+      row["Total Bill Amount"] ??
+      row.total_bill_amount ??
+      row["total_bill_amount"] ??
       0
     );
   };
@@ -122,17 +123,17 @@ function BDPerformance() {
 
   /* ============================================================
      FRANCHISEE SHARE
+
+     DATABASE FIELD:
+     franchisee_share
      ============================================================ */
 
   const getFranchiseeShare = (row) => {
 
     return toNumber(
       row["Franchisee Share"] ??
-      row["Franchisee Cost"] ??
-      row["Franchise Cost"] ??
-      row["Franchisee Cost Amount"] ??
       row.franchisee_share ??
-      row.franchise_cost ??
+      row["franchisee_share"] ??
       0
     );
   };
@@ -370,23 +371,30 @@ function BDPerformance() {
   /* ============================================================
      FINANCIAL CALCULATION
 
-     ALL
-     ------------------------------------------------------------
-     Total Billing = R + RV + C + CN
-     Net Amount = Total Billing - Franchisee Share
-     BD Expenditure = 5% of Total Billing
+     ALL:
+       Billing = R + RV + C + CN
+       Net Amount = Billing - Franchisee Share
+       BD Expenditure = 5% Billing
 
-     R
-     ------------------------------------------------------------
-     Total Billing = R Billing
-     Net Amount = R Billing - R Franchisee Share
-     BD Expenditure = 5% of R Billing
+     R:
+       Billing = R Billing
+       Net Amount = R Billing - R Franchisee Share
+       BD Expenditure = 5% R Billing
 
-     RV / C / CN
-     ------------------------------------------------------------
-     Total Billing = selected status Billing
-     Net Amount = 0
-     BD Expenditure = 0
+     RV:
+       Billing = RV Billing
+       Net Amount = 0
+       BD Expenditure = 0
+
+     C:
+       Billing = C Billing
+       Net Amount = 0
+       BD Expenditure = 0
+
+     CN:
+       Billing = CN Billing
+       Net Amount = 0
+       BD Expenditure = 0
      ============================================================ */
 
   const getFinancialValues = (
@@ -657,7 +665,7 @@ function BDPerformance() {
 
 
   /* ============================================================
-     MAIN FILTERED ROWS
+     MAIN TABLE FILTER
      ============================================================ */
 
   const filteredRows =
@@ -1188,31 +1196,18 @@ function BDPerformance() {
 
 
   /* ============================================================
-     CHART DATA
+     CHART
      ============================================================ */
-
-  const chartData =
-    useMemo(() => {
-
-      return monthlyPerformance.map(
-        (item) => ({
-          ...item,
-          value: item.billing
-        })
-      );
-
-    }, [
-      monthlyPerformance
-    ]);
-
 
   const maxChartValue =
     useMemo(() => {
 
       const values =
-        chartData.map(
+        monthlyPerformance.map(
           (item) =>
-            toNumber(item.value)
+            toNumber(
+              item.billing
+            )
         );
 
 
@@ -1222,12 +1217,12 @@ function BDPerformance() {
       );
 
     }, [
-      chartData
+      monthlyPerformance
     ]);
 
 
   /* ============================================================
-     OPEN / CLOSE PERFORMANCE
+     OPEN PERFORMANCE
      ============================================================ */
 
   const openPerformance = (
@@ -1241,6 +1236,10 @@ function BDPerformance() {
     setSelectedModalInfoStatus("");
   };
 
+
+  /* ============================================================
+     CLOSE PERFORMANCE
+     ============================================================ */
 
   const closePerformance = () => {
 
@@ -1386,9 +1385,7 @@ function BDPerformance() {
           </h2>
 
           <span>
-            {memberPerformance.length}
-            {" "}
-            BD Members
+            {memberPerformance.length} BD Members
           </span>
 
         </div>
@@ -1403,27 +1400,27 @@ function BDPerformance() {
               <tr>
 
                 <th>
-                  BD Member
+                  BD MEMBER
                 </th>
 
                 <th>
-                  Total Clients
+                  TOTAL CLIENTS
                 </th>
 
                 <th>
-                  Total Billing
+                  TOTAL BILLING
                 </th>
 
                 <th>
-                  Net Amount
+                  NET AMOUNT
                 </th>
 
                 <th>
-                  BD Expenditure
+                  BD EXPENDITURE
                 </th>
 
                 <th>
-                  Action
+                  ACTION
                 </th>
 
               </tr>
@@ -1433,8 +1430,7 @@ function BDPerformance() {
 
             <tbody>
 
-              {memberPerformance.length >
-              0 ? (
+              {memberPerformance.length > 0 ? (
 
                 memberPerformance.map(
                   (member) => (
@@ -1657,11 +1653,10 @@ function BDPerformance() {
 
 
             {/* ==================================================
-                SUMMARY
+                SUMMARY CARDS
                 ================================================== */}
 
             <div className="performance-summary-grid">
-
 
               <div className="performance-summary-card">
 
@@ -1782,8 +1777,7 @@ function BDPerformance() {
 
                   <tbody>
 
-                    {yearlyPerformance.length >
-                    0 ? (
+                    {yearlyPerformance.length > 0 ? (
 
                       yearlyPerformance.map(
                         (item) => (
@@ -1954,13 +1948,13 @@ function BDPerformance() {
 
               <div className="performance-chart">
 
-                {chartData.map(
+                {monthlyPerformance.map(
                   (item) => {
 
                     const percentage =
                       (
                         toNumber(
-                          item.value
+                          item.billing
                         ) /
                         maxChartValue
                       ) *
@@ -1984,7 +1978,7 @@ function BDPerformance() {
 
                           <strong>
                             {fullCurrency(
-                              item.value
+                              item.billing
                             )}
                           </strong>
 
