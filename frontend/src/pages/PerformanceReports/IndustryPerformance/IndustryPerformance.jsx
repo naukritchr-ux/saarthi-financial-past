@@ -36,7 +36,7 @@ const financialMonths = [
 
 
 /* ============================================================
-   NUMBER HELPERS
+   NUMBER HELPER
    ============================================================ */
 
 const toNumber = (value) => {
@@ -65,9 +65,7 @@ const toNumber = (value) => {
    ============================================================ */
 
 const formatCurrency = (value) => {
-  const number = toNumber(value);
-
-  return `₹${number.toLocaleString("en-IN", {
+  return `₹${toNumber(value).toLocaleString("en-IN", {
     maximumFractionDigits: 0
   })}`;
 };
@@ -150,28 +148,6 @@ const getInfoStatus = (row) => {
 
 
 /* ============================================================
-   INFO STATUS MATCH
-   ============================================================ */
-
-const matchesInfoStatus = (
-  row,
-  selectedStatus
-) => {
-  const status = String(
-    selectedStatus || "All"
-  )
-    .trim()
-    .toUpperCase();
-
-  if (status === "ALL") {
-    return true;
-  }
-
-  return getInfoStatus(row) === status;
-};
-
-
-/* ============================================================
    CLIENT ACQUIRED DATE
    ============================================================ */
 
@@ -206,14 +182,10 @@ const getFinancialYear = (dateValue) => {
   const month = date.getMonth() + 1;
 
   if (month >= 4) {
-    return `${year}-${String(
-      year + 1
-    ).slice(-2)}`;
+    return `${year}-${String(year + 1).slice(-2)}`;
   }
 
-  return `${year - 1}-${String(
-    year
-  ).slice(-2)}`;
+  return `${year - 1}-${String(year).slice(-2)}`;
 };
 
 
@@ -232,12 +204,31 @@ const getMonth = (dateValue) => {
     return "";
   }
 
-  return date.toLocaleString(
-    "en-IN",
-    {
-      month: "long"
-    }
-  );
+  return date.toLocaleString("en-IN", {
+    month: "long"
+  });
+};
+
+
+/* ============================================================
+   INFO STATUS MATCH
+   ============================================================ */
+
+const matchesInfoStatus = (
+  row,
+  selectedStatus
+) => {
+  const status = String(
+    selectedStatus || "All"
+  )
+    .trim()
+    .toUpperCase();
+
+  if (status === "ALL") {
+    return true;
+  }
+
+  return getInfoStatus(row) === status;
 };
 
 
@@ -279,9 +270,31 @@ const getMostFrequent = (
 
 
 /* ============================================================
-   INDUSTRY FINANCIAL CALCULATION
+   FINANCIAL CALCULATION
+   ------------------------------------------------------------
    IMPORTANT:
-   NO FRANCHISE SHARE CALCULATION
+   Franchise Share is NOT calculated.
+   ------------------------------------------------------------
+
+   ALL:
+   Total Billing = R + RV + C + CN
+   Expenditure = 5% of Total Billing
+
+   R:
+   Total Billing = R Billing
+   Expenditure = 5% of R Billing
+
+   RV:
+   Total Billing = RV Billing
+   Expenditure = 0
+
+   C:
+   Total Billing = C Billing
+   Expenditure = 0
+
+   CN:
+   Total Billing = CN Billing
+   Expenditure = 0
    ============================================================ */
 
 const getFinancialValues = (
@@ -296,14 +309,13 @@ const getFinancialValues = (
 
 
   /* ----------------------------------------------------------
-     RV / C / CN
-     NO EXPENDITURE
+     C / CN / RV
      ---------------------------------------------------------- */
 
   if (
-    selectedStatus === "RV" ||
     selectedStatus === "C" ||
-    selectedStatus === "CN"
+    selectedStatus === "CN" ||
+    selectedStatus === "RV"
   ) {
     let totalBilling = 0;
 
@@ -326,7 +338,6 @@ const getFinancialValues = (
 
   /* ----------------------------------------------------------
      R
-     EXPENDITURE = 5% OF R BILLING
      ---------------------------------------------------------- */
 
   if (selectedStatus === "R") {
@@ -351,8 +362,6 @@ const getFinancialValues = (
 
   /* ----------------------------------------------------------
      ALL
-     TOTAL BILLING = R + RV + C + CN
-     EXPENDITURE = 5% OF TOTAL BILLING
      ---------------------------------------------------------- */
 
   let totalBilling = 0;
@@ -371,7 +380,7 @@ const getFinancialValues = (
 
 
 /* ============================================================
-   CUSTOM TOOLTIP
+   TOOLTIP
    ============================================================ */
 
 const IndustryTooltip = ({
@@ -407,25 +416,20 @@ const IndustryTooltip = ({
         {label}
       </div>
 
-      {payload.map(
-        (item, index) => (
-          <div
-            key={index}
-            style={{
-              fontSize: "13px",
-              marginTop: "3px"
-            }}
-          >
-            {item.name}:{" "}
-            {item.name ===
-              "Total Billing"
-              ? formatCurrency(
-                  item.value
-                )
-              : item.value}
-          </div>
-        )
-      )}
+      {payload.map((item, index) => (
+        <div
+          key={index}
+          style={{
+            fontSize: "13px",
+            marginTop: "3px"
+          }}
+        >
+          {item.name}:{" "}
+          {item.name === "Total Billing"
+            ? formatCurrency(item.value)
+            : item.value}
+        </div>
+      ))}
     </div>
   );
 };
@@ -459,6 +463,11 @@ function IndustryPerformance() {
     setSelectedInfoStatus
   ] = useState("All");
 
+  const [
+    showModal,
+    setShowModal
+  ] = useState(false);
+
 
   /* ==========================================================
      FINANCIAL YEARS
@@ -469,15 +478,14 @@ function IndustryPerformance() {
     const years = new Set();
 
     rows.forEach((row) => {
-
       const date =
         getClientAcquiredDate(row);
 
-      const fy =
+      const financialYear =
         getFinancialYear(date);
 
-      if (fy) {
-        years.add(fy);
+      if (financialYear) {
+        years.add(financialYear);
       }
     });
 
@@ -490,7 +498,7 @@ function IndustryPerformance() {
 
 
   /* ==========================================================
-     INDUSTRY LIST
+     INDUSTRIES
      ========================================================== */
 
   const industries = useMemo(() => {
@@ -498,7 +506,6 @@ function IndustryPerformance() {
     const values = new Set();
 
     rows.forEach((row) => {
-
       const industry =
         getIndustry(row);
 
@@ -516,7 +523,7 @@ function IndustryPerformance() {
 
 
   /* ==========================================================
-     BASE FILTERED ROWS
+     FILTERED ROWS
      ========================================================== */
 
   const filteredRows = useMemo(() => {
@@ -541,10 +548,8 @@ function IndustryPerformance() {
 
 
       const industryMatch =
-        selectedIndustry ===
-          "All" ||
-        industry ===
-          selectedIndustry;
+        selectedIndustry === "All" ||
+        industry === selectedIndustry;
 
 
       const infoStatusMatch =
@@ -559,7 +564,6 @@ function IndustryPerformance() {
         industryMatch &&
         infoStatusMatch
       );
-
     });
 
   }, [
@@ -584,13 +588,11 @@ function IndustryPerformance() {
         getIndustry(row) ||
         "Unknown";
 
-
       if (!grouped[industry]) {
         grouped[industry] = [];
       }
 
       grouped[industry].push(row);
-
     });
 
 
@@ -604,9 +606,9 @@ function IndustryPerformance() {
               selectedInfoStatus
             );
 
-
           return {
             industry,
+
             totalClients:
               industryRows.length,
 
@@ -619,7 +621,6 @@ function IndustryPerformance() {
             industryExpenditure:
               financial.industryExpenditure
           };
-
         }
       )
       .sort(
@@ -659,7 +660,7 @@ function IndustryPerformance() {
 
 
   /* ==========================================================
-     PERFORMANCE SUMMARY
+     SUMMARY
      ========================================================== */
 
   const performanceSummary =
@@ -677,7 +678,7 @@ function IndustryPerformance() {
 
 
   /* ==========================================================
-     ENQUIRY COUNT
+     CLIENT COUNT
      ========================================================== */
 
   const enquiryCount =
@@ -685,7 +686,7 @@ function IndustryPerformance() {
 
 
   /* ==========================================================
-     SUB INDUSTRY DATA
+     SUB INDUSTRY
      ========================================================== */
 
   const subIndustryData =
@@ -693,30 +694,25 @@ function IndustryPerformance() {
 
       const grouped = {};
 
-      selectedRows.forEach(
-        (row) => {
+      selectedRows.forEach((row) => {
 
-          const subIndustry =
-            getSubIndustry(row) ||
-            "Unknown";
+        const subIndustry =
+          getSubIndustry(row) ||
+          "Unknown";
 
-          if (!grouped[subIndustry]) {
-            grouped[subIndustry] = {
-              name: subIndustry,
-              clients: 0,
-              billing: 0
-            };
-          }
-
-          grouped[subIndustry]
-            .clients += 1;
-
-          grouped[subIndustry]
-            .billing +=
-              getBilling(row);
-
+        if (!grouped[subIndustry]) {
+          grouped[subIndustry] = {
+            name: subIndustry,
+            clients: 0,
+            billing: 0
+          };
         }
-      );
+
+        grouped[subIndustry].clients += 1;
+
+        grouped[subIndustry].billing +=
+          getBilling(row);
+      });
 
 
       return Object.values(grouped)
@@ -768,41 +764,36 @@ function IndustryPerformance() {
 
       const grouped = {};
 
-      selectedRows.forEach(
-        (row) => {
+      selectedRows.forEach((row) => {
 
-          const date =
-            getClientAcquiredDate(row);
+        const date =
+          getClientAcquiredDate(row);
 
-          const fy =
-            getFinancialYear(date);
+        const financialYear =
+          getFinancialYear(date);
 
-          if (!fy) {
-            return;
-          }
-
-          if (!grouped[fy]) {
-            grouped[fy] = {
-              year: fy,
-              clients: 0,
-              billing: 0
-            };
-          }
-
-          grouped[fy].clients += 1;
-
-          grouped[fy].billing +=
-            getBilling(row);
-
+        if (!financialYear) {
+          return;
         }
-      );
+
+        if (!grouped[financialYear]) {
+          grouped[financialYear] = {
+            year: financialYear,
+            clients: 0,
+            billing: 0
+          };
+        }
+
+        grouped[financialYear].clients += 1;
+
+        grouped[financialYear].billing +=
+          getBilling(row);
+      });
 
 
       return Object.values(grouped)
         .sort((a, b) =>
-          a.year.localeCompare(
-            b.year
-          )
+          a.year.localeCompare(b.year)
         );
 
     }, [selectedRows]);
@@ -817,43 +808,31 @@ function IndustryPerformance() {
 
       const grouped = {};
 
-      financialMonths.forEach(
-        (month) => {
+      financialMonths.forEach((month) => {
 
-          grouped[month] = {
-            month,
-            clients: 0,
-            billing: 0
-          };
+        grouped[month] = {
+          month,
+          clients: 0,
+          billing: 0
+        };
+      });
 
+
+      selectedRows.forEach((row) => {
+
+        const date =
+          getClientAcquiredDate(row);
+
+        const month =
+          getMonth(date);
+
+        if (grouped[month]) {
+          grouped[month].clients += 1;
+
+          grouped[month].billing +=
+            getBilling(row);
         }
-      );
-
-
-      selectedRows.forEach(
-        (row) => {
-
-          const date =
-            getClientAcquiredDate(row);
-
-          const month =
-            getMonth(date);
-
-          if (
-            grouped[month]
-          ) {
-
-            grouped[month]
-              .clients += 1;
-
-            grouped[month]
-              .billing +=
-                getBilling(row);
-
-          }
-
-        }
-      );
+      });
 
 
       return financialMonths.map(
@@ -862,16 +841,6 @@ function IndustryPerformance() {
       );
 
     }, [selectedRows]);
-
-
-  /* ==========================================================
-     MODAL
-     ========================================================== */
-
-  const [
-    showModal,
-    setShowModal
-  ] = useState(false);
 
 
   /* ==========================================================
@@ -908,8 +877,6 @@ function IndustryPerformance() {
 
       <div className="industry-filters">
 
-        {/* FINANCIAL YEAR */}
-
         <div className="industry-filter-group">
 
           <label>
@@ -942,8 +909,6 @@ function IndustryPerformance() {
 
         </div>
 
-
-        {/* INFO STATUS */}
 
         <div className="industry-filter-group">
 
@@ -986,8 +951,6 @@ function IndustryPerformance() {
 
         </div>
 
-
-        {/* INDUSTRY */}
 
         <div className="industry-filter-group">
 
@@ -1152,69 +1115,67 @@ function IndustryPerformance() {
 
               ) : (
 
-                industryData.map(
-                  (item) => (
+                industryData.map((item) => (
 
-                    <tr
-                      key={
-                        item.industry
-                      }
-                    >
+                  <tr
+                    key={
+                      item.industry
+                    }
+                  >
 
-                      <td>
-                        {item.industry}
-                      </td>
+                    <td>
+                      {item.industry}
+                    </td>
 
-                      <td>
-                        {item.totalClients.toLocaleString(
-                          "en-IN"
-                        )}
-                      </td>
+                    <td>
+                      {item.totalClients.toLocaleString(
+                        "en-IN"
+                      )}
+                    </td>
 
-                      <td>
-                        {formatCurrency(
-                          item.totalBilling
-                        )}
-                      </td>
+                    <td>
+                      {formatCurrency(
+                        item.totalBilling
+                      )}
+                    </td>
 
-                      <td>
-                        {formatCurrency(
-                          item.netAmount
-                        )}
-                      </td>
+                    <td>
+                      {formatCurrency(
+                        item.netAmount
+                      )}
+                    </td>
 
-                      <td>
-                        {formatCurrency(
-                          item.industryExpenditure
-                        )}
-                      </td>
+                    <td>
+                      {formatCurrency(
+                        item.industryExpenditure
+                      )}
+                    </td>
 
-                      <td>
+                    <td>
 
-                        <button
-                          type="button"
-                          className="industry-view-button"
-                          onClick={() => {
+                      <button
+                        type="button"
+                        className="industry-view-button"
+                        onClick={() => {
 
-                            setSelectedIndustry(
-                              item.industry
-                            );
+                          setSelectedIndustry(
+                            item.industry
+                          );
 
-                            setShowModal(
-                              true
-                            );
+                          setShowModal(
+                            true
+                          );
 
-                          }}
-                        >
-                          View
-                        </button>
+                        }}
+                      >
+                        View
+                      </button>
 
-                      </td>
+                    </td>
 
-                    </tr>
+                  </tr>
 
-                  )
-                )
+                ))
 
               )}
 
@@ -1246,8 +1207,6 @@ function IndustryPerformance() {
               event.stopPropagation()
             }
           >
-
-            {/* MODAL HEADER */}
 
             <div className="industry-modal-header">
 
@@ -1425,9 +1384,7 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* =================================================
-                YEAR CHART
-                ================================================= */}
+            {/* YEAR CHART */}
 
             <div className="industry-chart-section">
 
@@ -1490,9 +1447,7 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* =================================================
-                BILLING CHART
-                ================================================= */}
+            {/* BILLING CHART */}
 
             <div className="industry-chart-section">
 
@@ -1555,9 +1510,7 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* =================================================
-                SUB INDUSTRY
-                ================================================= */}
+            {/* SUB INDUSTRY */}
 
             <div className="industry-subindustry-section">
 
@@ -1569,11 +1522,9 @@ function IndustryPerformance() {
 
               </div>
 
-
               <div className="industry-subindustry-list">
 
-                {subIndustryData.length ===
-                0 ? (
+                {subIndustryData.length === 0 ? (
 
                   <div className="industry-no-data">
                     No sub industry data available
@@ -1581,41 +1532,37 @@ function IndustryPerformance() {
 
                 ) : (
 
-                  subIndustryData.map(
-                    (item) => (
+                  subIndustryData.map((item) => (
 
-                      <div
-                        className="industry-subindustry-row"
-                        key={
-                          item.name
-                        }
-                      >
+                    <div
+                      className="industry-subindustry-row"
+                      key={item.name}
+                    >
 
-                        <div>
-
-                          <strong>
-                            {item.name}
-                          </strong>
-
-                          <span>
-                            {item.clients.toLocaleString(
-                              "en-IN"
-                            )}{" "}
-                            Clients
-                          </span>
-
-                        </div>
+                      <div>
 
                         <strong>
-                          {formatCurrency(
-                            item.billing
-                          )}
+                          {item.name}
                         </strong>
+
+                        <span>
+                          {item.clients.toLocaleString(
+                            "en-IN"
+                          )}{" "}
+                          Clients
+                        </span>
 
                       </div>
 
-                    )
-                  )
+                      <strong>
+                        {formatCurrency(
+                          item.billing
+                        )}
+                      </strong>
+
+                    </div>
+
+                  ))
 
                 )}
 
@@ -1624,9 +1571,7 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* =================================================
-                TEAM LEADER / BD
-                ================================================= */}
+            {/* TEAM LEADER / BD MEMBER */}
 
             <div className="industry-owner-grid">
 
@@ -1658,9 +1603,7 @@ function IndustryPerformance() {
             </div>
 
 
-            {/* =================================================
-                MODAL FOOTER
-                ================================================= */}
+            {/* FOOTER */}
 
             <div className="industry-modal-footer">
 
