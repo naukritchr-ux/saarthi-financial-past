@@ -43,6 +43,26 @@ function BDPerformance() {
   ] = useState("");
 
 
+  // Main table filters
+  const [
+    selectedTableFinancialYear,
+    setSelectedTableFinancialYear
+  ] = useState("");
+
+
+  const [
+    selectedInfoStatus,
+    setSelectedInfoStatus
+  ] = useState("");
+
+
+  // Modal Info filter
+  const [
+    selectedModalInfoStatus,
+    setSelectedModalInfoStatus
+  ] = useState("");
+
+
   // =====================================================
   // HELPERS
   // =====================================================
@@ -126,7 +146,6 @@ function BDPerformance() {
 
   // =====================================================
   // FIELD HELPERS
-  // Supports both backend and mapped frontend fields
   // =====================================================
 
   function getBDMember(row) {
@@ -162,6 +181,27 @@ function BDPerformance() {
   }
 
 
+  // =====================================================
+  // INFO STATUS
+  // =====================================================
+
+  function getInfoStatus(row) {
+
+    return String(
+      row.Info ??
+      row["Info"] ??
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+  }
+
+
+  // =====================================================
+  // BILLING
+  // =====================================================
+
   function getBilling(row) {
 
     return toNumber(
@@ -171,6 +211,10 @@ function BDPerformance() {
 
   }
 
+
+  // =====================================================
+  // FRANCHISEE SHARE
+  // =====================================================
 
   function getFranchiseeShare(row) {
 
@@ -182,20 +226,24 @@ function BDPerformance() {
   }
 
 
+  // =====================================================
+  // BD EXPENDITURE
+  // =====================================================
+
   function getBDExpenditure(row) {
 
     // BD Expenditure = 5% of Gross Revenue
-    // Gross Revenue is treated as Total Billing
 
     return getBilling(row) * 0.05;
 
   }
 
 
-  function getNetAmount(row) {
+  // =====================================================
+  // NET AMOUNT
+  // =====================================================
 
-    // Existing Net Amount formula:
-    // Total Billing - Franchisee Share
+  function getNetAmount(row) {
 
     return (
       getBilling(row) -
@@ -205,6 +253,10 @@ function BDPerformance() {
   }
 
 
+  // =====================================================
+  // ACQUIRED DATE
+  // =====================================================
+
   function getAcquiredDate(row) {
 
     return (
@@ -212,6 +264,115 @@ function BDPerformance() {
       row["Date Client Acquired"] ??
       ""
     );
+
+  }
+
+
+  // =====================================================
+  // DATE PARSER
+  // =====================================================
+
+  function parseDate(value) {
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return null;
+    }
+
+
+    if (
+      value instanceof Date
+    ) {
+
+      return Number.isNaN(
+        value.getTime()
+      )
+        ? null
+        : value;
+
+    }
+
+
+    // Excel serial date
+    if (
+      typeof value === "number"
+    ) {
+
+      const excelDate =
+        new Date(
+          Math.round(
+            (value - 25569) *
+            86400 *
+            1000
+          )
+        );
+
+
+      return Number.isNaN(
+        excelDate.getTime()
+      )
+        ? null
+        : excelDate;
+
+    }
+
+
+    const stringValue =
+      String(value).trim();
+
+
+    // DD/MM/YYYY
+    // DD-MM-YYYY
+
+    const parts =
+      stringValue.match(
+        /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/
+      );
+
+
+    if (parts) {
+
+      const day =
+        Number(parts[1]);
+
+      const month =
+        Number(parts[2]) - 1;
+
+      const year =
+        Number(parts[3]);
+
+
+      const date =
+        new Date(
+          year,
+          month,
+          day
+        );
+
+
+      return Number.isNaN(
+        date.getTime()
+      )
+        ? null
+        : date;
+
+    }
+
+
+    const parsed =
+      new Date(
+        stringValue
+      );
+
+
+    return Number.isNaN(
+      parsed.getTime()
+    )
+      ? null
+      : parsed;
 
   }
 
@@ -227,22 +388,11 @@ function BDPerformance() {
       getAcquiredDate(row);
 
 
-    if (!dateValue) {
-
-      return "";
-
-    }
-
-
     const date =
-      new Date(dateValue);
+      parseDate(dateValue);
 
 
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
+    if (!date) {
 
       return "";
 
@@ -344,22 +494,11 @@ function BDPerformance() {
       getAcquiredDate(row);
 
 
-    if (!dateValue) {
-
-      return "";
-
-    }
-
-
     const date =
-      new Date(dateValue);
+      parseDate(dateValue);
 
 
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
+    if (!date) {
 
       return "";
 
@@ -420,6 +559,200 @@ function BDPerformance() {
 
 
   // =====================================================
+  // FINANCIAL CALCULATION RULES
+  // =====================================================
+
+  function getFinancialValues(
+    row,
+    infoFilter = ""
+  ) {
+
+    const info =
+      getInfoStatus(row);
+
+
+    const billing =
+      getBilling(row);
+
+
+    /*
+      NO INFO FILTER
+
+      Only Info = R is considered
+      for Billing, Net Amount and
+      BD Expenditure.
+    */
+
+    if (
+      !infoFilter ||
+      infoFilter === "ALL"
+    ) {
+
+      if (info !== "R") {
+
+        return {
+          billing: 0,
+          netAmount: 0,
+          bdExpenditure: 0
+        };
+
+      }
+
+
+      return {
+
+        billing,
+
+        netAmount:
+          getNetAmount(row),
+
+        bdExpenditure:
+          getBDExpenditure(row)
+
+      };
+
+    }
+
+
+    /*
+      INFO = R
+
+      Billing:
+      R only
+
+      Net:
+      Billing - Franchisee Share
+
+      Expenditure:
+      5% Billing
+    */
+
+    if (
+      infoFilter === "R"
+    ) {
+
+      if (info !== "R") {
+
+        return {
+          billing: 0,
+          netAmount: 0,
+          bdExpenditure: 0
+        };
+
+      }
+
+
+      return {
+
+        billing,
+
+        netAmount:
+          getNetAmount(row),
+
+        bdExpenditure:
+          getBDExpenditure(row)
+
+      };
+
+    }
+
+
+    /*
+      INFO = RV / C / CN
+
+      Billing:
+      Selected Info only
+
+      Net:
+      0
+
+      Expenditure:
+      0
+    */
+
+    if (
+      info === infoFilter
+    ) {
+
+      return {
+
+        billing,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing: 0,
+
+      netAmount: 0,
+
+      bdExpenditure: 0
+
+    };
+
+  }
+
+
+  // =====================================================
+  // MAIN FILTERED ROWS
+  // =====================================================
+
+  const filteredRows =
+    useMemo(() => {
+
+      return rows.filter(row => {
+
+        const year =
+          getFinancialYear(row);
+
+
+        const info =
+          getInfoStatus(row);
+
+
+        // Financial Year
+
+        if (
+          selectedTableFinancialYear &&
+          year !== selectedTableFinancialYear
+        ) {
+
+          return false;
+
+        }
+
+
+        // Info Status
+
+        if (
+          selectedInfoStatus &&
+          info !== selectedInfoStatus
+        ) {
+
+          return false;
+
+        }
+
+
+        return true;
+
+      });
+
+    }, [
+      rows,
+      selectedTableFinancialYear,
+      selectedInfoStatus
+    ]);
+
+
+  // =====================================================
   // BD MEMBER TABLE
   // =====================================================
 
@@ -429,7 +762,7 @@ function BDPerformance() {
       const members = {};
 
 
-      rows.forEach(row => {
+      filteredRows.forEach(row => {
 
         const member =
           getBDMember(row);
@@ -461,23 +794,30 @@ function BDPerformance() {
         }
 
 
-        // Total acquired clients
+        // Client count
+
         members[member].clients += 1;
 
 
-        // Gross Revenue / Total Billing
+        // Financial calculations
+
+        const financialValues =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
+
+
         members[member].billing +=
-          getBilling(row);
+          financialValues.billing;
 
 
-        // Net Amount
         members[member].netAmount +=
-          getNetAmount(row);
+          financialValues.netAmount;
 
 
-        // BD Expenditure = 5% of Gross Revenue
         members[member].bdExpenditure +=
-          getBDExpenditure(row);
+          financialValues.bdExpenditure;
 
       });
 
@@ -491,12 +831,18 @@ function BDPerformance() {
       );
 
     }, [
-      rows
+      filteredRows,
+      selectedInfoStatus
     ]);
 
 
   // =====================================================
   // SELECTED BD MEMBER ROWS
+  //
+  // IMPORTANT:
+  // Financial Year is applied here.
+  // Therefore ALL MODAL CARDS change
+  // when Financial Year changes.
   // =====================================================
 
   const selectedMemberRows =
@@ -509,15 +855,55 @@ function BDPerformance() {
       }
 
 
-      return rows.filter(
-        row =>
-          getBDMember(row) ===
+      return rows.filter(row => {
+
+        // Selected BD Member
+
+        if (
+          getBDMember(row) !==
           selectedMember.name
-      );
+        ) {
+
+          return false;
+
+        }
+
+
+        // Selected Financial Year
+
+        if (
+          selectedFinancialYear &&
+          getFinancialYear(row) !==
+          selectedFinancialYear
+        ) {
+
+          return false;
+
+        }
+
+
+        // Selected Info Status
+
+        if (
+          selectedModalInfoStatus &&
+          getInfoStatus(row) !==
+          selectedModalInfoStatus
+        ) {
+
+          return false;
+
+        }
+
+
+        return true;
+
+      });
 
     }, [
       rows,
-      selectedMember
+      selectedMember,
+      selectedFinancialYear,
+      selectedModalInfoStatus
     ]);
 
 
@@ -538,19 +924,23 @@ function BDPerformance() {
       selectedMemberRows.forEach(
         row => {
 
-          // Gross Revenue
+          const financialValues =
+            getFinancialValues(
+              row,
+              selectedModalInfoStatus
+            );
+
+
           billing +=
-            getBilling(row);
+            financialValues.billing;
 
 
-          // Net Amount
           netAmount +=
-            getNetAmount(row);
+            financialValues.netAmount;
 
 
-          // BD Expenditure
           bdExpenditure +=
-            getBDExpenditure(row);
+            financialValues.bdExpenditure;
 
         }
       );
@@ -570,7 +960,8 @@ function BDPerformance() {
       };
 
     }, [
-      selectedMemberRows
+      selectedMemberRows,
+      selectedModalInfoStatus
     ]);
 
 
@@ -754,8 +1145,15 @@ function BDPerformance() {
           yearly[year].clients += 1;
 
 
+          const financialValues =
+            getFinancialValues(
+              row,
+              selectedModalInfoStatus
+            );
+
+
           yearly[year].billing +=
-            getBilling(row);
+            financialValues.billing;
 
         }
       );
@@ -774,7 +1172,8 @@ function BDPerformance() {
       );
 
     }, [
-      selectedMemberRows
+      selectedMemberRows,
+      selectedModalInfoStatus
     ]);
 
 
@@ -849,8 +1248,15 @@ function BDPerformance() {
           monthly[month].clients += 1;
 
 
+          const financialValues =
+            getFinancialValues(
+              row,
+              selectedModalInfoStatus
+            );
+
+
           monthly[month].billing +=
-            getBilling(row);
+            financialValues.billing;
 
         }
       );
@@ -865,7 +1271,8 @@ function BDPerformance() {
 
     }, [
       selectedMemberRows,
-      selectedFinancialYear
+      selectedFinancialYear,
+      selectedModalInfoStatus
     ]);
 
 
@@ -989,6 +1396,8 @@ function BDPerformance() {
 
     setSelectedFinancialYear("");
 
+    setSelectedModalInfoStatus("");
+
   }
 
 
@@ -1001,6 +1410,8 @@ function BDPerformance() {
     setSelectedMember(null);
 
     setSelectedFinancialYear("");
+
+    setSelectedModalInfoStatus("");
 
   }
 
@@ -1071,6 +1482,125 @@ function BDPerformance() {
             <h2>
               BD Member Overview
             </h2>
+
+          </div>
+
+
+          {/* =================================================
+              FILTERS
+          ================================================= */}
+
+          <div
+            className="bd-performance-filters"
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              gap: "16px",
+              marginTop: "18px",
+              flexWrap: "wrap"
+            }}
+          >
+
+            {/* FINANCIAL YEAR */}
+
+            <div
+              className="bd-filter-group"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px"
+              }}
+            >
+
+              <label>
+                FINANCIAL YEAR
+              </label>
+
+              <select
+                value={
+                  selectedTableFinancialYear
+                }
+                onChange={event =>
+                  setSelectedTableFinancialYear(
+                    event.target.value
+                  )
+                }
+              >
+
+                <option value="">
+                  All Financial Years
+                </option>
+
+
+                {financialYears.map(
+                  year => (
+
+                    <option
+                      key={year}
+                      value={year}
+                    >
+
+                      FY {year}
+
+                    </option>
+
+                  )
+                )}
+
+              </select>
+
+            </div>
+
+
+            {/* INFO STATUS */}
+
+            <div
+              className="bd-filter-group"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px"
+              }}
+            >
+
+              <label>
+                INFO STATUS
+              </label>
+
+              <select
+                value={
+                  selectedInfoStatus
+                }
+                onChange={event =>
+                  setSelectedInfoStatus(
+                    event.target.value
+                  )
+                }
+              >
+
+                <option value="">
+                  All
+                </option>
+
+                <option value="R">
+                  R
+                </option>
+
+                <option value="RV">
+                  RV
+                </option>
+
+                <option value="C">
+                  C
+                </option>
+
+                <option value="CN">
+                  CN
+                </option>
+
+              </select>
+
+            </div>
 
           </div>
 
@@ -1464,7 +1994,7 @@ function BDPerformance() {
 
 
             {/* =================================================
-                FINANCIAL YEAR FILTER
+                FINANCIAL YEAR + INFO FILTER
             ================================================= */}
 
             <div className="bd-report-controls">
@@ -1506,6 +2036,48 @@ function BDPerformance() {
 
                     )
                   )}
+
+                </select>
+
+              </div>
+
+
+              <div className="bd-year-control">
+
+                <label>
+                  INFO STATUS
+                </label>
+
+                <select
+                  value={
+                    selectedModalInfoStatus
+                  }
+                  onChange={event =>
+                    setSelectedModalInfoStatus(
+                      event.target.value
+                    )
+                  }
+                >
+
+                  <option value="">
+                    All
+                  </option>
+
+                  <option value="R">
+                    R
+                  </option>
+
+                  <option value="RV">
+                    RV
+                  </option>
+
+                  <option value="C">
+                    C
+                  </option>
+
+                  <option value="CN">
+                    CN
+                  </option>
 
                 </select>
 
