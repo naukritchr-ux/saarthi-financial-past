@@ -117,6 +117,7 @@ function formatCurrency(value) {
       maximumFractionDigits: 0
     }
   ).format(toNumber(value));
+
 }
 
 
@@ -189,6 +190,19 @@ function getFranchiseeShare(row) {
     row?.franchisee_share ??
     row?.["Franchisee Share"]
   );
+
+}
+
+
+/* =========================================================
+   GET FRANCHISE EXPENDITURE
+   FORMULA:
+   Franchise Expenditure = Total Billing × 5%
+========================================================= */
+
+function getFranchiseExpenditure(row) {
+
+  return getBilling(row) * 0.05;
 
 }
 
@@ -400,7 +414,6 @@ function FranchisePerformance() {
     setSelectedFranchise
   ] = useState("");
 
-
   const [
     selectedFinancialYear,
     setSelectedFinancialYear
@@ -436,6 +449,7 @@ function FranchisePerformance() {
             clients: 0,
             billing: 0,
             franchiseShare: 0,
+            franchiseExpenditure: 0,
             netAmount: 0
           }
         );
@@ -454,6 +468,9 @@ function FranchisePerformance() {
 
       data.franchiseShare +=
         getFranchiseeShare(row);
+
+      data.franchiseExpenditure +=
+        getFranchiseExpenditure(row);
 
       data.netAmount +=
         getNetAmount(row);
@@ -548,6 +565,8 @@ function FranchisePerformance() {
 
       let totalFranchiseShare = 0;
 
+      let totalFranchiseExpenditure = 0;
+
       let netAmount = 0;
 
 
@@ -559,14 +578,18 @@ function FranchisePerformance() {
         const franchiseShare =
           getFranchiseeShare(row);
 
+        const franchiseExpenditure =
+          getFranchiseExpenditure(row);
+
 
         totalBilling +=
           billing;
 
-
         totalFranchiseShare +=
           franchiseShare;
 
+        totalFranchiseExpenditure +=
+          franchiseExpenditure;
 
         netAmount +=
           billing - franchiseShare;
@@ -579,6 +602,8 @@ function FranchisePerformance() {
         totalBilling,
 
         totalFranchiseShare,
+
+        totalFranchiseExpenditure,
 
         netAmount
 
@@ -826,12 +851,6 @@ function FranchisePerformance() {
     });
 
 
-    /*
-      Financial year order:
-      Apr → May → Jun → Jul → Aug → Sep
-      → Oct → Nov → Dec → Jan → Feb → Mar
-    */
-
     const orderedMonths = [
 
       4,
@@ -999,6 +1018,10 @@ function FranchisePerformance() {
                 </th>
 
                 <th>
+                  Franchise Expenditure
+                </th>
+
+                <th>
                   Performance
                 </th>
 
@@ -1014,7 +1037,7 @@ function FranchisePerformance() {
                 <tr>
 
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="franchise-empty"
                   >
                     No franchise data available.
@@ -1091,6 +1114,21 @@ function FranchisePerformance() {
                           {
                             formatCurrency(
                               franchise.netAmount
+                            )
+                          }
+
+                        </span>
+
+                      </td>
+
+
+                      <td>
+
+                        <span className="franchise-expenditure-value">
+
+                          {
+                            formatCurrency(
+                              franchise.franchiseExpenditure
                             )
                           }
 
@@ -1239,11 +1277,13 @@ function FranchisePerformance() {
                 </span>
 
                 <strong className="franchise-summary-value">
+
                   {
                     formatCurrency(
                       performanceSummary.totalBilling
                     )
                   }
+
                 </strong>
 
               </div>
@@ -1258,12 +1298,39 @@ function FranchisePerformance() {
                 </span>
 
                 <strong className="franchise-summary-value">
+
                   {
                     formatCurrency(
                       performanceSummary.totalFranchiseShare
                     )
                   }
+
                 </strong>
+
+              </div>
+
+
+              {/* FRANCHISE EXPENDITURE */}
+
+              <div className="franchise-summary-card">
+
+                <span className="franchise-summary-label">
+                  Franchise Expenditure
+                </span>
+
+                <strong className="franchise-summary-value">
+
+                  {
+                    formatCurrency(
+                      performanceSummary.totalFranchiseExpenditure
+                    )
+                  }
+
+                </strong>
+
+                <small>
+                  5% of Total Billing
+                </small>
 
               </div>
 
@@ -1277,11 +1344,13 @@ function FranchisePerformance() {
                 </span>
 
                 <strong className="franchise-summary-value">
+
                   {
                     formatCurrency(
                       performanceSummary.netAmount
                     )
                   }
+
                 </strong>
 
               </div>
@@ -1605,9 +1674,11 @@ function FranchisePerformance() {
 
               <span>
 
-                {selectedFinancialYear
-                  ? `Monthly report for ${selectedFinancialYear}`
-                  : "Yearly performance report"}
+                {
+                  selectedFinancialYear
+                    ? `Monthly report for ${selectedFinancialYear}`
+                    : "Yearly performance report"
+                }
 
               </span>
 
