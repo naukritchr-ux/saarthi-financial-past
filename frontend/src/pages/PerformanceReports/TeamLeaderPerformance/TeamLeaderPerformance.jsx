@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-
 import {
   ResponsiveContainer,
   BarChart,
@@ -7,80 +6,49 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip
+  Tooltip,
+  Legend
 } from "recharts";
 
-import { useData } from "../../../context/DataContext";
+import { useData } from "../../context/DataContext";
 
 import "./TeamLeaderPerformance.css";
 
 
 /* ============================================================
-   FINANCIAL MONTHS
-============================================================ */
+   CONSTANTS
+   ============================================================ */
 
-const financialMonths = [
-  {
-    full: "April",
-    short: "Apr"
-  },
-  {
-    full: "May",
-    short: "May"
-  },
-  {
-    full: "June",
-    short: "Jun"
-  },
-  {
-    full: "July",
-    short: "Jul"
-  },
-  {
-    full: "August",
-    short: "Aug"
-  },
-  {
-    full: "September",
-    short: "Sep"
-  },
-  {
-    full: "October",
-    short: "Oct"
-  },
-  {
-    full: "November",
-    short: "Nov"
-  },
-  {
-    full: "December",
-    short: "Dec"
-  },
-  {
-    full: "January",
-    short: "Jan"
-  },
-  {
-    full: "February",
-    short: "Feb"
-  },
-  {
-    full: "March",
-    short: "Mar"
-  }
+const FINANCIAL_MONTHS = [
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+  "Jan",
+  "Feb",
+  "Mar"
+];
+
+const INFO_STATUSES = [
+  { value: "", label: "All Info Status" },
+  { value: "R", label: "R" },
+  { value: "RV", label: "RV" },
+  { value: "C", label: "C" },
+  { value: "CN", label: "CN" }
 ];
 
 
 /* ============================================================
-   NUMBER HELPER
-============================================================ */
+   HELPERS
+   ============================================================ */
 
-function toNumber(value) {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
+const toNumber = (value) => {
+  if (value === null || value === undefined || value === "") {
     return 0;
   }
 
@@ -88,335 +56,147 @@ function toNumber(value) {
     return Number.isFinite(value) ? value : 0;
   }
 
-  const cleanedValue = String(value)
+  const cleaned = String(value)
+    .replace(/₹/g, "")
     .replace(/,/g, "")
-    .replace(/[₹$€£]/g, "")
     .replace(/%/g, "")
     .trim();
 
-  const number = Number(cleanedValue);
+  const number = Number(cleaned);
 
   return Number.isFinite(number) ? number : 0;
-}
+};
 
 
-/* ============================================================
-   CURRENCY FORMAT
-============================================================ */
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat(
-    "en-IN",
-    {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0
-    }
-  ).format(toNumber(value));
-}
+const formatCurrency = (value) => {
+  return `₹${toNumber(value).toLocaleString("en-IN", {
+    maximumFractionDigits: 2
+  })}`;
+};
 
 
-/* ============================================================
-   TEXT HELPER
-============================================================ */
-
-function normalizeText(value) {
-  return String(value ?? "").trim();
-}
-
-
-/* ============================================================
-   TEAM LEADER
-============================================================ */
-
-function getTeamLeader(row) {
-  return (
-    normalizeText(
-      row?.team_leader ??
-      row?.["Team Leader"]
-    ) || "Unknown"
-  );
-}
-
-
-/* ============================================================
-   INDUSTRY
-============================================================ */
-
-function getIndustry(row) {
-  return (
-    normalizeText(
-      row?.industry ??
-      row?.["Industry"]
-    ) ||
-    normalizeText(
-      row?.["Sub Industry"]
-    ) ||
-    "Unknown"
-  );
-}
-
-
-/* ============================================================
-   CITY
-============================================================ */
-
-function getCity(row) {
-  return (
-    normalizeText(
-      row?.city ??
-      row?.["City"]
-    ) || "Unknown"
-  );
-}
-
-
-/* ============================================================
-   INFO STATUS
-============================================================ */
-
-function getInfoStatus(row) {
-  return String(
-    row?.info ??
-    row?.["Info"] ??
-    ""
-  )
+const normalizeText = (value) => {
+  return String(value ?? "")
     .trim()
     .toUpperCase();
-}
+};
+
+
+const getTeamLeader = (row) => {
+  return (
+    row?.["Team Leader"] ??
+    row?.team_leader ??
+    row?.["Team Leader Name"] ??
+    "Unknown"
+  )
+    .toString()
+    .trim() || "Unknown";
+};
+
+
+const getIndustry = (row) => {
+  return (
+    row?.["Industry"] ??
+    row?.industry ??
+    "Unknown"
+  )
+    .toString()
+    .trim() || "Unknown";
+};
+
+
+const getCity = (row) => {
+  return (
+    row?.["City"] ??
+    row?.city ??
+    "Unknown"
+  )
+    .toString()
+    .trim() || "Unknown";
+};
+
+
+const getInfoStatus = (row) => {
+  return normalizeText(
+    row?.["Info"] ??
+    row?.info ??
+    ""
+  );
+};
 
 
 /* ============================================================
-   BILLING
+   FINANCIAL HELPERS
+   ============================================================ */
 
-   DATABASE:
-   total_bill_amount
-
-   FRONTEND:
-   Total Bill Amount
-============================================================ */
-
-function getBilling(row) {
+const getBilling = (row) => {
   return toNumber(
-    row?.total_bill_amount ??
-    row?.["Total Bill Amount"] ??
     row?.["Billing"] ??
     row?.["Total Billing"] ??
     row?.["Billing Amount"] ??
+    row?.["TANN/TDS"] ??
+    row?.["Total Bill Amount"] ??
+    row?.total_bill_amount ??
     0
   );
-}
+};
 
 
-/* ============================================================
-   FRANCHISEE SHARE
-
-   DATABASE:
-   franchisee_share
-
-   FRONTEND:
-   Franchisee Share
-============================================================ */
-
-function getFranchiseeShare(row) {
+const getFranchiseeShare = (row) => {
   return toNumber(
-    row?.franchisee_share ??
     row?.["Franchisee Share"] ??
+    row?.franchisee_share ??
+    row?.["Franchise Cost"] ??
+    row?.["Franchisee Cost"] ??
+    row?.["Franchise Cost Amount"] ??
     0
   );
-}
+};
 
 
-/* ============================================================
-   FINANCIAL CALCULATION
-
-   EXACT SAME RULES AS FRANCHISE PERFORMANCE
-
-   ALL:
-     Billing = R + RV + C + CN
-     Net Amount = Billing - Franchisee Share
-     Expenditure = 5% of Billing
-
-   R:
-     Billing = R Billing
-     Net Amount = R Billing - R Franchisee Share
-     Expenditure = R Billing × 5%
-
-   RV:
-     Billing = RV Billing
-     Net Amount = 0
-     Expenditure = 0
-
-   C:
-     Billing = C Billing
-     Net Amount = 0
-     Expenditure = 0
-
-   CN:
-     Billing = CN Billing
-     Net Amount = 0
-     Expenditure = 0
-============================================================ */
-
-function getFinancialValues(
-  row,
-  infoFilter = ""
-) {
-  const info = getInfoStatus(row);
-
+const getNetAmount = (row) => {
   const billing = getBilling(row);
+  const franchiseeShare = getFranchiseeShare(row);
 
-  const franchiseeShare =
-    getFranchiseeShare(row);
-
-
-  /* ==========================================================
-     ALL
-  ========================================================== */
-
-  if (
-    !infoFilter ||
-    infoFilter === "ALL"
-  ) {
-    return {
-      billing,
-
-      netAmount:
-        billing -
-        franchiseeShare,
-
-      tlExpenditure:
-        billing * 0.05
-    };
-  }
+  return billing - franchiseeShare;
+};
 
 
-  /* ==========================================================
-     R
-  ========================================================== */
-
-  if (infoFilter === "R") {
-    if (info !== "R") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        tlExpenditure: 0
-      };
-    }
-
-    return {
-      billing,
-
-      netAmount:
-        billing -
-        franchiseeShare,
-
-      tlExpenditure:
-        billing * 0.05
-    };
-  }
-
-
-  /* ==========================================================
-     RV
-  ========================================================== */
-
-  if (infoFilter === "RV") {
-    if (info !== "RV") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        tlExpenditure: 0
-      };
-    }
-
-    return {
-      billing,
-      netAmount: 0,
-      tlExpenditure: 0
-    };
-  }
-
-
-  /* ==========================================================
-     C
-  ========================================================== */
-
-  if (infoFilter === "C") {
-    if (info !== "C") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        tlExpenditure: 0
-      };
-    }
-
-    return {
-      billing,
-      netAmount: 0,
-      tlExpenditure: 0
-    };
-  }
-
-
-  /* ==========================================================
-     CN
-  ========================================================== */
-
-  if (infoFilter === "CN") {
-    if (info !== "CN") {
-      return {
-        billing: 0,
-        netAmount: 0,
-        tlExpenditure: 0
-      };
-    }
-
-    return {
-      billing,
-      netAmount: 0,
-      tlExpenditure: 0
-    };
-  }
-
-
-  return {
-    billing: 0,
-    netAmount: 0,
-    tlExpenditure: 0
-  };
-}
+const getTLExpenditure = (row) => {
+  return toNumber(
+    row?.["TL Expenditure"] ??
+    row?.["Team Leader Expenditure"] ??
+    row?.["Team Leader Expense"] ??
+    row?.["TL Expense"] ??
+    row?.["Expenditure"] ??
+    0
+  );
+};
 
 
 /* ============================================================
-   ACQUIRED DATE
-============================================================ */
+   DATE HELPERS
+   ============================================================ */
 
-function getAcquiredDate(row) {
+const getAcquiredDate = (row) => {
   return (
-    row?.date_client_acquired ??
     row?.["Date Client Acquired"] ??
-    row?.["Client Acquired Date"] ??
-    row?.["Date Acquired"] ??
+    row?.["date_client_acquired"] ??
+    row?.["Aquired Date"] ??
+    row?.["Acquired Date"] ??
     row?.["Acquisition Date"] ??
     ""
   );
-}
+};
 
 
-/* ============================================================
-   DATE PARSER
-============================================================ */
-
-function parseDate(value) {
+const parseDate = (value) => {
   if (!value) {
     return null;
   }
 
   if (value instanceof Date) {
-    return Number.isNaN(value.getTime())
-      ? null
-      : value;
+    return Number.isNaN(value.getTime()) ? null : value;
   }
 
   const text = String(value).trim();
@@ -425,233 +205,137 @@ function parseDate(value) {
     return null;
   }
 
+  const directDate = new Date(text);
 
-  /* Excel serial date */
-
-  if (/^\d+(\.\d+)?$/.test(text)) {
-    const serial = Number(text);
-
-    if (
-      serial > 20000 &&
-      serial < 70000
-    ) {
-      const date = new Date(
-        Date.UTC(
-          1899,
-          11,
-          30
-        ) +
-        serial * 86400000
-      );
-
-      return Number.isNaN(
-        date.getTime()
-      )
-        ? null
-        : date;
-    }
+  if (!Number.isNaN(directDate.getTime())) {
+    return directDate;
   }
 
-
-  /* DD/MM/YYYY or DD-MM-YYYY */
-
-  const parts =
-    text.split(/[\/\-]/);
+  const parts = text.split(/[\/\-\.]/);
 
   if (parts.length === 3) {
-    let day =
-      Number(parts[0]);
-
-    let month =
-      Number(parts[1]);
-
-    let year =
-      Number(parts[2]);
-
-    if (year < 100) {
-      year += 2000;
-    }
+    const day = Number(parts[0]);
+    const month = Number(parts[1]) - 1;
+    const year = Number(parts[2]);
 
     if (
-      day >= 1 &&
-      day <= 31 &&
-      month >= 1 &&
-      month <= 12 &&
-      year >= 1900
+      Number.isFinite(day) &&
+      Number.isFinite(month) &&
+      Number.isFinite(year)
     ) {
-      const date = new Date(
-        year,
-        month - 1,
-        day
-      );
+      const date = new Date(year, month, day);
 
-      if (
-        !Number.isNaN(
-          date.getTime()
-        )
-      ) {
+      if (!Number.isNaN(date.getTime())) {
         return date;
       }
     }
   }
 
-
-  const date =
-    new Date(text);
-
-  return Number.isNaN(
-    date.getTime()
-  )
-    ? null
-    : date;
-}
+  return null;
+};
 
 
-/* ============================================================
-   FINANCIAL YEAR
-============================================================ */
-
-function getRowFinancialYear(
-  row,
-  getFinancialYearFromRow
-) {
-  try {
-    if (
-      typeof getFinancialYearFromRow ===
-      "function"
-    ) {
-      const fy =
-        getFinancialYearFromRow(row);
-
-      if (fy) {
-        return String(fy);
-      }
-    }
-  } catch (error) {
-    console.error(
-      "Financial year error:",
-      error
-    );
-  }
-
-
-  const date =
-    parseDate(
-      getAcquiredDate(row)
-    );
+const getFinancialMonth = (row) => {
+  const date = parseDate(getAcquiredDate(row));
 
   if (!date) {
     return "";
   }
 
-  const year =
-    date.getFullYear();
+  const month = date.getMonth();
 
-  const month =
-    date.getMonth() + 1;
+  /*
+    April = 0
+    March = 11
+  */
 
-  if (month >= 4) {
-    return `${year}-${String(
-      year + 1
-    ).slice(-2)}`;
+  return FINANCIAL_MONTHS[(month + 9) % 12];
+};
+
+
+const getRowFinancialYear = (row, getFinancialYearFromRow) => {
+  if (typeof getFinancialYearFromRow === "function") {
+    const result = getFinancialYearFromRow(row);
+
+    if (result) {
+      return result;
+    }
   }
 
-  return `${year - 1}-${String(
-    year
-  ).slice(-2)}`;
-}
-
-
-/* ============================================================
-   FINANCIAL MONTH
-============================================================ */
-
-function getFinancialMonth(row) {
-  const date =
-    parseDate(
-      getAcquiredDate(row)
-    );
+  const date = parseDate(getAcquiredDate(row));
 
   if (!date) {
     return "";
   }
 
-  return date.toLocaleString(
-    "en-IN",
-    {
-      month: "long"
-    }
-  );
-}
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  if (month >= 3) {
+    return `${year}-${year + 1}`;
+  }
+
+  return `${year - 1}-${year}`;
+};
 
 
 /* ============================================================
-   CUSTOM TOOLTIP
-============================================================ */
+   FINANCIAL RULES
+   ============================================================ */
 
-function TeamLeaderTooltip({
-  active,
-  payload,
-  label
-}) {
+const applyFinancialRules = (row) => {
+  const info = getInfoStatus(row);
+  const billing = getBilling(row);
+
+  /*
+    Team Leader calculation is intentionally kept
+    exactly according to the current Team Leader logic.
+  */
+
+  if (info === "R") {
+    return {
+      billing,
+      netAmount: getNetAmount(row),
+      tlExpenditure: getTLExpenditure(row)
+    };
+  }
+
   if (
-    !active ||
-    !payload ||
-    !payload.length
+    info === "RV" ||
+    info === "C" ||
+    info === "CN"
   ) {
-    return null;
+    return {
+      billing,
+      netAmount: 0,
+      tlExpenditure: 0
+    };
   }
 
-  return (
-    <div className="team-leader-modern-tooltip">
-
-      <div className="team-leader-tooltip-label">
-        {label}
-      </div>
-
-      {payload.map(
-        (item, index) => (
-          <div
-            className="team-leader-tooltip-row"
-            key={index}
-          >
-
-            <span>
-              {item.name}
-            </span>
-
-            <strong>
-              {item.name === "Client Acquired"
-                ? item.value
-                : formatCurrency(
-                    item.value
-                  )}
-            </strong>
-
-          </div>
-        )
-      )}
-
-    </div>
-  );
-}
+  return {
+    billing: 0,
+    netAmount: 0,
+    tlExpenditure: 0
+  };
+};
 
 
 /* ============================================================
-   MAIN COMPONENT
-============================================================ */
+   COMPONENT
+   ============================================================ */
 
 function TeamLeaderPerformance() {
-
   const {
-    rows = [],
+    rows,
+    loading,
+    error,
     getFinancialYearFromRow
   } = useData();
 
 
-  /* ==========================================================
-     STATES
-  ========================================================== */
+  /* ============================================================
+     STATE
+     ============================================================ */
 
   const [
     selectedTableFinancialYear,
@@ -666,7 +350,7 @@ function TeamLeaderPerformance() {
   const [
     selectedLeader,
     setSelectedLeader
-  ] = useState("");
+  ] = useState(null);
 
   const [
     selectedFinancialYear,
@@ -674,404 +358,315 @@ function TeamLeaderPerformance() {
   ] = useState("");
 
 
-  /* ==========================================================
+  /* ============================================================
      FINANCIAL YEARS
-  ========================================================== */
+     ============================================================ */
 
-  const financialYears =
-    useMemo(() => {
+  const financialYears = useMemo(() => {
+    const years = new Set();
 
-      const years =
-        new Set();
+    (rows || []).forEach((row) => {
+      const year = getRowFinancialYear(
+        row,
+        getFinancialYearFromRow
+      );
 
-      rows.forEach(row => {
+      if (year) {
+        years.add(year);
+      }
+    });
 
-        const fy =
+    return Array.from(years).sort((a, b) =>
+      b.localeCompare(a)
+    );
+  }, [rows, getFinancialYearFromRow]);
+
+
+  /* ============================================================
+     FILTERED ROWS
+     ============================================================ */
+
+  const filteredRows = useMemo(() => {
+    let result = Array.isArray(rows) ? rows : [];
+
+    if (selectedTableFinancialYear) {
+      result = result.filter((row) => {
+        return (
           getRowFinancialYear(
             row,
             getFinancialYearFromRow
-          );
-
-        if (fy) {
-          years.add(fy);
-        }
-
+          ) === selectedTableFinancialYear
+        );
       });
+    }
 
-      return Array.from(years)
-        .sort((a, b) => {
+    if (selectedInfoStatus) {
+      result = result.filter((row) => {
+        return (
+          getInfoStatus(row) ===
+          selectedInfoStatus
+        );
+      });
+    }
 
-          const yearA =
-            Number(
-              String(a).substring(
-                0,
-                4
-              )
-            );
+    return result;
+  }, [
+    rows,
+    selectedTableFinancialYear,
+    selectedInfoStatus,
+    getFinancialYearFromRow
+  ]);
 
-          const yearB =
-            Number(
-              String(b).substring(
-                0,
-                4
-              )
-            );
 
-          return yearB - yearA;
+  /* ============================================================
+     MAIN TEAM LEADER SUMMARY
+     ============================================================ */
+
+  const teamLeaderSummary = useMemo(() => {
+    const summaryMap = new Map();
+
+    filteredRows.forEach((row) => {
+      const leader = getTeamLeader(row);
+
+      if (!summaryMap.has(leader)) {
+        summaryMap.set(leader, {
+          teamLeader: leader,
+          clientCount: 0,
+          totalBilling: 0,
+          netAmount: 0,
+          tlExpenditure: 0,
+          grossProfit: 0,
+          grossMargin: 0,
+          industries: {},
+          cities: {}
         });
+      }
 
-    }, [
-      rows,
-      getFinancialYearFromRow
-    ]);
+      const item = summaryMap.get(leader);
 
-
-  /* ==========================================================
-     MAIN FILTERED ROWS
-  ========================================================== */
-
-  const filteredRows =
-    useMemo(() => {
-
-      return rows.filter(row => {
-
-        const fy =
-          getRowFinancialYear(
-            row,
-            getFinancialYearFromRow
-          );
-
-        const info =
-          getInfoStatus(row);
+      /*
+        Client count counts all filtered client rows.
+      */
+      item.clientCount += 1;
 
 
-        if (
-          selectedTableFinancialYear &&
-          fy !==
-            selectedTableFinancialYear
-        ) {
-          return false;
-        }
+      /* --------------------------------------------------------
+         Industry count
+         -------------------------------------------------------- */
+
+      const industry = getIndustry(row);
+
+      item.industries[industry] =
+        (item.industries[industry] || 0) + 1;
 
 
-        if (
-          selectedInfoStatus &&
-          info !==
-            selectedInfoStatus
-        ) {
-          return false;
-        }
+      /* --------------------------------------------------------
+         City count
+         -------------------------------------------------------- */
+
+      const city = getCity(row);
+
+      item.cities[city] =
+        (item.cities[city] || 0) + 1;
 
 
-        return true;
-      });
+      /* --------------------------------------------------------
+         Financial calculation
+         -------------------------------------------------------- */
 
-    }, [
-      rows,
-      selectedTableFinancialYear,
-      selectedInfoStatus,
-      getFinancialYearFromRow
-    ]);
+      let shouldCalculate = false;
 
+      /*
+        When Info is not selected, only R contributes
+        financially.
+      */
+      if (!selectedInfoStatus) {
+        shouldCalculate =
+          getInfoStatus(row) === "R";
+      } else {
+        shouldCalculate =
+          getInfoStatus(row) === selectedInfoStatus;
+      }
 
-  /* ==========================================================
-     TEAM LEADER SUMMARY
-
-     IMPORTANT:
-     Uses Franchise financial rules.
-  ========================================================== */
-
-  const teamLeaderSummary =
-    useMemo(() => {
-
-      const grouped =
-        new Map();
-
-
-      filteredRows.forEach(row => {
-
-        const leader =
-          getTeamLeader(row);
-
-
-        if (
-          !grouped.has(leader)
-        ) {
-
-          grouped.set(
-            leader,
-            {
-              teamLeader:
-                leader,
-
-              acquiredClients:
-                0,
-
-              totalBilling:
-                0,
-
-              netAmount:
-                0,
-
-              tlExpenditure:
-                0,
-
-              industries: {},
-
-              cities: {}
-            }
-          );
-
-        }
-
-
-        const data =
-          grouped.get(leader);
-
-
-        /* Client count */
-
-        data.acquiredClients += 1;
-
-
-        /* Financial calculation */
-
+      if (shouldCalculate) {
         const financial =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
+          applyFinancialRules(row);
 
-
-        data.totalBilling +=
-          financial.billing;
-
-        data.netAmount +=
-          financial.netAmount;
-
-        data.tlExpenditure +=
+        item.totalBilling += financial.billing;
+        item.netAmount += financial.netAmount;
+        item.tlExpenditure +=
           financial.tlExpenditure;
+      }
+    });
 
 
-        /* Industry */
+    return Array.from(summaryMap.values())
+      .map((item) => {
+        const grossProfit =
+          item.netAmount -
+          item.tlExpenditure;
 
-        const industry =
-          getIndustry(row);
+        const grossMargin =
+          item.netAmount !== 0
+            ? (grossProfit /
+                item.netAmount) *
+              100
+            : 0;
 
-        data.industries[industry] =
-          (
-            data.industries[industry] ||
-            0
-          ) + 1;
-
-
-        /* City */
-
-        const city =
-          getCity(row);
-
-        data.cities[city] =
-          (
-            data.cities[city] ||
-            0
-          ) + 1;
-
-      });
-
-
-      return Array.from(
-        grouped.values()
-      )
-        .map(leader => {
-
-          const grossProfit =
-            leader.netAmount -
-            leader.tlExpenditure;
-
-          const grossMargin =
-            leader.netAmount !== 0
-              ? (
-                  grossProfit /
-                  leader.netAmount
-                ) * 100
-              : 0;
+        return {
+          ...item,
+          grossProfit,
+          grossMargin
+        };
+      })
+      .sort((a, b) =>
+        a.teamLeader.localeCompare(
+          b.teamLeader
+        )
+      );
+  }, [
+    filteredRows,
+    selectedInfoStatus
+  ]);
 
 
-          return {
-            ...leader,
-
-            grossProfit,
-
-            grossMargin
-          };
-
-        })
-        .sort(
-          (a, b) =>
-            b.totalBilling -
-            a.totalBilling
-        );
-
-    }, [
-      filteredRows,
-      selectedInfoStatus
-    ]);
-
-
-  /* ==========================================================
+  /* ============================================================
      OVERALL TOTALS
-  ========================================================== */
+     ============================================================ */
 
-  const overallTotals =
-    useMemo(() => {
+  const overallTotals = useMemo(() => {
+    return teamLeaderSummary.reduce(
+      (total, item) => {
+        total.clientCount +=
+          item.clientCount;
 
-      let totalBilling = 0;
-      let netAmount = 0;
-      let tlExpenditure = 0;
+        total.totalBilling +=
+          item.totalBilling;
 
+        total.netAmount +=
+          item.netAmount;
 
-      filteredRows.forEach(row => {
+        total.tlExpenditure +=
+          item.tlExpenditure;
 
-        const financial =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
+        total.grossProfit +=
+          item.grossProfit;
 
-
-        totalBilling +=
-          financial.billing;
-
-        netAmount +=
-          financial.netAmount;
-
-        tlExpenditure +=
-          financial.tlExpenditure;
-
-      });
-
-
-      const grossProfit =
-        netAmount -
-        tlExpenditure;
+        return total;
+      },
+      {
+        clientCount: 0,
+        totalBilling: 0,
+        netAmount: 0,
+        tlExpenditure: 0,
+        grossProfit: 0
+      }
+    );
+  }, [teamLeaderSummary]);
 
 
-      return {
-
-        clients:
-          filteredRows.length,
-
-        totalBilling,
-
-        netAmount,
-
-        tlExpenditure,
-
-        grossProfit,
-
-        grossMargin:
-          netAmount !== 0
-            ? (
-                grossProfit /
-                netAmount
-              ) * 100
-            : 0
-
-      };
-
-    }, [
-      filteredRows,
-      selectedInfoStatus
-    ]);
+  const overallGrossMargin =
+    overallTotals.netAmount !== 0
+      ? (
+          overallTotals.grossProfit /
+          overallTotals.netAmount
+        ) * 100
+      : 0;
 
 
-  /* ==========================================================
+  /* ============================================================
      SELECTED LEADER ROWS
-  ========================================================== */
+     ============================================================ */
 
-  const selectedLeaderRows =
-    useMemo(() => {
+  const selectedLeaderRows = useMemo(() => {
+    if (!selectedLeader) {
+      return [];
+    }
 
-      if (!selectedLeader) {
-        return [];
+    return filteredRows.filter(
+      (row) =>
+        getTeamLeader(row) ===
+        selectedLeader.teamLeader
+    );
+  }, [
+    filteredRows,
+    selectedLeader
+  ]);
+
+
+  /* ============================================================
+     MODAL FINANCIAL YEAR FILTER
+     ============================================================ */
+
+  const modalRows = useMemo(() => {
+    if (!selectedFinancialYear) {
+      return selectedLeaderRows;
+    }
+
+    return selectedLeaderRows.filter(
+      (row) =>
+        getRowFinancialYear(
+          row,
+          getFinancialYearFromRow
+        ) === selectedFinancialYear
+    );
+  }, [
+    selectedLeaderRows,
+    selectedFinancialYear,
+    getFinancialYearFromRow
+  ]);
+
+
+  /* ============================================================
+     MODAL LEADER DATA
+     ============================================================ */
+
+  const selectedLeaderData = useMemo(() => {
+    if (!selectedLeader) {
+      return null;
+    }
+
+    let clients = 0;
+    let totalBilling = 0;
+    let netAmount = 0;
+    let tlExpenditure = 0;
+
+    const industries = {};
+    const cities = {};
+
+
+    modalRows.forEach((row) => {
+      clients += 1;
+
+      const industry =
+        getIndustry(row);
+
+      industries[industry] =
+        (industries[industry] || 0) + 1;
+
+
+      const city =
+        getCity(row);
+
+      cities[city] =
+        (cities[city] || 0) + 1;
+
+
+      let shouldCalculate = false;
+
+      if (!selectedInfoStatus) {
+        shouldCalculate =
+          getInfoStatus(row) === "R";
+      } else {
+        shouldCalculate =
+          getInfoStatus(row) ===
+          selectedInfoStatus;
       }
 
-      return filteredRows.filter(
-        row =>
-          getTeamLeader(row) ===
-          selectedLeader
-      );
 
-    }, [
-      filteredRows,
-      selectedLeader
-    ]);
-
-
-  /* ==========================================================
-     MODAL LEADER ROWS
-  ========================================================== */
-
-  const modalLeaderRows =
-    useMemo(() => {
-
-      return selectedLeaderRows.filter(
-        row => {
-
-          const fy =
-            getRowFinancialYear(
-              row,
-              getFinancialYearFromRow
-            );
-
-
-          if (
-            selectedFinancialYear &&
-            fy !==
-              selectedFinancialYear
-          ) {
-            return false;
-          }
-
-          return true;
-        }
-      );
-
-    }, [
-      selectedLeaderRows,
-      selectedFinancialYear,
-      getFinancialYearFromRow
-    ]);
-
-
-  /* ==========================================================
-     MODAL PERFORMANCE SUMMARY
-  ========================================================== */
-
-  const modalLeaderData =
-    useMemo(() => {
-
-      if (!selectedLeader) {
-        return null;
-      }
-
-
-      let totalBilling = 0;
-      let netAmount = 0;
-      let tlExpenditure = 0;
-
-      const industries = {};
-      const cities = {};
-
-
-      modalLeaderRows.forEach(row => {
-
+      if (shouldCalculate) {
         const financial =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
-
+          applyFinancialRules(row);
 
         totalBilling +=
           financial.billing;
@@ -1081,483 +676,361 @@ function TeamLeaderPerformance() {
 
         tlExpenditure +=
           financial.tlExpenditure;
-
-
-        const industry =
-          getIndustry(row);
-
-        industries[industry] =
-          (
-            industries[industry] ||
-            0
-          ) + 1;
-
-
-        const city =
-          getCity(row);
-
-        cities[city] =
-          (
-            cities[city] ||
-            0
-          ) + 1;
-
-      });
-
-
-      const grossProfit =
-        netAmount -
-        tlExpenditure;
-
-
-      const grossMargin =
-        netAmount !== 0
-          ? (
-              grossProfit /
-              netAmount
-            ) * 100
-          : 0;
-
-
-      return {
-
-        clients:
-          modalLeaderRows.length,
-
-        totalBilling,
-
-        netAmount,
-
-        tlExpenditure,
-
-        grossProfit,
-
-        grossMargin,
-
-        industries,
-
-        cities
-
-      };
-
-    }, [
-      modalLeaderRows,
-      selectedInfoStatus,
-      selectedLeader
-    ]);
-
-
-  /* ==========================================================
-     BEST VALUE
-  ========================================================== */
-
-  const getBestValue =
-    object => {
-
-      const entries =
-        Object.entries(
-          object || {}
-        );
-
-
-      if (!entries.length) {
-        return "N/A";
       }
+    });
 
 
-      entries.sort(
-        (a, b) =>
-          b[1] - a[1]
-      );
+    const grossProfit =
+      netAmount - tlExpenditure;
+
+    const grossMargin =
+      netAmount !== 0
+        ? (grossProfit / netAmount) * 100
+        : 0;
 
 
-      return entries[0][0];
+    return {
+      clients,
+      totalBilling,
+      netAmount,
+      tlExpenditure,
+      grossProfit,
+      grossMargin,
+      industries,
+      cities
     };
+  }, [
+    selectedLeader,
+    modalRows,
+    selectedInfoStatus
+  ]);
 
 
-  /* ==========================================================
-     YEARLY REPORT
-  ========================================================== */
+  /* ============================================================
+     BEST INDUSTRY
+     ============================================================ */
 
-  const yearlyReport =
-    useMemo(() => {
+  const bestIndustry = useMemo(() => {
+    if (!selectedLeaderData) {
+      return {
+        name: "N/A",
+        count: 0
+      };
+    }
 
-      if (!selectedLeader) {
-        return [];
-      }
-
-
-      const grouped = {};
-
-
-      modalLeaderRows.forEach(row => {
-
-        const fy =
-          getRowFinancialYear(
-            row,
-            getFinancialYearFromRow
-          );
-
-
-        if (!fy) {
-          return;
-        }
-
-
-        if (!grouped[fy]) {
-
-          grouped[fy] = {
-
-            financialYear:
-              fy,
-
-            clients:
-              0,
-
-            totalBilling:
-              0,
-
-            netAmount:
-              0,
-
-            tlExpenditure:
-              0
-          };
-
-        }
-
-
-        grouped[fy].clients += 1;
-
-
-        const financial =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
-
-
-        grouped[fy].totalBilling +=
-          financial.billing;
-
-        grouped[fy].netAmount +=
-          financial.netAmount;
-
-        grouped[fy].tlExpenditure +=
-          financial.tlExpenditure;
-
-      });
-
-
-      return Object.values(
-        grouped
-      ).sort(
-        (a, b) => {
-
-          const yearA =
-            Number(
-              String(
-                a.financialYear
-              ).substring(
-                0,
-                4
-              )
-            );
-
-          const yearB =
-            Number(
-              String(
-                b.financialYear
-              ).substring(
-                0,
-                4
-              )
-            );
-
-          return yearA - yearB;
-
-        }
+    const entries =
+      Object.entries(
+        selectedLeaderData.industries
       );
 
-    }, [
-      modalLeaderRows,
-      selectedInfoStatus,
-      selectedLeader,
-      getFinancialYearFromRow
-    ]);
-
-
-  /* ==========================================================
-     MONTHLY REPORT
-  ========================================================== */
-
-  const monthlyReport =
-    useMemo(() => {
-
-      if (!selectedLeader) {
-        return [];
-      }
-
-
-      const grouped = {};
-
-
-      financialMonths.forEach(
-        month => {
-
-          grouped[month.full] = {
-
-            month:
-              month.full,
-
-            monthShort:
-              month.short,
-
-            clients:
-              0,
-
-            totalBilling:
-              0,
-
-            netAmount:
-              0,
-
-            tlExpenditure:
-              0
-          };
-
-        }
-      );
-
-
-      modalLeaderRows.forEach(row => {
-
-        const month =
-          getFinancialMonth(row);
-
-
-        if (
-          !month ||
-          !grouped[month]
-        ) {
-          return;
-        }
-
-
-        grouped[month].clients += 1;
-
-
-        const financial =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
-
-
-        grouped[month].totalBilling +=
-          financial.billing;
-
-        grouped[month].netAmount +=
-          financial.netAmount;
-
-        grouped[month].tlExpenditure +=
-          financial.tlExpenditure;
-
-      });
-
-
-      return financialMonths.map(
-        month =>
-          grouped[month.full]
-      );
-
-    }, [
-      modalLeaderRows,
-      selectedInfoStatus,
-      selectedLeader
-    ]);
-
-
-  /* ==========================================================
-     CLIENT DETAILS
-  ========================================================== */
-
-  const clientDetails =
-    useMemo(() => {
-
-      if (!selectedLeader) {
-        return [];
-      }
-
-
-      return modalLeaderRows.map(
-        (row, index) => {
-
-          const financial =
-            getFinancialValues(
-              row,
-              selectedInfoStatus
-            );
-
-
-          return {
-
-            id:
-              index + 1,
-
-            company:
-              row?.["Company Name"] ||
-              row?.company_name ||
-              row?.["Company"] ||
-              "Unknown",
-
-            info:
-              getInfoStatus(row),
-
-            financialYear:
-              getRowFinancialYear(
-                row,
-                getFinancialYearFromRow
-              ),
-
-            month:
-              getFinancialMonth(row),
-
-            industry:
-              getIndustry(row),
-
-            city:
-              getCity(row),
-
-            billing:
-              financial.billing,
-
-            netAmount:
-              financial.netAmount,
-
-            tlExpenditure:
-              financial.tlExpenditure
-
-          };
-
-        }
-      );
-
-    }, [
-      modalLeaderRows,
-      selectedInfoStatus,
-      selectedLeader,
-      getFinancialYearFromRow
-    ]);
-
-
-  /* ==========================================================
-     CLEAR FILTERS
-  ========================================================== */
-
-  const clearFilters = () => {
-
-    setSelectedTableFinancialYear("");
-
-    setSelectedInfoStatus("");
-
-  };
-
-
-  /* ==========================================================
-     OPEN LEADER
-  ========================================================== */
-
-  const openLeader = leader => {
-
-    setSelectedLeader(
-      leader
+    if (!entries.length) {
+      return {
+        name: "N/A",
+        count: 0
+      };
+    }
+
+    entries.sort(
+      (a, b) => b[1] - a[1]
     );
 
-    setSelectedFinancialYear("");
+    return {
+      name: entries[0][0],
+      count: entries[0][1]
+    };
+  }, [selectedLeaderData]);
 
+
+  /* ============================================================
+     BEST CITY
+     ============================================================ */
+
+  const bestCity = useMemo(() => {
+    if (!selectedLeaderData) {
+      return {
+        name: "N/A",
+        count: 0
+      };
+    }
+
+    const entries =
+      Object.entries(
+        selectedLeaderData.cities
+      );
+
+    if (!entries.length) {
+      return {
+        name: "N/A",
+        count: 0
+      };
+    }
+
+    entries.sort(
+      (a, b) => b[1] - a[1]
+    );
+
+    return {
+      name: entries[0][0],
+      count: entries[0][1]
+    };
+  }, [selectedLeaderData]);
+
+
+  /* ============================================================
+     YEARLY REPORT
+     ============================================================ */
+
+  const yearlyReport = useMemo(() => {
+    const report = {};
+
+    modalRows.forEach((row) => {
+      const year =
+        getRowFinancialYear(
+          row,
+          getFinancialYearFromRow
+        ) || "Unknown";
+
+      if (!report[year]) {
+        report[year] = {
+          financialYear: year,
+          clients: 0,
+          totalBilling: 0,
+          netAmount: 0,
+          tlExpenditure: 0,
+          grossProfit: 0
+        };
+      }
+
+      report[year].clients += 1;
+
+
+      let shouldCalculate = false;
+
+      if (!selectedInfoStatus) {
+        shouldCalculate =
+          getInfoStatus(row) === "R";
+      } else {
+        shouldCalculate =
+          getInfoStatus(row) ===
+          selectedInfoStatus;
+      }
+
+
+      if (shouldCalculate) {
+        const financial =
+          applyFinancialRules(row);
+
+        report[year].totalBilling +=
+          financial.billing;
+
+        report[year].netAmount +=
+          financial.netAmount;
+
+        report[year].tlExpenditure +=
+          financial.tlExpenditure;
+
+        report[year].grossProfit +=
+          financial.netAmount -
+          financial.tlExpenditure;
+      }
+    });
+
+
+    return Object.values(report)
+      .sort((a, b) =>
+        b.financialYear.localeCompare(
+          a.financialYear
+        )
+      );
+  }, [
+    modalRows,
+    selectedInfoStatus,
+    getFinancialYearFromRow
+  ]);
+
+
+  /* ============================================================
+     MONTHLY REPORT
+     ============================================================ */
+
+  const monthlyReport = useMemo(() => {
+    const report = FINANCIAL_MONTHS.map(
+      (month) => ({
+        month,
+        clients: 0,
+        totalBilling: 0,
+        netAmount: 0,
+        tlExpenditure: 0
+      })
+    );
+
+
+    modalRows.forEach((row) => {
+      const month =
+        getFinancialMonth(row);
+
+      const index =
+        FINANCIAL_MONTHS.indexOf(month);
+
+      if (index === -1) {
+        return;
+      }
+
+      report[index].clients += 1;
+
+
+      let shouldCalculate = false;
+
+      if (!selectedInfoStatus) {
+        shouldCalculate =
+          getInfoStatus(row) === "R";
+      } else {
+        shouldCalculate =
+          getInfoStatus(row) ===
+          selectedInfoStatus;
+      }
+
+
+      if (shouldCalculate) {
+        const financial =
+          applyFinancialRules(row);
+
+        report[index].totalBilling +=
+          financial.billing;
+
+        report[index].netAmount +=
+          financial.netAmount;
+
+        report[index].tlExpenditure +=
+          financial.tlExpenditure;
+      }
+    });
+
+
+    return report;
+  }, [
+    modalRows,
+    selectedInfoStatus
+  ]);
+
+
+  /* ============================================================
+     OPEN MODAL
+     ============================================================ */
+
+  const openLeaderPerformance = (
+    leader
+  ) => {
+    setSelectedLeader(leader);
+
+    setSelectedFinancialYear(
+      selectedTableFinancialYear || ""
+    );
   };
 
 
-  /* ==========================================================
-     CLOSE LEADER
-  ========================================================== */
+  /* ============================================================
+     CLOSE MODAL
+     ============================================================ */
 
-  const closeLeader = () => {
-
-    setSelectedLeader("");
-
+  const closeLeaderPerformance = () => {
+    setSelectedLeader(null);
     setSelectedFinancialYear("");
-
   };
 
 
-  /* ==========================================================
+  /* ============================================================
+     INITIALS
+     ============================================================ */
+
+  const getInitial = (name) => {
+    if (!name) {
+      return "?";
+    }
+
+    return name
+      .trim()
+      .charAt(0)
+      .toUpperCase();
+  };
+
+
+  /* ============================================================
+     LOADING
+     ============================================================ */
+
+  if (loading) {
+    return (
+      <div className="team-leader-performance-page">
+        <div className="team-leader-state">
+          <div className="team-leader-loader"></div>
+          <p>Loading Team Leader performance...</p>
+        </div>
+      </div>
+    );
+  }
+
+
+  /* ============================================================
+     ERROR
+     ============================================================ */
+
+  if (error) {
+    return (
+      <div className="team-leader-performance-page">
+        <div className="team-leader-state team-leader-error">
+          <h3>Unable to load data</h3>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+
+  /* ============================================================
      RENDER
-  ========================================================== */
+     ============================================================ */
 
   return (
-
     <div className="team-leader-performance-page">
-
 
       {/* ======================================================
           PAGE HEADER
-      ====================================================== */}
+          ====================================================== */}
 
       <div className="team-leader-page-header">
-
         <div>
-
           <div className="team-leader-page-eyebrow">
-            PERFORMANCE ANALYTICS
+            PERFORMANCE REPORT
           </div>
 
-          <h1>
-            Team Leader Performance
-          </h1>
+          <h1>Team Leader Performance</h1>
 
           <p>
-            Monitor Team Leader acquisition,
-            billing and financial performance.
+            Track client performance, billing,
+            net amount and team leader
+            expenditure.
           </p>
-
         </div>
-
       </div>
 
 
       {/* ======================================================
-          MAIN TABLE CARD
-      ====================================================== */}
+          TABLE CARD
+          ====================================================== */}
 
       <div className="team-leader-table-card">
 
+        {/* TABLE HEADER */}
 
         <div className="team-leader-table-header">
 
           <div>
+            <h2>Team Leader Performance</h2>
 
-            <h2>
-              Team Leader Performance
-            </h2>
-
-            <p>
-              Complete Team Leader-wise
-              performance overview
-            </p>
-
-          </div>
-
-
-          <div className="team-leader-member-count">
-
-            {teamLeaderSummary.length}
-
-            <span>
-              Team Leaders
+            <span className="team-leader-member-count">
+              {teamLeaderSummary.length} Team Leaders
             </span>
-
           </div>
 
         </div>
@@ -1565,12 +1038,11 @@ function TeamLeaderPerformance() {
 
         {/* ====================================================
             FILTERS
-        ==================================================== */}
+            ==================================================== */}
 
-        <div className="team-leader-report-controls team-leader-main-filters">
+        <div className="team-leader-performance-filters">
 
-          <div>
-
+          <div className="team-leader-filter-group">
             <label>
               Financial Year
             </label>
@@ -1579,160 +1051,93 @@ function TeamLeaderPerformance() {
               value={
                 selectedTableFinancialYear
               }
-              onChange={e =>
+              onChange={(event) =>
                 setSelectedTableFinancialYear(
-                  e.target.value
+                  event.target.value
                 )
               }
             >
-
               <option value="">
                 All Financial Years
               </option>
 
               {financialYears.map(
-                year => (
-
+                (year) => (
                   <option
                     key={year}
                     value={year}
                   >
                     {year}
                   </option>
-
                 )
               )}
-
             </select>
-
           </div>
 
 
-          <div>
-
+          <div className="team-leader-filter-group">
             <label>
               Info Status
             </label>
 
             <select
-              value={
-                selectedInfoStatus
-              }
-              onChange={e =>
+              value={selectedInfoStatus}
+              onChange={(event) =>
                 setSelectedInfoStatus(
-                  e.target.value
+                  event.target.value
                 )
               }
             >
-
-              <option value="">
-                All
-              </option>
-
-              <option value="R">
-                R
-              </option>
-
-              <option value="RV">
-                RV
-              </option>
-
-              <option value="C">
-                C
-              </option>
-
-              <option value="CN">
-                CN
-              </option>
-
+              {INFO_STATUSES.map(
+                (status) => (
+                  <option
+                    key={status.value}
+                    value={status.value}
+                  >
+                    {status.label}
+                  </option>
+                )
+              )}
             </select>
-
           </div>
 
 
           <div className="team-leader-filter-result">
-
             <span>
               Showing
             </span>
 
             <strong>
-              {filteredRows.length.toLocaleString(
-                "en-IN"
-              )}
+              {filteredRows.length}
             </strong>
 
             <span>
               records
             </span>
-
           </div>
-
-
-          {(selectedTableFinancialYear ||
-            selectedInfoStatus) && (
-
-            <button
-              type="button"
-              className="team-leader-clear-btn"
-              onClick={
-                clearFilters
-              }
-            >
-              Clear Filters
-            </button>
-
-          )}
 
         </div>
 
 
         {/* ====================================================
             TABLE
-        ==================================================== */}
+            ==================================================== */}
 
         <div className="team-leader-table-wrapper">
 
-          <table className="team-leader-table">
+          <table className="team-leader-performance-table">
 
             <thead>
-
               <tr>
-
-                <th>
-                  Team Leader
-                </th>
-
-                <th>
-                  Total Acquired Client
-                </th>
-
-                <th>
-                  Total Billing
-                </th>
-
-                <th>
-                  Net Amount
-                </th>
-
-                <th>
-                  TL Expenditure
-                </th>
-
-                <th>
-                  Gross Profit
-                </th>
-
-                <th>
-                  Gross Margin
-                </th>
-
-                <th>
-                  Performance
-                </th>
-
+                <th>Team Leader</th>
+                <th>Client Count</th>
+                <th>Total Billing</th>
+                <th>Net Amount</th>
+                <th>TL Expenditure</th>
+                <th>Gross Profit</th>
+                <th>Gross Margin</th>
+                <th>Action</th>
               </tr>
-
             </thead>
 
 
@@ -1741,230 +1146,166 @@ function TeamLeaderPerformance() {
               {teamLeaderSummary.length === 0 ? (
 
                 <tr>
-
                   <td
                     colSpan="8"
-                    className="team-leader-empty"
+                    className="team-leader-no-data"
                   >
-                    No Team Leader data available.
+                    No Team Leader data found
+                    for the selected filters.
                   </td>
-
                 </tr>
 
               ) : (
 
                 teamLeaderSummary.map(
-                  leader => {
+                  (leader) => (
+                    <tr key={leader.teamLeader}>
 
-                    const initials =
-                      leader.teamLeader
-                        .split(" ")
-                        .filter(Boolean)
-                        .slice(0, 2)
-                        .map(
-                          word =>
-                            word[0]
-                        )
-                        .join("")
-                        .toUpperCase();
+                      {/* TEAM LEADER */}
 
+                      <td>
+                        <div className="team-leader-name-cell">
 
-                    return (
-
-                      <tr
-                        key={
-                          leader.teamLeader
-                        }
-                      >
-
-                        <td>
-
-                          <div className="team-leader-name">
-
-                            <div className="team-leader-avatar">
-
-                              {initials || "TL"}
-
-                            </div>
-
-                            <span>
-                              {leader.teamLeader}
-                            </span>
-
+                          <div className="team-leader-avatar">
+                            {getInitial(
+                              leader.teamLeader
+                            )}
                           </div>
 
-                        </td>
+                          <div className="team-leader-name">
+                            {leader.teamLeader}
+                          </div>
+
+                        </div>
+                      </td>
 
 
-                        <td>
+                      {/* CLIENT COUNT */}
 
-                          <span className="team-leader-client-count">
+                      <td>
+                        <span className="team-leader-client-count">
+                          {leader.clientCount.toLocaleString(
+                            "en-IN"
+                          )}
+                        </span>
+                      </td>
 
-                            {leader.acquiredClients.toLocaleString(
-                              "en-IN"
-                            )}
 
+                      {/* BILLING */}
+
+                      <td>
+                        <span className="team-leader-billing-value">
+                          {formatCurrency(
+                            leader.totalBilling
+                          )}
+                        </span>
+                      </td>
+
+
+                      {/* NET */}
+
+                      <td>
+                        <span className="team-leader-net-value">
+                          {formatCurrency(
+                            leader.netAmount
+                          )}
+                        </span>
+                      </td>
+
+
+                      {/* EXPENDITURE */}
+
+                      <td>
+                        <span className="team-leader-expenditure-value">
+                          {formatCurrency(
+                            leader.tlExpenditure
+                          )}
+                        </span>
+                      </td>
+
+
+                      {/* GROSS PROFIT */}
+
+                      <td>
+                        <span className="team-leader-profit-value">
+                          {formatCurrency(
+                            leader.grossProfit
+                          )}
+                        </span>
+                      </td>
+
+
+                      {/* GROSS MARGIN */}
+
+                      <td>
+                        <span className="team-leader-margin-value">
+                          {leader.grossMargin.toFixed(2)}%
+                        </span>
+                      </td>
+
+
+                      {/* ACTION */}
+
+                      <td>
+                        <button
+                          type="button"
+                          className="team-leader-view-performance-btn"
+                          onClick={() =>
+                            openLeaderPerformance(
+                              leader
+                            )
+                          }
+                        >
+                          View Performance
+                          <span className="team-leader-btn-arrow">
+                            →
                           </span>
+                        </button>
+                      </td>
 
-                        </td>
-
-
-                        <td>
-
-                          <span className="team-leader-billing-value">
-
-                            {formatCurrency(
-                              leader.totalBilling
-                            )}
-
-                          </span>
-
-                        </td>
-
-
-                        <td>
-
-                          <span className="team-leader-net-value">
-
-                            {formatCurrency(
-                              leader.netAmount
-                            )}
-
-                          </span>
-
-                        </td>
-
-
-                        <td>
-
-                          <span className="team-leader-expenditure-value">
-
-                            {formatCurrency(
-                              leader.tlExpenditure
-                            )}
-
-                          </span>
-
-                        </td>
-
-
-                        <td>
-
-                          <span className="team-leader-profit-value">
-
-                            {formatCurrency(
-                              leader.grossProfit
-                            )}
-
-                          </span>
-
-                        </td>
-
-
-                        <td>
-
-                          <span className="team-leader-margin-value">
-
-                            {leader.grossMargin.toFixed(
-                              2
-                            )}
-                            %
-
-                          </span>
-
-                        </td>
-
-
-                        <td>
-
-                          <button
-                            type="button"
-                            className="team-leader-view-performance-btn"
-                            onClick={() =>
-                              openLeader(
-                                leader.teamLeader
-                              )
-                            }
-                          >
-
-                            View
-
-                            <span className="team-leader-btn-arrow">
-                              →
-                            </span>
-
-                          </button>
-
-                        </td>
-
-                      </tr>
-
-                    );
-
-                  }
+                    </tr>
+                  )
                 )
 
               )}
 
             </tbody>
 
-
-            {teamLeaderSummary.length > 0 && (
-
-              <tfoot>
-
-                <tr>
-
-                  <th>
-                    Total
-                  </th>
-
-                  <th>
-                    {overallTotals.clients.toLocaleString(
-                      "en-IN"
-                    )}
-                  </th>
-
-                  <th>
-                    {formatCurrency(
-                      overallTotals.totalBilling
-                    )}
-                  </th>
-
-                  <th>
-                    {formatCurrency(
-                      overallTotals.netAmount
-                    )}
-                  </th>
-
-                  <th>
-                    {formatCurrency(
-                      overallTotals.tlExpenditure
-                    )}
-                  </th>
-
-                  <th>
-                    {formatCurrency(
-                      overallTotals.grossProfit
-                    )}
-                  </th>
-
-                  <th>
-                    {overallTotals.grossMargin.toFixed(
-                      2
-                    )}
-                    %
-                  </th>
-
-                  <th />
-
-                </tr>
-
-              </tfoot>
-
-            )}
-
           </table>
+
+        </div>
+
+
+        {/* ====================================================
+            TABLE FOOTER
+            ==================================================== */}
+
+        <div className="team-leader-table-footer">
+
+          <div>
+            Total Team Leaders:
+            <strong>
+              {teamLeaderSummary.length}
+            </strong>
+          </div>
+
+          <div>
+            Total Clients:
+            <strong>
+              {overallTotals.clientCount.toLocaleString(
+                "en-IN"
+              )}
+            </strong>
+          </div>
+
+          <div>
+            Total Billing:
+            <strong>
+              {formatCurrency(
+                overallTotals.totalBilling
+              )}
+            </strong>
+          </div>
 
         </div>
 
@@ -1973,45 +1314,43 @@ function TeamLeaderPerformance() {
 
       {/* ======================================================
           PERFORMANCE MODAL
-      ====================================================== */}
+          ====================================================== */}
 
-      {selectedLeader &&
-        modalLeaderData && (
+      {selectedLeader && selectedLeaderData && (
 
         <div
           className="team-leader-performance-overlay"
-          onClick={
-            closeLeader
-          }
+          onMouseDown={(event) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              closeLeaderPerformance();
+            }
+          }}
         >
 
-          <div
-            className="team-leader-performance-modal"
-            onClick={e =>
-              e.stopPropagation()
-            }
-          >
+          <div className="team-leader-performance-modal">
 
-
-            {/* =================================================
+            {/* ==================================================
                 MODAL HEADER
-            ================================================= */}
+                ================================================== */}
 
             <div className="team-leader-modal-header">
 
               <div>
 
                 <div className="team-leader-modal-eyebrow">
-                  PERFORMANCE REPORT
+                  TEAM LEADER PERFORMANCE
                 </div>
 
                 <h2>
-                  {selectedLeader}
+                  {selectedLeader.teamLeader}
                 </h2>
 
                 <p>
-                  Team Leader performance
-                  analysis and financial trends.
+                  Detailed performance report
+                  and client analysis.
                 </p>
 
               </div>
@@ -2021,7 +1360,7 @@ function TeamLeaderPerformance() {
                 type="button"
                 className="team-leader-modal-close"
                 onClick={
-                  closeLeader
+                  closeLeaderPerformance
                 }
                 aria-label="Close"
               >
@@ -2031,188 +1370,40 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
-                SUMMARY
-            ================================================= */}
+            {/* ==================================================
+                MODAL FILTER
+                ================================================== */}
 
-            <div className="team-leader-summary-grid">
+            <div className="team-leader-modal-filter-section">
 
+              <div className="team-leader-modal-filter">
 
-              <div className="team-leader-summary-card">
-
-                <span>
-                  Clients
-                </span>
-
-                <strong>
-                  {modalLeaderData.clients.toLocaleString(
-                    "en-IN"
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div className="team-leader-summary-card">
-
-                <span>
-                  Total Billing
-                </span>
-
-                <strong>
-                  {formatCurrency(
-                    modalLeaderData.totalBilling
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div className="team-leader-summary-card team-leader-summary-net">
-
-                <span>
-                  Net Amount
-                </span>
-
-                <strong>
-                  {formatCurrency(
-                    modalLeaderData.netAmount
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div className="team-leader-summary-card">
-
-                <span>
-                  TL Expenditure
-                </span>
-
-                <strong>
-                  {formatCurrency(
-                    modalLeaderData.tlExpenditure
-                  )}
-                </strong>
-
-                <small>
-                  5% of Total Billing
-                </small>
-
-              </div>
-
-
-              <div className="team-leader-summary-card">
-
-                <span>
-                  Gross Profit
-                </span>
-
-                <strong>
-                  {formatCurrency(
-                    modalLeaderData.grossProfit
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div className="team-leader-summary-card">
-
-                <span>
-                  Gross Margin
-                </span>
-
-                <strong>
-                  {modalLeaderData.grossMargin.toFixed(
-                    2
-                  )}
-                  %
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            {/* =================================================
-                BEST INDUSTRY / CITY
-            ================================================= */}
-
-            <div className="team-leader-best-grid">
-
-              <div className="team-leader-best-card">
-
-                <span>
-                  Best Industry
-                </span>
-
-                <strong>
-                  {getBestValue(
-                    modalLeaderData.industries
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div className="team-leader-best-card">
-
-                <span>
-                  Best City
-                </span>
-
-                <strong>
-                  {getBestValue(
-                    modalLeaderData.cities
-                  )}
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            {/* =================================================
-                REPORT CONTROLS
-            ================================================= */}
-
-            <div className="team-leader-report-controls">
-
-              <div>
-
-                <label
-                  htmlFor="teamLeaderModalFinancialYear"
-                >
+                <label>
                   Financial Year
                 </label>
 
                 <select
-                  id="teamLeaderModalFinancialYear"
                   value={
                     selectedFinancialYear
                   }
-                  onChange={e =>
+                  onChange={(event) =>
                     setSelectedFinancialYear(
-                      e.target.value
+                      event.target.value
                     )
                   }
                 >
-
                   <option value="">
                     All Financial Years
                   </option>
 
                   {financialYears.map(
-                    year => (
-
+                    (year) => (
                       <option
                         key={year}
                         value={year}
                       >
                         {year}
                       </option>
-
                     )
                   )}
 
@@ -2221,58 +1412,15 @@ function TeamLeaderPerformance() {
               </div>
 
 
-              <div>
-
-                <label>
-                  Info Status
-                </label>
-
-                <select
-                  value={
-                    selectedInfoStatus
-                  }
-                  onChange={e =>
-                    setSelectedInfoStatus(
-                      e.target.value
-                    )
-                  }
-                >
-
-                  <option value="">
-                    All
-                  </option>
-
-                  <option value="R">
-                    R
-                  </option>
-
-                  <option value="RV">
-                    RV
-                  </option>
-
-                  <option value="C">
-                    C
-                  </option>
-
-                  <option value="CN">
-                    CN
-                  </option>
-
-                </select>
-
-              </div>
-
-
-              <div className="team-leader-report-period">
+              <div className="team-leader-modal-filter-status">
 
                 <span>
-                  Report Period
+                  Info Status:
                 </span>
 
                 <strong>
-                  {selectedFinancialYear
-                    ? selectedFinancialYear
-                    : "Yearly"}
+                  {selectedInfoStatus ||
+                    "All"}
                 </strong>
 
               </div>
@@ -2280,24 +1428,132 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =================================================
-                YEARLY REPORT
-            ================================================= */}
+            {/* ==================================================
+                SUMMARY KPI CARDS
+                ================================================== */}
 
-            <div className="team-leader-report-section">
+            <div className="team-leader-summary-grid">
+
+              <div className="team-leader-summary-card">
+                <span>Clients</span>
+                <strong>
+                  {selectedLeaderData.clients.toLocaleString(
+                    "en-IN"
+                  )}
+                </strong>
+              </div>
+
+
+              <div className="team-leader-summary-card">
+                <span>Total Billing</span>
+                <strong>
+                  {formatCurrency(
+                    selectedLeaderData.totalBilling
+                  )}
+                </strong>
+              </div>
+
+
+              <div className="team-leader-summary-card">
+                <span>Net Amount</span>
+                <strong className="team-leader-summary-net">
+                  {formatCurrency(
+                    selectedLeaderData.netAmount
+                  )}
+                </strong>
+              </div>
+
+
+              <div className="team-leader-summary-card">
+                <span>TL Expenditure</span>
+                <strong>
+                  {formatCurrency(
+                    selectedLeaderData.tlExpenditure
+                  )}
+                </strong>
+              </div>
+
+
+              <div className="team-leader-summary-card">
+                <span>Gross Profit</span>
+                <strong>
+                  {formatCurrency(
+                    selectedLeaderData.grossProfit
+                  )}
+                </strong>
+              </div>
+
+
+              <div className="team-leader-summary-card">
+                <span>Gross Margin</span>
+                <strong>
+                  {selectedLeaderData.grossMargin.toFixed(
+                    2
+                  )}%
+                </strong>
+              </div>
+
+            </div>
+
+
+            {/* ==================================================
+                BEST INDUSTRY / CITY
+                ================================================== */}
+
+            <div className="team-leader-best-grid">
+
+              <div className="team-leader-best-card">
+
+                <div className="team-leader-best-label">
+                  TOP INDUSTRY
+                </div>
+
+                <h3>
+                  {bestIndustry.name}
+                </h3>
+
+                <p>
+                  {bestIndustry.count} clients
+                </p>
+
+              </div>
+
+
+              <div className="team-leader-best-card">
+
+                <div className="team-leader-best-label">
+                  TOP CITY
+                </div>
+
+                <h3>
+                  {bestCity.name}
+                </h3>
+
+                <p>
+                  {bestCity.count} clients
+                </p>
+
+              </div>
+
+            </div>
+
+
+            {/* ==================================================
+                YEARLY REPORT
+                ================================================== */}
+
+            <section className="team-leader-report-section">
 
               <div className="team-leader-section-header">
 
                 <div>
-
-                  <span>
-                    PERFORMANCE REPORT
+                  <span className="team-leader-section-eyebrow">
+                    YEARLY ANALYSIS
                   </span>
 
                   <h3>
-                    Yearly Report
+                    Financial Year Report
                   </h3>
-
                 </div>
 
               </div>
@@ -2308,54 +1564,34 @@ function TeamLeaderPerformance() {
                 <table className="team-leader-report-table">
 
                   <thead>
-
                     <tr>
-
-                      <th>
-                        Financial Year
-                      </th>
-
-                      <th>
-                        Clients
-                      </th>
-
-                      <th>
-                        Total Billing
-                      </th>
-
-                      <th>
-                        Net Amount
-                      </th>
-
-                      <th>
-                        TL Expenditure
-                      </th>
-
+                      <th>Financial Year</th>
+                      <th>Clients</th>
+                      <th>Total Billing</th>
+                      <th>Net Amount</th>
+                      <th>TL Expenditure</th>
+                      <th>Gross Profit</th>
                     </tr>
-
                   </thead>
-
 
                   <tbody>
 
                     {yearlyReport.length === 0 ? (
 
                       <tr>
-
                         <td
-                          colSpan="5"
-                          className="team-leader-no-data"
+                          colSpan="6"
+                          className="team-leader-report-no-data"
                         >
-                          No yearly data found.
+                          No yearly data
+                          available.
                         </td>
-
                       </tr>
 
                     ) : (
 
                       yearlyReport.map(
-                        item => (
-
+                        (item) => (
                           <tr
                             key={
                               item.financialYear
@@ -2363,7 +1599,11 @@ function TeamLeaderPerformance() {
                           >
 
                             <td>
-                              {item.financialYear}
+                              <strong>
+                                {
+                                  item.financialYear
+                                }
+                              </strong>
                             </td>
 
                             <td>
@@ -2390,8 +1630,13 @@ function TeamLeaderPerformance() {
                               )}
                             </td>
 
-                          </tr>
+                            <td>
+                              {formatCurrency(
+                                item.grossProfit
+                              )}
+                            </td>
 
+                          </tr>
                         )
                       )
 
@@ -2403,33 +1648,31 @@ function TeamLeaderPerformance() {
 
               </div>
 
-            </div>
+            </section>
 
 
-            {/* =================================================
+            {/* ==================================================
                 MONTHLY GRAPH
-            ================================================= */}
+                ================================================== */}
 
-            <div className="team-leader-report-section">
+            <section className="team-leader-report-section">
 
               <div className="team-leader-section-header">
 
                 <div>
-
-                  <span>
-                    FINANCIAL TREND
+                  <span className="team-leader-section-eyebrow">
+                    MONTHLY ANALYSIS
                   </span>
 
                   <h3>
-                    Monthly Report
+                    Monthly Financial Performance
                   </h3>
-
                 </div>
 
               </div>
 
 
-              <div className="team-leader-chart-container">
+              <div className="team-leader-chart-card">
 
                 <ResponsiveContainer
                   width="100%"
@@ -2437,75 +1680,46 @@ function TeamLeaderPerformance() {
                 >
 
                   <BarChart
-                    data={
-                      monthlyReport
-                    }
+                    data={monthlyReport}
                     margin={{
-                      top: 15,
-                      right: 20,
-                      left: 10,
+                      top: 20,
+                      right: 30,
+                      left: 20,
                       bottom: 10
                     }}
                   >
 
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      vertical={false}
                     />
 
                     <XAxis
-                      dataKey="monthShort"
+                      dataKey="month"
                     />
 
-                    <YAxis
-                      tickFormatter={value =>
-                        `₹${(
-                          value / 100000
-                        ).toFixed(0)}L`
-                      }
-                    />
+                    <YAxis />
 
                     <Tooltip
-                      content={
-                        <TeamLeaderTooltip />
+                      formatter={(value) =>
+                        formatCurrency(value)
                       }
                     />
 
+                    <Legend />
 
                     <Bar
                       dataKey="totalBilling"
                       name="Total Billing"
-                      fill="#26734D"
-                      radius={[
-                        6,
-                        6,
-                        0,
-                        0
-                      ]}
                     />
 
                     <Bar
                       dataKey="netAmount"
                       name="Net Amount"
-                      fill="#B78A34"
-                      radius={[
-                        6,
-                        6,
-                        0,
-                        0
-                      ]}
                     />
 
                     <Bar
                       dataKey="tlExpenditure"
                       name="TL Expenditure"
-                      fill="#9B5C5C"
-                      radius={[
-                        6,
-                        6,
-                        0,
-                        0
-                      ]}
                     />
 
                   </BarChart>
@@ -2514,166 +1728,138 @@ function TeamLeaderPerformance() {
 
               </div>
 
-            </div>
+            </section>
 
 
-            {/* =================================================
+            {/* ==================================================
                 CLIENT DETAILS
-            ================================================= */}
+                ================================================== */}
 
-            <div className="team-leader-report-section">
+            <section className="team-leader-report-section">
 
               <div className="team-leader-section-header">
 
                 <div>
-
-                  <span>
+                  <span className="team-leader-section-eyebrow">
                     CLIENT DATA
                   </span>
 
                   <h3>
                     Client Details
                   </h3>
-
                 </div>
+
+                <span className="team-leader-client-record-count">
+                  {modalRows.length} Records
+                </span>
 
               </div>
 
 
-              <div className="team-leader-report-table-wrapper">
+              <div className="team-leader-client-table-wrapper">
 
-                <table className="team-leader-report-table">
+                <table className="team-leader-client-table">
 
                   <thead>
-
                     <tr>
-
-                      <th>
-                        #
-                      </th>
-
-                      <th>
-                        Company Name
-                      </th>
-
-                      <th>
-                        Info
-                      </th>
-
-                      <th>
-                        Financial Year
-                      </th>
-
-                      <th>
-                        Month
-                      </th>
-
-                      <th>
-                        Industry
-                      </th>
-
-                      <th>
-                        City
-                      </th>
-
-                      <th>
-                        Billing
-                      </th>
-
-                      <th>
-                        Net Amount
-                      </th>
-
-                      <th>
-                        TL Expenditure
-                      </th>
-
+                      <th>Info</th>
+                      <th>Financial Year</th>
+                      <th>Month</th>
+                      <th>Industry</th>
+                      <th>City</th>
+                      <th>Billing</th>
+                      <th>Net Amount</th>
+                      <th>TL Expenditure</th>
                     </tr>
-
                   </thead>
 
 
                   <tbody>
 
-                    {clientDetails.length === 0 ? (
+                    {modalRows.length === 0 ? (
 
                       <tr>
-
                         <td
-                          colSpan="10"
-                          className="team-leader-no-data"
+                          colSpan="8"
+                          className="team-leader-report-no-data"
                         >
-                          No client details found.
+                          No client records
+                          available.
                         </td>
-
                       </tr>
 
                     ) : (
 
-                      clientDetails.map(
-                        client => (
+                      modalRows.map(
+                        (row, index) => {
 
-                          <tr
-                            key={
-                              client.id
-                            }
-                          >
+                          const financial =
+                            applyFinancialRules(
+                              row
+                            );
 
-                            <td>
-                              {client.id}
-                            </td>
+                          return (
+                            <tr
+                              key={
+                                row.id ??
+                                `${getTeamLeader(
+                                  row
+                                )}-${index}`
+                              }
+                            >
 
-                            <td>
-                              {client.company}
-                            </td>
+                              <td>
+                                <span className="team-leader-info-badge">
+                                  {getInfoStatus(
+                                    row
+                                  ) || "—"}
+                                </span>
+                              </td>
 
-                            <td>
+                              <td>
+                                {getRowFinancialYear(
+                                  row,
+                                  getFinancialYearFromRow
+                                ) || "—"}
+                              </td>
 
-                              <span
-                                className={`team-leader-info-status info-${client.info.toLowerCase()}`}
-                              >
-                                {client.info || "-"}
-                              </span>
+                              <td>
+                                {getFinancialMonth(
+                                  row
+                                ) || "—"}
+                              </td>
 
-                            </td>
+                              <td>
+                                {getIndustry(
+                                  row
+                                )}
+                              </td>
 
-                            <td>
-                              {client.financialYear || "-"}
-                            </td>
+                              <td>
+                                {getCity(row)}
+                              </td>
 
-                            <td>
-                              {client.month || "-"}
-                            </td>
+                              <td>
+                                {formatCurrency(
+                                  financial.billing
+                                )}
+                              </td>
 
-                            <td>
-                              {client.industry}
-                            </td>
+                              <td>
+                                {formatCurrency(
+                                  financial.netAmount
+                                )}
+                              </td>
 
-                            <td>
-                              {client.city}
-                            </td>
+                              <td>
+                                {formatCurrency(
+                                  financial.tlExpenditure
+                                )}
+                              </td>
 
-                            <td>
-                              {formatCurrency(
-                                client.billing
-                              )}
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                client.netAmount
-                              )}
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                client.tlExpenditure
-                              )}
-                            </td>
-
-                          </tr>
-
-                        )
+                            </tr>
+                          );
+                        }
                       )
 
                     )}
@@ -2684,30 +1870,52 @@ function TeamLeaderPerformance() {
 
               </div>
 
-            </div>
+            </section>
 
 
-            {/* =================================================
+            {/* ==================================================
                 MODAL FOOTER
-            ================================================= */}
+                ================================================== */}
 
             <div className="team-leader-modal-footer">
 
-              <span>
-                Team Leader Performance Report
-              </span>
+              <div>
+                <span>
+                  Total Clients
+                </span>
 
-              <button
-                type="button"
-                onClick={
-                  closeLeader
-                }
-              >
-                Close
-              </button>
+                <strong>
+                  {selectedLeaderData.clients}
+                </strong>
+              </div>
+
+
+              <div>
+                <span>
+                  Total Billing
+                </span>
+
+                <strong>
+                  {formatCurrency(
+                    selectedLeaderData.totalBilling
+                  )}
+                </strong>
+              </div>
+
+
+              <div>
+                <span>
+                  Gross Profit
+                </span>
+
+                <strong>
+                  {formatCurrency(
+                    selectedLeaderData.grossProfit
+                  )}
+                </strong>
+              </div>
 
             </div>
-
 
           </div>
 
@@ -2716,7 +1924,6 @@ function TeamLeaderPerformance() {
       )}
 
     </div>
-
   );
 }
 
