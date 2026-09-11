@@ -1,3 +1,4 @@
+
 import {
   useMemo,
   useState
@@ -234,19 +235,29 @@ function getFranchiseeShare(row) {
 
 /* =========================================================
    GET TEAM LEADER EXPENDITURE
+
+   ALL:
+   TL Expenditure = 5% of Billing
+
+   R:
+   TL Expenditure = 5% of R Billing
+
+   RV:
+   TL Expenditure = 0
+
+   C:
+   TL Expenditure = 0
+
+   CN:
+   TL Expenditure = 0
 ========================================================= */
 
 function getTLExpenditure(row) {
 
-  return toNumber(
-    row?.tl_expenditure ??
-    row?.["TL Expenditure"] ??
-    row?.["Team Leader Expenditure"] ??
-    row?.["Team Leader Expense"] ??
-    row?.["TL Expense"] ??
-    row?.["Expenditure"] ??
-    0
-  );
+  const billing =
+    getBilling(row);
+
+  return billing * 0.05;
 
 }
 
@@ -389,12 +400,12 @@ function getMonth(row) {
    ALL:
    Billing = Billing
    Net Amount = Billing - Franchisee Share
-   TL Expenditure = Existing TL Expenditure
+   TL Expenditure = 5% of Billing
 
    R:
    Billing = R Billing
    Net Amount = R Billing - Franchisee Share
-   TL Expenditure = Existing TL Expenditure
+   TL Expenditure = 5% of R Billing
 
    RV:
    Billing = RV Billing
@@ -1676,7 +1687,6 @@ function TeamLeaderPerformance() {
                       </td>
 
                     </tr>
-
                   )
                 )
 
@@ -2244,3 +2254,4 @@ function TeamLeaderPerformance() {
 
 
 export default TeamLeaderPerformance;
+
