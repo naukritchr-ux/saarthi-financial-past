@@ -1,44 +1,38 @@
 import React, { useMemo, useState } from "react";
-
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid
-} from "recharts";
+import { Close } from "@mui/icons-material";
 
 import { useData } from "../../../context/DataContext";
 
 import "./BDPerformance.css";
 
 
+/* ============================================================
+   BD PERFORMANCE
+   ============================================================ */
+
 function BDPerformance() {
 
-  const { rows, getFinancialYearFromRow } = useData();
+  const {
+    rows = [],
+    getFinancialYearFromRow
+  } = useData();
 
 
   /* ============================================================
-     STATES
+     STATE
      ============================================================ */
 
   const [selectedMember, setSelectedMember] = useState(null);
 
-  // Modal Financial Year
   const [selectedFinancialYear, setSelectedFinancialYear] =
     useState("");
 
-  // Main table Financial Year
   const [selectedTableFinancialYear, setSelectedTableFinancialYear] =
     useState("");
 
-  // Main table Info Status
   const [selectedInfoStatus, setSelectedInfoStatus] =
     useState("");
 
-  // Modal Info Status
   const [selectedModalInfoStatus, setSelectedModalInfoStatus] =
     useState("");
 
@@ -57,15 +51,9 @@ function BDPerformance() {
       return 0;
     }
 
-
     if (typeof value === "number") {
-
-      return isNaN(value)
-        ? 0
-        : value;
-
+      return isNaN(value) ? 0 : value;
     }
-
 
     const cleanedValue = String(value)
       .replace(/₹/g, "")
@@ -73,14 +61,9 @@ function BDPerformance() {
       .replace(/%/g, "")
       .trim();
 
-
     const number = Number(cleanedValue);
 
-
-    return isNaN(number)
-      ? 0
-      : number;
-
+    return isNaN(number) ? 0 : number;
   };
 
 
@@ -95,45 +78,8 @@ function BDPerformance() {
   };
 
 
-  const formatCurrency = (value) => {
-
-    const number = toNumber(value);
-
-
-    if (number >= 10000000) {
-
-      return `₹${(
-        number / 10000000
-      ).toFixed(2)} Cr`;
-
-    }
-
-
-    if (number >= 100000) {
-
-      return `₹${(
-        number / 100000
-      ).toFixed(2)} L`;
-
-    }
-
-
-    if (number >= 1000) {
-
-      return `₹${(
-        number / 1000
-      ).toFixed(2)} K`;
-
-    }
-
-
-    return `₹${number.toFixed(2)}`;
-
-  };
-
-
   /* ============================================================
-     COLUMN HELPERS
+     ROW FIELD HELPERS
      ============================================================ */
 
   const getBDMember = (row) => {
@@ -176,9 +122,7 @@ function BDPerformance() {
       row.Info ??
       row["Info"] ??
       ""
-    )
-      .trim()
-      .toUpperCase();
+    ).trim().toUpperCase();
 
   };
 
@@ -224,249 +168,7 @@ function BDPerformance() {
 
 
   /* ============================================================
-     FINANCIAL CALCULATIONS
-     
-     R:
-       Billing = R billing
-       Net Amount = Billing - Franchisee Share
-       BD Expenditure = 5% R billing
-
-     ALL:
-       Billing = Total billing
-       Net Amount = Total billing - Franchisee Share
-       BD Expenditure = 5% Total billing
-
-     RV:
-       Billing = RV billing
-       Net Amount = 0
-       BD Expenditure = 0
-
-     C:
-       Billing = C billing
-       Net Amount = 0
-       BD Expenditure = 0
-
-     CN:
-       Billing = CN billing
-       Net Amount = 0
-       BD Expenditure = 0
-     ============================================================ */
-
-  const getBDExpenditure = (row) => {
-
-    const billing = getBilling(row);
-
-    return billing * 0.05;
-
-  };
-
-
-  const getNetAmount = (row) => {
-
-    const billing = getBilling(row);
-
-    const franchiseeShare =
-      getFranchiseeShare(row);
-
-    return billing - franchiseeShare;
-
-  };
-
-
-  const getFinancialValues = (
-    row,
-    infoFilter = ""
-  ) => {
-
-    const info = getInfoStatus(row);
-
-    const billing = getBilling(row);
-
-    const franchiseeShare =
-      getFranchiseeShare(row);
-
-
-    /* ==========================================================
-       ALL
-       
-       Total Billing = ALL statuses
-       Net Amount = Billing - Franchisee Share
-       BD Expenditure = 5% Total Billing
-       ========================================================== */
-
-    if (
-      !infoFilter ||
-      infoFilter === "ALL"
-    ) {
-
-      return {
-
-        billing: billing,
-
-        netAmount:
-          billing - franchiseeShare,
-
-        bdExpenditure:
-          billing * 0.05
-
-      };
-
-    }
-
-
-    /* ==========================================================
-       R
-       ========================================================== */
-
-    if (infoFilter === "R") {
-
-      if (info !== "R") {
-
-        return {
-
-          billing: 0,
-
-          netAmount: 0,
-
-          bdExpenditure: 0
-
-        };
-
-      }
-
-
-      return {
-
-        billing: billing,
-
-        netAmount:
-          billing - franchiseeShare,
-
-        bdExpenditure:
-          billing * 0.05
-
-      };
-
-    }
-
-
-    /* ==========================================================
-       RV
-       ========================================================== */
-
-    if (infoFilter === "RV") {
-
-      if (info !== "RV") {
-
-        return {
-
-          billing: 0,
-
-          netAmount: 0,
-
-          bdExpenditure: 0
-
-        };
-
-      }
-
-
-      return {
-
-        billing: billing,
-
-        netAmount: 0,
-
-        bdExpenditure: 0
-
-      };
-
-    }
-
-
-    /* ==========================================================
-       C
-       ========================================================== */
-
-    if (infoFilter === "C") {
-
-      if (info !== "C") {
-
-        return {
-
-          billing: 0,
-
-          netAmount: 0,
-
-          bdExpenditure: 0
-
-        };
-
-      }
-
-
-      return {
-
-        billing: billing,
-
-        netAmount: 0,
-
-        bdExpenditure: 0
-
-      };
-
-    }
-
-
-    /* ==========================================================
-       CN
-       ========================================================== */
-
-    if (infoFilter === "CN") {
-
-      if (info !== "CN") {
-
-        return {
-
-          billing: 0,
-
-          netAmount: 0,
-
-          bdExpenditure: 0
-
-        };
-
-      }
-
-
-      return {
-
-        billing: billing,
-
-        netAmount: 0,
-
-        bdExpenditure: 0
-
-      };
-
-    }
-
-
-    return {
-
-      billing: 0,
-
-      netAmount: 0,
-
-      bdExpenditure: 0
-
-    };
-
-  };
-
-
-  /* ============================================================
-     DATE HELPERS
+     DATE PARSER
      ============================================================ */
 
   const parseDate = (value) => {
@@ -475,12 +177,9 @@ function BDPerformance() {
       return null;
     }
 
-
     if (value instanceof Date) {
 
-      return isNaN(
-        value.getTime()
-      )
+      return isNaN(value.getTime())
         ? null
         : value;
 
@@ -495,41 +194,34 @@ function BDPerformance() {
       value < 60000
     ) {
 
-      const excelDate =
-        new Date(
-          Math.round(
-            (value - 25569) *
-            86400 *
-            1000
-          )
-        );
+      const excelDate = new Date(
+        Math.round(
+          (value - 25569) *
+          86400 *
+          1000
+        )
+      );
 
-
-      return isNaN(
-        excelDate.getTime()
-      )
+      return isNaN(excelDate.getTime())
         ? null
         : excelDate;
 
     }
 
 
-    const stringValue =
-      String(value).trim();
+    const stringValue = String(value).trim();
 
 
     /* DD/MM/YYYY */
 
-    const slashMatch =
-      stringValue.match(
-        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
-      );
+    const slashMatch = stringValue.match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    );
 
 
     if (slashMatch) {
 
-      const day =
-        Number(slashMatch[1]);
+      const day = Number(slashMatch[1]);
 
       const month =
         Number(slashMatch[2]) - 1;
@@ -537,18 +229,10 @@ function BDPerformance() {
       const year =
         Number(slashMatch[3]);
 
-
       const date =
-        new Date(
-          year,
-          month,
-          day
-        );
+        new Date(year, month, day);
 
-
-      return isNaN(
-        date.getTime()
-      )
+      return isNaN(date.getTime())
         ? null
         : date;
 
@@ -557,10 +241,9 @@ function BDPerformance() {
 
     /* DD-MM-YYYY */
 
-    const dashMatch =
-      stringValue.match(
-        /^(\d{1,2})-(\d{1,2})-(\d{4})$/
-      );
+    const dashMatch = stringValue.match(
+      /^(\d{1,2})-(\d{1,2})-(\d{4})$/
+    );
 
 
     if (dashMatch) {
@@ -574,18 +257,10 @@ function BDPerformance() {
       const year =
         Number(dashMatch[3]);
 
-
       const date =
-        new Date(
-          year,
-          month,
-          day
-        );
+        new Date(year, month, day);
 
-
-      return isNaN(
-        date.getTime()
-      )
+      return isNaN(date.getTime())
         ? null
         : date;
 
@@ -595,15 +270,16 @@ function BDPerformance() {
     const date =
       new Date(stringValue);
 
-
-    return isNaN(
-      date.getTime()
-    )
+    return isNaN(date.getTime())
       ? null
       : date;
 
   };
 
+
+  /* ============================================================
+     ACQUIRED DATE
+     ============================================================ */
 
   const getAcquiredDate = (row) => {
 
@@ -619,21 +295,21 @@ function BDPerformance() {
   };
 
 
+  /* ============================================================
+     FINANCIAL YEAR
+     ============================================================ */
+
   const getFinancialYear = (row) => {
 
     if (
-      typeof getFinancialYearFromRow ===
-      "function"
+      typeof getFinancialYearFromRow === "function"
     ) {
 
       const contextYear =
         getFinancialYearFromRow(row);
 
-
       if (contextYear) {
-
         return contextYear;
-
       }
 
     }
@@ -646,9 +322,7 @@ function BDPerformance() {
 
 
     if (!date) {
-
       return "Unknown";
-
     }
 
 
@@ -695,676 +369,749 @@ function BDPerformance() {
   ];
 
 
-  const getFinancialMonth = (row) => {
-
-    const date =
-      parseDate(
-        getAcquiredDate(row)
-      );
-
-
-    if (!date) {
-
-      return "Unknown";
-
-    }
-
-
-    return date.toLocaleString(
-      "en-IN",
-      {
-        month: "long"
-      }
-    );
-
-  };
-
-
   /* ============================================================
      FINANCIAL YEARS
      ============================================================ */
 
-  const financialYears =
-    useMemo(() => {
+  const financialYears = useMemo(() => {
 
-      const years =
-        new Set();
+    const years = new Set();
 
+    rows.forEach((row) => {
 
-      rows.forEach((row) => {
+      const year =
+        getFinancialYear(row);
 
-        const year =
-          getFinancialYear(row);
+      if (year && year !== "Unknown") {
+        years.add(year);
+      }
 
+    });
 
-        if (
-          year &&
-          year !== "Unknown"
-        ) {
+    return Array.from(years).sort();
 
-          years.add(year);
-
-        }
-
-      });
+  }, [rows]);
 
 
-      return Array.from(years)
-        .sort();
+  /* ============================================================
+     FINANCIAL CALCULATION
+     
+     RULES:
 
-    }, [rows]);
+     ALL
+     ------------------------------------------------------------
+     Billing       = R + RV + C + CN
+     Net Amount    = Billing - Franchisee Share
+     Expenditure   = 5% of Total Billing
+
+     R
+     ------------------------------------------------------------
+     Billing       = R Billing
+     Net Amount    = R Billing - R Franchisee Share
+     Expenditure   = 5% of R Billing
+
+     RV
+     ------------------------------------------------------------
+     Billing       = RV Billing
+     Net Amount    = 0
+     Expenditure   = 0
+
+     C
+     ------------------------------------------------------------
+     Billing       = C Billing
+     Net Amount    = 0
+     Expenditure   = 0
+
+     CN
+     ------------------------------------------------------------
+     Billing       = CN Billing
+     Net Amount    = 0
+     Expenditure   = 0
+     ============================================================ */
+
+  const getFinancialValues = (
+    row,
+    infoFilter = ""
+  ) => {
+
+    const info =
+      getInfoStatus(row);
+
+    const billing =
+      getBilling(row);
+
+    const franchiseeShare =
+      getFranchiseeShare(row);
+
+
+    /* ========================================================
+       ALL
+       ======================================================== */
+
+    if (
+      !infoFilter ||
+      infoFilter === "ALL"
+    ) {
+
+      return {
+
+        billing: billing,
+
+        netAmount:
+          billing - franchiseeShare,
+
+        bdExpenditure:
+          billing * 0.05
+
+      };
+
+    }
+
+
+    /* ========================================================
+       R
+       ======================================================== */
+
+    if (infoFilter === "R") {
+
+      if (info !== "R") {
+
+        return {
+          billing: 0,
+          netAmount: 0,
+          bdExpenditure: 0
+        };
+
+      }
+
+
+      return {
+
+        billing: billing,
+
+        netAmount:
+          billing - franchiseeShare,
+
+        bdExpenditure:
+          billing * 0.05
+
+      };
+
+    }
+
+
+    /* ========================================================
+       RV
+       ======================================================== */
+
+    if (infoFilter === "RV") {
+
+      if (info !== "RV") {
+
+        return {
+          billing: 0,
+          netAmount: 0,
+          bdExpenditure: 0
+        };
+
+      }
+
+
+      return {
+
+        billing: billing,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    /* ========================================================
+       C
+       ======================================================== */
+
+    if (infoFilter === "C") {
+
+      if (info !== "C") {
+
+        return {
+          billing: 0,
+          netAmount: 0,
+          bdExpenditure: 0
+        };
+
+      }
+
+
+      return {
+
+        billing: billing,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    /* ========================================================
+       CN
+       ======================================================== */
+
+    if (infoFilter === "CN") {
+
+      if (info !== "CN") {
+
+        return {
+          billing: 0,
+          netAmount: 0,
+          bdExpenditure: 0
+        };
+
+      }
+
+
+      return {
+
+        billing: billing,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing: 0,
+
+      netAmount: 0,
+
+      bdExpenditure: 0
+
+    };
+
+  };
 
 
   /* ============================================================
      MAIN TABLE FILTER
      ============================================================ */
 
-  const filteredRows =
-    useMemo(() => {
+  const filteredRows = useMemo(() => {
 
-      return rows.filter((row) => {
+    return rows.filter((row) => {
 
-        const year =
-          getFinancialYear(row);
+      const year =
+        getFinancialYear(row);
 
-        const info =
-          getInfoStatus(row);
-
-
-        if (
-          selectedTableFinancialYear &&
-          year !==
-            selectedTableFinancialYear
-        ) {
-
-          return false;
-
-        }
+      const info =
+        getInfoStatus(row);
 
 
-        if (
-          selectedInfoStatus &&
-          info !==
-            selectedInfoStatus
-        ) {
+      if (
+        selectedTableFinancialYear &&
+        year !== selectedTableFinancialYear
+      ) {
 
-          return false;
+        return false;
 
-        }
+      }
 
 
-        return true;
+      if (
+        selectedInfoStatus &&
+        info !== selectedInfoStatus
+      ) {
 
-      });
+        return false;
 
-    }, [
-      rows,
-      selectedTableFinancialYear,
-      selectedInfoStatus
-    ]);
+      }
+
+
+      return true;
+
+    });
+
+  }, [
+    rows,
+    selectedTableFinancialYear,
+    selectedInfoStatus
+  ]);
 
 
   /* ============================================================
-     BD MEMBER PERFORMANCE DATA
+     BD MEMBER PERFORMANCE
      ============================================================ */
 
-  const memberData =
-    useMemo(() => {
+  const memberPerformance = useMemo(() => {
 
-      const members = {};
-
-
-      filteredRows.forEach((row) => {
-
-        const member =
-          getBDMember(row) ||
-          "Unknown";
+    const grouped = {};
 
 
-        if (!members[member]) {
+    filteredRows.forEach((row) => {
 
-          members[member] = {
-
-            name: member,
-
-            clients: 0,
-
-            billing: 0,
-
-            netAmount: 0,
-
-            bdExpenditure: 0
-
-          };
-
-        }
+      const member =
+        getBDMember(row);
 
 
-        /* Client count follows filters */
-
-        members[member].clients += 1;
-
-
-        /* Financial values */
-
-        const financialValues =
-          getFinancialValues(
-            row,
-            selectedInfoStatus
-          );
+      if (!member) {
+        return;
+      }
 
 
-        members[member].billing +=
-          financialValues.billing;
+      if (!grouped[member]) {
+
+        grouped[member] = {
+
+          name: member,
+
+          clients: 0,
+
+          billing: 0,
+
+          netAmount: 0,
+
+          bdExpenditure: 0
+
+        };
+
+      }
 
 
-        members[member].netAmount +=
-          financialValues.netAmount;
+      const financialValues =
+        getFinancialValues(
+          row,
+          selectedInfoStatus
+        );
 
 
-        members[member].bdExpenditure +=
-          financialValues.bdExpenditure;
+      grouped[member].clients += 1;
 
-      });
+      grouped[member].billing +=
+        financialValues.billing;
+
+      grouped[member].netAmount +=
+        financialValues.netAmount;
+
+      grouped[member].bdExpenditure +=
+        financialValues.bdExpenditure;
+
+    });
 
 
-      return Object.values(
-        members
-      );
+    return Object.values(grouped);
 
-    }, [
-      filteredRows,
-      selectedInfoStatus
-    ]);
+  }, [
+    filteredRows,
+    selectedInfoStatus
+  ]);
 
 
   /* ============================================================
      SELECTED MEMBER ROWS
      ============================================================ */
 
-  const selectedMemberRows =
-    useMemo(() => {
+  const selectedMemberRows = useMemo(() => {
 
-      if (!selectedMember) {
+    if (!selectedMember) {
+      return [];
+    }
 
-        return [];
+
+    return rows.filter((row) => {
+
+      if (
+        getBDMember(row) !==
+        selectedMember.name
+      ) {
+
+        return false;
 
       }
 
 
-      return rows.filter((row) => {
+      if (
+        selectedFinancialYear &&
+        getFinancialYear(row) !==
+        selectedFinancialYear
+      ) {
 
-        /* BD Member */
+        return false;
 
-        if (
-          getBDMember(row) !==
-          selectedMember.name
-        ) {
-
-          return false;
-
-        }
+      }
 
 
-        /* Financial Year */
+      if (
+        selectedModalInfoStatus &&
+        getInfoStatus(row) !==
+        selectedModalInfoStatus
+      ) {
 
-        if (
-          selectedFinancialYear &&
-          getFinancialYear(row) !==
-            selectedFinancialYear
-        ) {
+        return false;
 
-          return false;
-
-        }
+      }
 
 
-        /* Info Status */
+      return true;
 
-        if (
-          selectedModalInfoStatus &&
-          getInfoStatus(row) !==
-            selectedModalInfoStatus
-        ) {
+    });
 
-          return false;
-
-        }
-
-
-        return true;
-
-      });
-
-    }, [
-      rows,
-      selectedMember,
-      selectedFinancialYear,
-      selectedModalInfoStatus
-    ]);
+  }, [
+    rows,
+    selectedMember,
+    selectedFinancialYear,
+    selectedModalInfoStatus
+  ]);
 
 
   /* ============================================================
-     PERFORMANCE SUMMARY
+     MODAL SUMMARY
      ============================================================ */
 
-  const performanceSummary =
-    useMemo(() => {
+  const performanceSummary = useMemo(() => {
 
-      let billing = 0;
+    let billing = 0;
 
-      let netAmount = 0;
+    let netAmount = 0;
 
-      let bdExpenditure = 0;
-
-
-      selectedMemberRows.forEach(
-        (row) => {
-
-          const financialValues =
-            getFinancialValues(
-              row,
-              selectedModalInfoStatus
-            );
+    let bdExpenditure = 0;
 
 
-          billing +=
-            financialValues.billing;
+    selectedMemberRows.forEach((row) => {
+
+      const values =
+        getFinancialValues(
+          row,
+          selectedModalInfoStatus
+        );
 
 
-          netAmount +=
-            financialValues.netAmount;
+      billing +=
+        values.billing;
+
+      netAmount +=
+        values.netAmount;
+
+      bdExpenditure +=
+        values.bdExpenditure;
+
+    });
 
 
-          bdExpenditure +=
-            financialValues.bdExpenditure;
+    return {
 
-        }
-      );
+      billing,
 
+      netAmount,
 
-      return {
+      bdExpenditure
 
-        clients:
-          selectedMemberRows.length,
+    };
 
-        billing,
-
-        netAmount,
-
-        bdExpenditure
-
-      };
-
-    }, [
-      selectedMemberRows,
-      selectedModalInfoStatus
-    ]);
+  }, [
+    selectedMemberRows,
+    selectedModalInfoStatus
+  ]);
 
 
   /* ============================================================
      BEST INDUSTRY
      ============================================================ */
 
-  const bestIndustry =
-    useMemo(() => {
+  const bestIndustry = useMemo(() => {
 
-      const industryMap = {};
-
-
-      selectedMemberRows.forEach(
-        (row) => {
-
-          const industry =
-            getIndustry(row);
+    const grouped = {};
 
 
-          if (
-            !industryMap[industry]
-          ) {
+    selectedMemberRows.forEach((row) => {
 
-            industryMap[industry] = {
-
-              count: 0,
-
-              billing: 0
-
-            };
-
-          }
+      const industry =
+        getIndustry(row);
 
 
-          industryMap[industry].count +=
-            1;
+      if (!grouped[industry]) {
 
+        grouped[industry] = {
 
-          const financialValues =
-            getFinancialValues(
-              row,
-              selectedModalInfoStatus
-            );
+          name: industry,
 
+          billing: 0,
 
-          industryMap[industry].billing +=
-            financialValues.billing;
+          netAmount: 0,
 
-        }
-      );
-
-
-      const sorted =
-        Object.entries(
-          industryMap
-        ).sort(
-          (a, b) =>
-            b[1].count -
-            a[1].count
-        );
-
-
-      if (!sorted.length) {
-
-        return {
-
-          name: "N/A",
-
-          count: 0,
-
-          billing: 0
+          bdExpenditure: 0
 
         };
 
       }
 
 
-      return {
+      const values =
+        getFinancialValues(
+          row,
+          selectedModalInfoStatus
+        );
 
-        name:
-          sorted[0][0],
 
-        count:
-          sorted[0][1].count,
+      grouped[industry].billing +=
+        values.billing;
 
-        billing:
-          sorted[0][1].billing
+      grouped[industry].netAmount +=
+        values.netAmount;
 
-      };
+      grouped[industry].bdExpenditure +=
+        values.bdExpenditure;
 
-    }, [
-      selectedMemberRows,
-      selectedModalInfoStatus
-    ]);
+    });
+
+
+    return Object.values(grouped)
+      .sort(
+        (a, b) =>
+          b.billing - a.billing
+      )[0] || null;
+
+  }, [
+    selectedMemberRows,
+    selectedModalInfoStatus
+  ]);
 
 
   /* ============================================================
      BEST CITY
      ============================================================ */
 
-  const bestCity =
-    useMemo(() => {
+  const bestCity = useMemo(() => {
 
-      const cityMap = {};
-
-
-      selectedMemberRows.forEach(
-        (row) => {
-
-          const city =
-            getCity(row);
+    const grouped = {};
 
 
-          if (!cityMap[city]) {
+    selectedMemberRows.forEach((row) => {
 
-            cityMap[city] = {
-
-              count: 0,
-
-              billing: 0
-
-            };
-
-          }
+      const city =
+        getCity(row);
 
 
-          cityMap[city].count +=
-            1;
+      if (!grouped[city]) {
 
+        grouped[city] = {
 
-          const financialValues =
-            getFinancialValues(
-              row,
-              selectedModalInfoStatus
-            );
+          name: city,
 
+          billing: 0,
 
-          cityMap[city].billing +=
-            financialValues.billing;
+          netAmount: 0,
 
-        }
-      );
-
-
-      const sorted =
-        Object.entries(
-          cityMap
-        ).sort(
-          (a, b) =>
-            b[1].count -
-            a[1].count
-        );
-
-
-      if (!sorted.length) {
-
-        return {
-
-          name: "N/A",
-
-          count: 0,
-
-          billing: 0
+          bdExpenditure: 0
 
         };
 
       }
 
 
-      return {
+      const values =
+        getFinancialValues(
+          row,
+          selectedModalInfoStatus
+        );
 
-        name:
-          sorted[0][0],
 
-        count:
-          sorted[0][1].count,
+      grouped[city].billing +=
+        values.billing;
 
-        billing:
-          sorted[0][1].billing
+      grouped[city].netAmount +=
+        values.netAmount;
+
+      grouped[city].bdExpenditure +=
+        values.bdExpenditure;
+
+    });
+
+
+    return Object.values(grouped)
+      .sort(
+        (a, b) =>
+          b.billing - a.billing
+      )[0] || null;
+
+  }, [
+    selectedMemberRows,
+    selectedModalInfoStatus
+  ]);
+
+
+  /* ============================================================
+     YEARLY PERFORMANCE
+     ============================================================ */
+
+  const yearlyPerformance = useMemo(() => {
+
+    const grouped = {};
+
+
+    selectedMemberRows.forEach((row) => {
+
+      const year =
+        getFinancialYear(row);
+
+
+      if (!grouped[year]) {
+
+        grouped[year] = {
+
+          year,
+
+          billing: 0,
+
+          netAmount: 0,
+
+          bdExpenditure: 0
+
+        };
+
+      }
+
+
+      const values =
+        getFinancialValues(
+          row,
+          selectedModalInfoStatus
+        );
+
+
+      grouped[year].billing +=
+        values.billing;
+
+      grouped[year].netAmount +=
+        values.netAmount;
+
+      grouped[year].bdExpenditure +=
+        values.bdExpenditure;
+
+    });
+
+
+    return Object.values(grouped)
+      .sort((a, b) =>
+        a.year.localeCompare(b.year)
+      );
+
+  }, [
+    selectedMemberRows,
+    selectedModalInfoStatus
+  ]);
+
+
+  /* ============================================================
+     MONTHLY PERFORMANCE
+     ============================================================ */
+
+  const monthlyPerformance = useMemo(() => {
+
+    const grouped = {};
+
+
+    financialMonths.forEach((month) => {
+
+      grouped[month] = {
+
+        month,
+
+        billing: 0,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
 
       };
 
-    }, [
-      selectedMemberRows,
-      selectedModalInfoStatus
-    ]);
+    });
+
+
+    selectedMemberRows.forEach((row) => {
+
+      const date =
+        parseDate(
+          getAcquiredDate(row)
+        );
+
+
+      if (!date) {
+        return;
+      }
+
+
+      const monthIndex =
+        date.getMonth();
+
+
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ];
+
+
+      const month =
+        monthNames[monthIndex];
+
+
+      if (!grouped[month]) {
+        return;
+      }
+
+
+      const values =
+        getFinancialValues(
+          row,
+          selectedModalInfoStatus
+        );
+
+
+      grouped[month].billing +=
+        values.billing;
+
+      grouped[month].netAmount +=
+        values.netAmount;
+
+      grouped[month].bdExpenditure +=
+        values.bdExpenditure;
+
+    });
+
+
+    return financialMonths.map(
+      (month) =>
+        grouped[month]
+    );
+
+  }, [
+    selectedMemberRows,
+    selectedModalInfoStatus
+  ]);
 
 
   /* ============================================================
-     YEARLY REPORT
-     ============================================================ */
-
-  const yearlyReport =
-    useMemo(() => {
-
-      const report = {};
-
-
-      selectedMemberRows.forEach(
-        (row) => {
-
-          const year =
-            getFinancialYear(row);
-
-
-          if (!report[year]) {
-
-            report[year] = {
-
-              year,
-
-              clients: 0,
-
-              billing: 0,
-
-              netAmount: 0,
-
-              bdExpenditure: 0
-
-            };
-
-          }
-
-
-          report[year].clients +=
-            1;
-
-
-          const financialValues =
-            getFinancialValues(
-              row,
-              selectedModalInfoStatus
-            );
-
-
-          report[year].billing +=
-            financialValues.billing;
-
-
-          report[year].netAmount +=
-            financialValues.netAmount;
-
-
-          report[year].bdExpenditure +=
-            financialValues.bdExpenditure;
-
-        }
-      );
-
-
-      return Object.values(
-        report
-      ).sort(
-        (a, b) =>
-          a.year.localeCompare(
-            b.year
-          )
-      );
-
-    }, [
-      selectedMemberRows,
-      selectedModalInfoStatus
-    ]);
-
-
-  /* ============================================================
-     MONTHLY REPORT
-     ============================================================ */
-
-  const monthlyReport =
-    useMemo(() => {
-
-      const report = {};
-
-
-      financialMonths.forEach(
-        (month) => {
-
-          report[month] = {
-
-            month,
-
-            clients: 0,
-
-            billing: 0,
-
-            netAmount: 0,
-
-            bdExpenditure: 0
-
-          };
-
-        }
-      );
-
-
-      selectedMemberRows.forEach(
-        (row) => {
-
-          const year =
-            getFinancialYear(row);
-
-
-          if (
-            selectedFinancialYear &&
-            year !==
-              selectedFinancialYear
-          ) {
-
-            return;
-
-          }
-
-
-          const month =
-            getFinancialMonth(row);
-
-
-          if (!report[month]) {
-
-            return;
-
-          }
-
-
-          report[month].clients +=
-            1;
-
-
-          const financialValues =
-            getFinancialValues(
-              row,
-              selectedModalInfoStatus
-            );
-
-
-          report[month].billing +=
-            financialValues.billing;
-
-
-          report[month].netAmount +=
-            financialValues.netAmount;
-
-
-          report[month].bdExpenditure +=
-            financialValues.bdExpenditure;
-
-        }
-      );
-
-
-      return financialMonths.map(
-        (month) =>
-          report[month]
-      );
-
-    }, [
-      selectedMemberRows,
-      selectedFinancialYear,
-      selectedModalInfoStatus
-    ]);
-
-
-  /* ============================================================
-     MODAL OPEN
+     OPEN PERFORMANCE
      ============================================================ */
 
   const openPerformance = (member) => {
@@ -1379,7 +1126,7 @@ function BDPerformance() {
 
 
   /* ============================================================
-     MODAL CLOSE
+     CLOSE PERFORMANCE
      ============================================================ */
 
   const closePerformance = () => {
@@ -1403,7 +1150,7 @@ function BDPerformance() {
 
 
       {/* ======================================================
-          PAGE HEADER
+          HEADER
           ====================================================== */}
 
       <div className="bd-performance-header">
@@ -1415,8 +1162,9 @@ function BDPerformance() {
           </h1>
 
           <p>
-            Analyse BD member performance,
-            billing and expenditure.
+            Analyse BD member billing,
+            net amount and expenditure
+            performance.
           </p>
 
         </div>
@@ -1429,8 +1177,6 @@ function BDPerformance() {
           ====================================================== */}
 
       <div className="bd-performance-filters">
-
-        {/* Financial Year */}
 
         <div className="bd-filter-group">
 
@@ -1453,25 +1199,21 @@ function BDPerformance() {
               All Financial Years
             </option>
 
-            {financialYears.map(
-              (year) => (
+            {financialYears.map((year) => (
 
-                <option
-                  key={year}
-                  value={year}
-                >
-                  {year}
-                </option>
+              <option
+                key={year}
+                value={year}
+              >
+                {year}
+              </option>
 
-              )
-            )}
+            ))}
 
           </select>
 
         </div>
 
-
-        {/* Info Status */}
 
         <div className="bd-filter-group">
 
@@ -1518,20 +1260,16 @@ function BDPerformance() {
 
 
       {/* ======================================================
-          BD MEMBER TABLE
+          MAIN TABLE
           ====================================================== */}
 
       <div className="bd-table-container">
 
         <div className="bd-table-header">
 
-          <div>
-
-            <h2>
-              BD Member Performance
-            </h2>
-
-          </div>
+          <h2>
+            BD Member Performance
+          </h2>
 
         </div>
 
@@ -1549,7 +1287,7 @@ function BDPerformance() {
                 </th>
 
                 <th>
-                  Clients
+                  Total Clients
                 </th>
 
                 <th>
@@ -1575,14 +1313,25 @@ function BDPerformance() {
 
             <tbody>
 
-              {memberData.length > 0 ? (
+              {memberPerformance.length === 0 ? (
 
-                memberData.map(
+                <tr>
+
+                  <td
+                    colSpan="6"
+                    className="no-data"
+                  >
+                    No data available
+                  </td>
+
+                </tr>
+
+              ) : (
+
+                memberPerformance.map(
                   (member) => (
 
-                    <tr
-                      key={member.name}
-                    >
+                    <tr key={member.name}>
 
                       <td>
                         {member.name}
@@ -1630,19 +1379,6 @@ function BDPerformance() {
                   )
                 )
 
-              ) : (
-
-                <tr>
-
-                  <td
-                    colSpan="6"
-                    className="no-data"
-                  >
-                    No BD member data found.
-                  </td>
-
-                </tr>
-
               )}
 
             </tbody>
@@ -1660,9 +1396,17 @@ function BDPerformance() {
 
       {selectedMember && (
 
-        <div className="performance-modal-overlay">
+        <div
+          className="performance-modal-overlay"
+          onClick={closePerformance}
+        >
 
-          <div className="performance-modal">
+          <div
+            className="performance-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
 
 
             {/* ==================================================
@@ -1678,7 +1422,7 @@ function BDPerformance() {
                 </h2>
 
                 <p>
-                  BD Member Performance
+                  BD Member Performance Report
                 </p>
 
               </div>
@@ -1688,7 +1432,9 @@ function BDPerformance() {
                 className="modal-close-btn"
                 onClick={closePerformance}
               >
-                ×
+
+                <Close />
+
               </button>
 
             </div>
@@ -1699,8 +1445,6 @@ function BDPerformance() {
                 ================================================== */}
 
             <div className="bd-modal-filters">
-
-              {/* Financial Year */}
 
               <div className="bd-year-control">
 
@@ -1740,8 +1484,6 @@ function BDPerformance() {
 
               </div>
 
-
-              {/* Info Status */}
 
               <div className="bd-year-control">
 
@@ -1788,51 +1530,10 @@ function BDPerformance() {
 
 
             {/* ==================================================
-                PERFORMANCE CARDS
+                SUMMARY
                 ================================================== */}
 
             <div className="performance-summary-grid">
-
-
-              {/* Best Industry */}
-
-              <div className="performance-summary-card">
-
-                <span>
-                  Best Industry
-                </span>
-
-                <strong>
-                  {bestIndustry.name}
-                </strong>
-
-                <small>
-                  {bestIndustry.count} Clients
-                </small>
-
-              </div>
-
-
-              {/* Best City */}
-
-              <div className="performance-summary-card">
-
-                <span>
-                  Best City
-                </span>
-
-                <strong>
-                  {bestCity.name}
-                </strong>
-
-                <small>
-                  {bestCity.count} Clients
-                </small>
-
-              </div>
-
-
-              {/* Total Billing */}
 
               <div className="performance-summary-card">
 
@@ -1849,8 +1550,6 @@ function BDPerformance() {
               </div>
 
 
-              {/* Net Amount */}
-
               <div className="performance-summary-card">
 
                 <span>
@@ -1866,8 +1565,6 @@ function BDPerformance() {
               </div>
 
 
-              {/* BD Expenditure */}
-
               <div className="performance-summary-card">
 
                 <span>
@@ -1878,6 +1575,36 @@ function BDPerformance() {
                   {fullCurrency(
                     performanceSummary.bdExpenditure
                   )}
+                </strong>
+
+              </div>
+
+
+              <div className="performance-summary-card">
+
+                <span>
+                  Best Industry
+                </span>
+
+                <strong>
+                  {bestIndustry
+                    ? bestIndustry.name
+                    : "N/A"}
+                </strong>
+
+              </div>
+
+
+              <div className="performance-summary-card">
+
+                <span>
+                  Best City
+                </span>
+
+                <strong>
+                  {bestCity
+                    ? bestCity.name
+                    : "N/A"}
                 </strong>
 
               </div>
@@ -1913,10 +1640,6 @@ function BDPerformance() {
                       </th>
 
                       <th>
-                        Clients
-                      </th>
-
-                      <th>
                         Total Billing
                       </th>
 
@@ -1935,109 +1658,58 @@ function BDPerformance() {
 
                   <tbody>
 
-                    {yearlyReport.map(
-                      (item) => (
+                    {yearlyPerformance.length === 0 ? (
 
-                        <tr
-                          key={item.year}
+                      <tr>
+
+                        <td
+                          colSpan="4"
+                          className="no-data"
                         >
+                          No data available
+                        </td>
 
-                          <td>
-                            {item.year}
-                          </td>
+                      </tr>
 
-                          <td>
-                            {item.clients}
-                          </td>
+                    ) : (
 
-                          <td>
-                            {fullCurrency(
-                              item.billing
-                            )}
-                          </td>
+                      yearlyPerformance.map(
+                        (item) => (
 
-                          <td>
-                            {fullCurrency(
-                              item.netAmount
-                            )}
-                          </td>
+                          <tr key={item.year}>
 
-                          <td>
-                            {fullCurrency(
-                              item.bdExpenditure
-                            )}
-                          </td>
+                            <td>
+                              {item.year}
+                            </td>
 
-                        </tr>
+                            <td>
+                              {fullCurrency(
+                                item.billing
+                              )}
+                            </td>
 
+                            <td>
+                              {fullCurrency(
+                                item.netAmount
+                              )}
+                            </td>
+
+                            <td>
+                              {fullCurrency(
+                                item.bdExpenditure
+                              )}
+                            </td>
+
+                          </tr>
+
+                        )
                       )
+
                     )}
 
                   </tbody>
 
                 </table>
-
-              </div>
-
-            </div>
-
-
-            {/* ==================================================
-                MONTHLY CHART
-                ================================================== */}
-
-            <div className="performance-report-section">
-
-              <div className="performance-section-header">
-
-                <h3>
-                  Monthly Billing
-                </h3>
-
-              </div>
-
-
-              <div
-                className="performance-chart"
-                style={{
-                  width: "100%",
-                  height: 320
-                }}
-              >
-
-                <ResponsiveContainer
-                  width="100%"
-                  height="100%"
-                >
-
-                  <BarChart
-                    data={monthlyReport}
-                  >
-
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                    />
-
-                    <XAxis
-                      dataKey="month"
-                    />
-
-                    <YAxis />
-
-                    <Tooltip
-                      formatter={(value) =>
-                        fullCurrency(value)
-                      }
-                    />
-
-                    <Bar
-                      dataKey="billing"
-                      name="Total Billing"
-                    />
-
-                  </BarChart>
-
-                </ResponsiveContainer>
 
               </div>
 
@@ -2053,7 +1725,7 @@ function BDPerformance() {
               <div className="performance-section-header">
 
                 <h3>
-                  Monthly Report
+                  Monthly Performance
                 </h3>
 
               </div>
@@ -2072,10 +1744,6 @@ function BDPerformance() {
                       </th>
 
                       <th>
-                        Clients
-                      </th>
-
-                      <th>
                         Total Billing
                       </th>
 
@@ -2094,19 +1762,13 @@ function BDPerformance() {
 
                   <tbody>
 
-                    {monthlyReport.map(
+                    {monthlyPerformance.map(
                       (item) => (
 
-                        <tr
-                          key={item.month}
-                        >
+                        <tr key={item.month}>
 
                           <td>
                             {item.month}
-                          </td>
-
-                          <td>
-                            {item.clients}
                           </td>
 
                           <td>
@@ -2135,6 +1797,100 @@ function BDPerformance() {
                   </tbody>
 
                 </table>
+
+              </div>
+
+            </div>
+
+
+            {/* ==================================================
+                CHART DATA
+                ================================================== */}
+
+            <div className="performance-report-section">
+
+              <div className="performance-section-header">
+
+                <h3>
+                  Performance Chart
+                </h3>
+
+              </div>
+
+
+              <div className="performance-chart">
+
+                {monthlyPerformance.map(
+                  (item) => (
+
+                    <div
+                      key={item.month}
+                      style={{
+                        marginBottom: "12px"
+                      }}
+                    >
+
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent:
+                            "space-between",
+                          marginBottom: "4px"
+                        }}
+                      >
+
+                        <span>
+                          {item.month}
+                        </span>
+
+                        <strong>
+                          {fullCurrency(
+                            item.billing
+                          )}
+                        </strong>
+
+                      </div>
+
+
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "8px",
+                          background:
+                            "#e5e7eb",
+                          borderRadius:
+                            "20px",
+                          overflow:
+                            "hidden"
+                        }}
+                      >
+
+                        <div
+                          style={{
+                            width:
+                              `${Math.min(
+                                100,
+                                performanceSummary.billing
+                                  ? (
+                                    item.billing /
+                                    performanceSummary.billing
+                                  ) * 100
+                                  : 0
+                              )}%`,
+                            height: "100%",
+                            background:
+                              "#6366f1",
+                            borderRadius:
+                              "20px"
+                          }}
+                        />
+
+                      </div>
+
+                    </div>
+
+                  )
+                )}
 
               </div>
 
