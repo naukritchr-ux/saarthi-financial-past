@@ -207,6 +207,8 @@ function TeamLeaderPerformance() {
 
   /* =====================================================
      GET BILLING
+     
+     Gross Revenue = Total Billing
      ===================================================== */
 
   function getBilling(row) {
@@ -235,6 +237,21 @@ function TeamLeaderPerformance() {
       0
 
     );
+
+  }
+
+
+  /* =====================================================
+     TL EXPENDITURE
+     
+     TL Expenditure = 5% of Gross Revenue
+     
+     Gross Revenue = Total Billing
+     ===================================================== */
+
+  function getTLExpenditure(row) {
+
+    return getBilling(row) * 0.05;
 
   }
 
@@ -400,13 +417,12 @@ function TeamLeaderPerformance() {
   /* =====================================================
      TEAM LEADER SUMMARY
      
-     Main page table.
-     
      Columns:
      Team Leader Name
      Total Acquired Client
      Total Billing
      Net Amount
+     TL Expenditure
      Performance
      ===================================================== */
 
@@ -440,7 +456,9 @@ function TeamLeaderPerformance() {
 
           billing: 0,
 
-          netAmount: 0
+          netAmount: 0,
+
+          tlExpenditure: 0
 
         };
 
@@ -456,16 +474,22 @@ function TeamLeaderPerformance() {
       data.clients++;
 
 
-      /* Total billing */
+      /* Gross Revenue / Total Billing */
 
       data.billing +=
         getBilling(row);
 
 
-      /* Net amount */
+      /* Net Amount */
 
       data.netAmount +=
         getNetAmount(row);
+
+
+      /* TL Expenditure = 5% of Gross Revenue */
+
+      data.tlExpenditure +=
+        getTLExpenditure(row);
 
     });
 
@@ -523,12 +547,11 @@ function TeamLeaderPerformance() {
   /* =====================================================
      SELECTED LEADER SUMMARY
      
-     Performance window:
-     
      Best Industry
      Best City
      Total Billing
      Net Amount
+     TL Expenditure
      ===================================================== */
 
   const selectedSummary = useMemo(() => {
@@ -542,6 +565,8 @@ function TeamLeaderPerformance() {
         billing: 0,
 
         netAmount: 0,
+
+        tlExpenditure: 0,
 
         bestIndustry: "—",
 
@@ -558,6 +583,8 @@ function TeamLeaderPerformance() {
 
     let netAmount = 0;
 
+    let tlExpenditure = 0;
+
 
     const industries = {};
 
@@ -569,12 +596,22 @@ function TeamLeaderPerformance() {
       clients++;
 
 
+      /* Gross Revenue */
+
       billing +=
         getBilling(row);
 
 
+      /* Net Amount */
+
       netAmount +=
         getNetAmount(row);
+
+
+      /* TL Expenditure */
+
+      tlExpenditure +=
+        getTLExpenditure(row);
 
 
       /* Industry count */
@@ -625,6 +662,8 @@ function TeamLeaderPerformance() {
 
       netAmount,
 
+      tlExpenditure,
+
       bestIndustry:
         getBestValue(
           industries
@@ -646,10 +685,6 @@ function TeamLeaderPerformance() {
 
   /* =====================================================
      YEARLY REPORT DATA
-     
-     Used when Financial Year = None.
-     
-     One entry per Financial Year.
      ===================================================== */
 
   const yearlyReportData = useMemo(() => {
@@ -725,10 +760,6 @@ function TeamLeaderPerformance() {
 
   /* =====================================================
      MONTHLY REPORT DATA
-     
-     Used when Financial Year is selected.
-     
-     Always April → March.
      ===================================================== */
 
   const monthlyReportData = useMemo(() => {
@@ -819,12 +850,6 @@ function TeamLeaderPerformance() {
 
   /* =====================================================
      ACTIVE GRAPH DATA
-     
-     None:
-       Yearly
-    
-     Selected FY:
-       Monthly
      ===================================================== */
 
   const reportGraphData =
@@ -1009,13 +1034,6 @@ function TeamLeaderPerformance() {
 
       {/* =================================================
           TEAM LEADER TABLE
-          
-          Only:
-          Name
-          Clients
-          Billing
-          Net Amount
-          Performance
           ================================================= */}
 
       <div className="team-table-card">
@@ -1070,6 +1088,10 @@ function TeamLeaderPerformance() {
 
                 <th>
                   Net Amount
+                </th>
+
+                <th>
+                  TL Expenditure
                 </th>
 
                 <th>
@@ -1158,6 +1180,21 @@ function TeamLeaderPerformance() {
                       </td>
 
 
+                      {/* TL Expenditure */}
+
+                      <td>
+
+                        <strong className="tl-expenditure-value">
+
+                          {formatCurrency(
+                            leader.tlExpenditure
+                          )}
+
+                        </strong>
+
+                      </td>
+
+
                       {/* Performance */}
 
                       <td>
@@ -1197,7 +1234,7 @@ function TeamLeaderPerformance() {
                 <tr>
 
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="no-team-data"
                   >
 
@@ -1349,6 +1386,10 @@ function TeamLeaderPerformance() {
                   )}
                 </strong>
 
+                <small>
+                  Gross Revenue
+                </small>
+
               </div>
 
 
@@ -1365,6 +1406,33 @@ function TeamLeaderPerformance() {
                     selectedSummary.netAmount
                   )}
                 </strong>
+
+                <small>
+                  Billing − Franchisee Share
+                </small>
+
+              </div>
+
+
+              {/* TL EXPENDITURE */}
+
+              <div className="performance-summary-card">
+
+                <span>
+                  TL Expenditure
+                </span>
+
+                <strong className="tl-expenditure-summary">
+
+                  {formatCurrency(
+                    selectedSummary.tlExpenditure
+                  )}
+
+                </strong>
+
+                <small>
+                  5% of Gross Revenue
+                </small>
 
               </div>
 
