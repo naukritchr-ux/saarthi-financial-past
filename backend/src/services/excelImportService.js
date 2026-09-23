@@ -188,9 +188,8 @@ function cleanDate(value) {
       ).padStart(2, "0");
 
     const day =
-      String(
-        value.getDate()
-      ).padStart(2, "0");
+      String(value.getDate())
+      .padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   }
@@ -227,9 +226,8 @@ function cleanDate(value) {
     ).padStart(2, "0");
 
   const day =
-    String(
-      date.getDate()
-    ).padStart(2, "0");
+    String(date.getDate())
+    .padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
@@ -431,7 +429,6 @@ async function importExcel() {
 
     "Company Name",
     "TANN",
-    "TDS",
     "Client Status",
 
     "BD Member",
@@ -470,7 +467,6 @@ async function importExcel() {
 
     "SOA No",
     "Info",
-    "Position Name",
 
     "Aquired Year",
     "Allotment Year",
@@ -568,7 +564,7 @@ async function importExcel() {
 
         // 3
         cleanString(
-          row["TDS"]
+          row["TDS"] ?? null
         ),
 
         // 4
@@ -703,7 +699,7 @@ async function importExcel() {
 
         // 30
         cleanString(
-          row["Position Name"]
+          row["Position Name"] ?? null
         ),
 
         // 31
