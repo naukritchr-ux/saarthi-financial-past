@@ -1,11 +1,7 @@
-import React, {
+import {
   useMemo,
   useState
 } from "react";
-
-import {
-  useData
-} from "../../../context/DataContext";
 
 import {
   BarChart,
@@ -17,8 +13,658 @@ import {
   CartesianGrid
 } from "recharts";
 
+import {
+  useData
+} from "../../../context/DataContext";
+
 import "./BDPerformance.css";
 
+
+/* =========================================================
+   FINANCIAL YEAR MONTHS
+========================================================= */
+
+const financialMonths = [
+  {
+    full: "April",
+    short: "Apr"
+  },
+  {
+    full: "May",
+    short: "May"
+  },
+  {
+    full: "June",
+    short: "Jun"
+  },
+  {
+    full: "July",
+    short: "Jul"
+  },
+  {
+    full: "August",
+    short: "Aug"
+  },
+  {
+    full: "September",
+    short: "Sep"
+  },
+  {
+    full: "October",
+    short: "Oct"
+  },
+  {
+    full: "November",
+    short: "Nov"
+  },
+  {
+    full: "December",
+    short: "Dec"
+  },
+  {
+    full: "January",
+    short: "Jan"
+  },
+  {
+    full: "February",
+    short: "Feb"
+  },
+  {
+    full: "March",
+    short: "Mar"
+  }
+];
+
+
+/* =========================================================
+   NUMBER HELPER
+========================================================= */
+
+function toNumber(value) {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return 0;
+  }
+
+  if (typeof value === "number") {
+
+    return Number.isFinite(value)
+      ? value
+      : 0;
+
+  }
+
+  const cleanedValue =
+    String(value)
+      .replace(/,/g, "")
+      .replace(/[₹$€£]/g, "")
+      .replace(/%/g, "")
+      .trim();
+
+  const number =
+    Number(cleanedValue);
+
+  return Number.isFinite(number)
+    ? number
+    : 0;
+
+}
+
+
+/* =========================================================
+   CURRENCY FORMAT
+========================================================= */
+
+function formatCurrency(value) {
+
+  return new Intl.NumberFormat(
+    "en-IN",
+    {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0
+    }
+  ).format(toNumber(value));
+
+}
+
+
+/* =========================================================
+   GET BD MEMBER
+========================================================= */
+
+function getBDMember(row) {
+
+  return String(
+    row?.bd_member ??
+    row?.["BD Member"] ??
+    ""
+  ).trim();
+
+}
+
+
+/* =========================================================
+   GET INDUSTRY
+========================================================= */
+
+function getIndustry(row) {
+
+  return String(
+    row?.industry ??
+    row?.["Industry"] ??
+    ""
+  ).trim();
+
+}
+
+
+/* =========================================================
+   GET CITY
+========================================================= */
+
+function getCity(row) {
+
+  return String(
+    row?.city ??
+    row?.["City"] ??
+    ""
+  ).trim();
+
+}
+
+
+/* =========================================================
+   GET INFO STATUS
+========================================================= */
+
+function getInfoStatus(row) {
+
+  return String(
+    row?.info ??
+    row?.["Info"] ??
+    ""
+  )
+    .trim()
+    .toUpperCase();
+
+}
+
+
+/* =========================================================
+   GET BILLING
+========================================================= */
+
+function getBilling(row) {
+
+  return toNumber(
+    row?.total_bill_amount ??
+    row?.["Total Bill Amount"] ??
+    0
+  );
+
+}
+
+
+/* =========================================================
+   GET FRANCHISEE SHARE
+========================================================= */
+
+function getFranchiseeShare(row) {
+
+  return toNumber(
+    row?.franchisee_share ??
+    row?.["Franchisee Share"] ??
+    0
+  );
+
+}
+
+
+/* =========================================================
+   GET CLIENT ACQUIRED DATE
+========================================================= */
+
+function getClientAcquiredDate(row) {
+
+  return (
+    row?.date_client_acquired ??
+    row?.["Date Client Acquired"] ??
+    ""
+  );
+
+}
+
+
+/* =========================================================
+   GET FINANCIAL YEAR
+========================================================= */
+
+function getFinancialYear(row) {
+
+  const dateValue =
+    getClientAcquiredDate(row);
+
+
+  if (dateValue) {
+
+    const date =
+      new Date(dateValue);
+
+
+    if (
+      !Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      const month =
+        date.getMonth() + 1;
+
+      const year =
+        date.getFullYear();
+
+
+      if (month >= 4) {
+
+        return `${year}-${String(
+          year + 1
+        ).slice(-2)}`;
+
+      }
+
+
+      return `${year - 1}-${String(
+        year
+      ).slice(-2)}`;
+
+    }
+
+  }
+
+
+  const acquiredYear =
+    row?.acquired_year ??
+    row?.["Aquired Year"] ??
+    row?.["Acquired Year"];
+
+
+  if (
+    acquiredYear !== undefined &&
+    acquiredYear !== null &&
+    acquiredYear !== ""
+  ) {
+
+    const year =
+      Number(acquiredYear);
+
+
+    if (
+      Number.isFinite(year) &&
+      year > 1900
+    ) {
+
+      return `${year}-${String(
+        year + 1
+      ).slice(-2)}`;
+
+    }
+
+  }
+
+
+  return "";
+
+}
+
+
+/* =========================================================
+   GET MONTH
+========================================================= */
+
+function getMonth(row) {
+
+  const dateValue =
+    getClientAcquiredDate(row);
+
+
+  if (!dateValue) {
+    return "";
+  }
+
+
+  const date =
+    new Date(dateValue);
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return "";
+
+  }
+
+
+  return date.getMonth() + 1;
+
+}
+
+
+/* =========================================================
+   BD FINANCIAL CALCULATION
+
+   ALL:
+   Billing = Billing
+   Net Amount = Billing - Franchisee Share
+   BD Expenditure = Billing × 5%
+
+   R:
+   Billing = R Billing
+   Net Amount = R Billing - Franchisee Share
+   BD Expenditure = R Billing × 5%
+
+   RV:
+   Billing = RV Billing
+   Net Amount = 0
+   Expenditure = 0
+
+   C:
+   Billing = C Billing
+   Net Amount = 0
+   Expenditure = 0
+
+   CN:
+   Billing = CN Billing
+   Net Amount = 0
+   Expenditure = 0
+========================================================= */
+
+function getFinancialValues(
+  row,
+  infoFilter = ""
+) {
+
+  const info =
+    getInfoStatus(row);
+
+  const billing =
+    getBilling(row);
+
+  const franchiseeShare =
+    getFranchiseeShare(row);
+
+
+  /* =======================================================
+     ALL
+  ======================================================= */
+
+  if (
+    !infoFilter ||
+    infoFilter === "ALL"
+  ) {
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount:
+        billing -
+        franchiseeShare,
+
+      bdExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  /* =======================================================
+     R
+  ======================================================= */
+
+  if (
+    infoFilter === "R"
+  ) {
+
+    if (
+      info !== "R"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount:
+        billing -
+        franchiseeShare,
+
+      bdExpenditure:
+        billing * 0.05
+
+    };
+
+  }
+
+
+  /* =======================================================
+     RV
+  ======================================================= */
+
+  if (
+    infoFilter === "RV"
+  ) {
+
+    if (
+      info !== "RV"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount: 0,
+
+      bdExpenditure: 0
+
+    };
+
+  }
+
+
+  /* =======================================================
+     C
+  ======================================================= */
+
+  if (
+    infoFilter === "C"
+  ) {
+
+    if (
+      info !== "C"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount: 0,
+
+      bdExpenditure: 0
+
+    };
+
+  }
+
+
+  /* =======================================================
+     CN
+  ======================================================= */
+
+  if (
+    infoFilter === "CN"
+  ) {
+
+    if (
+      info !== "CN"
+    ) {
+
+      return {
+
+        billing: 0,
+
+        netAmount: 0,
+
+        bdExpenditure: 0
+
+      };
+
+    }
+
+
+    return {
+
+      billing:
+        billing,
+
+      netAmount: 0,
+
+      bdExpenditure: 0
+
+    };
+
+  }
+
+
+  return {
+
+    billing: 0,
+
+    netAmount: 0,
+
+    bdExpenditure: 0
+
+  };
+
+}
+
+
+/* =========================================================
+   CUSTOM TOOLTIP
+========================================================= */
+
+function BDTooltip({
+  active,
+  payload,
+  label
+}) {
+
+  if (
+    !active ||
+    !payload ||
+    !payload.length
+  ) {
+
+    return null;
+
+  }
+
+
+  return (
+
+    <div className="bd-modern-tooltip">
+
+      <div className="bd-tooltip-label">
+        {label}
+      </div>
+
+
+      {payload.map(
+        (item, index) => (
+
+          <div
+            className="bd-tooltip-row"
+            key={index}
+          >
+
+            <span>
+              {item.name}
+            </span>
+
+
+            <strong>
+
+              {item.name === "Total Billing"
+                ? formatCurrency(item.value)
+                : item.value}
+
+            </strong>
+
+          </div>
+
+        )
+      )}
+
+    </div>
+
+  );
+
+}
+
+
+/* =========================================================
+   MAIN COMPONENT
+========================================================= */
 
 function BDPerformance() {
 
@@ -27,14 +673,14 @@ function BDPerformance() {
   } = useData();
 
 
-  // =====================================================
-  // STATE
-  // =====================================================
+  /* =======================================================
+     STATE
+  ======================================================= */
 
   const [
     selectedMember,
     setSelectedMember
-  ] = useState(null);
+  ] = useState("");
 
 
   const [
@@ -43,329 +689,15 @@ function BDPerformance() {
   ] = useState("");
 
 
-  // =====================================================
-  // HELPERS
-  // =====================================================
-
-  function toNumber(value) {
-
-    if (
-      value === null ||
-      value === undefined ||
-      value === ""
-    ) {
-      return 0;
-    }
-
-
-    const cleaned =
-      String(value)
-        .replace(/₹/g, "")
-        .replace(/,/g, "")
-        .replace(/%/g, "")
-        .trim();
-
-
-    const number =
-      Number(cleaned);
-
-
-    return Number.isFinite(number)
-      ? number
-      : 0;
-
-  }
-
-
-  function fullCurrency(value) {
-
-    return `₹${toNumber(value).toLocaleString(
-      "en-IN"
-    )}`;
-
-  }
-
-
-  function formatCurrency(value) {
-
-    const number =
-      toNumber(value);
-
-
-    if (number >= 10000000) {
-
-      return `₹${(
-        number / 10000000
-      ).toFixed(1)} Cr`;
-
-    }
-
-
-    if (number >= 100000) {
-
-      return `₹${(
-        number / 100000
-      ).toFixed(1)} L`;
-
-    }
-
-
-    if (number >= 1000) {
-
-      return `₹${(
-        number / 1000
-      ).toFixed(1)} K`;
-
-    }
-
-
-    return fullCurrency(number);
-
-  }
-
-
-  // =====================================================
-  // FIELD HELPERS
-  // Supports both backend and mapped frontend fields
-  // =====================================================
-
-  function getBDMember(row) {
-
-    return String(
-      row.bd_member ??
-      row["BD Member"] ??
-      ""
-    ).trim();
-
-  }
-
-
-  function getIndustry(row) {
-
-    return String(
-      row.industry ??
-      row["Industry"] ??
-      ""
-    ).trim();
-
-  }
-
-
-  function getCity(row) {
-
-    return String(
-      row.city ??
-      row["City"] ??
-      ""
-    ).trim();
-
-  }
-
-
-  function getBilling(row) {
-
-    return toNumber(
-      row.total_bill_amount ??
-      row["Total Bill Amount"]
-    );
-
-  }
-
-
-  function getFranchiseeShare(row) {
-
-    return toNumber(
-      row.franchisee_share ??
-      row["Franchisee Share"]
-    );
-
-  }
-
-
-  function getNetAmount(row) {
-
-    return (
-      getBilling(row) -
-      getFranchiseeShare(row)
-    );
-
-  }
-
-
-  function getAcquiredDate(row) {
-
-    return (
-      row.date_client_acquired ??
-      row["Date Client Acquired"] ??
-      ""
-    );
-
-  }
-
-
-  // =====================================================
-  // FINANCIAL YEAR
-  // APRIL - MARCH
-  // =====================================================
-
-  function getFinancialYear(row) {
-
-    const dateValue =
-      getAcquiredDate(row);
-
-
-    if (!dateValue) {
-
-      return "";
-
-    }
-
-
-    const date =
-      new Date(dateValue);
-
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-
-      return "";
-
-    }
-
-
-    const year =
-      date.getFullYear();
-
-
-    const month =
-      date.getMonth() + 1;
-
-
-    if (month >= 4) {
-
-      return `${year}-${year + 1}`;
-
-    }
-
-
-    return `${year - 1}-${year}`;
-
-  }
-
-
-  // =====================================================
-  // FINANCIAL MONTH
-  // =====================================================
-
-  const financialMonths = [
-
-    {
-      full: "April",
-      short: "Apr"
-    },
-
-    {
-      full: "May",
-      short: "May"
-    },
-
-    {
-      full: "June",
-      short: "Jun"
-    },
-
-    {
-      full: "July",
-      short: "Jul"
-    },
-
-    {
-      full: "August",
-      short: "Aug"
-    },
-
-    {
-      full: "September",
-      short: "Sep"
-    },
-
-    {
-      full: "October",
-      short: "Oct"
-    },
-
-    {
-      full: "November",
-      short: "Nov"
-    },
-
-    {
-      full: "December",
-      short: "Dec"
-    },
-
-    {
-      full: "January",
-      short: "Jan"
-    },
-
-    {
-      full: "February",
-      short: "Feb"
-    },
-
-    {
-      full: "March",
-      short: "Mar"
-    }
-
-  ];
-
-
-  function getFinancialMonth(row) {
-
-    const dateValue =
-      getAcquiredDate(row);
-
-
-    if (!dateValue) {
-
-      return "";
-
-    }
-
-
-    const date =
-      new Date(dateValue);
-
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-
-      return "";
-
-    }
-
-
-    return date.toLocaleString(
-      "en-IN",
-      {
-        month: "long"
-      }
-    );
-
-  }
-
-
-  // =====================================================
-  // FINANCIAL YEARS
-  // =====================================================
+  const [
+    selectedInfoStatus,
+    setSelectedInfoStatus
+  ] = useState("");
+
+
+  /* =======================================================
+     FINANCIAL YEARS
+  ======================================================= */
 
   const financialYears =
     useMemo(() => {
@@ -381,39 +713,43 @@ function BDPerformance() {
 
 
         if (year) {
-
           years.add(year);
-
         }
 
       });
 
 
-      return Array.from(
-        years
-      ).sort(
-        (a, b) =>
-          Number(
-            b.split("-")[0]
-          ) -
-          Number(
-            a.split("-")[0]
-          )
-      );
+      return Array.from(years)
+        .sort((a, b) => {
 
-    }, [
-      rows
-    ]);
+          const yearA =
+            Number(
+              String(a).slice(0, 4)
+            );
 
 
-  // =====================================================
-  // BD MEMBER TABLE
-  // =====================================================
+          const yearB =
+            Number(
+              String(b).slice(0, 4)
+            );
+
+
+          return yearA - yearB;
+
+        });
+
+    }, [rows]);
+
+
+  /* =======================================================
+     BD MEMBER SUMMARY TABLE
+  ======================================================= */
 
   const memberData =
     useMemo(() => {
 
-      const members = {};
+      const map =
+        new Map();
 
 
       rows.forEach(row => {
@@ -423,636 +759,726 @@ function BDPerformance() {
 
 
         if (!member) {
+          return;
+        }
+
+
+        if (
+          selectedFinancialYear &&
+          getFinancialYear(row) !==
+            selectedFinancialYear
+        ) {
 
           return;
 
         }
 
 
-        if (!members[member]) {
+        const financialValues =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
 
-          members[member] = {
 
-            name: member,
+        if (!map.has(member)) {
 
-            clients: 0,
-
-            billing: 0,
-
-            netAmount: 0
-
-          };
+          map.set(
+            member,
+            {
+              member,
+              clients: 0,
+              billing: 0,
+              netAmount: 0,
+              bdExpenditure: 0
+            }
+          );
 
         }
 
 
-        members[member].clients += 1;
+        const data =
+          map.get(member);
 
 
-        members[member].billing +=
-          getBilling(row);
+        data.clients += 1;
 
 
-        members[member].netAmount +=
-          getNetAmount(row);
+        data.billing +=
+          financialValues.billing;
+
+
+        data.netAmount +=
+          financialValues.netAmount;
+
+
+        data.bdExpenditure +=
+          financialValues.bdExpenditure;
 
       });
 
 
-      return Object.values(
-        members
-      ).sort(
-        (a, b) =>
-          b.clients -
-          a.clients
-      );
+      return Array.from(
+        map.values()
+      )
+        .filter(
+          item =>
+            item.clients > 0
+        )
+        .sort(
+          (a, b) =>
+            b.clients - a.clients
+        );
 
     }, [
-      rows
+      rows,
+      selectedFinancialYear,
+      selectedInfoStatus
     ]);
 
 
-  // =====================================================
-  // SELECTED BD MEMBER ROWS
-  // =====================================================
+  /* =======================================================
+     SELECTED MEMBER ROWS
+  ======================================================= */
 
-  const selectedMemberRows =
+  const selectedRows =
     useMemo(() => {
 
       if (!selectedMember) {
-
         return [];
-
       }
 
 
       return rows.filter(
-        row =>
-          getBDMember(row) ===
-          selectedMember.name
-      );
-
-    }, [
-      rows,
-      selectedMember
-    ]);
-
-
-  // =====================================================
-  // PERFORMANCE SUMMARY
-  // =====================================================
-
-  const performanceSummary =
-    useMemo(() => {
-
-      let billing = 0;
-
-      let netAmount = 0;
-
-
-      selectedMemberRows.forEach(
         row => {
 
-          billing +=
-            getBilling(row);
+          if (
+            getBDMember(row) !==
+            selectedMember
+          ) {
+
+            return false;
+
+          }
 
 
-          netAmount +=
-            getNetAmount(row);
+          if (
+            selectedFinancialYear &&
+            getFinancialYear(row) !==
+              selectedFinancialYear
+          ) {
+
+            return false;
+
+          }
+
+
+          return true;
 
         }
       );
 
+    }, [
+      rows,
+      selectedMember,
+      selectedFinancialYear
+    ]);
+
+
+  /* =======================================================
+     PERFORMANCE SUMMARY
+  ======================================================= */
+
+  const performanceSummary =
+    useMemo(() => {
+
+      let totalBilling = 0;
+
+      let totalFranchiseeShare = 0;
+
+      let totalBDExpenditure = 0;
+
+      let netAmount = 0;
+
+
+      selectedRows.forEach(row => {
+
+        const values =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
+
+
+        totalBilling +=
+          values.billing;
+
+
+        if (
+          !selectedInfoStatus ||
+          selectedInfoStatus === "R"
+        ) {
+
+          totalFranchiseeShare +=
+            getFranchiseeShare(row);
+
+        }
+
+
+        totalBDExpenditure +=
+          values.bdExpenditure;
+
+
+        netAmount +=
+          values.netAmount;
+
+      });
+
 
       return {
 
-        clients:
-          selectedMemberRows.length,
+        totalBilling,
 
-        billing,
+        totalFranchiseeShare,
+
+        totalBDExpenditure,
 
         netAmount
 
       };
 
     }, [
-      selectedMemberRows
+      selectedRows,
+      selectedInfoStatus
     ]);
 
 
-  // =====================================================
-  // BEST INDUSTRY
-  // =====================================================
+  /* =======================================================
+     BEST INDUSTRY
+  ======================================================= */
 
   const bestIndustry =
     useMemo(() => {
 
-      const industries = {};
+      const counts =
+        new Map();
 
 
-      selectedMemberRows.forEach(
-        row => {
+      selectedRows.forEach(row => {
 
-          const industry =
-            getIndustry(row);
+        const industry =
+          getIndustry(row);
 
 
-          if (!industry) {
+        if (!industry) {
+          return;
+        }
 
-            return;
+
+        counts.set(
+          industry,
+          (counts.get(industry) || 0) + 1
+        );
+
+      });
+
+
+      let best = "";
+
+      let highest = 0;
+
+
+      counts.forEach(
+        (count, industry) => {
+
+          if (count > highest) {
+
+            highest = count;
+
+            best = industry;
 
           }
-
-
-          if (!industries[industry]) {
-
-            industries[industry] = 0;
-
-          }
-
-
-          industries[industry] += 1;
 
         }
       );
 
 
-      const sorted =
-        Object.entries(
-          industries
-        ).sort(
-          (a, b) =>
-            b[1] - a[1]
-        );
+      return best || "—";
+
+    }, [selectedRows]);
 
 
-      if (!sorted.length) {
-
-        return {
-          name: "—",
-          clients: 0
-        };
-
-      }
-
-
-      return {
-
-        name: sorted[0][0],
-
-        clients: sorted[0][1]
-
-      };
-
-    }, [
-      selectedMemberRows
-    ]);
-
-
-  // =====================================================
-  // BEST CITY
-  // =====================================================
+  /* =======================================================
+     BEST CITY
+  ======================================================= */
 
   const bestCity =
     useMemo(() => {
 
-      const cities = {};
+      const counts =
+        new Map();
 
 
-      selectedMemberRows.forEach(
-        row => {
+      selectedRows.forEach(row => {
 
-          const city =
-            getCity(row);
+        const city =
+          getCity(row);
 
 
-          if (!city) {
+        if (!city) {
+          return;
+        }
 
-            return;
+
+        counts.set(
+          city,
+          (counts.get(city) || 0) + 1
+        );
+
+      });
+
+
+      let best = "";
+
+      let highest = 0;
+
+
+      counts.forEach(
+        (count, city) => {
+
+          if (count > highest) {
+
+            highest = count;
+
+            best = city;
 
           }
-
-
-          if (!cities[city]) {
-
-            cities[city] = 0;
-
-          }
-
-
-          cities[city] += 1;
 
         }
       );
 
 
-      const sorted =
-        Object.entries(
-          cities
-        ).sort(
-          (a, b) =>
-            b[1] - a[1]
-        );
+      return best || "—";
+
+    }, [selectedRows]);
 
 
-      if (!sorted.length) {
-
-        return {
-          name: "—",
-          clients: 0
-        };
-
-      }
-
-
-      return {
-
-        name: sorted[0][0],
-
-        clients: sorted[0][1]
-
-      };
-
-    }, [
-      selectedMemberRows
-    ]);
-
-
-  // =====================================================
-  // YEARLY REPORT
-  // =====================================================
+  /* =======================================================
+     YEARLY REPORT
+  ======================================================= */
 
   const yearlyReportData =
     useMemo(() => {
 
-      const yearly = {};
+      const map =
+        new Map();
 
 
-      selectedMemberRows.forEach(
-        row => {
+      selectedRows.forEach(row => {
 
-          const year =
-            getFinancialYear(row);
-
-
-          if (!year) {
-
-            return;
-
-          }
+        const year =
+          getFinancialYear(row);
 
 
-          if (!yearly[year]) {
+        if (!year) {
+          return;
+        }
 
-            yearly[year] = {
 
+        if (!map.has(year)) {
+
+          map.set(
+            year,
+            {
               year,
-
               clients: 0,
-
               billing: 0
-
-            };
-
-          }
-
-
-          yearly[year].clients += 1;
-
-
-          yearly[year].billing +=
-            getBilling(row);
+            }
+          );
 
         }
-      );
 
 
-      return Object.values(
-        yearly
-      ).sort(
-        (a, b) =>
+        const data =
+          map.get(year);
+
+
+        const values =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
+
+
+        data.clients += 1;
+
+
+        data.billing +=
+          values.billing;
+
+      });
+
+
+      return Array.from(
+        map.values()
+      ).sort((a, b) => {
+
+        const yearA =
           Number(
-            a.year.split("-")[0]
-          ) -
+            String(a.year).slice(0, 4)
+          );
+
+
+        const yearB =
           Number(
-            b.year.split("-")[0]
-          )
-      );
+            String(b.year).slice(0, 4)
+          );
+
+
+        return yearA - yearB;
+
+      });
 
     }, [
-      selectedMemberRows
+      selectedRows,
+      selectedInfoStatus
     ]);
 
 
-  // =====================================================
-  // MONTHLY REPORT
-  // =====================================================
+  /* =======================================================
+     MONTHLY REPORT
+  ======================================================= */
 
   const monthlyReportData =
     useMemo(() => {
 
       if (!selectedFinancialYear) {
-
         return [];
-
       }
 
 
-      const monthly = {};
+      const monthMap =
+        new Map();
 
 
       financialMonths.forEach(
-        month => {
+        (month, index) => {
 
-          monthly[month.full] = {
-
-            month:
-              month.full,
-
-            monthShort:
-              month.short,
-
-            clients: 0,
-
-            billing: 0
-
-          };
+          monthMap.set(
+            index + 1,
+            {
+              month: month.full,
+              monthShort: month.short,
+              clients: 0,
+              billing: 0
+            }
+          );
 
         }
       );
 
 
-      selectedMemberRows.forEach(
-        row => {
+      selectedRows.forEach(row => {
 
-          const year =
-            getFinancialYear(row);
-
-
-          if (
-            year !==
-            selectedFinancialYear
-          ) {
-
-            return;
-
-          }
+        const year =
+          getFinancialYear(row);
 
 
-          const month =
-            getFinancialMonth(row);
+        if (
+          year !==
+          selectedFinancialYear
+        ) {
 
-
-          if (
-            !monthly[month]
-          ) {
-
-            return;
-
-          }
-
-
-          monthly[month].clients += 1;
-
-
-          monthly[month].billing +=
-            getBilling(row);
+          return;
 
         }
-      );
 
 
-      return financialMonths.map(
+        const month =
+          getMonth(row);
+
+
+        if (
+          !monthMap.has(month)
+        ) {
+
+          return;
+
+        }
+
+
+        const data =
+          monthMap.get(month);
+
+
+        const values =
+          getFinancialValues(
+            row,
+            selectedInfoStatus
+          );
+
+
+        data.clients += 1;
+
+
+        data.billing +=
+          values.billing;
+
+      });
+
+
+      const orderedMonths = [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        1,
+        2,
+        3
+      ];
+
+
+      return orderedMonths.map(
         month =>
-          monthly[
-            month.full
-          ]
+          monthMap.get(month)
       );
 
     }, [
-      selectedMemberRows,
-      selectedFinancialYear
+      selectedRows,
+      selectedFinancialYear,
+      selectedInfoStatus
     ]);
 
 
-  // =====================================================
-  // ACTIVE GRAPH DATA
-  // =====================================================
+  /* =======================================================
+     REPORT DATA
+  ======================================================= */
 
-  const graphData =
+  const reportData =
     selectedFinancialYear
       ? monthlyReportData
       : yearlyReportData;
 
 
-  // =====================================================
-  // GRAPH LABEL
-  // =====================================================
+  /* =======================================================
+     OPEN PERFORMANCE
+  ======================================================= */
 
-  const graphPeriodLabel =
-    selectedFinancialYear
-      ? `Monthly Report • FY ${selectedFinancialYear}`
-      : "Yearly Report";
+  function handleViewPerformance(
+    member
+  ) {
 
-
-  // =====================================================
-  // CLIENT TOOLTIP
-  // =====================================================
-
-  function renderClientTooltip({
-    active,
-    payload,
-    label
-  }) {
-
-    if (
-      !active ||
-      !payload ||
-      !payload.length
-    ) {
-
-      return null;
-
-    }
-
-
-    return (
-
-      <div className="bd-modern-tooltip">
-
-        <strong>
-          {label}
-        </strong>
-
-        <span>
-          Clients Acquired
-        </span>
-
-        <b>
-          {payload[0].value}
-        </b>
-
-      </div>
-
+    setSelectedMember(
+      member
     );
-
-  }
-
-
-  // =====================================================
-  // BILLING TOOLTIP
-  // =====================================================
-
-  function renderBillingTooltip({
-    active,
-    payload,
-    label
-  }) {
-
-    if (
-      !active ||
-      !payload ||
-      !payload.length
-    ) {
-
-      return null;
-
-    }
-
-
-    return (
-
-      <div className="bd-modern-tooltip">
-
-        <strong>
-          {label}
-        </strong>
-
-        <span>
-          Total Billing
-        </span>
-
-        <b>
-          {fullCurrency(
-            payload[0].value
-          )}
-        </b>
-
-      </div>
-
-    );
-
-  }
-
-
-  // =====================================================
-  // OPEN PERFORMANCE
-  // =====================================================
-
-  function openPerformance(member) {
-
-    setSelectedMember(member);
 
     setSelectedFinancialYear("");
 
+    setSelectedInfoStatus("");
+
   }
 
 
-  // =====================================================
-  // CLOSE PERFORMANCE
-  // =====================================================
+  /* =======================================================
+     CLOSE MODAL
+  ======================================================= */
 
-  function closePerformance() {
+  function handleCloseModal() {
 
-    setSelectedMember(null);
+    setSelectedMember("");
 
     setSelectedFinancialYear("");
 
+    setSelectedInfoStatus("");
+
   }
 
 
-  // =====================================================
-  // PAGE
-  // =====================================================
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
 
-    <div className="bd-performance">
+    <div className="bd-performance-page">
 
 
-      {/* =================================================
+      {/* ===================================================
           PAGE HEADER
-      ================================================= */}
+      =================================================== */}
 
       <div className="bd-page-header">
 
         <div>
 
-          <span className="bd-page-eyebrow">
-            BUSINESS DEVELOPMENT
-          </span>
+          <div className="bd-page-eyebrow">
+            PERFORMANCE ANALYTICS
+          </div>
 
           <h1>
             BD Member Performance
           </h1>
 
           <p>
-            Performance overview of all
-            Business Development Members
+            Monitor BD member acquisition,
+            billing and financial performance.
           </p>
-
-        </div>
-
-
-        <div className="bd-member-count">
-
-          <strong>
-            {memberData.length}
-          </strong>
-
-          <span>
-            BD Members
-          </span>
 
         </div>
 
       </div>
 
 
-      {/* =================================================
-          MAIN TABLE
-      ================================================= */}
+      {/* ===================================================
+          MAIN TABLE CARD
+      =================================================== */}
 
       <div className="bd-table-card">
 
+
+        {/* =================================================
+            TABLE HEADER
+        ================================================= */}
 
         <div className="bd-table-header">
 
           <div>
 
-            <span>
-              PERFORMANCE SUMMARY
-            </span>
-
             <h2>
-              BD Member Overview
+              BD Member Performance
             </h2>
+
+            <p>
+              Complete BD member-wise
+              performance overview
+            </p>
+
+          </div>
+
+
+          <div className="bd-member-count">
+
+            {memberData.length}
+
+            <span>
+              BD Members
+            </span>
 
           </div>
 
         </div>
 
 
+        {/* =================================================
+            MAIN FILTERS
+        ================================================= */}
+
+        <div
+          className="bd-performance-filters"
+        >
+
+          <div className="bd-filter-group">
+
+            <label>
+              Financial Year
+            </label>
+
+            <select
+              value={
+                selectedFinancialYear
+              }
+              onChange={event =>
+                setSelectedFinancialYear(
+                  event.target.value
+                )
+              }
+            >
+
+              <option value="">
+                All Financial Years
+              </option>
+
+              {financialYears.map(
+                year => (
+
+                  <option
+                    key={year}
+                    value={year}
+                  >
+                    {year}
+                  </option>
+
+                )
+              )}
+
+            </select>
+
+          </div>
+
+
+          <div className="bd-filter-group">
+
+            <label>
+              Info Status
+            </label>
+
+            <select
+              value={
+                selectedInfoStatus
+              }
+              onChange={event =>
+                setSelectedInfoStatus(
+                  event.target.value
+                )
+              }
+            >
+
+              <option value="">
+                All
+              </option>
+
+              <option value="R">
+                R
+              </option>
+
+              <option value="RV">
+                RV
+              </option>
+
+              <option value="C">
+                C
+              </option>
+
+              <option value="CN">
+                CN
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        {/* =================================================
+            TABLE
+        ================================================= */}
+
         <div className="bd-table-wrapper">
 
-          <table className="bd-member-table">
+          <table className="bd-performance-table">
 
             <thead>
 
               <tr>
 
                 <th>
-                  BD Member Name
+                  BD Member
                 </th>
 
                 <th>
@@ -1068,6 +1494,10 @@ function BDPerformance() {
                 </th>
 
                 <th>
+                  BD Expenditure
+                </th>
+
+                <th>
                   Performance
                 </th>
 
@@ -1078,106 +1508,124 @@ function BDPerformance() {
 
             <tbody>
 
-              {memberData.length > 0 ? (
+              {memberData.length === 0 ? (
+
+                <tr>
+
+                  <td
+                    colSpan="6"
+                    className="bd-empty"
+                  >
+                    No BD member data available.
+                  </td>
+
+                </tr>
+
+              ) : (
 
                 memberData.map(
                   member => (
 
                     <tr
                       key={
-                        member.name
+                        member.member
                       }
                     >
 
-
-                      {/* MEMBER */}
-
                       <td>
 
-                        <div className="bd-member-name">
+                        <div className="bd-name">
 
-                          <div className="bd-member-avatar">
+                          <div className="bd-avatar">
 
-                            {member.name
-                              .charAt(0)
-                              .toUpperCase()
+                            {
+                              member.member
+                                .charAt(0)
+                                .toUpperCase()
                             }
 
                           </div>
 
-                          <strong>
-                            {member.name}
-                          </strong>
+                          <span>
+                            {member.member}
+                          </span>
 
                         </div>
 
                       </td>
 
 
-                      {/* CLIENTS */}
-
                       <td>
 
                         <span className="bd-client-count">
 
-                          {member.clients}
+                          {
+                            member.clients
+                          }
 
                         </span>
 
                       </td>
 
 
-                      {/* BILLING */}
-
                       <td>
 
-                        <strong className="bd-billing-value">
+                        <span className="bd-billing-value">
 
-                          {formatCurrency(
-                            member.billing
-                          )}
+                          {
+                            formatCurrency(
+                              member.billing
+                            )
+                          }
 
-                        </strong>
+                        </span>
 
                       </td>
 
 
-                      {/* NET AMOUNT */}
-
                       <td>
 
-                        <strong className={
-                          member.netAmount >= 0
-                            ? "bd-net-positive"
-                            : "bd-net-negative"
-                        }>
+                        <span className="bd-net-value">
 
-                          {formatCurrency(
-                            member.netAmount
-                          )}
+                          {
+                            formatCurrency(
+                              member.netAmount
+                            )
+                          }
 
-                        </strong>
+                        </span>
 
                       </td>
 
 
-                      {/* PERFORMANCE */}
+                      <td>
+
+                        <span className="bd-expenditure-value">
+
+                          {
+                            formatCurrency(
+                              member.bdExpenditure
+                            )
+                          }
+
+                        </span>
+
+                      </td>
+
 
                       <td>
 
                         <button
                           type="button"
-                          className="bd-view-button"
+                          className="bd-view-performance-btn"
                           onClick={() =>
-                            openPerformance(
-                              member
+                            handleViewPerformance(
+                              member.member
                             )
                           }
                         >
 
-                          <span>
-                            View
-                          </span>
+                          View
 
                           <span className="bd-view-arrow">
                             →
@@ -1192,20 +1640,6 @@ function BDPerformance() {
                   )
                 )
 
-              ) : (
-
-                <tr>
-
-                  <td
-                    colSpan="5"
-                    className="bd-empty-table"
-                  >
-                    No BD Member data
-                    available.
-                  </td>
-
-                </tr>
-
               )}
 
             </tbody>
@@ -1217,15 +1651,15 @@ function BDPerformance() {
       </div>
 
 
-      {/* =================================================
+      {/* ===================================================
           PERFORMANCE MODAL
-      ================================================= */}
+      =================================================== */}
 
       {selectedMember && (
 
         <div
           className="bd-performance-overlay"
-          onClick={closePerformance}
+          onClick={handleCloseModal}
         >
 
 
@@ -1237,25 +1671,25 @@ function BDPerformance() {
           >
 
 
-            {/* =================================================
+            {/* =============================================
                 MODAL HEADER
-            ================================================= */}
+            ============================================= */}
 
             <div className="bd-modal-header">
 
               <div>
 
-                <span>
+                <div className="bd-modal-eyebrow">
                   PERFORMANCE REPORT
-                </span>
+                </div>
 
                 <h2>
-                  {selectedMember.name}
+                  {selectedMember}
                 </h2>
 
                 <p>
-                  Detailed Business Development
-                  performance report
+                  BD member performance
+                  analysis and financial trends
                 </p>
 
               </div>
@@ -1264,7 +1698,7 @@ function BDPerformance() {
               <button
                 type="button"
                 className="bd-modal-close"
-                onClick={closePerformance}
+                onClick={handleCloseModal}
                 aria-label="Close"
               >
                 ×
@@ -1273,9 +1707,9 @@ function BDPerformance() {
             </div>
 
 
-            {/* =================================================
+            {/* =============================================
                 SUMMARY CARDS
-            ================================================= */}
+            ============================================= */}
 
             <div className="bd-summary-grid">
 
@@ -1284,23 +1718,13 @@ function BDPerformance() {
 
               <div className="bd-summary-card">
 
-                <span>
-                  BEST INDUSTRY
+                <span className="bd-summary-label">
+                  Best Industry
                 </span>
 
-                <strong>
-                  {bestIndustry.name}
+                <strong className="bd-summary-text">
+                  {bestIndustry}
                 </strong>
-
-                <small>
-                  {bestIndustry.clients}
-                  {" "}
-                  client
-                  {bestIndustry.clients !== 1
-                    ? "s"
-                    : ""
-                  }
-                </small>
 
               </div>
 
@@ -1309,43 +1733,58 @@ function BDPerformance() {
 
               <div className="bd-summary-card">
 
-                <span>
-                  BEST CITY
+                <span className="bd-summary-label">
+                  Best City
                 </span>
 
-                <strong>
-                  {bestCity.name}
+                <strong className="bd-summary-text">
+                  {bestCity}
                 </strong>
-
-                <small>
-                  {bestCity.clients}
-                  {" "}
-                  client
-                  {bestCity.clients !== 1
-                    ? "s"
-                    : ""
-                  }
-                </small>
 
               </div>
 
 
-              {/* BILLING */}
+              {/* TOTAL BILLING */}
 
               <div className="bd-summary-card">
 
-                <span>
-                  TOTAL BILLING
+                <span className="bd-summary-label">
+                  Total Billing
                 </span>
 
-                <strong className="billing-summary">
-                  {formatCurrency(
-                    performanceSummary.billing
-                  )}
+                <strong className="bd-summary-value">
+
+                  {
+                    formatCurrency(
+                      performanceSummary.totalBilling
+                    )
+                  }
+
+                </strong>
+
+              </div>
+
+
+              {/* BD EXPENDITURE */}
+
+              <div className="bd-summary-card">
+
+                <span className="bd-summary-label">
+                  BD Expenditure
+                </span>
+
+                <strong className="bd-summary-value">
+
+                  {
+                    formatCurrency(
+                      performanceSummary.totalBDExpenditure
+                    )
+                  }
+
                 </strong>
 
                 <small>
-                  Total bill amount
+                  5% of Total Billing
                 </small>
 
               </div>
@@ -1353,45 +1792,46 @@ function BDPerformance() {
 
               {/* NET AMOUNT */}
 
-              <div className="bd-summary-card">
+              <div className="bd-summary-card bd-summary-net">
 
-                <span>
-                  NET AMOUNT
+                <span className="bd-summary-label">
+                  Net Amount
                 </span>
 
-                <strong className={
-                  performanceSummary.netAmount >= 0
-                    ? "net-summary-positive"
-                    : "net-summary-negative"
-                }>
-                  {formatCurrency(
-                    performanceSummary.netAmount
-                  )}
+                <strong className="bd-summary-value">
+
+                  {
+                    formatCurrency(
+                      performanceSummary.netAmount
+                    )
+                  }
+
                 </strong>
 
-                <small>
-                  Billing − Franchisee Share
-                </small>
-
               </div>
+
 
             </div>
 
 
-            {/* =================================================
-                FINANCIAL YEAR FILTER
-            ================================================= */}
+            {/* =============================================
+                REPORT CONTROLS
+            ============================================= */}
 
             <div className="bd-report-controls">
 
 
-              <div className="bd-year-control">
+              <div>
 
-                <label>
-                  FINANCIAL YEAR
+                <label
+                  htmlFor="bd-financial-year"
+                >
+                  Financial Year
                 </label>
 
+
                 <select
+                  id="bd-financial-year"
                   value={
                     selectedFinancialYear
                   }
@@ -1414,7 +1854,7 @@ function BDPerformance() {
                         key={year}
                         value={year}
                       >
-                        FY {year}
+                        {year}
                       </option>
 
                     )
@@ -1425,256 +1865,328 @@ function BDPerformance() {
               </div>
 
 
+              <div>
+
+                <label>
+                  Info Status
+                </label>
+
+
+                <select
+                  value={
+                    selectedInfoStatus
+                  }
+                  onChange={event =>
+                    setSelectedInfoStatus(
+                      event.target.value
+                    )
+                  }
+                >
+
+                  <option value="">
+                    All
+                  </option>
+
+                  <option value="R">
+                    R
+                  </option>
+
+                  <option value="RV">
+                    RV
+                  </option>
+
+                  <option value="C">
+                    C
+                  </option>
+
+                  <option value="CN">
+                    CN
+                  </option>
+
+                </select>
+
+              </div>
+
+
               <div className="bd-report-period">
 
                 <span>
-                  REPORT PERIOD
+                  Report Period
                 </span>
 
                 <strong>
-                  {graphPeriodLabel}
+
+                  {
+                    selectedFinancialYear
+                      ? selectedFinancialYear
+                      : "Yearly"
+                  }
+
                 </strong>
 
               </div>
 
+
             </div>
 
 
-            {/* =================================================
+            {/* =============================================
                 GRAPHS
-            ================================================= */}
+            ============================================= */}
 
             <div className="bd-report-graphs">
 
 
-              {/* =================================================
-                  CLIENT ACQUIRED GRAPH
-              ================================================= */}
+              {/* CLIENT ACQUIRED */}
 
-              <div className="bd-report-chart-card">
+              <div className="bd-chart-card">
 
                 <div className="bd-chart-heading">
 
                   <div>
 
-                    <span>
-                      CLIENT ACQUISITION
-                    </span>
+                    <span className="bd-chart-indicator bd-client-indicator"></span>
 
                     <h3>
-                      {selectedFinancialYear
-                        ? "Monthly Client Acquired"
-                        : "Yearly Client Acquired"
-                      }
+                      Client Acquired
                     </h3>
 
                   </div>
 
+                  <span>
 
-                  <div className="bd-chart-dot client-dot" />
+                    {
+                      selectedFinancialYear
+                        ? "Monthly"
+                        : "Yearly"
+                    }
+
+                  </span>
 
                 </div>
 
 
-                <ResponsiveContainer
-                  width="100%"
-                  height={330}
-                >
+                <div className="bd-chart-container">
 
-                  <BarChart
-                    data={graphData}
-                    margin={{
-                      top: 15,
-                      right: 10,
-                      left: 0,
-                      bottom: 5
-                    }}
-                  >
+                  {reportData.length === 0 ? (
 
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                    />
+                    <div className="bd-no-chart-data">
+                      No report data available.
+                    </div>
 
-                    <XAxis
-                      dataKey={
-                        selectedFinancialYear
-                          ? "monthShort"
-                          : "year"
-                      }
-                      tick={{
-                        fontSize: 11,
-                        fill: "#687180"
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
+                  ) : (
 
-                    <YAxis
-                      allowDecimals={false}
-                      tick={{
-                        fontSize: 11,
-                        fill: "#687180"
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
+                    <ResponsiveContainer
+                      width="100%"
+                      height="100%"
+                    >
 
-                    <Tooltip
-                      content={
-                        renderClientTooltip
-                      }
-                      cursor={{
-                        fill:
-                          "rgba(183,138,52,.06)"
-                      }}
-                    />
+                      <BarChart
+                        data={reportData}
+                        margin={{
+                          top: 15,
+                          right: 10,
+                          left: 0,
+                          bottom: 5
+                        }}
+                      >
 
-                    <Bar
-                      dataKey="clients"
-                      name="Clients Acquired"
-                      fill="#B78A34"
-                      radius={[
-                        5,
-                        5,
-                        0,
-                        0
-                      ]}
-                      maxBarSize={45}
-                    />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                        />
 
-                  </BarChart>
+                        <XAxis
+                          dataKey={
+                            selectedFinancialYear
+                              ? "monthShort"
+                              : "year"
+                          }
+                          tick={{
+                            fontSize: 12
+                          }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
 
-                </ResponsiveContainer>
+                        <YAxis
+                          allowDecimals={false}
+                          tick={{
+                            fontSize: 12
+                          }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+
+                        <Tooltip
+                          content={
+                            <BDTooltip />
+                          }
+                        />
+
+                        <Bar
+                          dataKey="clients"
+                          name="Client Acquired"
+                          fill="#B78A34"
+                          radius={[
+                            6,
+                            6,
+                            0,
+                            0
+                          ]}
+                          barSize={32}
+                        />
+
+                      </BarChart>
+
+                    </ResponsiveContainer>
+
+                  )}
+
+                </div>
 
               </div>
 
 
-              {/* =================================================
-                  BILLING GRAPH
-              ================================================= */}
+              {/* TOTAL BILLING */}
 
-              <div className="bd-report-chart-card">
+              <div className="bd-chart-card">
 
                 <div className="bd-chart-heading">
 
                   <div>
 
-                    <span>
-                      FINANCIAL PERFORMANCE
-                    </span>
+                    <span className="bd-chart-indicator bd-billing-indicator"></span>
 
                     <h3>
-                      {selectedFinancialYear
-                        ? "Monthly Total Billing"
-                        : "Yearly Total Billing"
-                      }
+                      Total Billing
                     </h3>
 
                   </div>
 
+                  <span>
 
-                  <div className="bd-chart-dot billing-dot" />
+                    {
+                      selectedFinancialYear
+                        ? "Monthly"
+                        : "Yearly"
+                    }
+
+                  </span>
 
                 </div>
 
 
-                <ResponsiveContainer
-                  width="100%"
-                  height={330}
-                >
+                <div className="bd-chart-container">
 
-                  <BarChart
-                    data={graphData}
-                    margin={{
-                      top: 15,
-                      right: 10,
-                      left: 0,
-                      bottom: 5
-                    }}
-                  >
+                  {reportData.length === 0 ? (
 
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                    />
+                    <div className="bd-no-chart-data">
+                      No report data available.
+                    </div>
 
-                    <XAxis
-                      dataKey={
-                        selectedFinancialYear
-                          ? "monthShort"
-                          : "year"
-                      }
-                      tick={{
-                        fontSize: 11,
-                        fill: "#687180"
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
+                  ) : (
 
-                    <YAxis
-                      tick={{
-                        fontSize: 11,
-                        fill: "#687180"
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={
-                        value =>
-                          formatCurrency(value)
-                      }
-                    />
+                    <ResponsiveContainer
+                      width="100%"
+                      height="100%"
+                    >
 
-                    <Tooltip
-                      content={
-                        renderBillingTooltip
-                      }
-                      cursor={{
-                        fill:
-                          "rgba(38,115,77,.06)"
-                      }}
-                    />
+                      <BarChart
+                        data={reportData}
+                        margin={{
+                          top: 15,
+                          right: 10,
+                          left: 0,
+                          bottom: 5
+                        }}
+                      >
 
-                    <Bar
-                      dataKey="billing"
-                      name="Total Billing"
-                      fill="#26734D"
-                      radius={[
-                        5,
-                        5,
-                        0,
-                        0
-                      ]}
-                      maxBarSize={45}
-                    />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                        />
 
-                  </BarChart>
+                        <XAxis
+                          dataKey={
+                            selectedFinancialYear
+                              ? "monthShort"
+                              : "year"
+                          }
+                          tick={{
+                            fontSize: 12
+                          }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
 
-                </ResponsiveContainer>
+                        <YAxis
+                          tick={{
+                            fontSize: 12
+                          }}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={value =>
+                            `₹${(
+                              value / 100000
+                            ).toFixed(0)}L`
+                          }
+                        />
+
+                        <Tooltip
+                          content={
+                            <BDTooltip />
+                          }
+                        />
+
+                        <Bar
+                          dataKey="billing"
+                          name="Total Billing"
+                          fill="#26734D"
+                          radius={[
+                            6,
+                            6,
+                            0,
+                            0
+                          ]}
+                          barSize={32}
+                        />
+
+                      </BarChart>
+
+                    </ResponsiveContainer>
+
+                  )}
+
+                </div>
 
               </div>
+
 
             </div>
 
 
-            {/* =================================================
+            {/* =============================================
                 MODAL FOOTER
-            ================================================= */}
+            ============================================= */}
 
             <div className="bd-modal-footer">
 
               <span>
-                {selectedFinancialYear
-                  ? `Showing monthly performance for FY ${selectedFinancialYear}`
-                  : "Showing yearly performance across all financial years"
+
+                {
+                  selectedFinancialYear
+                    ? `Monthly report for ${selectedFinancialYear}`
+                    : "Yearly performance report"
                 }
+
               </span>
 
 
               <button
                 type="button"
-                onClick={closePerformance}
+                className="bd-footer-close"
+                onClick={handleCloseModal}
               >
                 Close
               </button>
