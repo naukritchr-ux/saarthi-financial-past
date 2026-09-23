@@ -20,6 +20,7 @@ async function run() {
     console.error(
       "Excel import failed."
     );
+    console.error(error);
 
     process.exit(1);
 
