@@ -1,4 +1,3 @@
-
 import {
   useMemo,
   useState
@@ -180,6 +179,23 @@ function getCity(row) {
 
 
 /* =========================================================
+   GET FRANCHISE NAME
+========================================================= */
+
+function getFranchiseName(row) {
+
+  return String(
+    row?.franchise_name ??
+    row?.["Franchise Name"] ??
+    row?.franchise ??
+    row?.["Franchise"] ??
+    ""
+  ).trim();
+
+}
+
+
+/* =========================================================
    GET INFO STATUS
 ========================================================= */
 
@@ -235,29 +251,37 @@ function getFranchiseeShare(row) {
 
 /* =========================================================
    GET TEAM LEADER EXPENDITURE
-
-   ALL:
-   TL Expenditure = 5% of Billing
-
-   R:
-   TL Expenditure = 5% of R Billing
-
-   RV:
-   TL Expenditure = 0
-
-   C:
-   TL Expenditure = 0
-
-   CN:
-   TL Expenditure = 0
 ========================================================= */
 
-function getTLExpenditure(row) {
+function getTLExpenditure(
+  row,
+  percentage
+) {
 
   const billing =
     getBilling(row);
 
-  return billing * 0.05;
+  if (
+    percentage === null ||
+    percentage === undefined ||
+    percentage === ""
+  ) {
+    return 0;
+  }
+
+  const rate =
+    Number(percentage);
+
+  if (
+    !Number.isFinite(rate) ||
+    rate < 0
+  ) {
+    return 0;
+  }
+
+  return billing * (
+    rate / 100
+  );
 
 }
 
@@ -286,12 +310,10 @@ function getFinancialYear(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
-
   if (dateValue) {
 
     const date =
       new Date(dateValue);
-
 
     if (
       !Number.isNaN(
@@ -305,7 +327,6 @@ function getFinancialYear(row) {
       const year =
         date.getFullYear();
 
-
       if (month >= 4) {
 
         return `${year}-${String(
@@ -313,7 +334,6 @@ function getFinancialYear(row) {
         ).slice(-2)}`;
 
       }
-
 
       return `${year - 1}-${String(
         year
@@ -323,12 +343,10 @@ function getFinancialYear(row) {
 
   }
 
-
   const acquiredYear =
     row?.acquired_year ??
     row?.["Aquired Year"] ??
     row?.["Acquired Year"];
-
 
   if (
     acquiredYear !== undefined &&
@@ -338,7 +356,6 @@ function getFinancialYear(row) {
 
     const year =
       Number(acquiredYear);
-
 
     if (
       Number.isFinite(year) &&
@@ -352,7 +369,6 @@ function getFinancialYear(row) {
     }
 
   }
-
 
   return "";
 
@@ -368,15 +384,12 @@ function getMonth(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
-
   if (!dateValue) {
     return "";
   }
 
-
   const date =
     new Date(dateValue);
-
 
   if (
     Number.isNaN(
@@ -388,7 +401,6 @@ function getMonth(row) {
 
   }
 
-
   return date.getMonth() + 1;
 
 }
@@ -396,36 +408,12 @@ function getMonth(row) {
 
 /* =========================================================
    TEAM LEADER FINANCIAL CALCULATION
-
-   ALL:
-   Billing = Billing
-   Net Amount = Billing - Franchisee Share
-   TL Expenditure = 5% of Billing
-
-   R:
-   Billing = R Billing
-   Net Amount = R Billing - Franchisee Share
-   TL Expenditure = 5% of R Billing
-
-   RV:
-   Billing = RV Billing
-   Net Amount = 0
-   TL Expenditure = 0
-
-   C:
-   Billing = C Billing
-   Net Amount = 0
-   TL Expenditure = 0
-
-   CN:
-   Billing = CN Billing
-   Net Amount = 0
-   TL Expenditure = 0
 ========================================================= */
 
 function getFinancialValues(
   row,
-  infoFilter = ""
+  infoFilter = "",
+  percentage
 ) {
 
   const info =
@@ -438,7 +426,10 @@ function getFinancialValues(
     getFranchiseeShare(row);
 
   const tlExpenditure =
-    getTLExpenditure(row);
+    getTLExpenditure(
+      row,
+      percentage
+    );
 
 
   /* =======================================================
@@ -489,7 +480,6 @@ function getFinancialValues(
 
     }
 
-
     return {
 
       billing,
@@ -529,7 +519,6 @@ function getFinancialValues(
 
     }
 
-
     return {
 
       billing,
@@ -567,7 +556,6 @@ function getFinancialValues(
 
     }
 
-
     return {
 
       billing,
@@ -604,7 +592,6 @@ function getFinancialValues(
       };
 
     }
-
 
     return {
 
@@ -652,7 +639,6 @@ function TLTooltip({
 
   }
 
-
   return (
 
     <div className="tl-modern-tooltip">
@@ -660,7 +646,6 @@ function TLTooltip({
       <div className="tl-tooltip-label">
         {label}
       </div>
-
 
       {payload.map(
         (item, index) => (
@@ -673,7 +658,6 @@ function TLTooltip({
             <span>
               {item.name}
             </span>
-
 
             <strong>
 
@@ -715,17 +699,39 @@ function TeamLeaderPerformance() {
     setSelectedLeader
   ] = useState("");
 
-
   const [
     selectedFinancialYear,
     setSelectedFinancialYear
   ] = useState("");
 
-
   const [
     selectedInfoStatus,
     setSelectedInfoStatus
   ] = useState("");
+
+
+  /* =======================================================
+     TL EXPENDITURE PERCENTAGE
+  ======================================================= */
+
+  const [
+    tlExpenditurePercentage,
+    setTlExpenditurePercentage
+  ] = useState("");
+
+
+  /* =======================================================
+     CHECK TL EXPENDITURE
+  ======================================================= */
+
+  const hasTLExpenditurePercentage =
+    tlExpenditurePercentage !== "" &&
+    tlExpenditurePercentage !== null &&
+    tlExpenditurePercentage !== undefined &&
+    Number.isFinite(
+      Number(tlExpenditurePercentage)
+    ) &&
+    Number(tlExpenditurePercentage) >= 0;
 
 
   /* =======================================================
@@ -738,19 +744,16 @@ function TeamLeaderPerformance() {
       const years =
         new Set();
 
-
       rows.forEach(row => {
 
         const year =
           getFinancialYear(row);
-
 
         if (year) {
           years.add(year);
         }
 
       });
-
 
       return Array.from(years)
         .sort((a, b) => {
@@ -760,12 +763,10 @@ function TeamLeaderPerformance() {
               String(a).slice(0, 4)
             );
 
-
           const yearB =
             Number(
               String(b).slice(0, 4)
             );
-
 
           return yearA - yearB;
 
@@ -784,17 +785,14 @@ function TeamLeaderPerformance() {
       const map =
         new Map();
 
-
       rows.forEach(row => {
 
         const leader =
           getTeamLeader(row);
 
-
         if (!leader) {
           return;
         }
-
 
         if (
           selectedFinancialYear &&
@@ -806,13 +804,12 @@ function TeamLeaderPerformance() {
 
         }
 
-
         const financialValues =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            tlExpenditurePercentage
           );
-
 
         if (!map.has(leader)) {
 
@@ -821,6 +818,7 @@ function TeamLeaderPerformance() {
             {
               leader,
               clients: 0,
+              franchisees: new Set(),
               billing: 0,
               netAmount: 0,
               tlExpenditure: 0
@@ -829,31 +827,41 @@ function TeamLeaderPerformance() {
 
         }
 
-
         const data =
           map.get(leader);
 
-
         data.clients += 1;
 
+        const franchiseName =
+          getFranchiseName(row);
+
+        if (franchiseName) {
+
+          data.franchisees.add(
+            franchiseName
+          );
+
+        }
 
         data.billing +=
           financialValues.billing;
 
-
         data.netAmount +=
           financialValues.netAmount;
-
 
         data.tlExpenditure +=
           financialValues.tlExpenditure;
 
       });
 
-
       return Array.from(
         map.values()
       )
+        .map(item => ({
+          ...item,
+          franchisees:
+            item.franchisees.size
+        }))
         .filter(
           item =>
             item.clients > 0
@@ -866,7 +874,8 @@ function TeamLeaderPerformance() {
     }, [
       rows,
       selectedFinancialYear,
-      selectedInfoStatus
+      selectedInfoStatus,
+      tlExpenditurePercentage
     ]);
 
 
@@ -881,7 +890,6 @@ function TeamLeaderPerformance() {
         return [];
       }
 
-
       return rows.filter(
         row => {
 
@@ -894,7 +902,6 @@ function TeamLeaderPerformance() {
 
           }
 
-
           if (
             selectedFinancialYear &&
             getFinancialYear(row) !==
@@ -904,7 +911,6 @@ function TeamLeaderPerformance() {
             return false;
 
           }
-
 
           return true;
 
@@ -933,19 +939,17 @@ function TeamLeaderPerformance() {
 
       let netAmount = 0;
 
-
       selectedRows.forEach(row => {
 
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            tlExpenditurePercentage
           );
-
 
         totalBilling +=
           values.billing;
-
 
         if (
           !selectedInfoStatus ||
@@ -957,21 +961,17 @@ function TeamLeaderPerformance() {
 
         }
 
-
         totalTLExpenditure +=
           values.tlExpenditure;
-
 
         netAmount +=
           values.netAmount;
 
       });
 
-
       const grossProfit =
         netAmount -
         totalTLExpenditure;
-
 
       const grossMargin =
         netAmount !== 0
@@ -980,7 +980,6 @@ function TeamLeaderPerformance() {
               netAmount
             ) * 100
           : 0;
-
 
       return {
 
@@ -1000,7 +999,8 @@ function TeamLeaderPerformance() {
 
     }, [
       selectedRows,
-      selectedInfoStatus
+      selectedInfoStatus,
+      tlExpenditurePercentage
     ]);
 
 
@@ -1014,17 +1014,14 @@ function TeamLeaderPerformance() {
       const counts =
         new Map();
 
-
       selectedRows.forEach(row => {
 
         const industry =
           getIndustry(row);
 
-
         if (!industry) {
           return;
         }
-
 
         counts.set(
           industry,
@@ -1033,11 +1030,9 @@ function TeamLeaderPerformance() {
 
       });
 
-
       let best = "";
 
       let highest = 0;
-
 
       counts.forEach(
         (count, industry) => {
@@ -1052,7 +1047,6 @@ function TeamLeaderPerformance() {
 
         }
       );
-
 
       return best || "—";
 
@@ -1069,17 +1063,14 @@ function TeamLeaderPerformance() {
       const counts =
         new Map();
 
-
       selectedRows.forEach(row => {
 
         const city =
           getCity(row);
 
-
         if (!city) {
           return;
         }
-
 
         counts.set(
           city,
@@ -1088,11 +1079,9 @@ function TeamLeaderPerformance() {
 
       });
 
-
       let best = "";
 
       let highest = 0;
-
 
       counts.forEach(
         (count, city) => {
@@ -1107,7 +1096,6 @@ function TeamLeaderPerformance() {
 
         }
       );
-
 
       return best || "—";
 
@@ -1124,17 +1112,14 @@ function TeamLeaderPerformance() {
       const map =
         new Map();
 
-
       selectedRows.forEach(row => {
 
         const year =
           getFinancialYear(row);
 
-
         if (!year) {
           return;
         }
-
 
         if (!map.has(year)) {
 
@@ -1149,26 +1134,22 @@ function TeamLeaderPerformance() {
 
         }
 
-
         const data =
           map.get(year);
-
 
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            tlExpenditurePercentage
           );
 
-
         data.clients += 1;
-
 
         data.billing +=
           values.billing;
 
       });
-
 
       return Array.from(
         map.values()
@@ -1179,12 +1160,10 @@ function TeamLeaderPerformance() {
             String(a.year).slice(0, 4)
           );
 
-
         const yearB =
           Number(
             String(b.year).slice(0, 4)
           );
-
 
         return yearA - yearB;
 
@@ -1192,7 +1171,8 @@ function TeamLeaderPerformance() {
 
     }, [
       selectedRows,
-      selectedInfoStatus
+      selectedInfoStatus,
+      tlExpenditurePercentage
     ]);
 
 
@@ -1207,10 +1187,8 @@ function TeamLeaderPerformance() {
         return [];
       }
 
-
       const monthMap =
         new Map();
-
 
       financialMonths.forEach(
         (month, index) => {
@@ -1228,12 +1206,10 @@ function TeamLeaderPerformance() {
         }
       );
 
-
       selectedRows.forEach(row => {
 
         const year =
           getFinancialYear(row);
-
 
         if (
           year !==
@@ -1244,10 +1220,8 @@ function TeamLeaderPerformance() {
 
         }
 
-
         const month =
           getMonth(row);
-
 
         if (
           !monthMap.has(month)
@@ -1257,26 +1231,22 @@ function TeamLeaderPerformance() {
 
         }
 
-
         const data =
           monthMap.get(month);
-
 
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            tlExpenditurePercentage
           );
 
-
         data.clients += 1;
-
 
         data.billing +=
           values.billing;
 
       });
-
 
       const orderedMonths = [
         4,
@@ -1293,7 +1263,6 @@ function TeamLeaderPerformance() {
         3
       ];
 
-
       return orderedMonths.map(
         month =>
           monthMap.get(month)
@@ -1302,7 +1271,8 @@ function TeamLeaderPerformance() {
     }, [
       selectedRows,
       selectedFinancialYear,
-      selectedInfoStatus
+      selectedInfoStatus,
+      tlExpenditurePercentage
     ]);
 
 
@@ -1358,11 +1328,6 @@ function TeamLeaderPerformance() {
 
     <div className="tl-performance-page">
 
-
-      {/* ===================================================
-          PAGE HEADER
-      =================================================== */}
-
       <div className="tl-page-header">
 
         <div>
@@ -1385,16 +1350,7 @@ function TeamLeaderPerformance() {
       </div>
 
 
-      {/* ===================================================
-          MAIN TABLE CARD
-      =================================================== */}
-
       <div className="tl-table-card">
-
-
-        {/* =================================================
-            TABLE HEADER
-        ================================================= */}
 
         <div className="tl-table-header">
 
@@ -1410,7 +1366,6 @@ function TeamLeaderPerformance() {
             </p>
 
           </div>
-
 
           <div className="tl-member-count">
 
@@ -1513,6 +1468,42 @@ function TeamLeaderPerformance() {
 
           </div>
 
+
+          {/* =================================================
+              TL EXPENDITURE PERCENTAGE
+          ================================================= */}
+
+          <div className="tl-filter-group">
+
+            <label
+              htmlFor="tl-expenditure-percentage"
+            >
+              TL Expenditure %
+            </label>
+
+            <input
+              id="tl-expenditure-percentage"
+              type="number"
+              min="0"
+              step="0.01"
+              value={
+                tlExpenditurePercentage
+              }
+              placeholder="Enter %"
+              onChange={event => {
+
+                const value =
+                  event.target.value;
+
+                setTlExpenditurePercentage(
+                  value
+                );
+
+              }}
+            />
+
+          </div>
+
         </div>
 
 
@@ -1537,6 +1528,10 @@ function TeamLeaderPerformance() {
                 </th>
 
                 <th>
+                  No. of Franchisee
+                </th>
+
+                <th>
                   Total Billing
                 </th>
 
@@ -1544,9 +1539,13 @@ function TeamLeaderPerformance() {
                   Net Amount
                 </th>
 
-                <th>
-                  TL Expenditure
-                </th>
+                {hasTLExpenditurePercentage && (
+
+                  <th>
+                    TL Expenditure
+                  </th>
+
+                )}
 
                 <th>
                   Performance
@@ -1564,7 +1563,11 @@ function TeamLeaderPerformance() {
                 <tr>
 
                   <td
-                    colSpan="6"
+                    colSpan={
+                      hasTLExpenditurePercentage
+                        ? "7"
+                        : "6"
+                    }
                     className="tl-empty"
                   >
                     No Team Leader data available.
@@ -1621,6 +1624,19 @@ function TeamLeaderPerformance() {
 
                       <td>
 
+                        <span className="tl-client-count">
+
+                          {
+                            leader.franchisees
+                          }
+
+                        </span>
+
+                      </td>
+
+
+                      <td>
+
                         <span className="tl-billing-value">
 
                           {
@@ -1649,19 +1665,23 @@ function TeamLeaderPerformance() {
                       </td>
 
 
-                      <td>
+                      {hasTLExpenditurePercentage && (
 
-                        <span className="tl-expenditure-value">
+                        <td>
 
-                          {
-                            formatCurrency(
-                              leader.tlExpenditure
-                            )
-                          }
+                          <span className="tl-expenditure-value">
 
-                        </span>
+                            {
+                              formatCurrency(
+                                leader.tlExpenditure
+                              )
+                            }
 
-                      </td>
+                          </span>
+
+                        </td>
+
+                      )}
 
 
                       <td>
@@ -1712,18 +1732,12 @@ function TeamLeaderPerformance() {
           onClick={handleCloseModal}
         >
 
-
           <div
             className="tl-performance-modal"
             onClick={event =>
               event.stopPropagation()
             }
           >
-
-
-            {/* =============================================
-                MODAL HEADER
-            ============================================= */}
 
             <div className="tl-modal-header">
 
@@ -1744,7 +1758,6 @@ function TeamLeaderPerformance() {
 
               </div>
 
-
               <button
                 type="button"
                 className="tl-modal-close"
@@ -1757,14 +1770,7 @@ function TeamLeaderPerformance() {
             </div>
 
 
-            {/* =============================================
-                SUMMARY CARDS
-            ============================================= */}
-
             <div className="tl-summary-grid">
-
-
-              {/* BEST INDUSTRY */}
 
               <div className="tl-summary-card">
 
@@ -1779,8 +1785,6 @@ function TeamLeaderPerformance() {
               </div>
 
 
-              {/* BEST CITY */}
-
               <div className="tl-summary-card">
 
                 <span className="tl-summary-label">
@@ -1793,8 +1797,6 @@ function TeamLeaderPerformance() {
 
               </div>
 
-
-              {/* TOTAL BILLING */}
 
               <div className="tl-summary-card">
 
@@ -1815,28 +1817,28 @@ function TeamLeaderPerformance() {
               </div>
 
 
-              {/* TL EXPENDITURE */}
+              {hasTLExpenditurePercentage && (
 
-              <div className="tl-summary-card">
+                <div className="tl-summary-card">
 
-                <span className="tl-summary-label">
-                  TL Expenditure
-                </span>
+                  <span className="tl-summary-label">
+                    TL Expenditure
+                  </span>
 
-                <strong className="tl-summary-value">
+                  <strong className="tl-summary-value">
 
-                  {
-                    formatCurrency(
-                      performanceSummary.totalTLExpenditure
-                    )
-                  }
+                    {
+                      formatCurrency(
+                        performanceSummary.totalTLExpenditure
+                      )
+                    }
 
-                </strong>
+                  </strong>
 
-              </div>
+                </div>
 
+              )}
 
-              {/* NET AMOUNT */}
 
               <div className="tl-summary-card tl-summary-net">
 
@@ -1856,16 +1858,10 @@ function TeamLeaderPerformance() {
 
               </div>
 
-
             </div>
 
 
-            {/* =============================================
-                REPORT CONTROLS
-            ============================================= */}
-
             <div className="tl-report-controls">
-
 
               <div>
 
@@ -1874,7 +1870,6 @@ function TeamLeaderPerformance() {
                 >
                   Financial Year
                 </label>
-
 
                 <select
                   id="tl-financial-year"
@@ -1891,7 +1886,6 @@ function TeamLeaderPerformance() {
                   <option value="">
                     None
                   </option>
-
 
                   {financialYears.map(
                     year => (
@@ -1916,7 +1910,6 @@ function TeamLeaderPerformance() {
                 <label>
                   Info Status
                 </label>
-
 
                 <select
                   value={
@@ -1972,18 +1965,10 @@ function TeamLeaderPerformance() {
 
               </div>
 
-
             </div>
 
 
-            {/* =============================================
-                GRAPHS
-            ============================================= */}
-
             <div className="tl-report-graphs">
-
-
-              {/* CLIENT ACQUIRED */}
 
               <div className="tl-chart-card">
 
@@ -2093,8 +2078,6 @@ function TeamLeaderPerformance() {
 
               </div>
 
-
-              {/* TOTAL BILLING */}
 
               <div className="tl-chart-card">
 
@@ -2208,13 +2191,8 @@ function TeamLeaderPerformance() {
 
               </div>
 
-
             </div>
 
-
-            {/* =============================================
-                MODAL FOOTER
-            ============================================= */}
 
             <div className="tl-modal-footer">
 
@@ -2228,7 +2206,6 @@ function TeamLeaderPerformance() {
 
               </span>
 
-
               <button
                 type="button"
                 className="tl-footer-close"
@@ -2238,7 +2215,6 @@ function TeamLeaderPerformance() {
               </button>
 
             </div>
-
 
           </div>
 
@@ -2254,4 +2230,3 @@ function TeamLeaderPerformance() {
 
 
 export default TeamLeaderPerformance;
-
