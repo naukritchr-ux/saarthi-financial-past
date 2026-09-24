@@ -1,14 +1,12 @@
 import {
   Routes,
-  Route
+  Route,
+  Navigate
 } from "react-router-dom";
-
-
-import Login from "../pages/Login/Login";
 
 import MainLayout from "../components/Layout/MainLayout";
 
-import ProtectedRoute from "./ProtectedRoute";
+
 
 
 import Dashboard from "../pages/Dashboard/Dashboard";
@@ -59,16 +57,17 @@ return (
 <Routes>
 
 
-
-{/* Login */}
-
+{/* Root */}
 
 <Route
 
 path="/"
 
 element={
-  <Login />
+  <Navigate
+    to="/dashboard"
+    replace
+  />
 }
 
 />
@@ -76,24 +75,13 @@ element={
 
 
 
-
-
-{/* Protected Application */}
+{/* Application */}
 
 
 <Route
 
 element={
-
-
-  <ProtectedRoute>
-
-
     <MainLayout />
-
-
-  </ProtectedRoute>
-
 
 }
 
