@@ -179,6 +179,23 @@ function getCity(row) {
 
 
 /* =========================================================
+   GET FRANCHISE NAME
+========================================================= */
+
+function getFranchiseName(row) {
+
+  return String(
+    row?.franchise_name ??
+    row?.["Franchise Name"] ??
+    row?.franchise ??
+    row?.["Franchise"] ??
+    ""
+  ).trim();
+
+}
+
+
+/* =========================================================
    GET INFO STATUS
 ========================================================= */
 
@@ -220,6 +237,51 @@ function getFranchiseeShare(row) {
     row?.franchisee_share ??
     row?.["Franchisee Share"] ??
     0
+  );
+
+}
+
+
+/* =========================================================
+   GET BD EXPENDITURE
+========================================================= */
+
+function getBDExpenditure(
+  row,
+  percentage
+) {
+
+  const billing =
+    getBilling(row);
+
+
+  if (
+    percentage === null ||
+    percentage === undefined ||
+    percentage === ""
+  ) {
+
+    return 0;
+
+  }
+
+
+  const rate =
+    Number(percentage);
+
+
+  if (
+    !Number.isFinite(rate) ||
+    rate < 0
+  ) {
+
+    return 0;
+
+  }
+
+
+  return billing * (
+    rate / 100
   );
 
 }
@@ -363,12 +425,12 @@ function getMonth(row) {
    ALL:
    Billing = Billing
    Net Amount = Billing - Franchisee Share
-   BD Expenditure = Billing × 5%
+   BD Expenditure = Billing × entered %
 
    R:
    Billing = R Billing
    Net Amount = R Billing - Franchisee Share
-   BD Expenditure = R Billing × 5%
+   BD Expenditure = R Billing × entered %
 
    RV:
    Billing = RV Billing
@@ -388,7 +450,8 @@ function getMonth(row) {
 
 function getFinancialValues(
   row,
-  infoFilter = ""
+  infoFilter = "",
+  percentage
 ) {
 
   const info =
@@ -420,7 +483,10 @@ function getFinancialValues(
         franchiseeShare,
 
       bdExpenditure:
-        billing * 0.05
+        getBDExpenditure(
+          row,
+          percentage
+        )
 
     };
 
@@ -462,7 +528,10 @@ function getFinancialValues(
         franchiseeShare,
 
       bdExpenditure:
-        billing * 0.05
+        getBDExpenditure(
+          row,
+          percentage
+        )
 
     };
 
@@ -695,6 +764,30 @@ function BDPerformance() {
   ] = useState("");
 
 
+  const [
+    bdExpenditurePercentage,
+    setBdExpenditurePercentage
+  ] = useState("");
+
+
+  /* =======================================================
+     BD EXPENDITURE PERCENTAGE VALIDATION
+  ======================================================= */
+
+  const hasBDExpenditurePercentage =
+    bdExpenditurePercentage !== "" &&
+    bdExpenditurePercentage !== null &&
+    bdExpenditurePercentage !== undefined &&
+    Number.isFinite(
+      Number(
+        bdExpenditurePercentage
+      )
+    ) &&
+    Number(
+      bdExpenditurePercentage
+    ) >= 0;
+
+
   /* =======================================================
      FINANCIAL YEARS
   ======================================================= */
@@ -774,10 +867,26 @@ function BDPerformance() {
         }
 
 
+        const info =
+          getInfoStatus(row);
+
+
+        if (
+          selectedInfoStatus &&
+          selectedInfoStatus !== "ALL" &&
+          info !== selectedInfoStatus
+        ) {
+
+          return;
+
+        }
+
+
         const financialValues =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            bdExpenditurePercentage
           );
 
 
@@ -788,6 +897,7 @@ function BDPerformance() {
             {
               member,
               clients: 0,
+              franchisees: new Set(),
               billing: 0,
               netAmount: 0,
               bdExpenditure: 0
@@ -802,6 +912,19 @@ function BDPerformance() {
 
 
         data.clients += 1;
+
+
+        const franchiseName =
+          getFranchiseName(row);
+
+
+        if (franchiseName) {
+
+          data.franchisees.add(
+            franchiseName
+          );
+
+        }
 
 
         data.billing +=
@@ -825,6 +948,14 @@ function BDPerformance() {
           item =>
             item.clients > 0
         )
+        .map(item => ({
+
+          ...item,
+
+          franchisees:
+            item.franchisees.size
+
+        }))
         .sort(
           (a, b) =>
             b.clients - a.clients
@@ -833,7 +964,8 @@ function BDPerformance() {
     }, [
       rows,
       selectedFinancialYear,
-      selectedInfoStatus
+      selectedInfoStatus,
+      bdExpenditurePercentage
     ]);
 
 
@@ -906,7 +1038,8 @@ function BDPerformance() {
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            bdExpenditurePercentage
           );
 
 
@@ -949,7 +1082,8 @@ function BDPerformance() {
 
     }, [
       selectedRows,
-      selectedInfoStatus
+      selectedInfoStatus,
+      bdExpenditurePercentage
     ]);
 
 
@@ -1106,7 +1240,8 @@ function BDPerformance() {
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            bdExpenditurePercentage
           );
 
 
@@ -1141,7 +1276,8 @@ function BDPerformance() {
 
     }, [
       selectedRows,
-      selectedInfoStatus
+      selectedInfoStatus,
+      bdExpenditurePercentage
     ]);
 
 
@@ -1214,7 +1350,8 @@ function BDPerformance() {
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            bdExpenditurePercentage
           );
 
 
@@ -1251,7 +1388,8 @@ function BDPerformance() {
     }, [
       selectedRows,
       selectedFinancialYear,
-      selectedInfoStatus
+      selectedInfoStatus,
+      bdExpenditurePercentage
     ]);
 
 
@@ -1462,6 +1600,40 @@ function BDPerformance() {
 
           </div>
 
+
+          {/* BD EXPENDITURE % */}
+
+          <div className="bd-filter-group">
+
+            <label
+              htmlFor="bd-expenditure-percentage"
+            >
+              BD Expenditure %
+            </label>
+
+            <input
+              id="bd-expenditure-percentage"
+              type="number"
+              min="0"
+              step="0.01"
+              value={
+                bdExpenditurePercentage
+              }
+              placeholder="Enter %"
+              onChange={event => {
+
+                const value =
+                  event.target.value;
+
+                setBdExpenditurePercentage(
+                  value
+                );
+
+              }}
+            />
+
+          </div>
+
         </div>
 
 
@@ -1486,6 +1658,10 @@ function BDPerformance() {
                 </th>
 
                 <th>
+                  No. of Franchisee
+                </th>
+
+                <th>
                   Total Billing
                 </th>
 
@@ -1493,9 +1669,13 @@ function BDPerformance() {
                   Net Amount
                 </th>
 
-                <th>
-                  BD Expenditure
-                </th>
+                {hasBDExpenditurePercentage && (
+
+                  <th>
+                    BD Expenditure
+                  </th>
+
+                )}
 
                 <th>
                   Performance
@@ -1513,7 +1693,11 @@ function BDPerformance() {
                 <tr>
 
                   <td
-                    colSpan="6"
+                    colSpan={
+                      hasBDExpenditurePercentage
+                        ? "7"
+                        : "6"
+                    }
                     className="bd-empty"
                   >
                     No BD member data available.
@@ -1570,6 +1754,19 @@ function BDPerformance() {
 
                       <td>
 
+                        <span className="bd-client-count">
+
+                          {
+                            member.franchisees
+                          }
+
+                        </span>
+
+                      </td>
+
+
+                      <td>
+
                         <span className="bd-billing-value">
 
                           {
@@ -1598,19 +1795,23 @@ function BDPerformance() {
                       </td>
 
 
-                      <td>
+                      {hasBDExpenditurePercentage && (
 
-                        <span className="bd-expenditure-value">
+                        <td>
 
-                          {
-                            formatCurrency(
-                              member.bdExpenditure
-                            )
-                          }
+                          <span className="bd-expenditure-value">
 
-                        </span>
+                            {
+                              formatCurrency(
+                                member.bdExpenditure
+                              )
+                            }
 
-                      </td>
+                          </span>
+
+                        </td>
+
+                      )}
 
 
                       <td>
@@ -1767,27 +1968,31 @@ function BDPerformance() {
 
               {/* BD EXPENDITURE */}
 
-              <div className="bd-summary-card">
+              {hasBDExpenditurePercentage && (
 
-                <span className="bd-summary-label">
-                  BD Expenditure
-                </span>
+                <div className="bd-summary-card">
 
-                <strong className="bd-summary-value">
+                  <span className="bd-summary-label">
+                    BD Expenditure
+                  </span>
 
-                  {
-                    formatCurrency(
-                      performanceSummary.totalBDExpenditure
-                    )
-                  }
+                  <strong className="bd-summary-value">
 
-                </strong>
+                    {
+                      formatCurrency(
+                        performanceSummary.totalBDExpenditure
+                      )
+                    }
 
-                <small>
-                  5% of Total Billing
-                </small>
+                  </strong>
 
-              </div>
+                  <small>
+                    {bdExpenditurePercentage}% of Total Billing
+                  </small>
+
+                </div>
+
+              )}
 
 
               {/* NET AMOUNT */}

@@ -787,3 +787,72 @@
   }
 
 }
+
+/* BD Expenditure % Input */
+
+.bd-filter-group input[type="number"] {
+
+  min-width: 210px;
+
+  width: 210px;
+
+  height: 39px;
+
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #D7D0C0;
+
+  border-radius: 7px;
+
+  background: #FFFFFF;
+
+  color: #1B2A4A;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  outline: none;
+
+  cursor: text;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+}
+
+.bd-filter-group input[type="number"]:focus {
+
+  border-color: #B78A34;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(183, 138, 52, 0.10);
+
+}
+
+.bd-filter-group input[type="number"]:hover {
+
+  border-color: #C9C0AD;
+
+}
+
+.bd-filter-group input[type="number"]::placeholder {
+
+  color: #89919D;
+
+  font-weight: 500;
+
+}
+
+.bd-filter-group input[type="number"]::-webkit-inner-spin-button,
+.bd-filter-group input[type="number"]::-webkit-outer-spin-button {
+
+  opacity: 0.7;
+
+}
