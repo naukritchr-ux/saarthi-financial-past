@@ -24,17 +24,12 @@ function Sidebar({ isOpen }) {
   } = useAuth();
 
 
+  const role =
+    user?.role || "Admin";
+
+
   const segments =
-
-    user
-
-      ?
-
-    ROLE_SEGMENTS[user.role]
-
-      :
-
-    [];
+    ROLE_SEGMENTS[role] || [];
 
 
   /*
@@ -61,7 +56,7 @@ function Sidebar({ isOpen }) {
 
   /*
    * Only show report options that are
-   * available for the logged-in user's role.
+   * available for the user's role.
    */
 
   const availableReports =
@@ -139,7 +134,7 @@ function Sidebar({ isOpen }) {
         </h2>
 
         <p>
-          Financial - Past 
+          Financial - Past
         </p>
 
       </div>
