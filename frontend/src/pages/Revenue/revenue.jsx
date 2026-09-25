@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./Revenue.css";
+import "./revenue.css";
 
 
 const financialYears = [
