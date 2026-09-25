@@ -1,150 +1,113 @@
 import { useState } from "react";
+import "./Revenue.css";
 
-import "./revenue.css";
+
+const financialYears = [
+  "FY 2021-2022",
+  "FY 2022-2023",
+  "FY 2023-2024"
+];
+
+
+const revenueRows = [
+  "Recruitment Revenue",
+  "Franchisee Revenue",
+  "Job portal Revenue"
+];
+
+
+const expenditureRows = [
+  "Recruitment Expenditure",
+  "Franchisee Expenditure",
+  "Job portal Expenditure"
+];
+
+
+const salaryRows = [
+  "Recruitment Salary",
+  "Franchisee Salary",
+  "Job portal Salary"
+];
+
+
+function createInitialData(rows) {
+
+  const data = {};
+
+  rows.forEach((row) => {
+
+    data[row] = {};
+
+    financialYears.forEach((year) => {
+
+      data[row][year] = "";
+
+    });
+
+  });
+
+  return data;
+}
 
 
 function Revenue() {
 
-  /*
-   * ============================================================
-   * FINANCIAL YEARS
-   * ============================================================
-   */
-
-  const financialYears = [
-    "FY 2021-2022",
-    "FY 2022-2023",
-    "FY 2023-2024"
-  ];
-
-
-  /*
-   * ============================================================
-   * INITIAL DATA
-   * ============================================================
-   */
-
-  const createInitialData = (rows) => {
-
-    const data = {};
-
-    rows.forEach((row) => {
-
-      data[row] = {
-        "FY 2021-2022": "",
-        "FY 2022-2023": "",
-        "FY 2023-2024": ""
-      };
-
-    });
-
-    return data;
-
-  };
-
-
-  /*
-   * ============================================================
-   * REVENUE
-   * ============================================================
-   */
 
   const [revenue, setRevenue] = useState(
-    createInitialData([
-      "Recruitment Revenue",
-      "Franchisee Revenue",
-      "Job portal Revenue"
-    ])
+    createInitialData(revenueRows)
   );
 
 
-  /*
-   * ============================================================
-   * EXPENSES
-   * ============================================================
-   */
-
-  const [expenses, setExpenses] = useState(
-    createInitialData([
-      "Recruitment Expenditure",
-      "Franchisee Expenditure",
-      "Job portal Expenditure"
-    ])
+  const [expenditure, setExpenditure] = useState(
+    createInitialData(expenditureRows)
   );
 
-
-  /*
-   * ============================================================
-   * SALARY
-   * ============================================================
-   */
 
   const [salary, setSalary] = useState(
-    createInitialData([
-      "Recruitment Salary",
-      "Franchisee Salary",
-      "Job portal Salary"
-    ])
+    createInitialData(salaryRows)
   );
 
-
-  /*
-   * ============================================================
-   * INCOME TAX
-   * ============================================================
-   */
 
   const [incomeTaxPercentage, setIncomeTaxPercentage] =
     useState("");
 
 
   /*
-   * ============================================================
-   * NUMBER CONVERSION
-   * ============================================================
+   * Convert an input value to a number only when
+   * performing calculations.
+   *
+   * The actual input state remains a string.
+   * This prevents the input from accepting only
+   * one digit at a time.
    */
-
   function getNumber(value) {
 
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) {
+    if (value === "" || value === null || value === undefined) {
       return 0;
     }
 
-    return number;
+    const number = parseFloat(value);
 
+    return Number.isFinite(number) ? number : 0;
   }
 
 
   /*
-   * ============================================================
-   * FORMAT CURRENCY
-   * ============================================================
+   * Format calculated amounts.
    */
-
   function formatCurrency(value) {
 
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
+    return getNumber(value).toLocaleString("en-IN", {
       maximumFractionDigits: 2
-    }).format(getNumber(value));
+    });
 
   }
 
 
   /*
-   * ============================================================
-   * HANDLE REVENUE INPUT
-   * ============================================================
+   * Handle Revenue input.
    */
-
-  function handleRevenueChange(
-    row,
-    year,
-    value
-  ) {
+  function handleRevenueChange(row, year, value) {
 
     setRevenue((previous) => ({
 
@@ -164,18 +127,11 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * HANDLE EXPENSE INPUT
-   * ============================================================
+   * Handle Expenditure input.
    */
+  function handleExpenditureChange(row, year, value) {
 
-  function handleExpenseChange(
-    row,
-    year,
-    value
-  ) {
-
-    setExpenses((previous) => ({
+    setExpenditure((previous) => ({
 
       ...previous,
 
@@ -193,16 +149,9 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * HANDLE SALARY INPUT
-   * ============================================================
+   * Handle Salary input.
    */
-
-  function handleSalaryChange(
-    row,
-    year,
-    value
-  ) {
+  function handleSalaryChange(row, year, value) {
 
     setSalary((previous) => ({
 
@@ -222,30 +171,21 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * TOTAL REVENUE
-   * ============================================================
+   * Total Revenue
    */
-
   function getTotalRevenue(year) {
 
-    return (
+    return revenueRows.reduce(
 
-      getNumber(
-        revenue["Recruitment Revenue"]?.[year]
-      )
+      (total, row) => {
 
-      +
+        return total + getNumber(
+          revenue[row][year]
+        );
 
-      getNumber(
-        revenue["Franchisee Revenue"]?.[year]
-      )
+      },
 
-      +
-
-      getNumber(
-        revenue["Job portal Revenue"]?.[year]
-      )
+      0
 
     );
 
@@ -253,30 +193,21 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * TOTAL EXPENDITURE
-   * ============================================================
+   * Total Expenditure
    */
-
   function getTotalExpenditure(year) {
 
-    return (
+    return expenditureRows.reduce(
 
-      getNumber(
-        expenses["Recruitment Expenditure"]?.[year]
-      )
+      (total, row) => {
 
-      +
+        return total + getNumber(
+          expenditure[row][year]
+        );
 
-      getNumber(
-        expenses["Franchisee Expenditure"]?.[year]
-      )
+      },
 
-      +
-
-      getNumber(
-        expenses["Job portal Expenditure"]?.[year]
-      )
+      0
 
     );
 
@@ -284,30 +215,21 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * TOTAL SALARY
-   * ============================================================
+   * Total Salary
    */
-
   function getTotalSalary(year) {
 
-    return (
+    return salaryRows.reduce(
 
-      getNumber(
-        salary["Recruitment Salary"]?.[year]
-      )
+      (total, row) => {
 
-      +
+        return total + getNumber(
+          salary[row][year]
+        );
 
-      getNumber(
-        salary["Franchisee Salary"]?.[year]
-      )
+      },
 
-      +
-
-      getNumber(
-        salary["Job portal Salary"]?.[year]
-      )
+      0
 
     );
 
@@ -315,37 +237,26 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * FINAL REVENUE
-   *
-   * Final Revenue =
-   * Revenue - Expenditure - Salary
-   * ============================================================
+   * Final Recruitment Revenue
    */
-
-  function getFinalRevenue(
-    revenueRow,
-    expenseRow,
-    salaryRow,
-    year
-  ) {
+  function getFinalRecruitmentRevenue(year) {
 
     return (
 
       getNumber(
-        revenue[revenueRow]?.[year]
+        revenue["Recruitment Revenue"][year]
       )
 
       -
 
       getNumber(
-        expenses[expenseRow]?.[year]
+        expenditure["Recruitment Expenditure"][year]
       )
 
       -
 
       getNumber(
-        salary[salaryRow]?.[year]
+        salary["Recruitment Salary"][year]
       )
 
     );
@@ -354,38 +265,26 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * TOTAL FINAL REVENUE
-   * ============================================================
+   * Final Franchisee Revenue
    */
-
-  function getTotalFinalRevenue(year) {
+  function getFinalFranchiseeRevenue(year) {
 
     return (
 
-      getFinalRevenue(
-        "Recruitment Revenue",
-        "Recruitment Expenditure",
-        "Recruitment Salary",
-        year
+      getNumber(
+        revenue["Franchisee Revenue"][year]
       )
 
-      +
+      -
 
-      getFinalRevenue(
-        "Franchisee Revenue",
-        "Franchisee Expenditure",
-        "Franchisee Salary",
-        year
+      getNumber(
+        expenditure["Franchisee Expenditure"][year]
       )
 
-      +
+      -
 
-      getFinalRevenue(
-        "Job portal Revenue",
-        "Job portal Expenditure",
-        "Job portal Salary",
-        year
+      getNumber(
+        salary["Franchisee Salary"][year]
       )
 
     );
@@ -394,91 +293,103 @@ function Revenue() {
 
 
   /*
-   * ============================================================
-   * OVERALL REVENUE
-   *
-   * Overall Revenue =
-   * Recruitment Final Revenue
-   * + Franchisee Final Revenue
-   * + Job Portal Final Revenue
-   * ============================================================
+   * Final Job Portal Revenue
    */
-
-  function getOverallRevenue() {
-
-    /*
-     * Overall Revenue is calculated
-     * separately for each financial year.
-     *
-     * The latest financial year is used
-     * for the Overall Revenue summary.
-     */
-
-    const year = "FY 2023-2024";
-
-    return getTotalFinalRevenue(year);
-
-  }
-
-
-  /*
-   * ============================================================
-   * INCOME TAX AMOUNT
-   * ============================================================
-   */
-
-  function getIncomeTaxAmount() {
-
-    const percentage =
-      getNumber(incomeTaxPercentage);
-
-    const overallRevenue =
-      getOverallRevenue();
-
-    if (
-      incomeTaxPercentage === "" ||
-      percentage < 0
-    ) {
-
-      return 0;
-
-    }
+  function getFinalJobPortalRevenue(year) {
 
     return (
-      overallRevenue *
-      percentage /
-      100
+
+      getNumber(
+        revenue["Job portal Revenue"][year]
+      )
+
+      -
+
+      getNumber(
+        expenditure["Job portal Expenditure"][year]
+      )
+
+      -
+
+      getNumber(
+        salary["Job portal Salary"][year]
+      )
+
     );
 
   }
 
 
   /*
-   * ============================================================
-   * NET CASH INCOME
+   * Total Final Revenue / Overall Revenue
    *
-   * Net Cash Income =
+   * This is calculated separately for each
+   * financial year.
+   */
+  function getOverallRevenue(year) {
+
+    return (
+
+      getFinalRecruitmentRevenue(year)
+
+      +
+
+      getFinalFranchiseeRevenue(year)
+
+      +
+
+      getFinalJobPortalRevenue(year)
+
+    );
+
+  }
+
+
+  /*
+   * Income Tax Amount
+   *
+   * Same percentage is applied to the
+   * Overall Revenue of each financial year.
+   */
+  function getIncomeTax(year) {
+
+    const overallRevenue = getOverallRevenue(year);
+
+    const taxPercentage = getNumber(
+      incomeTaxPercentage
+    );
+
+    return (
+      overallRevenue * taxPercentage
+    ) / 100;
+
+  }
+
+
+  /*
+   * Net Income
+   *
+   * Net Income =
    * Overall Revenue - Income Tax Amount
-   * ============================================================
    */
-
-  function getNetCashIncome() {
+  function getNetIncome(year) {
 
     return (
-      getOverallRevenue()
+
+      getOverallRevenue(year)
+
       -
-      getIncomeTaxAmount()
+
+      getIncomeTax(year)
+
     );
 
   }
 
 
   /*
-   * ============================================================
-   * INPUT COMPONENT
-   * ============================================================
+   * Reusable input component.
    */
-
   function AmountInput({
     value,
     onChange
@@ -487,15 +398,38 @@ function Revenue() {
     return (
 
       <input
-        type="number"
-        min="0"
-        step="0.01"
+
+        type="text"
+
+        inputMode="decimal"
+
         value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
+
+        onChange={(event) => {
+
+          const newValue = event.target.value;
+
+          /*
+           * Allow:
+           * 123
+           * 123.45
+           * empty value
+           *
+           * Do not allow letters or other characters.
+           */
+          if (
+            newValue === "" ||
+            /^\d*\.?\d*$/.test(newValue)
+          ) {
+
+            onChange(newValue);
+
+          }
+
+        }}
+
         placeholder="Enter amount"
-        className="revenue-input"
+
       />
 
     );
@@ -503,25 +437,18 @@ function Revenue() {
   }
 
 
-  /*
-   * ============================================================
-   * REVENUE SECTION
-   * ============================================================
-   */
+  return (
 
-  function RevenueSection() {
+    <div className="revenue-page">
 
-    return (
+
+      {/* =====================================================
+          REVENUE
+      ===================================================== */}
 
       <section className="revenue-section">
 
-        <div className="revenue-section-header">
-
-          <h2>
-            Revenue
-          </h2>
-
-        </div>
+        <h2>Revenue</h2>
 
 
         <div className="revenue-table-wrapper">
@@ -532,9 +459,7 @@ function Revenue() {
 
               <tr>
 
-                <th>
-                  Revenue
-                </th>
+                <th>Revenue</th>
 
                 {financialYears.map((year) => (
 
@@ -551,100 +476,42 @@ function Revenue() {
 
             <tbody>
 
-              <tr>
+              {revenueRows.map((row) => (
 
-                <td>
-                  Recruitment Revenue
-                </td>
+                <tr key={row}>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    <AmountInput
-                      value={
-                        revenue[
-                          "Recruitment Revenue"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleRevenueChange(
-                          "Recruitment Revenue",
-                          year,
-                          value
-                        )
-                      }
-                    />
-
+                  <td>
+                    {row}
                   </td>
 
-                ))}
 
-              </tr>
+                  {financialYears.map((year) => (
 
+                    <td key={year}>
 
-              <tr>
+                      <AmountInput
 
-                <td>
-                  Franchisee Revenue
-                </td>
+                        value={
+                          revenue[row][year]
+                        }
 
-                {financialYears.map((year) => (
+                        onChange={(value) =>
+                          handleRevenueChange(
+                            row,
+                            year,
+                            value
+                          )
+                        }
 
-                  <td key={year}>
+                      />
 
-                    <AmountInput
-                      value={
-                        revenue[
-                          "Franchisee Revenue"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleRevenueChange(
-                          "Franchisee Revenue",
-                          year,
-                          value
-                        )
-                      }
-                    />
+                    </td>
 
-                  </td>
+                  ))}
 
-                ))}
+                </tr>
 
-              </tr>
-
-
-              <tr>
-
-                <td>
-                  Job portal Revenue
-                </td>
-
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    <AmountInput
-                      value={
-                        revenue[
-                          "Job portal Revenue"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleRevenueChange(
-                          "Job portal Revenue",
-                          year,
-                          value
-                        )
-                      }
-                    />
-
-                  </td>
-
-                ))}
-
-              </tr>
+              ))}
 
 
               <tr className="total-row">
@@ -653,12 +520,15 @@ function Revenue() {
                   Total Revenue
                 </td>
 
+
                 {financialYears.map((year) => (
 
                   <td key={year}>
+
                     {formatCurrency(
                       getTotalRevenue(year)
                     )}
+
                   </td>
 
                 ))}
@@ -673,30 +543,15 @@ function Revenue() {
 
       </section>
 
-    );
-
-  }
 
 
-  /*
-   * ============================================================
-   * EXPENSE SECTION
-   * ============================================================
-   */
-
-  function ExpenseSection() {
-
-    return (
+      {/* =====================================================
+          EXPENSES
+      ===================================================== */}
 
       <section className="revenue-section">
 
-        <div className="revenue-section-header">
-
-          <h2>
-            Expenses
-          </h2>
-
-        </div>
+        <h2>Expenses</h2>
 
 
         <div className="revenue-table-wrapper">
@@ -707,9 +562,7 @@ function Revenue() {
 
               <tr>
 
-                <th>
-                  Expenses
-                </th>
+                <th>Expenses</th>
 
                 {financialYears.map((year) => (
 
@@ -726,100 +579,42 @@ function Revenue() {
 
             <tbody>
 
-              <tr>
+              {expenditureRows.map((row) => (
 
-                <td>
-                  Recruitment Expenditure
-                </td>
+                <tr key={row}>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    <AmountInput
-                      value={
-                        expenses[
-                          "Recruitment Expenditure"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleExpenseChange(
-                          "Recruitment Expenditure",
-                          year,
-                          value
-                        )
-                      }
-                    />
-
+                  <td>
+                    {row}
                   </td>
 
-                ))}
 
-              </tr>
+                  {financialYears.map((year) => (
 
+                    <td key={year}>
 
-              <tr>
+                      <AmountInput
 
-                <td>
-                  Franchisee Expenditure
-                </td>
+                        value={
+                          expenditure[row][year]
+                        }
 
-                {financialYears.map((year) => (
+                        onChange={(value) =>
+                          handleExpenditureChange(
+                            row,
+                            year,
+                            value
+                          )
+                        }
 
-                  <td key={year}>
+                      />
 
-                    <AmountInput
-                      value={
-                        expenses[
-                          "Franchisee Expenditure"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleExpenseChange(
-                          "Franchisee Expenditure",
-                          year,
-                          value
-                        )
-                      }
-                    />
+                    </td>
 
-                  </td>
+                  ))}
 
-                ))}
+                </tr>
 
-              </tr>
-
-
-              <tr>
-
-                <td>
-                  Job portal Expenditure
-                </td>
-
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    <AmountInput
-                      value={
-                        expenses[
-                          "Job portal Expenditure"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleExpenseChange(
-                          "Job portal Expenditure",
-                          year,
-                          value
-                        )
-                      }
-                    />
-
-                  </td>
-
-                ))}
-
-              </tr>
+              ))}
 
 
               <tr className="total-row">
@@ -828,12 +623,15 @@ function Revenue() {
                   Total Expenditure
                 </td>
 
+
                 {financialYears.map((year) => (
 
                   <td key={year}>
+
                     {formatCurrency(
                       getTotalExpenditure(year)
                     )}
+
                   </td>
 
                 ))}
@@ -848,30 +646,15 @@ function Revenue() {
 
       </section>
 
-    );
-
-  }
 
 
-  /*
-   * ============================================================
-   * SALARY SECTION
-   * ============================================================
-   */
-
-  function SalarySection() {
-
-    return (
+      {/* =====================================================
+          SALARY
+      ===================================================== */}
 
       <section className="revenue-section">
 
-        <div className="revenue-section-header">
-
-          <h2>
-            Salary
-          </h2>
-
-        </div>
+        <h2>Salary</h2>
 
 
         <div className="revenue-table-wrapper">
@@ -882,9 +665,7 @@ function Revenue() {
 
               <tr>
 
-                <th>
-                  Salary
-                </th>
+                <th>Salary</th>
 
                 {financialYears.map((year) => (
 
@@ -901,100 +682,42 @@ function Revenue() {
 
             <tbody>
 
-              <tr>
+              {salaryRows.map((row) => (
 
-                <td>
-                  Recruitment Salary
-                </td>
+                <tr key={row}>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    <AmountInput
-                      value={
-                        salary[
-                          "Recruitment Salary"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleSalaryChange(
-                          "Recruitment Salary",
-                          year,
-                          value
-                        )
-                      }
-                    />
-
+                  <td>
+                    {row}
                   </td>
 
-                ))}
 
-              </tr>
+                  {financialYears.map((year) => (
 
+                    <td key={year}>
 
-              <tr>
+                      <AmountInput
 
-                <td>
-                  Franchisee Salary
-                </td>
+                        value={
+                          salary[row][year]
+                        }
 
-                {financialYears.map((year) => (
+                        onChange={(value) =>
+                          handleSalaryChange(
+                            row,
+                            year,
+                            value
+                          )
+                        }
 
-                  <td key={year}>
+                      />
 
-                    <AmountInput
-                      value={
-                        salary[
-                          "Franchisee Salary"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleSalaryChange(
-                          "Franchisee Salary",
-                          year,
-                          value
-                        )
-                      }
-                    />
+                    </td>
 
-                  </td>
+                  ))}
 
-                ))}
+                </tr>
 
-              </tr>
-
-
-              <tr>
-
-                <td>
-                  Job portal Salary
-                </td>
-
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    <AmountInput
-                      value={
-                        salary[
-                          "Job portal Salary"
-                        ][year]
-                      }
-                      onChange={(value) =>
-                        handleSalaryChange(
-                          "Job portal Salary",
-                          year,
-                          value
-                        )
-                      }
-                    />
-
-                  </td>
-
-                ))}
-
-              </tr>
+              ))}
 
 
               <tr className="total-row">
@@ -1003,12 +726,15 @@ function Revenue() {
                   Total Salary
                 </td>
 
+
                 {financialYears.map((year) => (
 
                   <td key={year}>
+
                     {formatCurrency(
                       getTotalSalary(year)
                     )}
+
                   </td>
 
                 ))}
@@ -1023,30 +749,15 @@ function Revenue() {
 
       </section>
 
-    );
-
-  }
 
 
-  /*
-   * ============================================================
-   * FINAL REVENUE SECTION
-   * ============================================================
-   */
-
-  function FinalRevenueSection() {
-
-    return (
+      {/* =====================================================
+          FINAL REVENUE
+      ===================================================== */}
 
       <section className="revenue-section">
 
-        <div className="revenue-section-header">
-
-          <h2>
-            Final Revenue
-          </h2>
-
-        </div>
+        <h2>Final Revenue</h2>
 
 
         <div className="revenue-table-wrapper">
@@ -1057,9 +768,7 @@ function Revenue() {
 
               <tr>
 
-                <th>
-                  Final Revenue
-                </th>
+                <th>Final Revenue</th>
 
                 {financialYears.map((year) => (
 
@@ -1082,15 +791,13 @@ function Revenue() {
                   Recruitment
                 </td>
 
+
                 {financialYears.map((year) => (
 
                   <td key={year}>
 
                     {formatCurrency(
-                      getFinalRevenue(
-                        "Recruitment Revenue",
-                        "Recruitment Expenditure",
-                        "Recruitment Salary",
+                      getFinalRecruitmentRevenue(
                         year
                       )
                     )}
@@ -1108,15 +815,13 @@ function Revenue() {
                   Franchisee
                 </td>
 
+
                 {financialYears.map((year) => (
 
                   <td key={year}>
 
                     {formatCurrency(
-                      getFinalRevenue(
-                        "Franchisee Revenue",
-                        "Franchisee Expenditure",
-                        "Franchisee Salary",
+                      getFinalFranchiseeRevenue(
                         year
                       )
                     )}
@@ -1134,15 +839,13 @@ function Revenue() {
                   Job portal
                 </td>
 
+
                 {financialYears.map((year) => (
 
                   <td key={year}>
 
                     {formatCurrency(
-                      getFinalRevenue(
-                        "Job portal Revenue",
-                        "Job portal Expenditure",
-                        "Job portal Salary",
+                      getFinalJobPortalRevenue(
                         year
                       )
                     )}
@@ -1160,12 +863,13 @@ function Revenue() {
                   Total Final Revenue
                 </td>
 
+
                 {financialYears.map((year) => (
 
                   <td key={year}>
 
                     {formatCurrency(
-                      getTotalFinalRevenue(year)
+                      getOverallRevenue(year)
                     )}
 
                   </td>
@@ -1182,123 +886,43 @@ function Revenue() {
 
       </section>
 
-    );
-
-  }
 
 
-  /*
-   * ============================================================
-   * OVERALL REVENUE SECTION
-   * ============================================================
-   */
+      {/* =====================================================
+          OVERALL REVENUE
+      ===================================================== */}
 
-  function OverallRevenueSection() {
+      <section className="revenue-section">
 
-    const overallRevenue =
-      getOverallRevenue();
-
-    const incomeTaxAmount =
-      getIncomeTaxAmount();
-
-    const netCashIncome =
-      getNetCashIncome();
+        <h2>Overall Revenue</h2>
 
 
-    const latestYear =
-      "FY 2023-2024";
+        <div className="revenue-table-wrapper">
 
+          <table className="revenue-table">
 
-    const recruitmentFinalRevenue =
-      getFinalRevenue(
-        "Recruitment Revenue",
-        "Recruitment Expenditure",
-        "Recruitment Salary",
-        latestYear
-      );
+            <thead>
 
+              <tr>
 
-    const franchiseeFinalRevenue =
-      getFinalRevenue(
-        "Franchisee Revenue",
-        "Franchisee Expenditure",
-        "Franchisee Salary",
-        latestYear
-      );
+                <th>Overall Revenue</th>
 
+                {financialYears.map((year) => (
 
-    const jobPortalFinalRevenue =
-      getFinalRevenue(
-        "Job portal Revenue",
-        "Job portal Expenditure",
-        "Job portal Salary",
-        latestYear
-      );
+                  <th key={year}>
+                    {year}
+                  </th>
 
+                ))}
 
-    return (
+              </tr>
 
-      <section className="revenue-section overall-revenue-section">
+            </thead>
 
-        <div className="revenue-section-header">
-
-          <h2>
-            Overall Revenue
-          </h2>
-
-        </div>
-
-
-        <div className="overall-revenue-table-wrapper">
-
-          <table className="overall-revenue-table">
 
             <tbody>
 
-              <tr>
-
-                <td>
-                  Recruitment
-                </td>
-
-                <td>
-                  {formatCurrency(
-                    recruitmentFinalRevenue
-                  )}
-                </td>
-
-              </tr>
-
-
-              <tr>
-
-                <td>
-                  Franchisee
-                </td>
-
-                <td>
-                  {formatCurrency(
-                    franchiseeFinalRevenue
-                  )}
-                </td>
-
-              </tr>
-
-
-              <tr>
-
-                <td>
-                  Job portal
-                </td>
-
-                <td>
-                  {formatCurrency(
-                    jobPortalFinalRevenue
-                  )}
-                </td>
-
-              </tr>
-
+              {/* Overall Revenue */}
 
               <tr className="total-row">
 
@@ -1306,14 +930,23 @@ function Revenue() {
                   Overall Revenue
                 </td>
 
-                <td>
-                  {formatCurrency(
-                    overallRevenue
-                  )}
-                </td>
+
+                {financialYears.map((year) => (
+
+                  <td key={year}>
+
+                    {formatCurrency(
+                      getOverallRevenue(year)
+                    )}
+
+                  </td>
+
+                ))}
 
               </tr>
 
+
+              {/* Income Tax Percentage */}
 
               <tr>
 
@@ -1321,61 +954,94 @@ function Revenue() {
                   Income Tax %
                 </td>
 
-                <td>
 
-                  <div className="tax-input-wrapper">
+                {financialYears.map((year) => (
+
+                  <td key={year}>
 
                     <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={incomeTaxPercentage}
-                      onChange={(event) =>
-                        setIncomeTaxPercentage(
-                          event.target.value
-                        )
+
+                      type="text"
+
+                      inputMode="decimal"
+
+                      value={
+                        incomeTaxPercentage
                       }
-                      placeholder="Enter %"
-                      className="tax-input"
+
+                      onChange={(event) => {
+
+                        const value =
+                          event.target.value;
+
+                        if (
+                          value === "" ||
+                          /^\d*\.?\d*$/.test(value)
+                        ) {
+
+                          setIncomeTaxPercentage(
+                            value
+                          );
+
+                        }
+
+                      }}
+
+                      placeholder="%"
+
                     />
 
-                    <span>
-                      %
-                    </span>
+                  </td>
 
-                  </div>
-
-                </td>
+                ))}
 
               </tr>
 
+
+              {/* Income Tax */}
 
               <tr>
 
                 <td>
-                  Income Tax Amount
+                  Income Tax
                 </td>
 
-                <td>
-                  {formatCurrency(
-                    incomeTaxAmount
-                  )}
-                </td>
+
+                {financialYears.map((year) => (
+
+                  <td key={year}>
+
+                    {formatCurrency(
+                      getIncomeTax(year)
+                    )}
+
+                  </td>
+
+                ))}
 
               </tr>
 
 
-              <tr className="net-income-row">
+              {/* Net Income */}
+
+              <tr className="total-row">
 
                 <td>
-                  Net Cash Income
+                  Net Income
                 </td>
 
-                <td>
-                  {formatCurrency(
-                    netCashIncome
-                  )}
-                </td>
+
+                {financialYears.map((year) => (
+
+                  <td key={year}>
+
+                    {formatCurrency(
+                      getNetIncome(year)
+                    )}
+
+                  </td>
+
+                ))}
 
               </tr>
 
@@ -1387,44 +1053,6 @@ function Revenue() {
 
       </section>
 
-    );
-
-  }
-
-
-  /*
-   * ============================================================
-   * PAGE
-   * ============================================================
-   */
-
-  return (
-
-    <div className="revenue-page">
-
-      <div className="revenue-page-header">
-
-        <h1>
-          Revenue
-        </h1>
-
-        <p>
-          Revenue, expenses, salary and final revenue
-          financial summary
-        </p>
-
-      </div>
-
-
-      <RevenueSection />
-
-      <ExpenseSection />
-
-      <SalarySection />
-
-      <FinalRevenueSection />
-
-      <OverallRevenueSection />
 
     </div>
 
