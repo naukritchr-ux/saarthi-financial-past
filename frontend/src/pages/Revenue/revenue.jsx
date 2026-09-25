@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Revenue.css";
+import "./revenue.css";
 
 const financialYears = [
   "FY 2021-2022",
