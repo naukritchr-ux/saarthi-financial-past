@@ -467,6 +467,21 @@ function KPIStrip() {
     },
 
 
+
+    {
+      id: "placements",
+
+      label: "Placement",
+
+      value:
+        placementCount,
+
+      icon: <Groups />,
+
+      note: "Unique Company Name where Info = R"
+
+    },
+
     {
       id: "billing",
 
@@ -482,21 +497,6 @@ function KPIStrip() {
       note: "Sum of Total Bill Amount",
 
       clickable: true
-
-    },
-
-
-    {
-      id: "placements",
-
-      label: "Placement",
-
-      value:
-        placementCount,
-
-      icon: <Groups />,
-
-      note: "Unique Company Name where Info = R"
 
     },
 
