@@ -1159,3 +1159,36 @@
   }
 
 }
+
+/* City Expenditure Percentage Input */
+.city-filter-group input[type="number"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #ffffff;
+  color: #333333;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.city-filter-group input[type="number"]:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.city-filter-group input[type="number"]::placeholder {
+  color: #9ca3af;
+}
+
+/* Remove number input spinner arrows */
+.city-filter-group input[type="number"]::-webkit-inner-spin-button,
+.city-filter-group input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.city-filter-group input[type="number"] {
+  -moz-appearance: textfield;
+}

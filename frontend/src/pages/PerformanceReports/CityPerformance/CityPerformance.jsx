@@ -41,6 +41,9 @@ function CityPerformance() {
   const [reportYear, setReportYear] =
     useState("All Financial Years");
 
+  const [expenditurePercentage, setExpenditurePercentage] =
+    useState("");
+
 
   /* ============================================================
      HELPERS
@@ -166,12 +169,12 @@ function CityPerformance() {
      ALL:
        R + RV + C + CN
        Billing = actual billing
-       Expenditure = 5%
+       Expenditure = entered %
        Net Amount = Billing - Expenditure
 
      R:
-       Billing = actual billing
-       Expenditure = 5%
+       Billing = actual R billing
+       Expenditure = entered %
        Net Amount = Billing - Expenditure
 
      RV:
@@ -202,6 +205,24 @@ function CityPerformance() {
       getBilling(row);
 
 
+    const enteredPercentage =
+      expenditurePercentage === "" ||
+      expenditurePercentage === null ||
+      expenditurePercentage === undefined
+        ? 0
+        : Number(
+            expenditurePercentage
+          );
+
+
+    const percentage =
+      Number.isFinite(
+        enteredPercentage
+      )
+        ? enteredPercentage
+        : 0;
+
+
     /* ---------------- ALL ---------------- */
 
     if (
@@ -210,7 +231,9 @@ function CityPerformance() {
     ) {
 
       const expenditure =
-        billing * 0.05;
+        billing *
+        percentage /
+        100;
 
       return {
 
@@ -247,7 +270,9 @@ function CityPerformance() {
       }
 
       const expenditure =
-        billing * 0.05;
+        billing *
+        percentage /
+        100;
 
       return {
 
@@ -478,6 +503,8 @@ function CityPerformance() {
 
           clients: 0,
 
+          franchisees: new Set(),
+
           billing: 0,
 
           netAmount: 0,
@@ -490,6 +517,27 @@ function CityPerformance() {
 
 
       map[city].clients += 1;
+
+
+      /* ========================================================
+         UNIQUE FRANCHISEE COUNT
+
+         Blank Franchise Name values are ignored.
+      ======================================================== */
+
+      const franchiseName =
+        normalizeValue(
+          row["Franchise Name"]
+        );
+
+      if (franchiseName) {
+
+        map[city].franchisees.add(
+          franchiseName
+        );
+
+      }
+
 
       map[city].billing +=
         financial.billing;
@@ -504,6 +552,14 @@ function CityPerformance() {
 
 
     return Object.values(map)
+      .map((item) => ({
+
+        ...item,
+
+        franchisees:
+          item.franchisees.size
+
+      }))
       .sort(
         (a, b) =>
           b.billing - a.billing
@@ -511,7 +567,8 @@ function CityPerformance() {
 
   }, [
     filteredRows,
-    selectedInfoStatus
+    selectedInfoStatus,
+    expenditurePercentage
   ]);
 
 
@@ -695,7 +752,8 @@ function CityPerformance() {
   }, [
     selectedCity,
     selectedCityRows,
-    selectedInfoStatus
+    selectedInfoStatus,
+    expenditurePercentage
   ]);
 
 
@@ -1335,6 +1393,34 @@ function CityPerformance() {
 
           </div>
 
+
+          {/* ==================================================
+              CITY EXPENDITURE %
+          ================================================== */}
+
+          <div className="city-filter-group">
+
+            <label>
+              City Expenditure %
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={
+                expenditurePercentage
+              }
+              onChange={(e) =>
+                setExpenditurePercentage(
+                  e.target.value
+                )
+              }
+              placeholder="%"
+            />
+
+          </div>
+
         </div>
 
 
@@ -1359,6 +1445,10 @@ function CityPerformance() {
                 </th>
 
                 <th>
+                  No. of Franchisee
+                </th>
+
+                <th>
                   Total Billing
                 </th>
 
@@ -1366,9 +1456,13 @@ function CityPerformance() {
                   Net Amount
                 </th>
 
-                <th>
-                  Expenditure
-                </th>
+                {expenditurePercentage !== "" && (
+
+                  <th>
+                    Expenditure
+                  </th>
+
+                )}
 
                 <th>
                   Action
@@ -1386,7 +1480,11 @@ function CityPerformance() {
                 <tr>
 
                   <td
-                    colSpan="6"
+                    colSpan={
+                      expenditurePercentage !== ""
+                        ? 7
+                        : 6
+                    }
                     className="city-empty"
                   >
                     No city data available
@@ -1445,6 +1543,21 @@ function CityPerformance() {
                       </td>
 
 
+                      {/* NO. OF FRANCHISEE */}
+
+                      <td>
+
+                        <span className="city-client-count">
+
+                          {formatNumber(
+                            item.franchisees
+                          )}
+
+                        </span>
+
+                      </td>
+
+
                       {/* TOTAL BILLING */}
 
                       <td>
@@ -1477,17 +1590,21 @@ function CityPerformance() {
 
                       {/* EXPENDITURE */}
 
-                      <td>
+                      {expenditurePercentage !== "" && (
 
-                        <span className="city-expenditure-value">
+                        <td>
 
-                          {formatCurrency(
-                            item.expenditure
-                          )}
+                          <span className="city-expenditure-value">
 
-                        </span>
+                            {formatCurrency(
+                              item.expenditure
+                            )}
 
-                      </td>
+                          </span>
+
+                        </td>
+
+                      )}
 
 
                       {/* ACTION */}
