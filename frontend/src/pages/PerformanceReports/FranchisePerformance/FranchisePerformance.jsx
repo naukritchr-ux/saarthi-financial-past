@@ -232,17 +232,54 @@ function getFranchiseeShare(row) {
 
 
 /* =========================================================
+   GET FRANCHISE EXPENDITURE
+========================================================= */
+
+function getFranchiseExpenditure(
+  row,
+  percentage
+) {
+
+  const billing =
+    getBilling(row);
+
+  if (
+    percentage === null ||
+    percentage === undefined ||
+    percentage === ""
+  ) {
+    return 0;
+  }
+
+  const rate =
+    Number(percentage);
+
+  if (
+    !Number.isFinite(rate) ||
+    rate < 0
+  ) {
+    return 0;
+  }
+
+  return billing * (
+    rate / 100
+  );
+
+}
+
+
+/* =========================================================
    GET FINANCIAL VALUES
 
    ALL:
    Total Billing = R + RV + C + CN
    Net Amount = Billing - Franchisee Share
-   Franchise Expenditure = Billing × 5%
+   Franchise Expenditure = Billing × entered %
 
    R:
    Billing = R Billing
    Net Amount = R Billing - R Franchisee Share
-   Expenditure = R Billing × 5%
+   Expenditure = R Billing × entered %
 
    RV:
    Billing = RV Billing
@@ -262,7 +299,8 @@ function getFranchiseeShare(row) {
 
 function getFinancialValues(
   row,
-  infoFilter = ""
+  infoFilter = "",
+  percentage
 ) {
 
   const info =
@@ -294,7 +332,10 @@ function getFinancialValues(
         franchiseeShare,
 
       franchiseExpenditure:
-        billing * 0.05
+        getFranchiseExpenditure(
+          row,
+          percentage
+        )
 
     };
 
@@ -336,7 +377,10 @@ function getFinancialValues(
         franchiseeShare,
 
       franchiseExpenditure:
-        billing * 0.05
+        getFranchiseExpenditure(
+          row,
+          percentage
+        )
 
     };
 
@@ -699,6 +743,30 @@ function FranchisePerformance() {
   ] = useState("");
 
 
+  const [
+    franchiseExpenditurePercentage,
+    setFranchiseExpenditurePercentage
+  ] = useState("");
+
+
+  /* =======================================================
+     EXPENDITURE PERCENTAGE VALIDITY
+  ======================================================= */
+
+  const hasFranchiseExpenditurePercentage =
+    franchiseExpenditurePercentage !== "" &&
+    franchiseExpenditurePercentage !== null &&
+    franchiseExpenditurePercentage !== undefined &&
+    Number.isFinite(
+      Number(
+        franchiseExpenditurePercentage
+      )
+    ) &&
+    Number(
+      franchiseExpenditurePercentage
+    ) >= 0;
+
+
   /* =======================================================
      FRANCHISE SUMMARY TABLE
   ======================================================= */
@@ -761,7 +829,8 @@ function FranchisePerformance() {
         const financialValues =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            franchiseExpenditurePercentage
           );
 
 
@@ -801,7 +870,8 @@ function FranchisePerformance() {
     }, [
       rows,
       selectedFinancialYear,
-      selectedInfoStatus
+      selectedInfoStatus,
+      franchiseExpenditurePercentage
     ]);
 
 
@@ -920,7 +990,8 @@ function FranchisePerformance() {
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            franchiseExpenditurePercentage
           );
 
 
@@ -969,7 +1040,8 @@ function FranchisePerformance() {
 
     }, [
       selectedRows,
-      selectedInfoStatus
+      selectedInfoStatus,
+      franchiseExpenditurePercentage
     ]);
 
 
@@ -1126,7 +1198,8 @@ function FranchisePerformance() {
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            franchiseExpenditurePercentage
           );
 
 
@@ -1160,7 +1233,8 @@ function FranchisePerformance() {
 
     }, [
       selectedRows,
-      selectedInfoStatus
+      selectedInfoStatus,
+      franchiseExpenditurePercentage
     ]);
 
 
@@ -1233,7 +1307,8 @@ function FranchisePerformance() {
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus
+            selectedInfoStatus,
+            franchiseExpenditurePercentage
           );
 
 
@@ -1272,7 +1347,8 @@ function FranchisePerformance() {
     }, [
       selectedRows,
       selectedFinancialYear,
-      selectedInfoStatus
+      selectedInfoStatus,
+      franchiseExpenditurePercentage
     ]);
 
 
@@ -1482,6 +1558,37 @@ function FranchisePerformance() {
 
           </div>
 
+
+          {/* FRANCHISE EXPENDITURE % */}
+
+          <div>
+
+            <label
+              htmlFor="franchise-expenditure-percentage"
+            >
+              Franchise Expenditure %
+            </label>
+
+            <input
+              id="franchise-expenditure-percentage"
+              type="number"
+              min="0"
+              step="0.01"
+              value={
+                franchiseExpenditurePercentage
+              }
+              placeholder="Enter %"
+              onChange={event => {
+
+                setFranchiseExpenditurePercentage(
+                  event.target.value
+                );
+
+              }}
+            />
+
+          </div>
+
         </div>
 
 
@@ -1509,9 +1616,13 @@ function FranchisePerformance() {
                   Net Amount
                 </th>
 
-                <th>
-                  Franchise Expenditure
-                </th>
+                {hasFranchiseExpenditurePercentage && (
+
+                  <th>
+                    Franchise Expenditure
+                  </th>
+
+                )}
 
                 <th>
                   Performance
@@ -1529,7 +1640,11 @@ function FranchisePerformance() {
                 <tr>
 
                   <td
-                    colSpan="6"
+                    colSpan={
+                      hasFranchiseExpenditurePercentage
+                        ? "6"
+                        : "5"
+                    }
                     className="franchise-empty"
                   >
                     No franchise data available.
@@ -1618,19 +1733,23 @@ function FranchisePerformance() {
                       </td>
 
 
-                      <td>
+                      {hasFranchiseExpenditurePercentage && (
 
-                        <span className="franchise-expenditure-value">
+                        <td>
 
-                          {
-                            formatCurrency(
-                              franchise.franchiseExpenditure
-                            )
-                          }
+                          <span className="franchise-expenditure-value">
 
-                        </span>
+                            {
+                              formatCurrency(
+                                franchise.franchiseExpenditure
+                              )
+                            }
 
-                      </td>
+                          </span>
+
+                        </td>
+
+                      )}
 
 
                       <td>
@@ -1825,7 +1944,9 @@ function FranchisePerformance() {
                 </strong>
 
                 <small>
-                  5% of Total Billing
+                  {franchiseExpenditurePercentage !== ""
+                    ? `${franchiseExpenditurePercentage}% of Total Billing`
+                    : "Enter percentage in main filter"}
                 </small>
 
               </div>
