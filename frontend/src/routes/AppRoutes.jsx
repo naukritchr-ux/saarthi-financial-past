@@ -6,14 +6,12 @@ import {
 
 import MainLayout from "../components/Layout/MainLayout";
 
-
-
-
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Analytics from "../pages/Analytics/Analytics";
 import Reports from "../pages/Reports/Reports";
 import DownloadCenter from "../pages/DownloadCenter/DownloadCenter";
 import EnquirySheet from "../pages/EnquirySheet/EnquirySheet";
+import Revenue from "../pages/Revenue/revenue";
 
 
 // Performance Reports
@@ -46,281 +44,218 @@ import ClientStatusPerformance
 from "../pages/PerformanceReports/ClientStatusPerformance/ClientStatusPerformance";
 
 
-
-
 function AppRoutes() {
 
 
-return (
+  return (
 
 
-<Routes>
+    <Routes>
 
 
-{/* Root */}
+      {/* Root */}
 
-<Route
+      <Route
 
-path="/"
+        path="/"
 
-element={
-  <Navigate
-    to="/dashboard"
-    replace
-  />
-}
+        element={
+          <Navigate
+            to="/dashboard"
+            replace
+          />
+        }
 
-/>
+      />
 
 
+      {/* Application */}
 
+      <Route
 
-{/* Application */}
+        element={
+          <MainLayout />
+        }
 
+      >
 
-<Route
 
-element={
-    <MainLayout />
+        {/* Dashboard */}
 
-}
+        <Route
 
->
+          path="/dashboard"
 
+          element={
+            <Dashboard />
+          }
 
+        />
 
-{/* Dashboard */}
 
+        {/* Revenue */}
 
-<Route
+        <Route
 
-path="/dashboard"
+          path="/revenue"
 
-element={
-  <Dashboard />
-}
+          element={
+            <Revenue />
+          }
 
-/>
+        />
 
 
+        {/* Year Performance */}
 
+        <Route
 
+          path="/year-performance"
 
+          element={
+            <YearPerformance />
+          }
 
+        />
 
-{/* Year Performance */}
 
+        {/* Team Leader Performance */}
 
-<Route
+        <Route
 
-path="/year-performance"
+          path="/team-leader-performance"
 
-element={
-  <YearPerformance />
-}
+          element={
+            <TeamLeaderPerformance />
+          }
 
-/>
+        />
 
 
+        {/* BD Member Performance */}
 
+        <Route
 
+          path="/bd-performance"
 
+          element={
+            <BDPerformance />
+          }
 
+        />
 
-{/* Team Leader Performance */}
 
+        {/* Franchise Performance */}
 
-<Route
+        <Route
 
-path="/team-leader-performance"
+          path="/franchise-performance"
 
-element={
-  <TeamLeaderPerformance />
-}
+          element={
+            <FranchisePerformance />
+          }
 
-/>
+        />
 
 
+        {/* Industry Performance */}
 
+        <Route
 
+          path="/industry-performance"
 
+          element={
+            <IndustryPerformance />
+          }
 
+        />
 
-{/* BD Member Performance */}
 
+        {/* City Performance */}
 
-<Route
+        <Route
 
-path="/bd-performance"
+          path="/city-performance"
 
-element={
-  <BDPerformance />
-}
+          element={
+            <CityPerformance />
+          }
 
-/>
+        />
 
 
+        {/* Client Status Performance */}
 
+        <Route
 
+          path="/client-status-performance"
 
+          element={
+            <ClientStatusPerformance />
+          }
 
+        />
 
-{/* Franchise Performance */}
 
+        {/* Analytics */}
 
-<Route
+        <Route
 
-path="/franchise-performance"
+          path="/analytics"
 
-element={
-  <FranchisePerformance />
-}
+          element={
+            <Analytics />
+          }
 
-/>
+        />
 
 
+        {/* Reports */}
 
+        <Route
 
+          path="/reports"
 
+          element={
+            <Reports />
+          }
 
+        />
 
-{/* Industry Performance */}
 
+        {/* Download Center */}
 
-<Route
+        <Route
 
-path="/industry-performance"
+          path="/download-center"
 
-element={
-  <IndustryPerformance />
-}
+          element={
+            <DownloadCenter />
+          }
 
-/>
+        />
 
 
+        {/* Enquiry Sheet */}
 
+        <Route
 
+          path="/enquiry-sheet"
 
+          element={
+            <EnquirySheet />
+          }
 
+        />
 
-{/* City Performance */}
 
+      </Route>
 
-<Route
 
-path="/city-performance"
+    </Routes>
 
-element={
-  <CityPerformance />
-}
 
-/>
-
-
-
-
-
-
-
-{/* Client Status Performance */}
-
-
-<Route
-
-path="/client-status-performance"
-
-element={
-  <ClientStatusPerformance />
-}
-
-/>
-
-
-
-
-
-
-
-{/* Analytics */}
-
-
-<Route
-
-path="/analytics"
-
-element={
-  <Analytics />
-}
-
-/>
-
-
-
-
-
-
-
-{/* Reports */}
-
-
-<Route
-
-path="/reports"
-
-element={
-  <Reports />
-}
-
-/>
-
-
-
-
-
-
-
-{/* Download Center */}
-
-
-<Route
-
-path="/download-center"
-
-element={
-  <DownloadCenter />
-}
-
-/>
-
-
-
-
-
-
-
-{/* Enquiry Sheet */}
-
-
-<Route
-
-path="/enquiry-sheet"
-
-element={
-  <EnquirySheet />
-}
-
-/>
-
-
-
-</Route>
-
-
-
-</Routes>
-
-
-);
+  );
 
 
 }
