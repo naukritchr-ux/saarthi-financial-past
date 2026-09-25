@@ -76,7 +76,7 @@
 
 .main-kpi-grid {
   grid-template-columns:
-    repeat(5, minmax(0, 1fr));
+    repeat(4, minmax(0, 1fr));
 }
 
 
@@ -86,7 +86,7 @@
 
 .client-kpi-grid {
   grid-template-columns:
-    repeat(5, minmax(0, 1fr));
+    repeat(4, minmax(0, 1fr));
 }
 
 
