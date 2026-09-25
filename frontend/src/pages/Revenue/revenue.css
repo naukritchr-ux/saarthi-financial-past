@@ -1,0 +1,248 @@
+.revenue-page {
+  width: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  background: #f5f6fa;
+  min-height: 100%;
+}
+
+
+.revenue-page-header {
+  margin-bottom: 24px;
+}
+
+
+.revenue-page-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+
+.revenue-page-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+
+.revenue-section {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+
+.revenue-section-header {
+  margin-bottom: 16px;
+}
+
+
+.revenue-section-header h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+
+.revenue-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+
+.revenue-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+
+.revenue-table th,
+.revenue-table td {
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 14px;
+}
+
+
+.revenue-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+  color: #374151;
+}
+
+
+.revenue-table td:not(:first-child),
+.revenue-table th:not(:first-child) {
+  text-align: right;
+}
+
+
+.revenue-input {
+  width: 100%;
+  min-width: 130px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+
+.revenue-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+
+.revenue-input::placeholder {
+  color: #9ca3af;
+}
+
+
+.revenue-input::-webkit-inner-spin-button,
+.revenue-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+.revenue-input {
+  -moz-appearance: textfield;
+}
+
+
+.total-row {
+  font-weight: 600;
+  background: #f9fafb;
+}
+
+
+.total-row td {
+  font-weight: 600;
+}
+
+
+.overall-revenue-section {
+  margin-bottom: 0;
+}
+
+
+.overall-revenue-table-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+
+.overall-revenue-table {
+  width: 70%;
+  border-collapse: collapse;
+}
+
+
+.overall-revenue-table td {
+  padding: 13px 16px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+
+.overall-revenue-table td:first-child {
+  font-weight: 500;
+  color: #374151;
+}
+
+
+.overall-revenue-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+
+
+.tax-input-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+
+.tax-input {
+  width: 120px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+
+.tax-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+
+.tax-input::-webkit-inner-spin-button,
+.tax-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+.tax-input {
+  -moz-appearance: textfield;
+}
+
+
+.tax-input-wrapper span {
+  font-size: 14px;
+  color: #374151;
+}
+
+
+.net-income-row {
+  background: #f3f4f6;
+  font-weight: 700;
+}
+
+
+.net-income-row td {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+@media (max-width: 768px) {
+
+  .revenue-page {
+    padding: 16px;
+  }
+
+
+  .revenue-page-header h1 {
+    font-size: 22px;
+  }
+
+
+  .revenue-section {
+    padding: 14px;
+  }
+
+
+  .overall-revenue-table {
+    width: 100%;
+  }
+
+}

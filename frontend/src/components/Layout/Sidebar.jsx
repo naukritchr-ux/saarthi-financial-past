@@ -3,7 +3,8 @@ import { NavLink } from "react-router-dom";
 import {
   MdDashboard,
   MdAnalytics,
-  MdAssessment
+  MdAssessment,
+  MdPayments
 } from "react-icons/md";
 
 import {
@@ -233,6 +234,24 @@ function Sidebar({ isOpen }) {
           )
 
         }
+
+
+        {/* =================================================
+            REVENUE
+            ================================================= */}
+
+        <NavLink
+          to="/revenue"
+          className="sidebar-link"
+        >
+
+          <MdPayments />
+
+          <span>
+            Revenue
+          </span>
+
+        </NavLink>
 
 
       </nav>
