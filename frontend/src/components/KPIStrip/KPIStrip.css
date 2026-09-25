@@ -756,3 +756,38 @@
   }
 
 }
+
+@media (max-width: 1200px) {
+
+  .non-billing-kpi-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .billing-kpi-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 900px) {
+
+  .non-billing-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .billing-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .non-billing-kpi-row,
+  .billing-kpi-row {
+    grid-template-columns: 1fr;
+  }
+
+}

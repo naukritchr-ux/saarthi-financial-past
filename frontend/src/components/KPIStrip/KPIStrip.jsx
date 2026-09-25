@@ -34,69 +34,38 @@ function KPIStrip() {
     rows
   } = useData();
 
-  const [selectedKPI, setSelectedKPI] =
-    useState(null);
+  const [selectedKPI, setSelectedKPI] = useState(null);
 
 
-  // ==================================================
-  // REPORT VIEW
-  // ==================================================
+  const reportView = filters?.viewBy || "";
+  const reportBy = filters?.reportBy || "";
+  const metricView = filters?.metricView || "";
 
-  const reportView =
-    filters?.viewBy || "";
-
-
-  // ==================================================
-  // REPORT BY
-  // ==================================================
-
-  const reportBy =
-    filters?.reportBy || "";
-
-
-  // ==================================================
-  // METRIC VIEW
-  // ==================================================
-
-  const metricView =
-    filters?.metricView || "";
-
-
-  // ==================================================
-  // CLOSE POPUP WHEN REPORT VIEW CHANGES
-  // ==================================================
 
   useEffect(() => {
-
     setSelectedKPI(null);
-
   }, [reportView]);
 
 
-  // ==================================================
-  // CURRENCY FORMAT
-  // ==================================================
+  /* =========================================================
+     CURRENCY FORMAT
+  ========================================================= */
 
   const formatCurrency = (value) => {
 
-    const amount =
-      Number(value || 0);
+    const amount = Number(value || 0);
 
-    return `₹${amount.toLocaleString(
-      "en-IN",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
-    )}`;
+    return `₹${amount.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
 
   };
 
 
-  // ==================================================
-  // GET COLUMN VALUE
-  // Handles possible column-name variations
-  // ==================================================
+  /* =========================================================
+     SAFE ROW VALUE
+  ========================================================= */
 
   const getRowValue = (row, possibleColumns) => {
 
@@ -104,14 +73,9 @@ function KPIStrip() {
 
       if (
         row &&
-        Object.prototype.hasOwnProperty.call(
-          row,
-          column
-        )
+        Object.prototype.hasOwnProperty.call(row, column)
       ) {
-
         return row[column];
-
       }
 
     }
@@ -121,19 +85,23 @@ function KPIStrip() {
   };
 
 
-  // ==================================================
-  // NORMALIZE INFO STATUS
-  // ==================================================
+  /* =========================================================
+     INFO STATUS
+     
+     C  = Closed
+     CN = Credit Note
+     IP = Inprogress
+     LEGAL = Legal
+     R  = Reallocation
+     RV = Revised
+  ========================================================= */
 
   const getInfoStatus = (row) => {
 
-    const info = getRowValue(
-      row,
-      [
-        "Info",
-        "info"
-      ]
-    );
+    const info = getRowValue(row, [
+      "Info",
+      "info"
+    ]);
 
     return String(info || "")
       .trim()
@@ -142,51 +110,43 @@ function KPIStrip() {
   };
 
 
-  // ==================================================
-  // COMPANY NAME
-  // ==================================================
+  /* =========================================================
+     COMPANY NAME
+  ========================================================= */
 
   const getCompanyName = (row) => {
 
     return String(
-      getRowValue(
-        row,
-        [
-          "Company Name",
-          "CompanyName",
-          "companyName",
-          "company_name"
-        ]
-      ) || ""
+      getRowValue(row, [
+        "Company Name",
+        "CompanyName",
+        "companyName",
+        "company_name"
+      ]) || ""
     ).trim();
 
   };
 
 
-  // ==================================================
-  // BILLING AMOUNT
-  // ==================================================
+  /* =========================================================
+     BILLING AMOUNT
+  ========================================================= */
 
   const getBillingAmount = (row) => {
 
-    const value =
-      getRowValue(
-        row,
-        [
-          "Total Bill Amount",
-          "Total Billing",
-          "totalBilling",
-          "totalBillAmount"
-        ]
-      );
+    const value = getRowValue(row, [
+      "Total Bill Amount",
+      "Total Billing",
+      "totalBilling",
+      "totalBillAmount"
+    ]);
 
-    const amount =
-      Number(
-        String(value ?? "")
-          .replace(/,/g, "")
-          .replace(/₹/g, "")
-          .trim()
-      );
+    const amount = Number(
+      String(value ?? "")
+        .replace(/,/g, "")
+        .replace(/₹/g, "")
+        .trim()
+    );
 
     return Number.isFinite(amount)
       ? amount
@@ -195,28 +155,25 @@ function KPIStrip() {
   };
 
 
-  // ==================================================
-  // UNIQUE PLACEMENT COUNT
-  //
-  // Unique Company Name where Info = R
-  // ==================================================
+  /* =========================================================
+     PLACEMENT
+     
+     Unique Company Name where Info = R
+  ========================================================= */
 
   const getUniquePlacementCount = () => {
 
-    const uniqueCompanies =
-      new Set();
+    const uniqueCompanies = new Set();
 
     (rows || []).forEach((row) => {
 
-      const status =
-        getInfoStatus(row);
+      const status = getInfoStatus(row);
 
       if (status !== "R") {
         return;
       }
 
-      const companyName =
-        getCompanyName(row);
+      const companyName = getCompanyName(row);
 
       if (companyName) {
 
@@ -233,18 +190,17 @@ function KPIStrip() {
   };
 
 
-  // ==================================================
-  // PROFIT
-  //
-  // Billing amount where Info = R
-  // ==================================================
+  /* =========================================================
+     PROFIT
+     
+     Billing amount where Info = R
+  ========================================================= */
 
   const getProfitBilling = () => {
 
     return (rows || [])
       .filter(
-        (row) =>
-          getInfoStatus(row) === "R"
+        (row) => getInfoStatus(row) === "R"
       )
       .reduce(
         (total, row) =>
@@ -255,18 +211,17 @@ function KPIStrip() {
   };
 
 
-  // ==================================================
-  // LOSS
-  //
-  // Billing amount where Info = C
-  // ==================================================
+  /* =========================================================
+     LOSS
+     
+     Billing amount where Info = C
+  ========================================================= */
 
   const getLossBilling = () => {
 
     return (rows || [])
       .filter(
-        (row) =>
-          getInfoStatus(row) === "C"
+        (row) => getInfoStatus(row) === "C"
       )
       .reduce(
         (total, row) =>
@@ -277,18 +232,17 @@ function KPIStrip() {
   };
 
 
-  // ==================================================
-  // CREDIT NOTE BILLING
-  //
-  // Billing amount where Info = CN
-  // ==================================================
+  /* =========================================================
+     CREDIT NOTE BILLING
+     
+     Billing amount where Info = CN
+  ========================================================= */
 
   const getCreditNoteBilling = () => {
 
     return (rows || [])
       .filter(
-        (row) =>
-          getInfoStatus(row) === "CN"
+        (row) => getInfoStatus(row) === "CN"
       )
       .reduce(
         (total, row) =>
@@ -298,10 +252,6 @@ function KPIStrip() {
 
   };
 
-
-  // ==================================================
-  // CALCULATED BILLING KPIs
-  // ==================================================
 
   const placementCount =
     getUniquePlacementCount();
@@ -316,796 +266,319 @@ function KPIStrip() {
     getCreditNoteBilling();
 
 
-  // ==================================================
-  // OVERALL BUSINESS KPIs
-  // Reports View = None
-  // ==================================================
+  /* =========================================================
+     BILLING KPI CARDS
+     
+     IMPORTANT ORDER:
+     
+     1. Placement
+     2. Total Billing
+     3. Profit
+     4. Loss
+     5. Credit Note Billing
+  ========================================================= */
 
-  const overallKPIs = [
-
-    {
-      id: "clients",
-
-      label: "Total Unique Clients",
-
-      value:
-        dashboardData.totalClients || 0,
-
-      icon: <Business />,
-
-      note: "Unique Company Name",
-
-      clickable: true
-
-    },
-
+  const mainBillingKPIs = [
 
     {
-      id: "enquiries",
-
-      label: "Total Enquiries",
-
-      value:
-        dashboardData.totalEnquiries || 0,
-
-      icon: <Groups />,
-
-      note: "Total enquiry records",
-
-      clickable: true
-
-    },
-
-
-    {
-      id: "billing",
-
-      label: "Total Billing",
-
-      value:
-        formatCurrency(
-          dashboardData.totalBilling
-        ),
-
-      icon: <CurrencyRupee />,
-
-      note: "Sum of Total Bill Amount",
-
-      clickable: true
-
-    },
-
-
-    {
-      id: "placements",
-
-      label: "Placement",
-
-      value:
-        placementCount,
-
-      icon: <Groups />,
-
-      note: "Unique Company Name where Info = R"
-
-    },
-
-
-    {
-      id: "profit",
-
-      label: "Profit",
-
-      value:
-        formatCurrency(
-          profitBilling
-        ),
-
-      icon: <TrendingUp />,
-
-      note: "Billing where Info = R"
-
-    },
-
-
-    {
-      id: "loss",
-
-      label: "Loss",
-
-      value:
-        formatCurrency(
-          lossBilling
-        ),
-
-      icon: <Warning />,
-
-      note: "Billing where Info = C"
-
-    },
-
-
-    {
-      id: "credit-note-billing",
-
-      label: "Credit Note Billing",
-
-      value:
-        formatCurrency(
-          creditNoteBilling
-        ),
-
-      icon: <Payments />,
-
-      note: "Billing where Info = CN"
-
-    }
-
-  ];
-
-
-  // ==================================================
-  // CLIENT PERFORMANCE KPIs
-  // ==================================================
-
-  const clientPerformanceKPIs = [
-
-    {
-      id: "clients",
-
-      label: "Total Unique Client",
-
-      value:
-        dashboardData.totalClients || 0,
-
-      icon: <Business />,
-
-      note: "Unique Company Name",
-
-      clickable: true
-
-    },
-
-
-    {
-      id: "billing",
-
-      label: "Total Billing",
-
-      value:
-        formatCurrency(
-          dashboardData.totalBilling
-        ),
-
-      icon: <CurrencyRupee />,
-
-      note: "Sum of Total Bill Amount",
-
-      clickable: true
-
-    },
-
-
-    {
-      id: "placements",
-
-      label: "Placement",
-
-      value:
-        placementCount,
-
-      icon: <Groups />,
-
-      note: "Unique Company Name where Info = R"
-
-    },
-
-
-    {
-      id: "profit",
-
-      label: "Profit",
-
-      value:
-        formatCurrency(
-          profitBilling
-        ),
-
-      icon: <TrendingUp />,
-
-      note: "Billing where Info = R"
-
-    },
-
-
-    {
-      id: "loss",
-
-      label: "Loss",
-
-      value:
-        formatCurrency(
-          lossBilling
-        ),
-
-      icon: <Warning />,
-
-      note: "Billing where Info = C"
-
-    },
-
-
-    {
-      id: "credit-note-billing",
-
-      label: "Credit Note Billing",
-
-      value:
-        formatCurrency(
-          creditNoteBilling
-        ),
-
-      icon: <Payments />,
-
-      note: "Billing where Info = CN"
-
-    }
-
-  ];
-
-
-  // ==================================================
-  // ENQUIRY PERFORMANCE KPIs
-  // ==================================================
-
-  const enquiryPerformanceKPIs = [
-
-    {
-      id: "enquiries",
-
-      label: "Total Enquiries",
-
-      value:
-        dashboardData.totalEnquiries || 0,
-
-      icon: <Groups />,
-
-      note: "Total enquiry records",
-
-      clickable: true
-
-    },
-
-
-    {
-      id: "billing",
-
-      label: "Total Billing",
-
-      value:
-        formatCurrency(
-          dashboardData.totalBilling
-        ),
-
-      icon: <CurrencyRupee />,
-
-      note: "Sum of Total Bill Amount",
-
-      clickable: true
-
-    },
-
-
-    {
-      id: "placements",
-
-      label: "Placement",
-
-      value:
-        placementCount,
-
-      icon: <Groups />,
-
-      note: "Unique Company Name where Info = R"
-
-    },
-
-
-    {
-      id: "profit",
-
-      label: "Profit",
-
-      value:
-        formatCurrency(
-          profitBilling
-        ),
-
-      icon: <TrendingUp />,
-
-      note: "Billing where Info = R"
-
-    },
-
-
-    {
-      id: "loss",
-
-      label: "Loss",
-
-      value:
-        formatCurrency(
-          lossBilling
-        ),
-
-      icon: <Warning />,
-
-      note: "Billing where Info = C"
-
-    },
-
-
-    {
-      id: "credit-note-billing",
-
-      label: "Credit Note Billing",
-
-      value:
-        formatCurrency(
-          creditNoteBilling
-        ),
-
-      icon: <Payments />,
-
-      note: "Billing where Info = CN"
-
-    }
-
-  ];
-
-
-  // ==================================================
-  // SELECT MAIN KPI SET
-  // ==================================================
-
-  let mainKPIs =
-    overallKPIs;
-
-  let performanceTitle =
-    "Performance Overview";
-
-  let performanceSubtitle =
-    "Overall business performance";
-
-
-  // ==================================================
-  // CLIENT PERFORMANCE
-  // ==================================================
-
-  if (
-    reportView === "client"
-  ) {
-
-    mainKPIs =
-      clientPerformanceKPIs;
-
-    performanceTitle =
-      "Client Performance";
-
-    performanceSubtitle =
-      "Client performance overview";
-
-  }
-
-
-  // ==================================================
-  // ENQUIRY PERFORMANCE
-  // ==================================================
-
-  if (
-    reportView === "enquiry"
-  ) {
-
-    mainKPIs =
-      enquiryPerformanceKPIs;
-
-    performanceTitle =
-      "Enquiry Performance";
-
-    performanceSubtitle =
-      "Enquiry performance overview";
-
-  }
-
-
-  // ==================================================
-  // CLIENT STATUS KPIs
-  // ==================================================
-
-  const clientStatusKPIs = [
-
-    {
-      id: "active",
-
-      label: "Active Clients",
-
-      value:
-        dashboardData.activeClients || 0,
-
+      id: "placement",
+      title: "Placement",
+      value: placementCount,
       icon: <CheckCircle />,
-
-      note: "Currently active"
-
+      type: "number"
     },
 
-
     {
-      id: "deleted",
-
-      label: "Deleted Clients",
-
-      value:
-        dashboardData.deletedClients || 0,
-
-      icon: <Delete />,
-
-      note: "Deleted clients"
-
+      id: "billing",
+      title: "Total Billing",
+      value: formatCurrency(
+        dashboardData?.totalBilling
+      ),
+      icon: <CurrencyRupee />,
+      type: "currency",
+      clickable: true
     },
 
-
     {
-      id: "non-active",
-
-      label: "Non Active Clients",
-
-      value:
-        dashboardData.nonActiveClients || 0,
-
-      icon: <WorkOff />,
-
-      note: "Currently non active"
-
+      id: "profit",
+      title: "Profit",
+      value: formatCurrency(
+        profitBilling
+      ),
+      icon: <TrendingUp />,
+      type: "currency"
     },
 
-
     {
-      id: "blacklisted",
-
-      label: "Blacklisted",
-
-      value:
-        dashboardData.blacklistedClients || 0,
-
-      icon: <Block />,
-
-      note: "Blacklisted clients"
-
+      id: "loss",
+      title: "Loss",
+      value: formatCurrency(
+        lossBilling
+      ),
+      icon: <Warning />,
+      type: "currency"
     },
 
-
     {
-      id: "no-hiring",
-
-      label: "No Hiring Clients",
-
-      value:
-        dashboardData.noHiringClients || 0,
-
-      icon: <WorkOff />,
-
-      note: "No hiring"
-
-    },
-
-
-    {
-      id: "revival",
-
-      label: "Revival",
-
-      value:
-        dashboardData.revivalClients || 0,
-
+      id: "credit-note-billing",
+      title: "Credit Note Billing",
+      value: formatCurrency(
+        creditNoteBilling
+      ),
       icon: <Replay />,
+      type: "currency"
+    }
 
-      note: "Revival clients"
-
-    },
+  ];
 
 
-    {
-      id: "reallocation",
+  /* =========================================================
+     OVERALL / MAIN NON-BILLING KPI CARDS
+     
+     Gross Profit and Net Amount removed.
+     Gross Margin retained.
+  ========================================================= */
 
-      label: "Reallocation",
-
-      value:
-        dashboardData.reallocationClients || 0,
-
-      icon: <SwapHoriz />,
-
-      note: "Reallocated clients"
-
-    },
-
+  const overallNonBillingKPIs = [
 
     {
-      id: "prospect",
-
-      label: "Prospect",
-
+      id: "unique-clients",
+      title: "Total Unique Clients",
       value:
-        dashboardData.prospectClients || 0,
+        dashboardData?.totalUniqueClients || 0,
+      icon: <Business />,
+      type: "number"
+    },
 
+    {
+      id: "enquiries",
+      title: "Total Enquiries",
+      value:
+        dashboardData?.totalEnquiries || 0,
       icon: <PersonSearch />,
-
-      note: "Prospective clients"
-
+      type: "number"
     },
 
-
     {
-      id: "permanently-closed",
-
-      label: "Permanently Closed",
-
-      value:
-        dashboardData.permanentlyClosedClients || 0,
-
-      icon: <Lock />,
-
-      note: "Permanently closed"
-
+      id: "gross-margin",
+      title: "Gross Margin",
+      value: `${Number(
+        dashboardData?.grossMargin || 0
+      ).toFixed(2)}%`,
+      icon: <Percent />,
+      type: "percentage"
     }
 
   ];
 
 
-  // ==================================================
-  // ENQUIRY KPIs
-  // ==================================================
+  /* =========================================================
+     CLIENT PERFORMANCE NON-BILLING KPI CARDS
+  ========================================================= */
 
-  const enquiryKPIs = [
+  const clientNonBillingKPIs = [
 
     {
-      id: "open-enquiries",
-
-      label: "Open Enquiries",
-
+      id: "unique-client",
+      title: "Total Unique Client",
       value:
-        dashboardData.openEnquiries || 0,
-
-      icon: <Groups />,
-
-      note: "Currently open"
-
+        dashboardData?.totalUniqueClients || 0,
+      icon: <Business />,
+      type: "number"
     },
 
-
     {
-      id: "closed-enquiries",
-
-      label: "Closed Enquiries",
-
-      value:
-        dashboardData.closedEnquiries || 0,
-
-      icon: <MarkEmailRead />,
-
-      note: "Successfully closed"
-
+      id: "gross-margin",
+      title: "Gross Margin",
+      value: `${Number(
+        dashboardData?.grossMargin || 0
+      ).toFixed(2)}%`,
+      icon: <Percent />,
+      type: "percentage"
     }
 
   ];
 
 
-  // ==================================================
-  // BILLING KPIs
-  // ==================================================
+  /* =========================================================
+     ENQUIRY PERFORMANCE NON-BILLING KPI CARDS
+  ========================================================= */
 
-  const billingKPIs = [
+  const enquiryNonBillingKPIs = [
 
     {
-      id: "received",
-
-      label: "Received",
-
+      id: "enquiries",
+      title: "Total Enquiries",
       value:
-        formatCurrency(
-          dashboardData.amountReceived
-        ),
-
-      icon:
-        <AccountBalanceWallet />,
-
-      note: "Collected amount"
-
+        dashboardData?.totalEnquiries || 0,
+      icon: <PersonSearch />,
+      type: "number"
     },
 
-
     {
-      id: "outstanding",
-
-      label: "Outstanding",
-
-      value:
-        formatCurrency(
-          dashboardData.outstandingAmount
-        ),
-
-      icon:
-        <Warning />,
-
-      note: "Pending collection"
-
-    },
-
-
-    {
-      id: "franchise-share",
-
-      label: "Franchisee Share",
-
-      value:
-        formatCurrency(
-          dashboardData.franchiseeShare
-        ),
-
-      icon:
-        <Payments />,
-
-      note: "Franchisee share"
-
+      id: "gross-margin",
+      title: "Gross Margin",
+      value: `${Number(
+        dashboardData?.grossMargin || 0
+      ).toFixed(2)}%`,
+      icon: <Percent />,
+      type: "percentage"
     }
 
   ];
 
 
-  // ==================================================
-  // MODAL DATA
-  // ==================================================
+  /* =========================================================
+     DETERMINE WHICH NON-BILLING CARDS TO DISPLAY
+  ========================================================= */
 
-  const getModalData = () => {
-
-    if (
-      selectedKPI ===
-      "clients"
-    ) {
-
-      return {
-
-        title:
-          "Client Status Breakdown",
-
-        subtitle:
-          "Unique Company Name count by client status",
-
-        items:
-          clientStatusKPIs
-
-      };
-
-    }
+  let mainNonBillingKPIs =
+    overallNonBillingKPIs;
 
 
-    if (
-      selectedKPI ===
-      "enquiries"
-    ) {
+  if (
+    reportView === "client" ||
+    reportBy === "client" ||
+    metricView === "client"
+  ) {
 
-      return {
+    mainNonBillingKPIs =
+      clientNonBillingKPIs;
 
-        title:
-          "Enquiry Breakdown",
-
-        subtitle:
-          "Open and closed enquiry records",
-
-        items:
-          enquiryKPIs
-
-      };
-
-    }
+  }
 
 
-    if (
-      selectedKPI ===
-      "billing"
-    ) {
+  if (
+    reportView === "enquiry" ||
+    reportBy === "enquiry" ||
+    metricView === "enquiry"
+  ) {
 
-      return {
+    mainNonBillingKPIs =
+      enquiryNonBillingKPIs;
 
-        title:
-          "Billing Breakdown",
-
-        subtitle:
-          "Billing collection and franchisee share",
-
-        items:
-          billingKPIs
-
-      };
-
-    }
+  }
 
 
-    return null;
-
-  };
-
-
-  const modalData =
-    getModalData();
-
-
-  // ==================================================
-  // KPI CARD
-  // ==================================================
+  /* =========================================================
+     KPI CARD
+  ========================================================= */
 
   const KPICard = ({
     metric,
-    section
+    onClick
   }) => {
 
     return (
 
       <div
-
-        className={`kpi-item ${
+        className={`kpi-card ${
           metric.clickable
-            ? "kpi-clickable"
+            ? "kpi-card-clickable"
             : ""
         }`}
-
-        onClick={() => {
-
-          if (
-            metric.clickable
-          ) {
-
-            setSelectedKPI(
-              metric.id
-            );
-
-          }
-
-        }}
-
+        onClick={onClick}
       >
 
-        <div className="kpi-cell">
+        <div className="kpi-icon">
+          {metric.icon}
+        </div>
 
-          <div
-            className={`kpi-icon ${
-              section || ""
-            }`}
-          >
+        <div className="kpi-content">
 
-            {metric.icon}
+          <div className="kpi-title">
+            {metric.title}
+          </div>
+
+          <div className="kpi-value">
+            {metric.value}
+          </div>
+
+        </div>
+
+      </div>
+
+    );
+
+  };
+
+
+  /* =========================================================
+     BILLING BREAKDOWN
+  ========================================================= */
+
+  const renderBillingBreakdown = () => {
+
+    const billingData =
+      dashboardData?.billingBreakdown || {};
+
+    return (
+
+      <div className="kpi-modal-overlay">
+
+        <div className="kpi-modal">
+
+          <div className="kpi-modal-header">
+
+            <h3>
+              Total Billing Breakdown
+            </h3>
+
+            <button
+              className="kpi-modal-close"
+              onClick={() =>
+                setSelectedKPI(null)
+              }
+            >
+              <Close />
+            </button>
 
           </div>
 
 
-          <div className="kpi-content">
+          <div className="kpi-modal-body">
 
-            <div className="kpi-label">
+            <div className="kpi-breakdown-row">
 
-              {metric.label}
+              <span>
+                Received
+              </span>
+
+              <strong>
+                {formatCurrency(
+                  billingData.received
+                )}
+              </strong>
 
             </div>
 
 
-            <div className="kpi-value">
+            <div className="kpi-breakdown-row">
 
-              {metric.value}
+              <span>
+                Outstanding
+              </span>
+
+              <strong>
+                {formatCurrency(
+                  billingData.outstanding
+                )}
+              </strong>
 
             </div>
 
 
-            <div className="kpi-note">
+            <div className="kpi-breakdown-row">
 
-              {metric.note}
+              <span>
+                Franchisee Share
+              </span>
+
+              <strong>
+                {formatCurrency(
+                  billingData.franchiseeShare
+                )}
+              </strong>
 
             </div>
 
@@ -1120,188 +593,96 @@ function KPIStrip() {
   };
 
 
-  // ==================================================
-  // CLOSE MODAL
-  // ==================================================
-
-  const closeModal = () => {
-
-    setSelectedKPI(null);
-
-  };
-
-
-  // ==================================================
-  // RENDER
-  // ==================================================
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   return (
 
     <>
 
-      <div className="kpi-ledger">
-
-        <section className="kpi-section">
-
-          <div className="kpi-section-header">
-
-            <div>
-
-              <h3>
-                {performanceTitle}
-              </h3>
-
-              <p>
-                {performanceSubtitle}
-              </p>
-
-            </div>
-
-          </div>
+      <div className="kpi-grid main-kpi-grid">
 
 
-          <div className="kpi-grid main-kpi-grid">
+        {/* =================================================
+            ROW 1
+            NON-BILLING KPI CARDS
+        ================================================= */}
 
-            {mainKPIs.map(
-              (metric) => (
+        <div className="kpi-row non-billing-kpi-row">
 
-                <KPICard
-                  key={metric.id}
-                  metric={metric}
-                  section="main"
-                />
+          {mainNonBillingKPIs.map(
+            (metric) => (
 
-              )
-            )}
+              <KPICard
+                key={metric.id}
+                metric={metric}
+                onClick={() => {
 
-          </div>
+                  if (metric.clickable) {
 
-        </section>
+                    setSelectedKPI(
+                      metric.id
+                    );
+
+                  }
+
+                }}
+              />
+
+            )
+          )}
+
+        </div>
+
+
+        {/* =================================================
+            ROW 2
+            BILLING KPI CARDS
+             
+            Placement
+            Total Billing
+            Profit
+            Loss
+            Credit Note Billing
+        ================================================= */}
+
+        <div className="kpi-row billing-kpi-row">
+
+          {mainBillingKPIs.map(
+            (metric) => (
+
+              <KPICard
+                key={metric.id}
+                metric={metric}
+                onClick={() => {
+
+                  if (metric.clickable) {
+
+                    setSelectedKPI(
+                      metric.id
+                    );
+
+                  }
+
+                }}
+              />
+
+            )
+          )}
+
+        </div>
+
 
       </div>
 
 
-      {/* =================================================
-          KPI POPUP
-      ================================================= */}
+      {/* ===================================================
+          TOTAL BILLING MODAL
+      =================================================== */}
 
-      {modalData && (
-
-        <div
-          className="kpi-modal-overlay"
-          onClick={closeModal}
-        >
-
-          <div
-            className="kpi-modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-
-            <div className="kpi-modal-header">
-
-              <div>
-
-                <h2>
-                  {modalData.title}
-                </h2>
-
-                <p>
-                  {modalData.subtitle}
-                </p>
-
-              </div>
-
-
-              <button
-                type="button"
-                className="kpi-modal-close"
-                onClick={closeModal}
-                aria-label="Close"
-              >
-
-                <Close />
-
-              </button>
-
-            </div>
-
-
-            <div
-              className={`kpi-sub-grid ${
-                selectedKPI === "clients"
-                  ? "client-sub-grid"
-                  : ""
-              }`}
-            >
-
-              {modalData.items.map(
-                (item) => (
-
-                  <div
-                    className="kpi-sub-card"
-                    key={item.id}
-                  >
-
-                    <div className="kpi-sub-icon">
-
-                      {item.icon}
-
-                    </div>
-
-
-                    <div className="kpi-sub-content">
-
-                      <div className="kpi-sub-label">
-
-                        {item.label}
-
-                      </div>
-
-
-                      <div className="kpi-sub-value">
-
-                        {item.value}
-
-                      </div>
-
-
-                      <div className="kpi-sub-note">
-
-                        {item.note}
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                )
-              )}
-
-            </div>
-
-
-            <div className="kpi-modal-footer">
-
-              <button
-                type="button"
-                className="kpi-modal-button"
-                onClick={closeModal}
-              >
-
-                Close
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
+      {selectedKPI === "billing" &&
+        renderBillingBreakdown()}
 
     </>
 
