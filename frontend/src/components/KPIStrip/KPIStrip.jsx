@@ -30,7 +30,8 @@ function KPIStrip() {
 
   const {
     dashboardData,
-    filters
+    filters,
+    rows
   } = useData();
 
   const [selectedKPI, setSelectedKPI] =
@@ -90,6 +91,229 @@ function KPIStrip() {
     )}`;
 
   };
+
+
+  // ==================================================
+  // GET COLUMN VALUE
+  // Handles possible column-name variations
+  // ==================================================
+
+  const getRowValue = (row, possibleColumns) => {
+
+    for (const column of possibleColumns) {
+
+      if (
+        row &&
+        Object.prototype.hasOwnProperty.call(
+          row,
+          column
+        )
+      ) {
+
+        return row[column];
+
+      }
+
+    }
+
+    return "";
+
+  };
+
+
+  // ==================================================
+  // NORMALIZE INFO STATUS
+  // ==================================================
+
+  const getInfoStatus = (row) => {
+
+    const info = getRowValue(
+      row,
+      [
+        "Info",
+        "info"
+      ]
+    );
+
+    return String(info || "")
+      .trim()
+      .toUpperCase();
+
+  };
+
+
+  // ==================================================
+  // COMPANY NAME
+  // ==================================================
+
+  const getCompanyName = (row) => {
+
+    return String(
+      getRowValue(
+        row,
+        [
+          "Company Name",
+          "CompanyName",
+          "companyName",
+          "company_name"
+        ]
+      ) || ""
+    ).trim();
+
+  };
+
+
+  // ==================================================
+  // BILLING AMOUNT
+  // ==================================================
+
+  const getBillingAmount = (row) => {
+
+    const value =
+      getRowValue(
+        row,
+        [
+          "Total Bill Amount",
+          "Total Billing",
+          "totalBilling",
+          "totalBillAmount"
+        ]
+      );
+
+    const amount =
+      Number(
+        String(value ?? "")
+          .replace(/,/g, "")
+          .replace(/₹/g, "")
+          .trim()
+      );
+
+    return Number.isFinite(amount)
+      ? amount
+      : 0;
+
+  };
+
+
+  // ==================================================
+  // UNIQUE PLACEMENT COUNT
+  //
+  // Unique Company Name where Info = R
+  // ==================================================
+
+  const getUniquePlacementCount = () => {
+
+    const uniqueCompanies =
+      new Set();
+
+    (rows || []).forEach((row) => {
+
+      const status =
+        getInfoStatus(row);
+
+      if (status !== "R") {
+        return;
+      }
+
+      const companyName =
+        getCompanyName(row);
+
+      if (companyName) {
+
+        uniqueCompanies.add(
+          companyName.toLowerCase()
+        );
+
+      }
+
+    });
+
+    return uniqueCompanies.size;
+
+  };
+
+
+  // ==================================================
+  // PROFIT
+  //
+  // Billing amount where Info = R
+  // ==================================================
+
+  const getProfitBilling = () => {
+
+    return (rows || [])
+      .filter(
+        (row) =>
+          getInfoStatus(row) === "R"
+      )
+      .reduce(
+        (total, row) =>
+          total + getBillingAmount(row),
+        0
+      );
+
+  };
+
+
+  // ==================================================
+  // LOSS
+  //
+  // Billing amount where Info = C
+  // ==================================================
+
+  const getLossBilling = () => {
+
+    return (rows || [])
+      .filter(
+        (row) =>
+          getInfoStatus(row) === "C"
+      )
+      .reduce(
+        (total, row) =>
+          total + getBillingAmount(row),
+        0
+      );
+
+  };
+
+
+  // ==================================================
+  // CREDIT NOTE BILLING
+  //
+  // Billing amount where Info = CN
+  // ==================================================
+
+  const getCreditNoteBilling = () => {
+
+    return (rows || [])
+      .filter(
+        (row) =>
+          getInfoStatus(row) === "CN"
+      )
+      .reduce(
+        (total, row) =>
+          total + getBillingAmount(row),
+        0
+      );
+
+  };
+
+
+  // ==================================================
+  // CALCULATED BILLING KPIs
+  // ==================================================
+
+  const placementCount =
+    getUniquePlacementCount();
+
+  const profitBilling =
+    getProfitBilling();
+
+  const lossBilling =
+    getLossBilling();
+
+  const creditNoteBilling =
+    getCreditNoteBilling();
 
 
   // ==================================================
@@ -155,63 +379,65 @@ function KPIStrip() {
     {
       id: "placements",
 
-      label: "Placements",
+      label: "Placement",
 
       value:
-        dashboardData.totalPlacements || 0,
+        placementCount,
 
       icon: <Groups />,
 
-      note: "Successful placements"
+      note: "Unique Company Name where Info = R"
 
     },
 
 
     {
-      id: "gross-profit",
+      id: "profit",
 
-      label: "Gross Profit",
+      label: "Profit",
 
       value:
         formatCurrency(
-          dashboardData.grossProfit
+          profitBilling
         ),
 
       icon: <TrendingUp />,
 
-      note: "Billing − Franchisee Share"
+      note: "Billing where Info = R"
 
     },
 
 
     {
-      id: "gross-margin",
+      id: "loss",
 
-      label: "Gross Margin",
-
-      value:
-        `${dashboardData.grossMargin || 0}%`,
-
-      icon: <Percent />,
-
-      note: "Profit percentage"
-
-    },
-
-
-    {
-      id: "net-amount",
-
-      label: "Net Amount",
+      label: "Loss",
 
       value:
         formatCurrency(
-          dashboardData.netAmount
+          lossBilling
+        ),
+
+      icon: <Warning />,
+
+      note: "Billing where Info = C"
+
+    },
+
+
+    {
+      id: "credit-note-billing",
+
+      label: "Credit Note Billing",
+
+      value:
+        formatCurrency(
+          creditNoteBilling
         ),
 
       icon: <Payments />,
 
-      note: "Net business amount"
+      note: "Billing where Info = CN"
 
     }
 
@@ -266,11 +492,11 @@ function KPIStrip() {
       label: "Placement",
 
       value:
-        dashboardData.totalPlacements || 0,
+        placementCount,
 
       icon: <Groups />,
 
-      note: "Successful placements"
+      note: "Unique Company Name where Info = R"
 
     },
 
@@ -282,44 +508,46 @@ function KPIStrip() {
 
       value:
         formatCurrency(
-          dashboardData.grossProfit
+          profitBilling
         ),
 
       icon: <TrendingUp />,
 
-      note: "Billing − Franchisee Share"
+      note: "Billing where Info = R"
 
     },
 
 
     {
-      id: "net-amount",
+      id: "loss",
 
-      label: "Net Amount",
+      label: "Loss",
 
       value:
         formatCurrency(
-          dashboardData.netAmount
+          lossBilling
+        ),
+
+      icon: <Warning />,
+
+      note: "Billing where Info = C"
+
+    },
+
+
+    {
+      id: "credit-note-billing",
+
+      label: "Credit Note Billing",
+
+      value:
+        formatCurrency(
+          creditNoteBilling
         ),
 
       icon: <Payments />,
 
-      note: "Net business amount"
-
-    },
-
-
-    {
-      id: "gross-margin",
-
-      label: "Gross Margin",
-
-      value:
-        `${dashboardData.grossMargin || 0}%`,
-
-      icon: <Percent />,
-
-      note: "Profit percentage"
+      note: "Billing where Info = CN"
 
     }
 
@@ -374,11 +602,11 @@ function KPIStrip() {
       label: "Placement",
 
       value:
-        dashboardData.totalPlacements || 0,
+        placementCount,
 
       icon: <Groups />,
 
-      note: "Successful placements"
+      note: "Unique Company Name where Info = R"
 
     },
 
@@ -390,44 +618,46 @@ function KPIStrip() {
 
       value:
         formatCurrency(
-          dashboardData.grossProfit
+          profitBilling
         ),
 
       icon: <TrendingUp />,
 
-      note: "Billing − Franchisee Share"
+      note: "Billing where Info = R"
 
     },
 
 
     {
-      id: "net-amount",
+      id: "loss",
 
-      label: "Net Amount",
+      label: "Loss",
 
       value:
         formatCurrency(
-          dashboardData.netAmount
+          lossBilling
+        ),
+
+      icon: <Warning />,
+
+      note: "Billing where Info = C"
+
+    },
+
+
+    {
+      id: "credit-note-billing",
+
+      label: "Credit Note Billing",
+
+      value:
+        formatCurrency(
+          creditNoteBilling
         ),
 
       icon: <Payments />,
 
-      note: "Net business amount"
-
-    },
-
-
-    {
-      id: "gross-margin",
-
-      label: "Gross Margin",
-
-      value:
-        `${dashboardData.grossMargin || 0}%`,
-
-      icon: <Percent />,
-
-      note: "Profit percentage"
+      note: "Billing where Info = CN"
 
     }
 
