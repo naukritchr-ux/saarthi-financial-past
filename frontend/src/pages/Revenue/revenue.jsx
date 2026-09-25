@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import "./Revenue.css";
+import "./revenue.css";
 
 
 function Revenue() {
