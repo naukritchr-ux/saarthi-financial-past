@@ -1,4 +1,4 @@
- /* =========================================================
+/* =========================================================
    KPI LEDGER
 ========================================================= */
 
@@ -30,14 +30,12 @@
   padding: 0 2px;
 }
 
-
 .kpi-section-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 700;
   color: #171717;
 }
-
 
 .kpi-section-header p {
   margin: 2px 0 0;
@@ -60,23 +58,63 @@
 
 /* =========================================================
    MAIN KPI GRID
+
+   IMPORTANT:
+   This is now a vertical container.
+
+   Row 1:
+   Non-billing KPI cards
+
+   Row 2:
+   Placement
+   Total Billing
+   Profit
+   Loss
+   Credit Note Billing
 ========================================================= */
 
-/*
-   Desktop:
-   5 cards per row.
-
-   The KPI list contains:
-   Row 1 = existing business KPIs
-   Row 2 = Placement, Total Billing, Profit,
-           Loss, Credit Note Billing
-
-   CSS automatically wraps the cards.
-*/
-
 .main-kpi-grid {
-  grid-template-columns:
-    repeat(5, minmax(0, 1fr));
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+/* =========================================================
+   KPI ROW
+========================================================= */
+
+.kpi-row {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+
+/* =========================================================
+   NON-BILLING KPI ROW
+========================================================= */
+
+.non-billing-kpi-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+
+/* =========================================================
+   BILLING KPI ROW
+
+   EXACT ORDER FROM JSX:
+
+   1. Placement
+   2. Total Billing
+   3. Profit
+   4. Loss
+   5. Credit Note Billing
+========================================================= */
+
+.billing-kpi-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 
@@ -85,8 +123,10 @@
 ========================================================= */
 
 .client-kpi-grid {
-  grid-template-columns:
-    repeat(5, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
+  gap: 12px;
 }
 
 
@@ -95,8 +135,10 @@
 ========================================================= */
 
 .enquiry-kpi-grid {
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  gap: 12px;
 }
 
 
@@ -105,8 +147,10 @@
 ========================================================= */
 
 .billing-kpi-grid {
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  gap: 12px;
 }
 
 
@@ -131,7 +175,6 @@
 .kpi-clickable {
   cursor: pointer;
 }
-
 
 .kpi-clickable:hover {
   transform: translateY(-2px);
@@ -170,7 +213,6 @@
     0 6px 18px rgba(0, 0, 0, 0.07);
 }
 
-
 .kpi-clickable:hover .kpi-cell {
   border-color: #cfcfcf;
 }
@@ -192,13 +234,14 @@
   color: #333;
 }
 
-
 .kpi-icon svg {
   font-size: 21px;
 }
 
 
-/* MAIN */
+/* =========================================================
+   MAIN
+========================================================= */
 
 .kpi-icon.main {
   background: #f1f1f1;
@@ -206,7 +249,9 @@
 }
 
 
-/* CLIENT */
+/* =========================================================
+   CLIENT
+========================================================= */
 
 .kpi-icon.client {
   background: #f4f4f4;
@@ -214,7 +259,9 @@
 }
 
 
-/* ENQUIRY */
+/* =========================================================
+   ENQUIRY
+========================================================= */
 
 .kpi-icon.enquiry {
   background: #f4f4f4;
@@ -222,7 +269,9 @@
 }
 
 
-/* BILLING */
+/* =========================================================
+   BILLING
+========================================================= */
 
 .kpi-icon.billing {
   background: #f4f4f4;
@@ -239,7 +288,6 @@
   flex: 1;
 }
 
-
 .kpi-label {
   margin-bottom: 4px;
   font-size: 12px;
@@ -247,7 +295,6 @@
   line-height: 1.25;
   color: #686868;
 }
-
 
 .kpi-value {
   margin-bottom: 3px;
@@ -259,7 +306,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 
 .kpi-note {
   font-size: 10px;
@@ -284,11 +330,9 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background:
-    rgba(0, 0, 0, 0.42);
+  background: rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(3px);
-  animation:
-    kpiOverlayFade 0.18s ease;
+  animation: kpiOverlayFade 0.18s ease;
 }
 
 
@@ -305,10 +349,8 @@
   background: #ffffff;
   border-radius: 16px;
   box-shadow:
-    0 20px 60px
-    rgba(0, 0, 0, 0.22);
-  animation:
-    kpiModalOpen 0.2s ease;
+    0 20px 60px rgba(0, 0, 0, 0.22);
+  animation: kpiModalOpen 0.2s ease;
 }
 
 
@@ -322,10 +364,8 @@
   justify-content: space-between;
   gap: 20px;
   padding: 20px 22px 16px;
-  border-bottom:
-    1px solid #eeeeee;
+  border-bottom: 1px solid #eeeeee;
 }
-
 
 .kpi-modal-header h2 {
   margin: 0;
@@ -333,7 +373,6 @@
   font-weight: 700;
   color: #171717;
 }
-
 
 .kpi-modal-header p {
   margin: 4px 0 0;
@@ -363,12 +402,10 @@
     color 0.2s ease;
 }
 
-
 .kpi-modal-close:hover {
   background: #f1f1f1;
   color: #111;
 }
-
 
 .kpi-modal-close svg {
   font-size: 20px;
@@ -381,8 +418,7 @@
 
 .kpi-sub-grid {
   display: grid;
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   padding: 20px 22px;
   overflow-y: auto;
@@ -394,8 +430,7 @@
 ========================================================= */
 
 .client-sub-grid {
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 
@@ -410,15 +445,13 @@
   min-width: 0;
   padding: 14px;
   background: #fafafa;
-  border:
-    1px solid #e8e8e8;
+  border: 1px solid #e8e8e8;
   border-radius: 11px;
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
     transform 0.2s ease;
 }
-
 
 .kpi-sub-card:hover {
   background: #ffffff;
@@ -443,7 +476,6 @@
   color: #333;
 }
 
-
 .kpi-sub-icon svg {
   font-size: 18px;
 }
@@ -458,7 +490,6 @@
   flex: 1;
 }
 
-
 .kpi-sub-label {
   margin-bottom: 3px;
   font-size: 11px;
@@ -467,14 +498,12 @@
   color: #666;
 }
 
-
 .kpi-sub-value {
   font-size: 20px;
   font-weight: 750;
   line-height: 1.2;
   color: #171717;
 }
-
 
 .kpi-sub-note {
   margin-top: 2px;
@@ -494,16 +523,13 @@
   display: flex;
   justify-content: flex-end;
   padding: 14px 22px;
-  border-top:
-    1px solid #eeeeee;
+  border-top: 1px solid #eeeeee;
 }
-
 
 .kpi-modal-button {
   min-width: 82px;
   padding: 8px 18px;
-  border:
-    1px solid #d9d9d9;
+  border: 1px solid #d9d9d9;
   border-radius: 8px;
   background: #ffffff;
   color: #333;
@@ -514,7 +540,6 @@
     background 0.2s ease,
     border-color 0.2s ease;
 }
-
 
 .kpi-modal-button:hover {
   background: #f5f5f5;
@@ -530,17 +555,14 @@
   width: 6px;
 }
 
-
 .kpi-sub-grid::-webkit-scrollbar-track {
   background: transparent;
 }
-
 
 .kpi-sub-grid::-webkit-scrollbar-thumb {
   background: #d0d0d0;
   border-radius: 10px;
 }
-
 
 .kpi-sub-grid::-webkit-scrollbar-thumb:hover {
   background: #b5b5b5;
@@ -552,7 +574,6 @@
 ========================================================= */
 
 @keyframes kpiOverlayFade {
-
   from {
     opacity: 0;
   }
@@ -560,26 +581,18 @@
   to {
     opacity: 1;
   }
-
 }
 
-
 @keyframes kpiModalOpen {
-
   from {
     opacity: 0;
-    transform:
-      scale(0.96)
-      translateY(8px);
+    transform: scale(0.96) translateY(8px);
   }
 
   to {
     opacity: 1;
-    transform:
-      scale(1)
-      translateY(0);
+    transform: scale(1) translateY(0);
   }
-
 }
 
 
@@ -589,15 +602,16 @@
 
 @media (max-width: 1200px) {
 
-  .main-kpi-grid {
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
+  .non-billing-kpi-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .billing-kpi-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 
   .client-kpi-grid {
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
 }
@@ -609,28 +623,25 @@
 
 @media (max-width: 900px) {
 
-  .main-kpi-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+  .non-billing-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .billing-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   .client-kpi-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
 
   .billing-kpi-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
 
   .kpi-sub-grid,
   .client-sub-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
 }
@@ -646,50 +657,42 @@
     padding-bottom: 18px;
   }
 
-
   .kpi-section {
     margin-bottom: 20px;
   }
-
 
   .kpi-section-header {
     margin-bottom: 10px;
   }
 
-
   .kpi-section-header h3 {
     font-size: 14px;
   }
-
 
   .kpi-section-header p {
     font-size: 11px;
   }
 
-
-  .main-kpi-grid,
+  .non-billing-kpi-row,
+  .billing-kpi-row,
   .client-kpi-grid,
   .enquiry-kpi-grid,
   .billing-kpi-grid {
     grid-template-columns: 1fr;
   }
 
-
   .kpi-cell {
     min-height: 105px;
     padding: 14px;
   }
 
-
   .kpi-value {
     font-size: 21px;
   }
 
-
   .kpi-modal-overlay {
     padding: 12px;
   }
-
 
   .kpi-modal {
     width: 100%;
@@ -697,23 +700,19 @@
     border-radius: 14px;
   }
 
-
   .kpi-modal-header {
     padding: 16px;
   }
 
-
   .kpi-modal-header h2 {
     font-size: 16px;
   }
-
 
   .kpi-sub-grid,
   .client-sub-grid {
     grid-template-columns: 1fr;
     padding: 16px;
   }
-
 
   .kpi-modal-footer {
     padding: 12px 16px;
@@ -733,61 +732,22 @@
     padding: 12px;
   }
 
-
   .kpi-icon {
     width: 34px;
     height: 34px;
     min-width: 34px;
   }
 
-
   .kpi-icon svg {
     font-size: 18px;
   }
-
 
   .kpi-label {
     font-size: 11px;
   }
 
-
   .kpi-value {
     font-size: 19px;
-  }
-
-}
-
-@media (max-width: 1200px) {
-
-  .non-billing-kpi-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .billing-kpi-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-}
-
-
-@media (max-width: 900px) {
-
-  .non-billing-kpi-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .billing-kpi-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-}
-
-
-@media (max-width: 600px) {
-
-  .non-billing-kpi-row,
-  .billing-kpi-row {
-    grid-template-columns: 1fr;
   }
 
 }
