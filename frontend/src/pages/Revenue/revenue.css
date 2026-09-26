@@ -6,7 +6,6 @@
   min-height: 100%;
 }
 
-
 /* =========================
    PAGE HEADER
 ========================= */
@@ -28,7 +27,6 @@
   font-size: 14px;
 }
 
-
 /* =========================
    SECTION
 ========================= */
@@ -42,7 +40,6 @@
   box-sizing: border-box;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
-
 
 /* =========================
    SECTION HEADER
@@ -59,10 +56,9 @@
   color: #1f2937;
 }
 
-
 /*
-   Supports the current JSX where h2
-   is directly inside the section.
+  Supports the current JSX where h2
+  is directly inside the section.
 */
 
 .revenue-section > h2 {
@@ -71,7 +67,6 @@
   font-weight: 600;
   color: #1f2937;
 }
-
 
 /* =========================
    TABLE
@@ -114,7 +109,6 @@
   text-align: right;
 }
 
-
 /* =========================
    AMOUNT INPUT
 ========================= */
@@ -123,18 +117,13 @@
   width: 100%;
   min-width: 130px;
   height: 40px;
-
   padding: 8px 10px;
-
   border: 1px solid #d1d5db;
   border-radius: 6px;
-
   background: #ffffff;
   color: #111827;
-
   font-size: 14px;
   font-family: inherit;
-
   box-sizing: border-box;
   outline: none;
 
@@ -156,7 +145,6 @@
   opacity: 1;
 }
 
-
 /* =========================
    REMOVE NUMBER SPINNERS
 ========================= */
@@ -171,7 +159,6 @@
   -moz-appearance: textfield;
 }
 
-
 /* =========================
    TOTAL ROW
 ========================= */
@@ -184,7 +171,6 @@
 .total-row td {
   font-weight: 600;
 }
-
 
 /* =========================
    OVERALL REVENUE
@@ -221,7 +207,6 @@
   font-weight: 600;
 }
 
-
 /* =========================
    TAX INPUT
 ========================= */
@@ -237,18 +222,13 @@
   width: 120px;
   min-width: 100px;
   height: 40px;
-
   padding: 8px 10px;
-
   border: 1px solid #d1d5db;
   border-radius: 6px;
-
   background: #ffffff;
   color: #111827;
-
   font-size: 14px;
   font-family: inherit;
-
   box-sizing: border-box;
   outline: none;
   text-align: right;
@@ -282,7 +262,6 @@
   color: #374151;
 }
 
-
 /* =========================
    NET INCOME
 ========================= */
@@ -297,13 +276,11 @@
   font-weight: 700;
 }
 
-
 /* =========================
    MOBILE
 ========================= */
 
 @media (max-width: 768px) {
-
   .revenue-page {
     padding: 16px;
   }
@@ -357,23 +334,22 @@
 }
 
 .revenue-save-button {
-  background: #2563eb;
+  background: #071b46;
   color: #ffffff;
 }
 
 .revenue-save-button:hover {
-  background: #1d4ed8;
+  background: #07163f;
 }
 
 .revenue-edit-button {
-  background: #f59e0b;
+  background: #a16e14;
   color: #ffffff;
 }
 
 .revenue-edit-button:hover {
-  background: #d97706;
+  background: #a45d0d;
 }
-
 
 /* =========================
    DISABLED INPUT
