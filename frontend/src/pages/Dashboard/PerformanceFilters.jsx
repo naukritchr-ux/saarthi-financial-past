@@ -98,6 +98,70 @@ function PerformanceFilters() {
 
 
   /* =========================================================
+     NORMALIZE CITY
+     =========================================================
+     
+     Mumbai
+     mumbai
+     MUMBAI
+     MuMbAi
+
+     All become:
+
+     mumbai
+     ========================================================= */
+
+  function normalizeCity(value) {
+
+    return String(value || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+
+  }
+
+
+  /* =========================================================
+     FORMAT CITY NAME
+     =========================================================
+     
+     Used only for displaying the city in the dropdown.
+     
+     Example:
+     
+     MUMBAI      -> Mumbai
+     mumbai      -> Mumbai
+     NEW DELHI   -> New Delhi
+     new delhi   -> New Delhi
+     ========================================================= */
+
+  function formatCityName(value) {
+
+    const city =
+      String(value || "")
+        .trim()
+        .replace(/\s+/g, " ");
+
+
+    if (!city) {
+      return "Unknown";
+    }
+
+
+    return city
+      .toLowerCase()
+      .split(" ")
+      .map(
+        word =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1)
+      )
+      .join(" ");
+
+  }
+
+
+  /* =========================================================
      UNIQUE VALUES
      ========================================================= */
 
@@ -136,6 +200,79 @@ function PerformanceFilters() {
     );
 
   }
+
+
+  /* =========================================================
+     UNIQUE CITIES
+     
+     CASE-INSENSITIVE
+     
+     This prevents:
+     
+     Mumbai
+     mumbai
+     MUMBAI
+     MuMbAi
+     
+     from appearing as separate options.
+     ========================================================= */
+
+  const cityOptions =
+    useMemo(() => {
+
+      const cityMap =
+        new Map();
+
+
+      rows.forEach(
+        row => {
+
+          const rawCity =
+            String(
+              row["City"] || ""
+            )
+              .trim()
+              .replace(/\s+/g, " ");
+
+
+          if (!rawCity) {
+            return;
+          }
+
+
+          const cityKey =
+            normalizeCity(
+              rawCity
+            );
+
+
+          if (
+            !cityMap.has(
+              cityKey
+            )
+          ) {
+
+            cityMap.set(
+              cityKey,
+              formatCityName(
+                rawCity
+              )
+            );
+
+          }
+
+        }
+      );
+
+
+      return Array.from(
+        cityMap.values()
+      ).sort(
+        (a, b) =>
+          a.localeCompare(b)
+      );
+
+    }, [rows]);
 
 
   /* =========================================================
@@ -754,7 +891,15 @@ function PerformanceFilters() {
 
     setFilters({
 
-      ...selectedFilters
+      ...selectedFilters,
+
+      // Keep City standardized for the filter state.
+      city:
+        selectedFilters.city
+          ? formatCityName(
+              selectedFilters.city
+            )
+          : ""
 
     });
 
@@ -867,13 +1012,18 @@ function PerformanceFilters() {
         )
     },
 
+    /* =======================================================
+       CITY
+
+       Uses normalized city options so different
+       capitalization is treated as the same city.
+       ======================================================= */
+
     {
       label: "City",
       field: "city",
       options:
-        getUniqueValues(
-          "City"
-        )
+        cityOptions
     },
 
     {
@@ -924,10 +1074,12 @@ function PerformanceFilters() {
         </label>
 
         <select
+
           value={
             selectedFilters[field] ||
             ""
           }
+
           onChange={
             event =>
               handleChange(
@@ -935,11 +1087,13 @@ function PerformanceFilters() {
                 event.target.value
               )
           }
+
         >
 
           <option value="">
             {placeholder}
           </option>
+
 
           {options.map(
             option => {
@@ -960,10 +1114,23 @@ function PerformanceFilters() {
               return (
 
                 <option
-                  key={value}
+
+                  key={
+
+                    field === "city"
+                      ? normalizeCity(
+                          value
+                        )
+                      : value
+
+                  }
+
                   value={value}
+
                 >
+
                   {text}
+
                 </option>
 
               );
@@ -1046,15 +1213,18 @@ function PerformanceFilters() {
         </label>
 
         <select
+
           value={
             currentValue
           }
+
           onChange={
             event =>
               handleSortValueChange(
                 event.target.value
               )
           }
+
         >
 
           <option value="">
@@ -1474,10 +1644,12 @@ function PerformanceFilters() {
               </label>
 
               <select
+
                 value={
                   selectedFilters.clientStatus ||
                   ""
                 }
+
                 onChange={
                   event =>
                     handleChange(
@@ -1485,11 +1657,13 @@ function PerformanceFilters() {
                       event.target.value
                     )
                 }
+
               >
 
                 <option value="">
                   Select Client Status
                 </option>
+
 
                 {clientStatusOptions.map(
                   status => (
@@ -1532,11 +1706,14 @@ function PerformanceFilters() {
                 Enquiry Status
               </label>
 
+
               <select
+
                 value={
                   selectedFilters.enquiryStatus ||
                   ""
                 }
+
                 onChange={
                   event =>
                     handleChange(
@@ -1544,11 +1721,13 @@ function PerformanceFilters() {
                       event.target.value
                     )
                 }
+
               >
 
                 <option value="">
                   Select Enquiry Status
                 </option>
+
 
                 {enquiryStatusOptions.map(
                   status => (
