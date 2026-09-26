@@ -33,7 +33,11 @@ const salaryRows = [
 // does not lose focus after every keystroke.
 // =====================================================
 
-function AmountInput({ value, onChange }) {
+function AmountInput({
+  value,
+  onChange,
+  disabled
+}) {
   return (
     <input
       className="revenue-input"
@@ -42,6 +46,7 @@ function AmountInput({ value, onChange }) {
       value={value}
       placeholder="Enter amount"
       autoComplete="off"
+      disabled={disabled}
       onChange={(event) => {
         const nextValue = event.target.value;
 
@@ -59,7 +64,11 @@ function AmountInput({ value, onChange }) {
 // TAX INPUT
 // =====================================================
 
-function TaxInput({ value, onChange }) {
+function TaxInput({
+  value,
+  onChange,
+  disabled
+}) {
   return (
     <input
       className="revenue-input tax-input"
@@ -68,6 +77,7 @@ function TaxInput({ value, onChange }) {
       value={value}
       placeholder="%"
       autoComplete="off"
+      disabled={disabled}
       onChange={(event) => {
         const nextValue = event.target.value;
 
@@ -129,23 +139,59 @@ function getNumber(value) {
 function Revenue() {
 
   // ===================================================
+  // LOAD SAVED DATA
+  // ===================================================
+
+  const savedData = (() => {
+    try {
+      const data =
+        localStorage.getItem(
+          "tchr-revenue-data"
+        );
+
+      return data
+        ? JSON.parse(data)
+        : null;
+
+    } catch (error) {
+      return null;
+    }
+  })();
+
+
+  // ===================================================
   // STATES
   // ===================================================
 
   const [revenue, setRevenue] = useState(
-    createInitialData(revenueRows)
+    savedData?.revenue ||
+      createInitialData(revenueRows)
   );
 
   const [expenditure, setExpenditure] = useState(
-    createInitialData(expenditureRows)
+    savedData?.expenditure ||
+      createInitialData(expenditureRows)
   );
 
   const [salary, setSalary] = useState(
-    createInitialData(salaryRows)
+    savedData?.salary ||
+      createInitialData(salaryRows)
   );
 
   const [incomeTaxPercentage, setIncomeTaxPercentage] =
-    useState("");
+    useState(
+      savedData?.incomeTaxPercentage || ""
+    );
+
+
+  // ===================================================
+  // SAVED / EDIT MODE
+  // ===================================================
+
+  const [isSaved, setIsSaved] =
+    useState(
+      savedData?.isSaved || false
+    );
 
 
   // ===================================================
@@ -153,6 +199,11 @@ function Revenue() {
   // ===================================================
 
   function handleRevenueChange(row, year, value) {
+
+    if (isSaved) {
+      return;
+    }
+
     setRevenue((previous) => ({
       ...previous,
 
@@ -168,7 +219,16 @@ function Revenue() {
   // EXPENDITURE INPUT HANDLER
   // ===================================================
 
-  function handleExpenditureChange(row, year, value) {
+  function handleExpenditureChange(
+    row,
+    year,
+    value
+  ) {
+
+    if (isSaved) {
+      return;
+    }
+
     setExpenditure((previous) => ({
       ...previous,
 
@@ -184,7 +244,16 @@ function Revenue() {
   // SALARY INPUT HANDLER
   // ===================================================
 
-  function handleSalaryChange(row, year, value) {
+  function handleSalaryChange(
+    row,
+    year,
+    value
+  ) {
+
+    if (isSaved) {
+      return;
+    }
+
     setSalary((previous) => ({
       ...previous,
 
@@ -193,6 +262,39 @@ function Revenue() {
         [year]: value,
       },
     }));
+  }
+
+
+  // ===================================================
+  // SAVE DATA
+  // ===================================================
+
+  function handleSave() {
+
+    const dataToSave = {
+      revenue,
+      expenditure,
+      salary,
+      incomeTaxPercentage,
+      isSaved: true
+    };
+
+    localStorage.setItem(
+      "tchr-revenue-data",
+      JSON.stringify(dataToSave)
+    );
+
+    setIsSaved(true);
+  }
+
+
+  // ===================================================
+  // EDIT DATA
+  // ===================================================
+
+  function handleEdit() {
+
+    setIsSaved(false);
   }
 
 
@@ -337,10 +439,14 @@ function Revenue() {
   // ===================================================
 
   function getIncomeTax(year) {
-    const overallRevenue = getOverallRevenue(year);
+
+    const overallRevenue =
+      getOverallRevenue(year);
 
     const percentage =
-      getNumber(incomeTaxPercentage);
+      getNumber(
+        incomeTaxPercentage
+      );
 
     return (
       (overallRevenue * percentage) / 100
@@ -434,7 +540,10 @@ function Revenue() {
                     <td key={year}>
 
                       <AmountInput
-                        value={revenue[row][year]}
+                        value={
+                          revenue[row][year]
+                        }
+                        disabled={isSaved}
                         onChange={(value) =>
                           handleRevenueChange(
                             row,
@@ -534,6 +643,7 @@ function Revenue() {
                         value={
                           expenditure[row][year]
                         }
+                        disabled={isSaved}
                         onChange={(value) =>
                           handleExpenditureChange(
                             row,
@@ -633,6 +743,7 @@ function Revenue() {
                         value={
                           salary[row][year]
                         }
+                        disabled={isSaved}
                         onChange={(value) =>
                           handleSalaryChange(
                             row,
@@ -878,7 +989,10 @@ function Revenue() {
                     <div className="tax-input-wrapper">
 
                       <TaxInput
-                        value={incomeTaxPercentage}
+                        value={
+                          incomeTaxPercentage
+                        }
+                        disabled={isSaved}
                         onChange={
                           setIncomeTaxPercentage
                         }
@@ -947,6 +1061,37 @@ function Revenue() {
         </div>
 
       </section>
+
+
+      {/* =================================================
+          SAVE / EDIT BUTTONS
+      ================================================= */}
+
+      <div className="revenue-action-buttons">
+
+        {!isSaved ? (
+
+          <button
+            type="button"
+            className="revenue-save-button"
+            onClick={handleSave}
+          >
+            Save
+          </button>
+
+        ) : (
+
+          <button
+            type="button"
+            className="revenue-edit-button"
+            onClick={handleEdit}
+          >
+            Edit
+          </button>
+
+        )}
+
+      </div>
 
     </div>
   );
