@@ -75,6 +75,11 @@ function KPIStrip() {
 
   // ==================================================
   // CURRENCY FORMAT
+  // No decimal values
+  // Example:
+  // 100.0      -> ₹100
+  // 100.50     -> ₹101
+  // 275643890  -> ₹27,56,43,890
   // ==================================================
 
   const formatCurrency = (value) => {
@@ -82,12 +87,8 @@ function KPIStrip() {
     const amount =
       Number(value || 0);
 
-    return `₹${amount.toLocaleString(
-      "en-IN",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
+    return `₹${Math.round(amount).toLocaleString(
+      "en-IN"
     )}`;
 
   };
@@ -357,7 +358,6 @@ function KPIStrip() {
     },
 
 
-
     {
       id: "placements",
 
@@ -371,6 +371,7 @@ function KPIStrip() {
       note: "Unique Company Name where Info = R"
 
     },
+
 
     {
       id: "billing",
@@ -467,7 +468,6 @@ function KPIStrip() {
     },
 
 
-
     {
       id: "placements",
 
@@ -481,6 +481,7 @@ function KPIStrip() {
       note: "Unique Company Name where Info = R"
 
     },
+
 
     {
       id: "billing",
@@ -592,7 +593,6 @@ function KPIStrip() {
     },
 
 
-
     {
       id: "billing",
 
@@ -611,7 +611,7 @@ function KPIStrip() {
 
     },
 
-    
+
     {
       id: "profit",
 
