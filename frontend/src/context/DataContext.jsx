@@ -49,6 +49,27 @@ function normalizeValue(value) {
 }
 
 /* =========================================================
+   NORMALIZE CITY
+   =========================================================
+   Makes city comparison case-insensitive.
+
+   Mumbai
+   mumbai
+   MUMBAI
+   MuMbAi
+
+   All become:
+
+   mumbai
+   ========================================================= */
+
+function normalizeCity(value) {
+
+  return normalizeValue(value);
+
+}
+
+/* =========================================================
    MAP BACKEND ROW
    ========================================================= */
 
@@ -643,13 +664,13 @@ export function DataProvider({
 
           /* =================================================
              FINANCIAL YEAR
-             
+
              Existing Base Filter.
-             
+
              Used directly when:
              - Year is selected normally
              - View Report As = Yearly
-             
+
              No second FY filter is created.
              ================================================= */
 
@@ -679,13 +700,13 @@ export function DataProvider({
 
           /* =================================================
              MONTH
-             
+
              Existing Base Filter.
-             
+
              Used directly when:
              - Month is selected normally
              - View Report As = Monthly
-             
+
              No second Month filter is created.
              ================================================= */
 
@@ -717,7 +738,7 @@ export function DataProvider({
 
           /* =================================================
              QUARTER
-             
+
              Only used for:
              View Report As = Quarterly
              ================================================= */
@@ -865,6 +886,15 @@ export function DataProvider({
 
           /* =================================================
              CITY
+             CASE-INSENSITIVE
+             
+             Mumbai
+             mumbai
+             MUMBAI
+             MuMbAi
+
+             All are treated as:
+             mumbai
              ================================================= */
 
           if (
@@ -872,10 +902,10 @@ export function DataProvider({
           ) {
 
             if (
-              normalizeValue(
+              normalizeCity(
                 row["City"]
               ) !==
-              normalizeValue(
+              normalizeCity(
                 filters.city
               )
             ) {
@@ -934,9 +964,9 @@ export function DataProvider({
 
           /* =================================================
              ENQUIRY STATUS
-             
+
              Info column:
-             
+
              C     = Closed
              CN    = Credit Note
              IP    = Inprogress
