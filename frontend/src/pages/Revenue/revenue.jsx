@@ -1037,159 +1037,76 @@ function Revenue() {
       ================================================= */}
 
       <div className="revenue-section overall-revenue-section">
-
         <div className="revenue-section-header">
-
           <h2>Overall Revenue</h2>
-
         </div>
 
         <div className="overall-revenue-table-wrapper">
-
           <table className="overall-revenue-table">
+            <thead>
+              <tr>
+                <th></th>
+
+                {financialYears.map((year) => (
+                  <th key={year}>{year}</th>
+                ))}
+              </tr>
+            </thead>
 
             <tbody>
-
+              {/* Overall Revenue */}
               <tr>
-
                 <td>Overall Revenue</td>
 
-                <td>
-
-                  {financialYears.map((year) => (
-
-                    <div
-                      key={year}
-                      style={{
-                        display: "flex",
-                        justifyContent:
-                          "space-between",
-                        marginBottom: "6px",
-                      }}
-                    >
-
-                      <span>{year}</span>
-
-                      <span>
-
-                        {formatNumber(
-                          overallRevenue[year]
-                        )}
-
-                      </span>
-
-                    </div>
-
-                  ))}
-
-                </td>
-
+                {financialYears.map((year) => (
+                  <td key={year}>
+                    {formatNumber(overallRevenue[year])}
+                  </td>
+                ))}
               </tr>
 
+              {/* Income Tax % */}
               <tr>
-
                 <td>Income Tax %</td>
 
-                <td>
-
-                  <div className="tax-input-wrapper">
-
-                    <TaxInput
-                      value={
-                        incomeTaxPercentage
-                      }
-                      disabled={isSaved}
-                      onChange={
-                        handleIncomeTaxChange
-                      }
-                    />
-
-                    <span>%</span>
-
-                  </div>
-
-                </td>
-
+                {financialYears.map((year) => (
+                  <td key={year}>
+                    <div className="tax-input-wrapper">
+                      <TaxInput
+                        value={incomeTaxPercentage}
+                        disabled={isSaved}
+                        onChange={handleIncomeTaxChange}
+                      />
+                      <span>%</span>
+                    </div>
+                  </td>
+                ))}
               </tr>
 
+              {/* Income Tax */}
               <tr>
-
                 <td>Income Tax</td>
 
-                <td>
-
-                  {financialYears.map((year) => (
-
-                    <div
-                      key={year}
-                      style={{
-                        display: "flex",
-                        justifyContent:
-                          "space-between",
-                        marginBottom: "6px",
-                      }}
-                    >
-
-                      <span>{year}</span>
-
-                      <span>
-
-                        {formatNumber(
-                          incomeTax[year]
-                        )}
-
-                      </span>
-
-                    </div>
-
-                  ))}
-
-                </td>
-
+                {financialYears.map((year) => (
+                  <td key={year}>
+                    {formatNumber(incomeTax[year])}
+                  </td>
+                ))}
               </tr>
 
+              {/* Net Income */}
               <tr className="net-income-row">
-
                 <td>Net Income</td>
 
-                <td>
-
-                  {financialYears.map((year) => (
-
-                    <div
-                      key={year}
-                      style={{
-                        display: "flex",
-                        justifyContent:
-                          "space-between",
-                        marginBottom: "6px",
-                      }}
-                    >
-
-                      <span>{year}</span>
-
-                      <span>
-
-                        {formatNumber(
-                          netIncome[year]
-                        )}
-
-                      </span>
-
-                    </div>
-
-                  ))}
-
-                </td>
-
+                {financialYears.map((year) => (
+                  <td key={year}>
+                    {formatNumber(netIncome[year])}
+                  </td>
+                ))}
               </tr>
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
       {/* =================================================

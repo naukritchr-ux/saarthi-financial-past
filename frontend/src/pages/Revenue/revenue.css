@@ -184,27 +184,44 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  overflow-x: auto;
 }
 
 .overall-revenue-table {
-  width: 70%;
+  width: 100%;
   border-collapse: collapse;
+  min-width: 700px;
 }
 
+.overall-revenue-table th,
 .overall-revenue-table td {
   padding: 13px 16px;
   border: 1px solid #e5e7eb;
   font-size: 14px;
 }
 
+.overall-revenue-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+  color: #374151;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.overall-revenue-table th:first-child {
+  text-align: left;
+  width: 30%;
+}
+
 .overall-revenue-table td:first-child {
   font-weight: 500;
   color: #374151;
+  text-align: left;
+  white-space: nowrap;
 }
 
-.overall-revenue-table td:last-child {
+.overall-revenue-table td:not(:first-child) {
   text-align: right;
-  font-weight: 600;
 }
 
 /* =========================
@@ -219,8 +236,8 @@
 }
 
 .tax-input {
-  width: 120px;
-  min-width: 100px;
+  width: 100px;
+  min-width: 80px;
   height: 40px;
   padding: 8px 10px;
   border: 1px solid #d1d5db;
