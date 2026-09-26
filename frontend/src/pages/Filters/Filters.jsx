@@ -77,6 +77,47 @@ function Filters() {
 
 
   // ======================================================
+  // NORMALIZE CITY
+  // ======================================================
+
+  function normalizeCity(value) {
+
+    return String(value || "")
+      .trim()
+      .toLowerCase();
+
+  }
+
+
+  // ======================================================
+  // FORMAT CITY NAME FOR DISPLAY
+  // ======================================================
+
+  function formatCityName(value) {
+
+    const city =
+      String(value || "").trim();
+
+
+    if (!city) {
+      return "Unknown";
+    }
+
+
+    return city
+      .toLowerCase()
+      .split(/\s+/)
+      .map(
+        word =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1)
+      )
+      .join(" ");
+
+  }
+
+
+  // ======================================================
   // UNIQUE VALUES
   // ======================================================
 
@@ -101,7 +142,57 @@ function Filters() {
 
       )
 
-    ].sort((a, b) => a.localeCompare(b));
+    ].sort((a, b) =>
+      a.localeCompare(b)
+    );
+
+  }
+
+
+  // ======================================================
+  // UNIQUE CITIES
+  // CASE-INSENSITIVE
+  // ======================================================
+
+  function getUniqueCities() {
+
+    const cityMap = new Map();
+
+
+    rows.forEach(row => {
+
+      const rawCity =
+        String(
+          row["City"] || ""
+        ).trim();
+
+
+      if (!rawCity) {
+        return;
+      }
+
+
+      const cityKey =
+        normalizeCity(rawCity);
+
+
+      if (!cityMap.has(cityKey)) {
+
+        cityMap.set(
+          cityKey,
+          formatCityName(rawCity)
+        );
+
+      }
+
+    });
+
+
+    return Array.from(
+      cityMap.values()
+    ).sort((a, b) =>
+      a.localeCompare(b)
+    );
 
   }
 
@@ -118,7 +209,9 @@ function Filters() {
 
         rows
 
-          .map(row => getFinancialYearFromRow(row))
+          .map(row =>
+            getFinancialYearFromRow(row)
+          )
 
           .filter(Boolean)
 
@@ -153,7 +246,8 @@ function Filters() {
     }
 
 
-    const availableMonths = new Set();
+    const availableMonths =
+      new Set();
 
 
     rows.forEach(row => {
@@ -232,7 +326,20 @@ function Filters() {
   function applyFilters() {
 
     setFilters({
-      ...selectedFilters
+
+      ...selectedFilters,
+
+      // Keep city in normalized form
+      // while preserving the selected
+      // display value for the UI.
+
+      city:
+        selectedFilters.city
+          ? formatCityName(
+              selectedFilters.city
+            )
+          : ""
+
     });
 
   }
@@ -454,7 +561,8 @@ function Filters() {
     {
       label: "City",
       field: "city",
-      column: "City"
+      column: "City",
+      type: "city"
     },
 
     {
@@ -488,6 +596,13 @@ function Filters() {
     if (filter.type === "month") {
 
       return getAvailableMonths();
+
+    }
+
+
+    if (filter.type === "city") {
+
+      return getUniqueCities();
 
     }
 
@@ -567,73 +682,86 @@ function Filters() {
           >
 
             {
-              baseFilterConfig.map(filter => (
 
-                <Grid
-                  item
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  key={filter.field}
-                >
+              baseFilterConfig.map(
+                filter => (
 
-                  <FormControl fullWidth>
+                  <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={4}
+                    key={filter.field}
+                  >
 
-                    <InputLabel>
+                    <FormControl fullWidth>
 
-                      {filter.label}
+                      <InputLabel>
 
-                    </InputLabel>
+                        {filter.label}
+
+                      </InputLabel>
 
 
-                    <Select
+                      <Select
 
-                      label={filter.label}
+                        label={
+                          filter.label
+                        }
 
-                      value={
-                        selectedFilters[
-                          filter.field
-                        ] || ""
-                      }
+                        value={
 
-                      onChange={event =>
-                        handleChange(
-                          filter.field,
-                          event.target.value
-                        )
-                      }
+                          selectedFilters[
+                            filter.field
+                          ] || ""
 
-                    >
+                        }
 
-                      {
-                        filter.options.map(
-                          option => (
-
-                            <MenuItem
-                              key={
-                                option.value ||
-                                option.label
-                              }
-                              value={
-                                option.value
-                              }
-                            >
-
-                              {option.label}
-
-                            </MenuItem>
-
+                        onChange={event =>
+                          handleChange(
+                            filter.field,
+                            event.target.value
                           )
-                        )
-                      }
+                        }
 
-                    </Select>
+                      >
 
-                  </FormControl>
+                        {
 
-                </Grid>
+                          filter.options.map(
+                            option => (
 
-              ))
+                              <MenuItem
+
+                                key={
+                                  option.value ||
+                                  option.label
+                                }
+
+                                value={
+                                  option.value
+                                }
+
+                              >
+
+                                {option.label}
+
+                              </MenuItem>
+
+                            )
+                          )
+
+                        }
+
+                      </Select>
+
+                    </FormControl>
+
+                  </Grid>
+
+                )
+
+              )
 
             }
 
@@ -660,6 +788,7 @@ function Filters() {
           >
 
             {
+
               filterConfig.map(filter => {
 
                 const options =
@@ -704,9 +833,11 @@ function Filters() {
                         }
 
                         value={
+
                           selectedFilters[
                             filter.field
                           ] || ""
+
                         }
 
                         onChange={event =>
@@ -721,21 +852,36 @@ function Filters() {
                         <MenuItem value="">
 
                           {
+
                             isMonth
                               ? "All Months"
                               : `All ${filter.label}`
+
                           }
 
                         </MenuItem>
 
 
                         {
+
                           options.map(
                             option => (
 
                               <MenuItem
-                                key={option}
+
+                                key={
+
+                                  filter.type ===
+                                  "city"
+                                    ? normalizeCity(
+                                        option
+                                      )
+                                    : option
+
+                                }
+
                                 value={option}
+
                               >
 
                                 {option}
@@ -744,6 +890,7 @@ function Filters() {
 
                             )
                           )
+
                         }
 
                       </Select>
