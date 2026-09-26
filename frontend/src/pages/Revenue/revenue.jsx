@@ -1068,29 +1068,21 @@ function Revenue() {
       ================================================= */}
 
       <div className="revenue-action-buttons">
+        <button
+          type="button"
+          className="revenue-save-button"
+          onClick={handleSave}
+        >
+          Save
+        </button>
 
-        {!isSaved ? (
-
-          <button
-            type="button"
-            className="revenue-save-button"
-            onClick={handleSave}
-          >
-            Save
-          </button>
-
-        ) : (
-
-          <button
-            type="button"
-            className="revenue-edit-button"
-            onClick={handleEdit}
-          >
-            Edit
-          </button>
-
-        )}
-
+        <button
+          type="button"
+          className="revenue-edit-button"
+          onClick={handleEdit}
+        >
+          Edit
+        </button>
       </div>
 
     </div>
