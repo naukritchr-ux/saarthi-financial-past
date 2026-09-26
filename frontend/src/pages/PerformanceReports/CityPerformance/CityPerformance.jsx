@@ -26,7 +26,7 @@ function CityPerformance() {
 
   /* ============================================================
      STATES
-     ============================================================ */
+  ============================================================ */
 
   const [selectedCity, setSelectedCity] = useState(null);
 
@@ -47,7 +47,7 @@ function CityPerformance() {
 
   /* ============================================================
      HELPERS
-     ============================================================ */
+  ============================================================ */
 
   const normalizeValue = (value) => {
 
@@ -59,6 +59,57 @@ function CityPerformance() {
     }
 
     return String(value).trim();
+
+  };
+
+
+  /* ============================================================
+     NORMALIZE CITY
+
+     Mumbai
+     mumbai
+     MUMBAI
+     MuMbAi
+
+     ALL ARE TREATED AS:
+     mumbai
+
+     Display value remains:
+     Mumbai
+  ============================================================ */
+
+  const normalizeCity = (value) => {
+
+    const city =
+      normalizeValue(value);
+
+    if (!city) {
+      return "unknown";
+    }
+
+    return city.toLowerCase();
+
+  };
+
+
+  const formatCityName = (value) => {
+
+    const city =
+      normalizeValue(value);
+
+    if (!city) {
+      return "Unknown";
+    }
+
+    return city
+      .toLowerCase()
+      .split(/\s+/)
+      .map(
+        (word) =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1)
+      )
+      .join(" ");
 
   };
 
@@ -80,6 +131,24 @@ function CityPerformance() {
       );
 
     return city || "Unknown";
+
+  };
+
+
+  const getCityKey = (row) => {
+
+    return normalizeCity(
+      row["City"]
+    );
+
+  };
+
+
+  const getCityDisplayName = (row) => {
+
+    return formatCityName(
+      row["City"]
+    );
 
   };
 
@@ -402,7 +471,7 @@ function CityPerformance() {
 
   /* ============================================================
      FINANCIAL YEARS
-     ============================================================ */
+  ============================================================ */
 
   const financialYears = useMemo(() => {
 
@@ -434,7 +503,7 @@ function CityPerformance() {
 
   /* ============================================================
      FILTERED ROWS
-     ============================================================ */
+  ============================================================ */
 
   const filteredRows = useMemo(() => {
 
@@ -475,7 +544,18 @@ function CityPerformance() {
 
   /* ============================================================
      CITY DATA
-     ============================================================ */
+
+     IMPORTANT:
+     City grouping uses normalizeCity().
+
+     Therefore:
+
+     Mumbai
+     mumbai
+     MUMBAI
+
+     all go into the same map entry.
+  ============================================================ */
 
   const cityData = useMemo(() => {
 
@@ -483,8 +563,11 @@ function CityPerformance() {
 
     filteredRows.forEach((row) => {
 
+      const cityKey =
+        getCityKey(row);
+
       const city =
-        getCity(row);
+        getCityDisplayName(row);
 
       const financial =
         getFinancialValues(
@@ -495,11 +578,13 @@ function CityPerformance() {
         );
 
 
-      if (!map[city]) {
+      if (!map[cityKey]) {
 
-        map[city] = {
+        map[cityKey] = {
 
           city,
+
+          cityKey,
 
           clients: 0,
 
@@ -516,7 +601,7 @@ function CityPerformance() {
       }
 
 
-      map[city].clients += 1;
+      map[cityKey].clients += 1;
 
 
       /* ========================================================
@@ -532,20 +617,20 @@ function CityPerformance() {
 
       if (franchiseName) {
 
-        map[city].franchisees.add(
+        map[cityKey].franchisees.add(
           franchiseName
         );
 
       }
 
 
-      map[city].billing +=
+      map[cityKey].billing +=
         financial.billing;
 
-      map[city].netAmount +=
+      map[cityKey].netAmount +=
         financial.netAmount;
 
-      map[city].expenditure +=
+      map[cityKey].expenditure +=
         financial.expenditure;
 
     });
@@ -574,7 +659,9 @@ function CityPerformance() {
 
   /* ============================================================
      SELECTED CITY DATA
-     ============================================================ */
+
+     Comparison is case-insensitive.
+  ============================================================ */
 
   const selectedCityRows =
     useMemo(() => {
@@ -583,10 +670,15 @@ function CityPerformance() {
         return [];
       }
 
+      const selectedCityKey =
+        normalizeCity(
+          selectedCity
+        );
+
       return filteredRows.filter(
         (row) =>
-          getCity(row) ===
-          selectedCity
+          getCityKey(row) ===
+          selectedCityKey
       );
 
     }, [
@@ -597,7 +689,7 @@ function CityPerformance() {
 
   /* ============================================================
      CITY SUMMARY
-     ============================================================ */
+  ============================================================ */
 
   const citySummary = useMemo(() => {
 
@@ -759,7 +851,7 @@ function CityPerformance() {
 
   /* ============================================================
      YEARLY CLIENT DATA
-     ============================================================ */
+  ============================================================ */
 
   const yearlyClientData =
     useMemo(() => {
@@ -820,7 +912,7 @@ function CityPerformance() {
 
   /* ============================================================
      YEARLY BILLING DATA
-     ============================================================ */
+  ============================================================ */
 
   const yearlyBillingData =
     useMemo(() => {
@@ -892,7 +984,7 @@ function CityPerformance() {
 
   /* ============================================================
      MONTHLY CLIENT DATA
-     ============================================================ */
+  ============================================================ */
 
   const monthlyClientData =
     useMemo(() => {
@@ -999,7 +1091,7 @@ function CityPerformance() {
 
   /* ============================================================
      MONTHLY BILLING DATA
-     ============================================================ */
+  ============================================================ */
 
   const monthlyBillingData =
     useMemo(() => {
@@ -1117,7 +1209,7 @@ function CityPerformance() {
 
   /* ============================================================
      REPORT DATA BASED ON REPORT YEAR
-     ============================================================ */
+  ============================================================ */
 
   const reportYearRows =
     useMemo(() => {
@@ -1146,7 +1238,7 @@ function CityPerformance() {
 
   /* ============================================================
      OPEN PERFORMANCE
-     ============================================================ */
+  ============================================================ */
 
   const handleViewPerformance = (
     city
@@ -1165,7 +1257,7 @@ function CityPerformance() {
 
   /* ============================================================
      CLOSE MODAL
-     ============================================================ */
+  ============================================================ */
 
   const handleCloseModal = () => {
 
@@ -1178,7 +1270,7 @@ function CityPerformance() {
 
   /* ============================================================
      LOADING
-     ============================================================ */
+  ============================================================ */
 
   if (loading) {
 
@@ -1201,7 +1293,7 @@ function CityPerformance() {
 
   /* ============================================================
      ERROR
-     ============================================================ */
+  ============================================================ */
 
   if (error) {
 
@@ -1230,7 +1322,7 @@ function CityPerformance() {
 
   /* ============================================================
      RENDER
-     ============================================================ */
+  ============================================================ */
 
   return (
 
@@ -1499,7 +1591,7 @@ function CityPerformance() {
                   (item) => (
 
                     <tr
-                      key={item.city}
+                      key={item.cityKey}
                     >
 
 
@@ -1682,13 +1774,17 @@ function CityPerformance() {
                   </div>
 
                   <h2>
-                    {selectedCity}
+                    {formatCityName(
+                      selectedCity
+                    )}
                   </h2>
 
                   <p>
                     Detailed performance
                     analysis for{" "}
-                    {selectedCity}.
+                    {formatCityName(
+                      selectedCity
+                    )}.
                   </p>
 
                 </div>
@@ -2239,7 +2335,9 @@ function CityPerformance() {
                 Showing performance for{" "}
 
                 <strong>
-                  {selectedCity}
+                  {formatCityName(
+                    selectedCity
+                  )}
                 </strong>
 
                 {" "}•{" "}
