@@ -12,11 +12,26 @@ import {
 
 const DataContext = createContext();
 
-const API_URL = "/api/ledger";
+/* =========================================================
+   API URL
+
+   Local development:
+   React frontend usually runs on localhost:5173
+   Backend runs on localhost:5000
+
+   Vercel:
+   Use the same-origin /api/ledger route.
+   ========================================================= */
+
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api/ledger"
+    : "/api/ledger";
+
 
 /* =========================================================
    STATUS MAPPING
-   Info column values coming from MySQL
+   Info column values coming from Excel
    ========================================================= */
 
 const ENQUIRY_STATUS_CODES = {
@@ -27,6 +42,7 @@ const ENQUIRY_STATUS_CODES = {
   reallocation: "R",
   revised: "RV"
 };
+
 
 /* =========================================================
    NORMALIZE VALUE
@@ -48,19 +64,11 @@ function normalizeValue(value) {
 
 }
 
+
 /* =========================================================
    NORMALIZE CITY
    =========================================================
    Makes city comparison case-insensitive.
-
-   Mumbai
-   mumbai
-   MUMBAI
-   MuMbAi
-
-   All become:
-
-   mumbai
    ========================================================= */
 
 function normalizeCity(value) {
@@ -68,6 +76,7 @@ function normalizeCity(value) {
   return normalizeValue(value);
 
 }
+
 
 /* =========================================================
    MAP BACKEND ROW
@@ -197,6 +206,7 @@ function mapBackendRow(record) {
 
 }
 
+
 /* =========================================================
    DATE FUNCTIONS
    ========================================================= */
@@ -221,6 +231,7 @@ function parseDate(value) {
   return date;
 
 }
+
 
 /* =========================================================
    FINANCIAL YEAR
@@ -295,6 +306,7 @@ function getFinancialYearFromRow(row) {
 
 }
 
+
 /* =========================================================
    MONTH
    ========================================================= */
@@ -316,6 +328,7 @@ function getMonthFromDate(value) {
   );
 
 }
+
 
 /* =========================================================
    FINANCIAL QUARTER
@@ -364,6 +377,7 @@ function getFinancialQuarter(value) {
 
 }
 
+
 /* =========================================================
    FINANCIAL MONTHS
    ========================================================= */
@@ -388,6 +402,7 @@ const FINANCIAL_MONTHS = [
 
 ];
 
+
 /* =========================================================
    FINANCIAL QUARTERS
    ========================================================= */
@@ -400,6 +415,7 @@ const FINANCIAL_QUARTERS = [
   "Q4"
 
 ];
+
 
 /* =========================================================
    DATA PROVIDER
@@ -424,15 +440,12 @@ export function DataProvider({
   const [error, setError] =
     useState(null);
 
+
   /* =======================================================
      FILTER STATE
      ======================================================= */
 
   const [filters, setFilters] = useState({
-
-    /* =====================================================
-       VIEW
-       ===================================================== */
 
     viewBy: "",
 
@@ -440,22 +453,9 @@ export function DataProvider({
 
     metricView: "",
 
-    /* =====================================================
-       REPORT VIEW
-       ===================================================== */
-
     viewReportAs: "all",
 
-    /* =====================================================
-       SORT
-       ===================================================== */
-
     sortBy: "",
-
-    /* =====================================================
-       OLD BASE FILTERS
-       These remain unchanged
-       ===================================================== */
 
     allTime: "all",
 
@@ -465,24 +465,11 @@ export function DataProvider({
 
     month: "",
 
-    /* =====================================================
-       NEW QUARTER FILTER
-       Only used when View Report As = Quarterly
-       ===================================================== */
-
     quarter: "",
-
-    /* =====================================================
-       PEOPLE
-       ===================================================== */
 
     bdMember: "",
 
     teamLeader: "",
-
-    /* =====================================================
-       BUSINESS
-       ===================================================== */
 
     franchise: "",
 
@@ -492,25 +479,14 @@ export function DataProvider({
 
     city: "",
 
-    /* =====================================================
-       CLIENT
-       ===================================================== */
-
     clientStatus: "",
 
-    /* =====================================================
-       POSITION
-       ===================================================== */
-
     position: "",
-
-    /* =====================================================
-       ENQUIRY
-       ===================================================== */
 
     enquiryStatus: ""
 
   });
+
 
   /* =========================================================
      FETCH DATA FROM BACKEND
@@ -524,8 +500,15 @@ export function DataProvider({
 
       setError(null);
 
+      console.log(
+        "Loading ledger data from:",
+        API_URL
+      );
+
+
       const response =
         await fetch(API_URL);
+
 
       if (!response.ok) {
 
@@ -535,8 +518,10 @@ export function DataProvider({
 
       }
 
+
       const result =
         await response.json();
+
 
       if (!result.success) {
 
@@ -547,20 +532,37 @@ export function DataProvider({
 
       }
 
+
       const mappedRows =
         (result.data || []).map(
           mapBackendRow
         );
 
+
+      console.log(
+        "Ledger rows loaded:",
+        mappedRows.length
+      );
+
+
       setRows(mappedRows);
 
+
+      /*
+       * Data is coming automatically
+       * from the fixed Excel file through
+       * the backend API.
+       */
+
       setFileName(
-        "MySQL Database"
+        "enquiry sheet  old.xlsx"
       );
+
 
       setLastRefresh(
         new Date()
       );
+
 
     } catch (err) {
 
@@ -569,12 +571,15 @@ export function DataProvider({
         err
       );
 
+
       setError(
         err.message ||
         "Failed to load ledger data"
       );
 
+
       setRows([]);
+
 
     } finally {
 
@@ -583,6 +588,7 @@ export function DataProvider({
     }
 
   }
+
 
   /* =========================================================
      LOAD DATA WHEN APPLICATION STARTS
@@ -594,9 +600,10 @@ export function DataProvider({
 
   }, []);
 
+
   /* =========================================================
      LOAD EXCEL DATA
-     Kept for compatibility
+     Kept for compatibility with existing components.
      ========================================================= */
 
   function loadExcelData(
@@ -612,7 +619,9 @@ export function DataProvider({
 
     }
 
+
     setRows(data);
+
 
     if (file) {
 
@@ -623,11 +632,13 @@ export function DataProvider({
 
     }
 
+
     setLastRefresh(
       new Date()
     );
 
   }
+
 
   /* =========================================================
      FILTER DATA
@@ -638,6 +649,7 @@ export function DataProvider({
 
       return rows.filter(
         (row) => {
+
 
           /* =================================================
              COMPANY
@@ -662,16 +674,9 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              FINANCIAL YEAR
-
-             Existing Base Filter.
-
-             Used directly when:
-             - Year is selected normally
-             - View Report As = Yearly
-
-             No second FY filter is created.
              ================================================= */
 
           if (
@@ -698,16 +703,9 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              MONTH
-
-             Existing Base Filter.
-
-             Used directly when:
-             - Month is selected normally
-             - View Report As = Monthly
-
-             No second Month filter is created.
              ================================================= */
 
           if (
@@ -736,11 +734,9 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              QUARTER
-
-             Only used for:
-             View Report As = Quarterly
              ================================================= */
 
           if (
@@ -769,6 +765,7 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              BD MEMBER
              ================================================= */
@@ -791,6 +788,7 @@ export function DataProvider({
             }
 
           }
+
 
           /* =================================================
              TEAM LEADER
@@ -815,6 +813,7 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              FRANCHISE
              ================================================= */
@@ -837,6 +836,7 @@ export function DataProvider({
             }
 
           }
+
 
           /* =================================================
              INDUSTRY
@@ -861,6 +861,7 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              SUB INDUSTRY
              ================================================= */
@@ -884,17 +885,10 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              CITY
              CASE-INSENSITIVE
-             
-             Mumbai
-             mumbai
-             MUMBAI
-             MuMbAi
-
-             All are treated as:
-             mumbai
              ================================================= */
 
           if (
@@ -915,6 +909,7 @@ export function DataProvider({
             }
 
           }
+
 
           /* =================================================
              CLIENT STATUS
@@ -939,6 +934,7 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              POSITION
              ================================================= */
@@ -962,17 +958,9 @@ export function DataProvider({
 
           }
 
+
           /* =================================================
              ENQUIRY STATUS
-
-             Info column:
-
-             C     = Closed
-             CN    = Credit Note
-             IP    = Inprogress
-             LEGAL = Legal
-             R     = Reallocation
-             RV    = Revised
              ================================================= */
 
           if (
@@ -984,6 +972,7 @@ export function DataProvider({
                 filters.enquiryStatus
               );
 
+
             const selectedCode =
               ENQUIRY_STATUS_CODES[
                 selectedStatus
@@ -994,12 +983,14 @@ export function DataProvider({
                 .trim()
                 .toUpperCase();
 
+
             const infoValue =
               String(
                 row["Info"] ?? ""
               )
                 .trim()
                 .toUpperCase();
+
 
             if (
               infoValue !==
@@ -1016,9 +1007,6 @@ export function DataProvider({
 
           }
 
-          /* =================================================
-             ALL FILTERS PASSED
-             ================================================= */
 
           return true;
 
@@ -1030,10 +1018,9 @@ export function DataProvider({
       filters
     ]);
 
+
   /* =========================================================
      DASHBOARD DATA
-
-     Pass BOTH filteredRows and filters.
      ========================================================= */
 
   const dashboardData =
@@ -1051,6 +1038,7 @@ export function DataProvider({
       ]
 
     );
+
 
   /* =========================================================
      PROVIDER
@@ -1107,6 +1095,7 @@ export function DataProvider({
   );
 
 }
+
 
 /* =========================================================
    USE DATA HOOK

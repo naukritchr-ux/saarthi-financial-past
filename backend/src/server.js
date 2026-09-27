@@ -1,32 +1,17 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
 
-const db = require("./config/database");
 const ledgerRoutes = require("./routes/ledgerRoutes");
 
 const app = express();
 
-// ======================================================
-// CORS
-// ======================================================
-
-app.use(
-  cors({
-    origin: true,
-    credentials: true
-  })
-);
-
-// ======================================================
-// JSON
-// ======================================================
-
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-// ======================================================
-// ROOT
-// ======================================================
+
+/* =========================================================
+   ROOT
+========================================================= */
 
 app.get("/", (req, res) => {
   res.json({
@@ -35,88 +20,53 @@ app.get("/", (req, res) => {
   });
 });
 
-// ======================================================
-// HEALTH CHECK
-// ======================================================
 
-app.get("/api/health", async (req, res) => {
-  try {
-    const [result] = await db.query(
-      "SELECT 1 AS connected"
-    );
+/* =========================================================
+   HEALTH CHECK
+========================================================= */
 
-    res.json({
-      success: true,
-      message:
-        "Backend and MySQL connected successfully",
-      database:
-        result[0].connected === 1
-    });
-
-  } catch (error) {
-
-    console.error(
-      "Database connection error:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message:
-        "Database connection failed"
-    });
-  }
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Backend connected successfully",
+    database: false,
+    dataSource: "Excel"
+  });
 });
 
-// ======================================================
-// LEDGER API
-// ======================================================
 
-app.use(
-  "/api/ledger",
-  ledgerRoutes
-);
+/* =========================================================
+   LEDGER ROUTES
+========================================================= */
 
-// ======================================================
-// 404
-// ======================================================
+app.use("/api/ledger", ledgerRoutes);
 
-app.use(
-  (req, res) => {
 
-    res.status(404).json({
-      success: false,
-      message:
-        "API endpoint not found"
-    });
+/* =========================================================
+   404
+========================================================= */
 
-  }
-);
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API endpoint not found"
+  });
+});
 
-// ======================================================
-// LOCAL DEVELOPMENT
-// ======================================================
+
+/* =========================================================
+   LOCAL SERVER
+========================================================= */
 
 if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
 
-  const PORT =
-    process.env.PORT || 5000;
-
-  app.listen(
-    PORT,
-    () => {
-
-      console.log(
-        `TCHR Backend running on http://localhost:${PORT}`
-      );
-
-    }
-  );
-
+  app.listen(PORT, () => {
+    console.log(
+      `TCHR Backend running on http://localhost:${PORT}`
+    );
+  });
 }
 
-// ======================================================
-// VERCEL
-// ======================================================
 
 module.exports = app;

@@ -1,12 +1,10 @@
 import {
-  UploadFile,
   AccountCircle,
   Logout,
   Menu as MenuIcon,
 } from "@mui/icons-material";
 
 import {
-  Button,
   IconButton,
   Menu,
   MenuItem,
@@ -18,7 +16,6 @@ import { useState } from "react";
 
 import { useAuth } from "../../auth/AuthContext";
 import { useData } from "../../context/DataContext";
-import { readExcel } from "../../utils/excel";
 
 import "./Topbar.css";
 
@@ -34,7 +31,6 @@ function Topbar({ onMenuClick }) {
   const {
     fileName,
     lastRefresh,
-    loadExcelData,
   } = useData();
 
 
@@ -71,49 +67,6 @@ function Topbar({ onMenuClick }) {
     handleClose();
 
     window.location.href = "/";
-
-  }
-
-
-  async function handleUpload(event) {
-
-    const file =
-      event.target.files[0];
-
-
-    if (!file) {
-      return;
-    }
-
-
-    try {
-
-      const rows =
-        await readExcel(file);
-
-
-      loadExcelData(
-        rows,
-        file
-      );
-
-
-      alert(
-        `Loaded ${rows.length} rows successfully.`
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Unable to read Excel file."
-      );
-
-    }
-
-
-    event.target.value = "";
 
   }
 
@@ -167,7 +120,7 @@ function Topbar({ onMenuClick }) {
             File:
 
             <strong>
-              {fileName || "No File Uploaded"}
+              {fileName || "enquiry sheet  old.xlsx"}
             </strong>
 
           </span>
@@ -199,28 +152,6 @@ function Topbar({ onMenuClick }) {
           ================================================= */}
 
       <div className="ledger-header-actions">
-
-
-        {/* =================================================
-            UPLOAD BUTTON
-            ================================================= */}
-
-        <Button
-          variant="contained"
-          component="label"
-          startIcon={<UploadFile />}
-        >
-
-          Upload New Sheet
-
-          <input
-            hidden
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            onChange={handleUpload}
-          />
-
-        </Button>
 
 
         {/* =================================================
