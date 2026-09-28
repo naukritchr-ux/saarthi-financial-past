@@ -3,7 +3,8 @@ import {
   useContext,
   useState,
   useMemo,
-  useEffect
+  useEffect,
+  useCallback
 } from "react";
 
 import {
@@ -14,14 +15,7 @@ const DataContext = createContext();
 
 /* =========================================================
    API URL
-
-   Local development:
-   React frontend usually runs on localhost:5173
-   Backend runs on localhost:5000
-
-   Vercel:
-   Use the same-origin /api/ledger route.
-   ========================================================= */
+========================================================= */
 
 const API_URL =
   window.location.hostname === "localhost"
@@ -30,9 +24,29 @@ const API_URL =
 
 
 /* =========================================================
+   FIXED EXCEL FILE NAME
+
+   This is the file used by the backend.
+   Keep this name only for display.
+========================================================= */
+
+const EXCEL_FILE_NAME =
+  "enquiry sheet  old.xlsx";
+
+
+/* =========================================================
+   AUTO REFRESH
+
+   Dashboard checks the backend every 60 seconds.
+========================================================= */
+
+const AUTO_REFRESH_INTERVAL =
+  60 * 1000;
+
+
+/* =========================================================
    STATUS MAPPING
-   Info column values coming from Excel
-   ========================================================= */
+========================================================= */
 
 const ENQUIRY_STATUS_CODES = {
   closed: "C",
@@ -46,7 +60,7 @@ const ENQUIRY_STATUS_CODES = {
 
 /* =========================================================
    NORMALIZE VALUE
-   ========================================================= */
+========================================================= */
 
 function normalizeValue(value) {
 
@@ -67,9 +81,7 @@ function normalizeValue(value) {
 
 /* =========================================================
    NORMALIZE CITY
-   =========================================================
-   Makes city comparison case-insensitive.
-   ========================================================= */
+========================================================= */
 
 function normalizeCity(value) {
 
@@ -80,7 +92,7 @@ function normalizeCity(value) {
 
 /* =========================================================
    MAP BACKEND ROW
-   ========================================================= */
+========================================================= */
 
 function mapBackendRow(record) {
 
@@ -209,7 +221,7 @@ function mapBackendRow(record) {
 
 /* =========================================================
    DATE FUNCTIONS
-   ========================================================= */
+========================================================= */
 
 function parseDate(value) {
 
@@ -236,7 +248,7 @@ function parseDate(value) {
 /* =========================================================
    FINANCIAL YEAR
    April - March
-   ========================================================= */
+========================================================= */
 
 function getFinancialYearFromDate(value) {
 
@@ -309,7 +321,7 @@ function getFinancialYearFromRow(row) {
 
 /* =========================================================
    MONTH
-   ========================================================= */
+========================================================= */
 
 function getMonthFromDate(value) {
 
@@ -332,7 +344,7 @@ function getMonthFromDate(value) {
 
 /* =========================================================
    FINANCIAL QUARTER
-   ========================================================= */
+========================================================= */
 
 function getFinancialQuarter(value) {
 
@@ -380,7 +392,7 @@ function getFinancialQuarter(value) {
 
 /* =========================================================
    FINANCIAL MONTHS
-   ========================================================= */
+========================================================= */
 
 const FINANCIAL_MONTHS = [
 
@@ -405,7 +417,7 @@ const FINANCIAL_MONTHS = [
 
 /* =========================================================
    FINANCIAL QUARTERS
-   ========================================================= */
+========================================================= */
 
 const FINANCIAL_QUARTERS = [
 
@@ -419,7 +431,7 @@ const FINANCIAL_QUARTERS = [
 
 /* =========================================================
    DATA PROVIDER
-   ========================================================= */
+========================================================= */
 
 export function DataProvider({
   children
@@ -443,7 +455,7 @@ export function DataProvider({
 
   /* =======================================================
      FILTER STATE
-     ======================================================= */
+  ======================================================= */
 
   const [filters, setFilters] = useState({
 
@@ -490,121 +502,263 @@ export function DataProvider({
 
   /* =========================================================
      FETCH DATA FROM BACKEND
-     ========================================================= */
 
-  async function fetchLedgerData() {
+     Cache busting is added so the browser does not reuse
+     an old /api/ledger response.
+  ========================================================= */
 
-    try {
+  const fetchLedgerData = useCallback(
+    async () => {
 
-      setLoading(true);
+      try {
 
-      setError(null);
+        setLoading(true);
 
-      console.log(
-        "Loading ledger data from:",
-        API_URL
-      );
+        setError(null);
 
-
-      const response =
-        await fetch(API_URL);
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          `Server returned ${response.status}`
+        console.log(
+          "Loading latest ledger data from:",
+          API_URL
         );
+
+
+        const separator =
+          API_URL.includes("?")
+            ? "&"
+            : "?";
+
+        const requestUrl =
+          `${API_URL}${separator}_refresh=${Date.now()}`;
+
+
+        const response =
+          await fetch(
+            requestUrl,
+            {
+              method: "GET",
+
+              cache: "no-store",
+
+              headers: {
+                "Cache-Control":
+                  "no-cache",
+                "Pragma":
+                  "no-cache"
+              }
+            }
+          );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            `Server returned ${response.status}`
+          );
+
+        }
+
+
+        const result =
+          await response.json();
+
+
+        if (!result.success) {
+
+          throw new Error(
+            result.message ||
+            "Failed to fetch ledger data"
+          );
+
+        }
+
+
+        const mappedRows =
+          (result.data || []).map(
+            mapBackendRow
+          );
+
+
+        console.log(
+          "Latest ledger rows loaded:",
+          mappedRows.length
+        );
+
+
+        /*
+         * Update the actual dashboard data.
+         */
+
+        setRows(
+          mappedRows
+        );
+
+
+        /*
+         * This is the fixed Excel file used
+         * by the backend.
+         */
+
+        setFileName(
+          EXCEL_FILE_NAME
+        );
+
+
+        /*
+         * IMPORTANT:
+         * Update refresh time ONLY after
+         * successful API response.
+         */
+
+        setLastRefresh(
+          new Date()
+        );
+
+
+        console.log(
+          "Dashboard refreshed at:",
+          new Date().toLocaleString()
+        );
+
+
+        return mappedRows;
+
+
+      } catch (err) {
+
+        console.error(
+          "Failed to load ledger data:",
+          err
+        );
+
+
+        setError(
+          err.message ||
+          "Failed to load ledger data"
+        );
+
+
+        /*
+         * Do NOT erase existing rows when
+         * an automatic refresh temporarily fails.
+         *
+         * This prevents the dashboard from
+         * becoming blank because of a temporary
+         * network/API issue.
+         */
+
+        return null;
+
+
+      } finally {
+
+        setLoading(false);
 
       }
 
-
-      const result =
-        await response.json();
-
-
-      if (!result.success) {
-
-        throw new Error(
-          result.message ||
-          "Failed to fetch ledger data"
-        );
-
-      }
-
-
-      const mappedRows =
-        (result.data || []).map(
-          mapBackendRow
-        );
-
-
-      console.log(
-        "Ledger rows loaded:",
-        mappedRows.length
-      );
-
-
-      setRows(mappedRows);
-
-
-      /*
-       * Data is coming automatically
-       * from the fixed Excel file through
-       * the backend API.
-       */
-
-      setFileName(
-        "enquiry sheet  old.xlsx"
-      );
-
-
-      setLastRefresh(
-        new Date()
-      );
-
-
-    } catch (err) {
-
-      console.error(
-        "Failed to load ledger data:",
-        err
-      );
-
-
-      setError(
-        err.message ||
-        "Failed to load ledger data"
-      );
-
-
-      setRows([]);
-
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  }
+    },
+    []
+  );
 
 
   /* =========================================================
-     LOAD DATA WHEN APPLICATION STARTS
-     ========================================================= */
+     INITIAL LOAD
+  ========================================================= */
 
   useEffect(() => {
 
     fetchLedgerData();
 
-  }, []);
+  }, [
+    fetchLedgerData
+  ]);
+
+
+  /* =========================================================
+     AUTOMATIC REFRESH
+     
+     Every 60 seconds.
+  ========================================================= */
+
+  useEffect(() => {
+
+    const interval =
+      setInterval(
+        () => {
+
+          console.log(
+            "Automatic dashboard refresh..."
+          );
+
+          fetchLedgerData();
+
+        },
+        AUTO_REFRESH_INTERVAL
+      );
+
+
+    return () => {
+
+      clearInterval(
+        interval
+      );
+
+    };
+
+  }, [
+    fetchLedgerData
+  ]);
+
+
+  /* =========================================================
+     REFRESH WHEN USER RETURNS TO TAB
+  ========================================================= */
+
+  useEffect(() => {
+
+    function handleVisibilityChange() {
+
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+
+        console.log(
+          "Dashboard became visible. Refreshing..."
+        );
+
+        fetchLedgerData();
+
+      }
+
+    }
+
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+
+
+    return () => {
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
+
+    };
+
+  }, [
+    fetchLedgerData
+  ]);
 
 
   /* =========================================================
      LOAD EXCEL DATA
-     Kept for compatibility with existing components.
-     ========================================================= */
+     
+     Kept for compatibility with existing
+     components.
+  ========================================================= */
 
   function loadExcelData(
     data,
@@ -620,14 +774,22 @@ export function DataProvider({
     }
 
 
-    setRows(data);
+    setRows(
+      data
+    );
 
 
     if (file) {
 
       setFileName(
         file.name ||
-        "Imported File"
+        EXCEL_FILE_NAME
+      );
+
+    } else {
+
+      setFileName(
+        EXCEL_FILE_NAME
       );
 
     }
@@ -642,7 +804,7 @@ export function DataProvider({
 
   /* =========================================================
      FILTER DATA
-     ========================================================= */
+  ========================================================= */
 
   const filteredRows =
     useMemo(() => {
@@ -653,7 +815,7 @@ export function DataProvider({
 
           /* =================================================
              COMPANY
-             ================================================= */
+          ================================================= */
 
           if (
             filters.company
@@ -677,7 +839,7 @@ export function DataProvider({
 
           /* =================================================
              FINANCIAL YEAR
-             ================================================= */
+          ================================================= */
 
           if (
             filters.year
@@ -706,7 +868,7 @@ export function DataProvider({
 
           /* =================================================
              MONTH
-             ================================================= */
+          ================================================= */
 
           if (
             filters.month
@@ -737,7 +899,7 @@ export function DataProvider({
 
           /* =================================================
              QUARTER
-             ================================================= */
+          ================================================= */
 
           if (
             filters.quarter
@@ -768,7 +930,7 @@ export function DataProvider({
 
           /* =================================================
              BD MEMBER
-             ================================================= */
+          ================================================= */
 
           if (
             filters.bdMember
@@ -792,7 +954,7 @@ export function DataProvider({
 
           /* =================================================
              TEAM LEADER
-             ================================================= */
+          ================================================= */
 
           if (
             filters.teamLeader
@@ -816,7 +978,7 @@ export function DataProvider({
 
           /* =================================================
              FRANCHISE
-             ================================================= */
+          ================================================= */
 
           if (
             filters.franchise
@@ -840,7 +1002,7 @@ export function DataProvider({
 
           /* =================================================
              INDUSTRY
-             ================================================= */
+          ================================================= */
 
           if (
             filters.industry
@@ -864,7 +1026,7 @@ export function DataProvider({
 
           /* =================================================
              SUB INDUSTRY
-             ================================================= */
+          ================================================= */
 
           if (
             filters.subIndustry
@@ -888,8 +1050,7 @@ export function DataProvider({
 
           /* =================================================
              CITY
-             CASE-INSENSITIVE
-             ================================================= */
+          ================================================= */
 
           if (
             filters.city
@@ -913,7 +1074,7 @@ export function DataProvider({
 
           /* =================================================
              CLIENT STATUS
-             ================================================= */
+          ================================================= */
 
           if (
             filters.clientStatus
@@ -937,7 +1098,7 @@ export function DataProvider({
 
           /* =================================================
              POSITION
-             ================================================= */
+          ================================================= */
 
           if (
             filters.position
@@ -961,7 +1122,7 @@ export function DataProvider({
 
           /* =================================================
              ENQUIRY STATUS
-             ================================================= */
+          ================================================= */
 
           if (
             filters.enquiryStatus
@@ -1021,7 +1182,7 @@ export function DataProvider({
 
   /* =========================================================
      DASHBOARD DATA
-     ========================================================= */
+  ========================================================= */
 
   const dashboardData =
     useMemo(
@@ -1042,7 +1203,7 @@ export function DataProvider({
 
   /* =========================================================
      PROVIDER
-     ========================================================= */
+  ========================================================= */
 
   return (
 
@@ -1099,7 +1260,7 @@ export function DataProvider({
 
 /* =========================================================
    USE DATA HOOK
-   ========================================================= */
+========================================================= */
 
 export function useData() {
 
