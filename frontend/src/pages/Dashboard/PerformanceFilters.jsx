@@ -37,9 +37,6 @@ function PerformanceFilters() {
       reportBy:
         filters.reportBy || "",
 
-      metricView:
-        filters.metricView || "",
-
       allTime:
         filters.allTime || "all",
 
@@ -74,9 +71,6 @@ function PerformanceFilters() {
       reportBy:
         filters.reportBy || "",
 
-      metricView:
-        filters.metricView || "",
-
       allTime:
         filters.allTime || "all",
 
@@ -99,16 +93,6 @@ function PerformanceFilters() {
 
   /* =========================================================
      NORMALIZE CITY
-     =========================================================
-     
-     Mumbai
-     mumbai
-     MUMBAI
-     MuMbAi
-
-     All become:
-
-     mumbai
      ========================================================= */
 
   function normalizeCity(value) {
@@ -123,16 +107,6 @@ function PerformanceFilters() {
 
   /* =========================================================
      FORMAT CITY NAME
-     =========================================================
-     
-     Used only for displaying the city in the dropdown.
-     
-     Example:
-     
-     MUMBAI      -> Mumbai
-     mumbai      -> Mumbai
-     NEW DELHI   -> New Delhi
-     new delhi   -> New Delhi
      ========================================================= */
 
   function formatCityName(value) {
@@ -204,17 +178,6 @@ function PerformanceFilters() {
 
   /* =========================================================
      UNIQUE CITIES
-     
-     CASE-INSENSITIVE
-     
-     This prevents:
-     
-     Mumbai
-     mumbai
-     MUMBAI
-     MuMbAi
-     
-     from appearing as separate options.
      ========================================================= */
 
   const cityOptions =
@@ -323,9 +286,6 @@ function PerformanceFilters() {
 
   /* =========================================================
      MONTHS
-     
-     Existing Financial Year + Month dependency
-     is preserved.
      ========================================================= */
 
   const months =
@@ -437,8 +397,6 @@ function PerformanceFilters() {
 
   /* =========================================================
      FINANCIAL QUARTERS
-     
-     Quarter label includes month range.
      ========================================================= */
 
   const quarters = [
@@ -472,25 +430,6 @@ function PerformanceFilters() {
 
   const reportView =
     selectedFilters.viewBy || "";
-
-
-  /* =========================================================
-     VIEW BY OPTIONS
-     ========================================================= */
-
-  const metricViewOptions = [
-
-    {
-      label: "Count",
-      value: "count"
-    },
-
-    {
-      label: "Revenue",
-      value: "revenue"
-    }
-
-  ];
 
 
   /* =========================================================
@@ -674,17 +613,11 @@ function PerformanceFilters() {
           updated.reportBy =
             "";
 
-          updated.metricView =
-            "";
-
         }
 
 
         /* ================================================
            SORT BY CHANGED
-           
-           Clear existing values so that the newly
-           selected Sort By field can be used.
            ================================================ */
 
         if (
@@ -706,18 +639,6 @@ function PerformanceFilters() {
 
         /* ================================================
            VIEW REPORT AS CHANGED
-           
-           ALL TIME
-           No dependent period.
-
-           YEARLY
-           Only FY.
-
-           QUARTERLY
-           Only Quarter.
-
-           MONTHLY
-           Only Month.
            ================================================ */
 
         if (
@@ -789,8 +710,6 @@ function PerformanceFilters() {
 
         /* ================================================
            FINANCIAL YEAR CHANGED
-           
-           Existing old filter behavior preserved.
            ================================================ */
 
         if (
@@ -893,7 +812,6 @@ function PerformanceFilters() {
 
       ...selectedFilters,
 
-      // Keep City standardized for the filter state.
       city:
         selectedFilters.city
           ? formatCityName(
@@ -917,8 +835,6 @@ function PerformanceFilters() {
       viewBy: "",
 
       reportBy: "",
-
-      metricView: "",
 
       allTime: "all",
 
@@ -1011,13 +927,6 @@ function PerformanceFilters() {
           "Sub Industry"
         )
     },
-
-    /* =======================================================
-       CITY
-
-       Uses normalized city options so different
-       capitalization is treated as the same city.
-       ======================================================= */
 
     {
       label: "City",
@@ -1255,22 +1164,6 @@ function PerformanceFilters() {
 
   /* =========================================================
      VIEW REPORT PERIOD FILTERS
-     
-     IMPORTANT:
-     
-     All Time
-     → No dependent filter
-
-     Yearly
-     → FY only
-
-     Quarterly
-     → Quarter only
-
-     Monthly
-     → Month only
-
-     NO FY for Quarterly or Monthly.
      ========================================================= */
 
   function renderViewReportPeriodFilters() {
@@ -1292,8 +1185,6 @@ function PerformanceFilters() {
 
     /* =======================================================
        YEARLY
-       
-       FY only.
        ======================================================= */
 
     if (
@@ -1321,9 +1212,6 @@ function PerformanceFilters() {
 
     /* =======================================================
        QUARTERLY
-       
-       Quarter only.
-       NO FY.
        ======================================================= */
 
     if (
@@ -1351,9 +1239,6 @@ function PerformanceFilters() {
 
     /* =======================================================
        MONTHLY
-       
-       Month only.
-       NO FY.
        ======================================================= */
 
     if (
@@ -1506,18 +1391,6 @@ function PerformanceFilters() {
 
 
           {/* =================================================
-              VIEW BY
-              ================================================= */}
-
-          {renderSelect(
-            "View By",
-            "metricView",
-            metricViewOptions,
-            "Select View By"
-          )}
-
-
-          {/* =================================================
               SORT BY
               ================================================= */}
 
@@ -1538,8 +1411,6 @@ function PerformanceFilters() {
 
           {/* =================================================
               FINANCIAL YEAR
-              
-              OLD BASE FILTER PRESERVED.
               ================================================= */}
 
           {renderSelect(
@@ -1552,8 +1423,6 @@ function PerformanceFilters() {
 
           {/* =================================================
               MONTH
-              
-              OLD BASE FILTER PRESERVED.
               ================================================= */}
 
           {renderSelect(
@@ -1624,10 +1493,6 @@ function PerformanceFilters() {
 
           {/* =================================================
               CLIENT STATUS
-              
-              Visible for:
-              - Overall Dashboard
-              - Client Performance
               ================================================= */}
 
           {(
@@ -1687,10 +1552,6 @@ function PerformanceFilters() {
 
           {/* =================================================
               ENQUIRY STATUS
-              
-              Visible for:
-              - Overall Dashboard
-              - Enquiry Performance
               ================================================= */}
 
           {(
@@ -1766,3 +1627,4 @@ function PerformanceFilters() {
 
 
 export default PerformanceFilters;
+
