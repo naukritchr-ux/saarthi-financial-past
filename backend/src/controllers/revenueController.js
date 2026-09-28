@@ -1,7 +1,6 @@
 const { put, get } = require("@vercel/blob");
 
-const REVENUE_BLOB_PATH =
-  "revenue/tchr-revenue-data.json";
+const REVENUE_BLOB_PATH = "revenue/tchr-revenue-data.json";
 
 /* =========================
    GET REVENUE DATA
@@ -10,22 +9,43 @@ const REVENUE_BLOB_PATH =
 async function getRevenueData(req, res) {
   try {
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      throw new Error(
-        "BLOB_READ_WRITE_TOKEN is not configured in Vercel."
-      );
+      return res.status(500).json({
+        success: false,
+        message: "BLOB_READ_WRITE_TOKEN is not configured in Vercel.",
+      });
     }
 
-    const result = await get(
-      REVENUE_BLOB_PATH,
-      {
+    let result;
+
+    try {
+      result = await get(REVENUE_BLOB_PATH, {
         access: "private",
         useCache: false,
-      }
-    );
+      });
+    } catch (blobError) {
+      /*
+        Blob file does not exist yet.
+        This is normal for the first request.
+      */
+      const message = String(blobError?.message || "").toLowerCase();
 
-    /*
-      Blob does not exist yet.
-    */
+      if (
+        message.includes("not found") ||
+        message.includes("does not exist") ||
+        message.includes("blob not found") ||
+        blobError?.status === 404 ||
+        blobError?.code === "NOT_FOUND"
+      ) {
+        return res.status(200).json({
+          success: true,
+          data: null,
+          exists: false,
+        });
+      }
+
+      throw blobError;
+    }
+
     if (!result) {
       return res.status(200).json({
         success: true,
@@ -34,12 +54,7 @@ async function getRevenueData(req, res) {
       });
     }
 
-    /*
-      Read the private Blob stream.
-    */
-    const text = await new Response(
-      result.stream
-    ).text();
+    const text = await new Response(result.stream).text();
 
     if (!text) {
       return res.status(200).json({
@@ -58,10 +73,7 @@ async function getRevenueData(req, res) {
       updatedAt: data.updatedAt || null,
     });
   } catch (error) {
-    console.error(
-      "GET /api/revenue ERROR:",
-      error
-    );
+    console.error("GET /api/revenue ERROR:", error);
 
     return res.status(500).json({
       success: false,
@@ -79,9 +91,10 @@ async function getRevenueData(req, res) {
 async function saveRevenueData(req, res) {
   try {
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      throw new Error(
-        "BLOB_READ_WRITE_TOKEN is not configured in Vercel."
-      );
+      return res.status(500).json({
+        success: false,
+        message: "BLOB_READ_WRITE_TOKEN is not configured in Vercel.",
+      });
     }
 
     const body = req.body;
@@ -116,21 +129,16 @@ async function saveRevenueData(req, res) {
 
     return res.status(200).json({
       success: true,
-      message:
-        "Revenue data saved successfully.",
+      message: "Revenue data saved successfully.",
       data: dataToSave,
       pathname: blob.pathname,
     });
   } catch (error) {
-    console.error(
-      "POST /api/revenue ERROR:",
-      error
-    );
+    console.error("POST /api/revenue ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Unable to save shared Revenue data.",
+      message: "Unable to save shared Revenue data.",
       error: error.message,
       code: error.code || null,
     });
