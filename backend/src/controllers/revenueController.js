@@ -1,4 +1,5 @@
-const { put, get } = require("@vercel/blob");
+
+const { put, list } = require("@vercel/blob");
 
 const REVENUE_BLOB_PATH = "revenue/tchr-revenue-data.json";
 
@@ -20,17 +21,21 @@ async function getRevenueData(req, res) {
     }
 
     /*
-      Find the existing Revenue JSON file.
+    Find the Revenue blob.
     */
-    const result = await get(REVENUE_BLOB_PATH, {
-      access: "private",
+    const result = await list({
+      prefix: REVENUE_BLOB_PATH,
       token,
     });
 
+    const blob = result.blobs.find(
+      (item) => item.pathname === REVENUE_BLOB_PATH
+    );
+
     /*
-      If the file does not exist yet, return an empty dataset.
+    No Revenue file exists yet.
     */
-    if (!result) {
+    if (!blob) {
       return res.status(200).json({
         success: true,
         data: [],
@@ -40,10 +45,17 @@ async function getRevenueData(req, res) {
     }
 
     /*
-      Vercel Blob returns the file body as a stream.
-      Convert it to text and then JSON.
+    Fetch the blob contents using its URL.
     */
-    const text = await result.blob.text();
+    const response = await fetch(blob.url);
+
+    if (!response.ok) {
+      throw new Error(
+        `Unable to read Revenue blob. HTTP ${response.status}`
+      );
+    }
+
+    const text = await response.text();
 
     if (!text) {
       return res.status(200).json({
@@ -56,9 +68,17 @@ async function getRevenueData(req, res) {
     const parsedData = JSON.parse(text);
 
     /*
-      Support both:
-        - directly stored array
-        - { data: [...] }
+    Support both formats:
+
+    [
+      {...}
+    ]
+
+    OR
+
+    {
+      data: [...]
+    }
     */
     const data = Array.isArray(parsedData)
       ? parsedData
@@ -79,24 +99,6 @@ async function getRevenueData(req, res) {
     console.error("Error stack:", error.stack);
     console.error("==========================================");
 
-    /*
-      If the Blob file does not exist yet, start with [].
-    */
-    if (
-      error.message &&
-      (
-        error.message.toLowerCase().includes("not found") ||
-        error.message.toLowerCase().includes("blob not found")
-      )
-    ) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-        count: 0,
-        message: "No Revenue data found yet",
-      });
-    }
-
     return res.status(500).json({
       success: false,
       message: "Unable to load Revenue data",
@@ -108,7 +110,7 @@ async function getRevenueData(req, res) {
 /*
 =========================================================
 SAVE REVENUE DATA
-Writes the shared Revenue data to Vercel Blob
+Writes shared Revenue data to Vercel Blob
 =========================================================
 */
 async function saveRevenueData(req, res) {
@@ -122,17 +124,18 @@ async function saveRevenueData(req, res) {
       });
     }
 
-    /*
-      The frontend should send the Revenue data
-      in req.body.
-    */
     let incomingData = req.body;
 
     /*
-      Support:
-        { data: [...] }
-      or
-        [...]
+    Support:
+
+    {
+      data: [...]
+    }
+
+    OR
+
+    [...]
     */
     if (
       incomingData &&
@@ -142,9 +145,6 @@ async function saveRevenueData(req, res) {
       incomingData = incomingData.data;
     }
 
-    /*
-      Revenue data must be an array.
-    */
     if (!Array.isArray(incomingData)) {
       return res.status(400).json({
         success: false,
@@ -153,7 +153,7 @@ async function saveRevenueData(req, res) {
     }
 
     /*
-      Save the complete shared dataset.
+    Store the shared Revenue dataset.
     */
     const payload = JSON.stringify(
       {
@@ -164,23 +164,23 @@ async function saveRevenueData(req, res) {
       2
     );
 
-    /*
-      Write/update the same Blob path every time.
-      This makes the data shared between users.
-    */
-    const blob = await put(REVENUE_BLOB_PATH, payload, {
-      access: "private",
-      token,
-      contentType: "application/json",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
+    const blob = await put(
+      REVENUE_BLOB_PATH,
+      payload,
+      {
+        access: "public",
+        token,
+        contentType: "application/json",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      }
+    );
 
     console.log("==========================================");
-    console.log("REVENUE DATA SAVED");
-    console.log("Blob path:", REVENUE_BLOB_PATH);
-    console.log("Records:", incomingData.length);
+    console.log("REVENUE DATA SAVED SUCCESSFULLY");
+    console.log("Blob pathname:", blob.pathname);
     console.log("Blob URL:", blob.url);
+    console.log("Records:", incomingData.length);
     console.log("==========================================");
 
     return res.status(200).json({
@@ -209,4 +209,3 @@ module.exports = {
   getRevenueData,
   saveRevenueData,
 };
-
