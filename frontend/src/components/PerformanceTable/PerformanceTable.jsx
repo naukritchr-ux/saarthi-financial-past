@@ -13,7 +13,57 @@ function PerformanceTable() {
   const [search, setSearch] = useState("");
 
 
-  // Create rows directly from uploaded Excel data
+  // =================================================
+  // FORMAT DATE AS DD/MM/YYYY
+  // =================================================
+  function formatDate(value) {
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return "";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    const day = String(
+      date.getDate()
+    ).padStart(2, "0");
+
+    const month = String(
+      date.getMonth() + 1
+    ).padStart(2, "0");
+
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
+
+
+  // =================================================
+  // CHECK WHETHER COLUMN IS A DATE COLUMN
+  // =================================================
+  function isDateColumn(header) {
+
+    const normalizedHeader = header
+      .toLowerCase()
+      .trim();
+
+    return (
+      normalizedHeader.includes("date") ||
+      normalizedHeader === "joining date"
+    );
+
+  }
+
+
+  // Create rows directly from Excel data
   const rows = useMemo(() => {
 
     return filteredRows
@@ -25,22 +75,21 @@ function PerformanceTable() {
           .includes(search.toLowerCase());
 
       })
-      .map((row,index)=>({
+      .map((row, index) => ({
 
-        id:index + 1,
+        id: index + 1,
 
         ...row
 
       }));
 
-  },[filteredRows,search]);
-
+  }, [filteredRows, search]);
 
 
   // Generate columns from Excel headers
-  const columns = useMemo(()=>{
+  const columns = useMemo(() => {
 
-    if(!filteredRows.length){
+    if (!filteredRows.length) {
 
       return [];
 
@@ -50,38 +99,50 @@ function PerformanceTable() {
     const headers = Object.keys(filteredRows[0]);
 
 
-    return headers.map((header)=>({
+    return headers.map((header) => ({
 
-      field:header,
+      field: header,
 
-      headerName:header,
+      headerName: header,
 
-      flex:1.5,
+      flex: 1.5,
 
-      minWidth:150,
-
-
-      renderCell:(params)=>{
-
-        const value=params.value;
+      minWidth: 150,
 
 
-        if(
+      renderCell: (params) => {
+
+        const value = params.value;
+
+
+        if (
           value === null ||
           value === undefined
-        ){
+        ) {
 
           return "";
 
         }
 
 
-        // Format amount fields
-        if(
+        // =================================================
+        // FORMAT DATE FIELDS AS DD/MM/YYYY
+        // =================================================
+        if (isDateColumn(header)) {
+
+          return formatDate(value);
+
+        }
+
+
+        // =================================================
+        // FORMAT AMOUNT FIELDS
+        // =================================================
+        if (
           header.toLowerCase().includes("amount") ||
           header.toLowerCase().includes("billing") ||
           header.toLowerCase().includes("revenue")
-        ){
+        ) {
 
           return `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
@@ -95,8 +156,7 @@ function PerformanceTable() {
     }));
 
 
-  },[filteredRows]);
-
+  }, [filteredRows]);
 
 
   return (
@@ -120,7 +180,7 @@ function PerformanceTable() {
 
           value={search}
 
-          onChange={(e)=>setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
 
         />
 
@@ -135,15 +195,15 @@ function PerformanceTable() {
 
         columns={columns}
 
-        pageSizeOptions={[25,50,100]}
+        pageSizeOptions={[25, 50, 100]}
 
         initialState={{
 
-          pagination:{
+          pagination: {
 
-            paginationModel:{
+            paginationModel: {
 
-              pageSize:25
+              pageSize: 25
 
             }
 
