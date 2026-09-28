@@ -4,8 +4,6 @@ const fs = require("fs");
 
 /* =========================================================
    EXCEL FILE PATH
-   Exact file:
-   C:\TCHR Project\backend\data\enquiry sheet  old.xlsx
 ========================================================= */
 
 const BACKEND_ROOT = path.resolve(__dirname, "../..");
@@ -16,8 +14,12 @@ const EXCEL_FILE = path.join(
   "enquiry sheet  old.xlsx"
 );
 
+console.log("==========================================");
+console.log("TCHR LEDGER CONTROLLER");
 console.log("BACKEND ROOT:", BACKEND_ROOT);
 console.log("EXCEL FILE:", EXCEL_FILE);
+console.log("EXCEL EXISTS:", fs.existsSync(EXCEL_FILE));
+console.log("==========================================");
 
 
 /* =========================================================
@@ -85,8 +87,9 @@ function normalizeHeader(value) {
 const NORMALIZED_COLUMN_MAP = {};
 
 Object.keys(COLUMN_MAP).forEach((excelColumn) => {
-  NORMALIZED_COLUMN_MAP[normalizeHeader(excelColumn)] =
-    COLUMN_MAP[excelColumn];
+  NORMALIZED_COLUMN_MAP[
+    normalizeHeader(excelColumn)
+  ] = COLUMN_MAP[excelColumn];
 });
 
 
@@ -128,6 +131,7 @@ const NUMBER_FIELDS = [
 function createEmptyRecord() {
   return {
     id: "",
+
     company_name: "",
     tann: "",
     tds: "",
@@ -139,31 +143,43 @@ function createEmptyRecord() {
     sub_industry: "",
     city: "",
     gst_number: "",
+
     no_of_employees: "",
+
     date_client_acquired: "",
     date_of_allocation: "",
     date_of_reallocation: "",
+
     placement_fees: "",
     salary_from: "",
     salary_offered: "",
+
     date_of_joining: "",
+
     bill_date: "",
     bill_number: "",
+
     service_charges: "",
     total_bill_amount: "",
+
     date_received: "",
     amount_received: "",
+
     franchisee_share: "",
+
     paid_on_date: "",
     soa_no: "",
+
     info: "",
     position_name: "",
+
     acquired_year: "",
     allotment_year: "",
     joining_year: "",
     bill_year: "",
     received_year: "",
     paid_year: "",
+
     created_at: "",
     updated_at: ""
   };
@@ -184,13 +200,44 @@ function normalizeDate(value) {
   }
 
   /* Excel serial date */
+
   if (typeof value === "number") {
-    const excelDate = XLSX.SSF.parse_date_code(value);
+    const excelDate =
+      XLSX.SSF.parse_date_code(value);
 
     if (excelDate) {
-      const year = String(excelDate.y).padStart(4, "0");
-      const month = String(excelDate.m).padStart(2, "0");
-      const day = String(excelDate.d).padStart(2, "0");
+      const year = String(excelDate.y).padStart(
+        4,
+        "0"
+      );
+
+      const month = String(excelDate.m).padStart(
+        2,
+        "0"
+      );
+
+      const day = String(excelDate.d).padStart(
+        2,
+        "0"
+      );
+
+      return `${year}-${month}-${day}`;
+    }
+  }
+
+  /* JavaScript Date */
+
+  if (value instanceof Date) {
+    if (!Number.isNaN(value.getTime())) {
+      const year = value.getFullYear();
+
+      const month = String(
+        value.getMonth() + 1
+      ).padStart(2, "0");
+
+      const day = String(
+        value.getDate()
+      ).padStart(2, "0");
 
       return `${year}-${month}-${day}`;
     }
@@ -203,39 +250,67 @@ function normalizeDate(value) {
   }
 
   /* YYYY-MM-DD */
-  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(stringValue)) {
+
+  if (
+    /^\d{4}-\d{1,2}-\d{1,2}$/.test(
+      stringValue
+    )
+  ) {
     const parts = stringValue.split("-");
 
-    return `${parts[0]}-${String(parts[1]).padStart(2, "0")}-${String(
+    return `${parts[0]}-${String(
+      parts[1]
+    ).padStart(2, "0")}-${String(
       parts[2]
     ).padStart(2, "0")}`;
   }
 
   /* DD/MM/YYYY */
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(stringValue)) {
+
+  if (
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(
+      stringValue
+    )
+  ) {
     const parts = stringValue.split("/");
 
-    return `${parts[2]}-${String(parts[1]).padStart(2, "0")}-${String(
+    return `${parts[2]}-${String(
+      parts[1]
+    ).padStart(2, "0")}-${String(
       parts[0]
     ).padStart(2, "0")}`;
   }
 
   /* DD-MM-YYYY */
-  if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(stringValue)) {
+
+  if (
+    /^\d{1,2}-\d{1,2}-\d{4}$/.test(
+      stringValue
+    )
+  ) {
     const parts = stringValue.split("-");
 
-    return `${parts[2]}-${String(parts[1]).padStart(2, "0")}-${String(
+    return `${parts[2]}-${String(
+      parts[1]
+    ).padStart(2, "0")}-${String(
       parts[0]
     ).padStart(2, "0")}`;
   }
 
-  /* JavaScript Date */
+  /* JavaScript parsable date */
+
   const parsedDate = new Date(stringValue);
 
   if (!Number.isNaN(parsedDate.getTime())) {
     const year = parsedDate.getFullYear();
-    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-    const day = String(parsedDate.getDate()).padStart(2, "0");
+
+    const month = String(
+      parsedDate.getMonth() + 1
+    ).padStart(2, "0");
+
+    const day = String(
+      parsedDate.getDate()
+    ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   }
@@ -289,37 +364,42 @@ function normalizeRow(excelRow, index) {
 
   record.id = index + 1;
 
-  Object.keys(excelRow).forEach((originalHeader) => {
-    const normalizedHeader =
-      normalizeHeader(originalHeader);
+  Object.keys(excelRow).forEach(
+    (originalHeader) => {
+      const normalizedHeader =
+        normalizeHeader(originalHeader);
 
-    const fieldName =
-      NORMALIZED_COLUMN_MAP[normalizedHeader];
+      const fieldName =
+        NORMALIZED_COLUMN_MAP[
+          normalizedHeader
+        ];
 
-    if (!fieldName) {
-      return;
+      if (!fieldName) {
+        return;
+      }
+
+      let value =
+        excelRow[originalHeader];
+
+      if (DATE_FIELDS.includes(fieldName)) {
+        value = normalizeDate(value);
+      }
+
+      if (NUMBER_FIELDS.includes(fieldName)) {
+        value = normalizeNumber(value);
+      }
+
+      if (
+        value !== null &&
+        value !== undefined &&
+        typeof value === "string"
+      ) {
+        value = value.trim();
+      }
+
+      record[fieldName] = value;
     }
-
-    let value = excelRow[originalHeader];
-
-    if (DATE_FIELDS.includes(fieldName)) {
-      value = normalizeDate(value);
-    }
-
-    if (NUMBER_FIELDS.includes(fieldName)) {
-      value = normalizeNumber(value);
-    }
-
-    if (
-      value !== null &&
-      value !== undefined &&
-      typeof value === "string"
-    ) {
-      value = value.trim();
-    }
-
-    record[fieldName] = value;
-  });
+  );
 
   return record;
 }
@@ -331,15 +411,22 @@ function normalizeRow(excelRow, index) {
 
 function readExcelData() {
   try {
+    console.log(
+      "Reading Excel file:"
+    );
+
+    console.log(EXCEL_FILE);
+
     if (!fs.existsSync(EXCEL_FILE)) {
       throw new Error(
         `Excel file not found: ${EXCEL_FILE}`
       );
     }
 
-    const workbook = XLSX.readFile(EXCEL_FILE, {
-      cellDates: true
-    });
+    const workbook =
+      XLSX.readFile(EXCEL_FILE, {
+        cellDates: true
+      });
 
     if (
       !workbook.SheetNames ||
@@ -353,6 +440,11 @@ function readExcelData() {
     const firstSheetName =
       workbook.SheetNames[0];
 
+    console.log(
+      "Reading worksheet:",
+      firstSheetName
+    );
+
     const worksheet =
       workbook.Sheets[firstSheetName];
 
@@ -362,21 +454,36 @@ function readExcelData() {
       );
     }
 
-    const rows = XLSX.utils.sheet_to_json(
-      worksheet,
-      {
-        defval: "",
-        raw: true
-      }
+    const rows =
+      XLSX.utils.sheet_to_json(
+        worksheet,
+        {
+          defval: "",
+          raw: true
+        }
+      );
+
+    console.log(
+      "Excel rows found:",
+      rows.length
     );
 
-    return rows.map((row, index) =>
-      normalizeRow(row, index)
+    const records = rows.map(
+      (row, index) =>
+        normalizeRow(row, index)
     );
+
+    console.log(
+      "Normalized records:",
+      records.length
+    );
+
+    return records;
+
   } catch (error) {
     console.error(
       "READ EXCEL ERROR:",
-      error.message
+      error
     );
 
     throw error;
@@ -391,13 +498,15 @@ function readExcelData() {
 
 async function getLedgerRecords(req, res) {
   try {
-    const records = readExcelData();
+    const records =
+      readExcelData();
 
     return res.status(200).json({
       success: true,
       count: records.length,
       data: records
     });
+
   } catch (error) {
     console.error(
       "GET LEDGER RECORDS ERROR:",
@@ -406,8 +515,12 @@ async function getLedgerRecords(req, res) {
 
     return res.status(500).json({
       success: false,
-      message: "Unable to load ledger records",
-      error: error.message
+      message:
+        "Unable to load ledger records",
+      error: error.message,
+      excelFile: EXCEL_FILE,
+      excelExists:
+        fs.existsSync(EXCEL_FILE)
     });
   }
 }
@@ -418,21 +531,29 @@ async function getLedgerRecords(req, res) {
    GET /api/ledger/:id
 ========================================================= */
 
-async function getLedgerRecordById(req, res) {
+async function getLedgerRecordById(
+  req,
+  res
+) {
   try {
-    const { id } = req.params;
+    const { id } =
+      req.params;
 
-    const records = readExcelData();
+    const records =
+      readExcelData();
 
-    const record = records.find(
-      (item) =>
-        String(item.id) === String(id)
-    );
+    const record =
+      records.find(
+        (item) =>
+          String(item.id) ===
+          String(id)
+      );
 
     if (!record) {
       return res.status(404).json({
         success: false,
-        message: "Ledger record not found"
+        message:
+          "Ledger record not found"
       });
     }
 
@@ -440,6 +561,7 @@ async function getLedgerRecordById(req, res) {
       success: true,
       data: record
     });
+
   } catch (error) {
     console.error(
       "GET LEDGER RECORD ERROR:",
@@ -448,7 +570,8 @@ async function getLedgerRecordById(req, res) {
 
     return res.status(500).json({
       success: false,
-      message: "Unable to load ledger record",
+      message:
+        "Unable to load ledger record",
       error: error.message
     });
   }
