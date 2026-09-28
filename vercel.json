@@ -1,5 +1,16 @@
+
 {
   "version": 2,
+
+  "functions": {
+    "api/index.js": {
+      "includeFiles": [
+        "backend/data/enquiry sheet  old.xlsx",
+        "backend/src/**"
+      ]
+    }
+  },
+
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -7,7 +18,8 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/frontend/index.html"
+      "destination": "/index.html"
     }
   ]
 }
+
