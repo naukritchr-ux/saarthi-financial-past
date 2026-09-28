@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import "./revenue.css";
 
@@ -26,15 +26,13 @@ const salaryRows = [
   "Job portal Salary",
 ];
 
-// =====================================================
-// AMOUNT INPUT
-// =====================================================
+const REVENUE_API_URL = "/api/revenue";
 
-function AmountInput({
-  value,
-  onChange,
-  disabled,
-}) {
+/* =========================
+   INPUT COMPONENTS
+========================= */
+
+function AmountInput({ value, onChange, disabled }) {
   return (
     <input
       className="revenue-input"
@@ -47,7 +45,6 @@ function AmountInput({
       onChange={(event) => {
         const nextValue = event.target.value;
 
-        // Allow only whole numbers
         if (/^\d*$/.test(nextValue)) {
           onChange(nextValue);
         }
@@ -56,15 +53,7 @@ function AmountInput({
   );
 }
 
-// =====================================================
-// TAX INPUT
-// =====================================================
-
-function TaxInput({
-  value,
-  onChange,
-  disabled,
-}) {
+function TaxInput({ value, onChange, disabled }) {
   return (
     <input
       className="revenue-input tax-input"
@@ -77,7 +66,6 @@ function TaxInput({
       onChange={(event) => {
         const nextValue = event.target.value;
 
-        // Allow empty value, whole numbers and decimals
         if (
           nextValue === "" ||
           /^\d*\.?\d*$/.test(nextValue)
@@ -89,9 +77,9 @@ function TaxInput({
   );
 }
 
-// =====================================================
-// CREATE INITIAL DATA
-// =====================================================
+/* =========================
+   HELPERS
+========================= */
 
 function createInitialData(rows) {
   const data = {};
@@ -107,10 +95,6 @@ function createInitialData(rows) {
   return data;
 }
 
-// =====================================================
-// NUMBER HELPER
-// =====================================================
-
 function getNumber(value) {
   if (
     value === "" ||
@@ -125,10 +109,6 @@ function getNumber(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
-// =====================================================
-// CHECK IF VALUE IS FILLED
-// =====================================================
-
 function hasValue(value) {
   return (
     value !== "" &&
@@ -137,9 +117,9 @@ function hasValue(value) {
   );
 }
 
-// =====================================================
-// CHECK ALL REQUIRED FIELDS
-// =====================================================
+/* =========================
+   REQUIRED FIELD CHECK
+========================= */
 
 function checkAllRequiredFields(
   revenue,
@@ -149,7 +129,6 @@ function checkAllRequiredFields(
 ) {
   const allValues = [];
 
-  // REVENUE FIELDS
   revenueRows.forEach((row) => {
     financialYears.forEach((year) => {
       allValues.push(
@@ -158,7 +137,6 @@ function checkAllRequiredFields(
     });
   });
 
-  // EXPENDITURE FIELDS
   expenditureRows.forEach((row) => {
     financialYears.forEach((year) => {
       allValues.push(
@@ -167,7 +145,6 @@ function checkAllRequiredFields(
     });
   });
 
-  // SALARY FIELDS
   salaryRows.forEach((row) => {
     financialYears.forEach((year) => {
       allValues.push(
@@ -176,7 +153,6 @@ function checkAllRequiredFields(
     });
   });
 
-  // INCOME TAX %
   allValues.push(incomeTaxPercentage ?? "");
 
   const hasAnyValue = allValues.some((value) =>
@@ -193,111 +169,172 @@ function checkAllRequiredFields(
   };
 }
 
-// =====================================================
-// REVENUE COMPONENT
-// =====================================================
+/* =========================
+   REVENUE COMPONENT
+========================= */
 
 function Revenue() {
-  // ===================================================
-  // LOAD SAVED DATA
-  // ===================================================
-
-  const savedData = (() => {
-    try {
-      const data = localStorage.getItem(
-        "tchr-revenue-data"
-      );
-
-      return data ? JSON.parse(data) : null;
-    } catch (error) {
-      return null;
-    }
-  })();
-
-  // ===================================================
-  // INITIAL DATA
-  // ===================================================
-
-  const initialRevenue =
-    savedData?.revenue ||
-    createInitialData(revenueRows);
-
-  const initialExpenditure =
-    savedData?.expenditure ||
-    createInitialData(expenditureRows);
-
-  const initialSalary =
-    savedData?.salary ||
-    createInitialData(salaryRows);
-
-  const initialIncomeTaxPercentage =
-    savedData?.incomeTaxPercentage || "";
-
-  // ===================================================
-  // STATES
-  // ===================================================
-
-  const [revenue, setRevenue] = useState(
-    initialRevenue
+  const [revenue, setRevenue] = useState(() =>
+    createInitialData(revenueRows)
   );
 
-  const [expenditure, setExpenditure] = useState(
-    initialExpenditure
+  const [expenditure, setExpenditure] = useState(() =>
+    createInitialData(expenditureRows)
   );
 
-  const [salary, setSalary] = useState(
-    initialSalary
+  const [salary, setSalary] = useState(() =>
+    createInitialData(salaryRows)
   );
 
   const [
     incomeTaxPercentage,
     setIncomeTaxPercentage,
-  ] = useState(
-    initialIncomeTaxPercentage
-  );
+  ] = useState("");
 
-  // ===================================================
-  // INITIAL LOCK STATE
-  // ===================================================
-  //
-  // IMPORTANT:
-  // Do NOT use savedData?.isSaved here.
-  //
-  // The actual field values determine whether the
-  // fields should be locked.
-  //
-  // Empty fields       = unlocked
-  // Partial fields     = unlocked
-  // All fields filled  = locked
-  //
-  // This prevents old localStorage data containing
-  // "isSaved": true from locking empty fields.
-  // ===================================================
+  const [isSaved, setIsSaved] = useState(false);
 
-  const initialLockState =
-    checkAllRequiredFields(
-      initialRevenue,
-      initialExpenditure,
-      initialSalary,
-      initialIncomeTaxPercentage
-    ).allFieldsFilled;
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [isSaved, setIsSaved] = useState(
-    initialLockState
-  );
+  const [isSaving, setIsSaving] = useState(false);
 
-  // ===================================================
-  // REVENUE INPUT HANDLER
-  // ===================================================
+  /* =========================
+     LOAD SHARED DATA
+  ========================= */
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadRevenueData() {
+      try {
+        setIsLoading(true);
+
+        const response = await fetch(
+          REVENUE_API_URL,
+          {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.message ||
+              "Unable to load Revenue data."
+          );
+        }
+
+        /*
+          No saved shared data yet.
+        */
+        if (!result.exists || !result.data) {
+          if (isMounted) {
+            setRevenue(
+              createInitialData(revenueRows)
+            );
+
+            setExpenditure(
+              createInitialData(expenditureRows)
+            );
+
+            setSalary(
+              createInitialData(salaryRows)
+            );
+
+            setIncomeTaxPercentage("");
+
+            setIsSaved(false);
+          }
+
+          return;
+        }
+
+        const savedData = result.data;
+
+        const loadedRevenue =
+          savedData.revenue ||
+          createInitialData(revenueRows);
+
+        const loadedExpenditure =
+          savedData.expenditure ||
+          createInitialData(expenditureRows);
+
+        const loadedSalary =
+          savedData.salary ||
+          createInitialData(salaryRows);
+
+        const loadedIncomeTaxPercentage =
+          savedData.incomeTaxPercentage ?? "";
+
+        /*
+          We calculate the lock state from the
+          actual loaded values.
+
+          This preserves the existing behavior:
+          all fields filled = locked
+          otherwise = editable
+        */
+        const lockState =
+          checkAllRequiredFields(
+            loadedRevenue,
+            loadedExpenditure,
+            loadedSalary,
+            loadedIncomeTaxPercentage
+          ).allFieldsFilled;
+
+        if (isMounted) {
+          setRevenue(loadedRevenue);
+
+          setExpenditure(
+            loadedExpenditure
+          );
+
+          setSalary(loadedSalary);
+
+          setIncomeTaxPercentage(
+            loadedIncomeTaxPercentage
+          );
+
+          setIsSaved(lockState);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load shared Revenue data:",
+          error
+        );
+
+        /*
+          Do not destroy existing React state if
+          loading fails.
+        */
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadRevenueData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  /* =========================
+     CHANGE HANDLERS
+  ========================= */
 
   function handleRevenueChange(
     row,
     year,
     value
   ) {
-    if (isSaved) {
-      return;
-    }
+    if (isSaved || isLoading) return;
 
     setRevenue((previous) => ({
       ...previous,
@@ -308,18 +345,12 @@ function Revenue() {
     }));
   }
 
-  // ===================================================
-  // EXPENDITURE INPUT HANDLER
-  // ===================================================
-
   function handleExpenditureChange(
     row,
     year,
     value
   ) {
-    if (isSaved) {
-      return;
-    }
+    if (isSaved || isLoading) return;
 
     setExpenditure((previous) => ({
       ...previous,
@@ -330,18 +361,12 @@ function Revenue() {
     }));
   }
 
-  // ===================================================
-  // SALARY INPUT HANDLER
-  // ===================================================
-
   function handleSalaryChange(
     row,
     year,
     value
   ) {
-    if (isSaved) {
-      return;
-    }
+    if (isSaved || isLoading) return;
 
     setSalary((previous) => ({
       ...previous,
@@ -352,21 +377,15 @@ function Revenue() {
     }));
   }
 
-  // ===================================================
-  // INCOME TAX CHANGE
-  // ===================================================
-
   function handleIncomeTaxChange(value) {
-    if (isSaved) {
-      return;
-    }
+    if (isSaved || isLoading) return;
 
     setIncomeTaxPercentage(value);
   }
 
-  // ===================================================
-  // CHECK REQUIRED FIELDS
-  // ===================================================
+  /* =========================
+     FIELD CHECK
+  ========================= */
 
   function checkRevenueFields() {
     return checkAllRequiredFields(
@@ -377,112 +396,155 @@ function Revenue() {
     );
   }
 
-  // ===================================================
-  // SAVE DATA
-  // ===================================================
+  /* =========================
+     SAVE
+  ========================= */
 
-  function handleSave() {
+  async function handleSave() {
+    if (isLoading || isSaving) {
+      return;
+    }
+
     const {
       hasAnyValue,
       allFieldsFilled,
     } = checkRevenueFields();
 
-    // =================================================
-    // ALL FIELDS EMPTY
-    // =================================================
-    //
-    // Save empty state and make sure page remains
-    // editable.
-    // =================================================
-
-    if (!hasAnyValue) {
-      const dataToSave = {
-        revenue,
-        expenditure,
-        salary,
-        incomeTaxPercentage: "",
-        isSaved: false,
-      };
-
-      localStorage.setItem(
-        "tchr-revenue-data",
-        JSON.stringify(dataToSave)
-      );
-
-      setIsSaved(false);
-
-      return;
-    }
-
-    // =================================================
-    // SOME OR ALL FIELDS HAVE VALUES
-    // =================================================
-
+    /*
+      Preserve original behavior:
+      If absolutely nothing is entered,
+      save the empty state and keep editable.
+    */
     const dataToSave = {
       revenue,
       expenditure,
       salary,
-      incomeTaxPercentage,
+      incomeTaxPercentage:
+        hasAnyValue
+          ? incomeTaxPercentage
+          : "",
       isSaved: allFieldsFilled,
     };
 
-    localStorage.setItem(
-      "tchr-revenue-data",
-      JSON.stringify(dataToSave)
-    );
+    try {
+      setIsSaving(true);
 
-    // =================================================
-    // SOME FIELDS ARE EMPTY
-    // =================================================
-    //
-    // Data is saved but fields remain editable.
-    // =================================================
+      const response = await fetch(
+        REVENUE_API_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(dataToSave),
+        }
+      );
 
-    if (!allFieldsFilled) {
-      setIsSaved(false);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message ||
+            "Unable to save Revenue data."
+        );
+      }
+
+      /*
+        Use the server response as the source
+        of truth after Save.
+      */
+      if (result.data) {
+        setRevenue(
+          result.data.revenue ||
+            createInitialData(revenueRows)
+        );
+
+        setExpenditure(
+          result.data.expenditure ||
+            createInitialData(
+              expenditureRows
+            )
+        );
+
+        setSalary(
+          result.data.salary ||
+            createInitialData(salaryRows)
+        );
+
+        setIncomeTaxPercentage(
+          result.data
+            .incomeTaxPercentage ?? ""
+        );
+      }
+
+      /*
+        Preserve original locking behavior:
+        all fields filled = locked
+        partial/empty = editable
+      */
+      setIsSaved(allFieldsFilled);
+    } catch (error) {
+      console.error(
+        "Failed to save shared Revenue data:",
+        error
+      );
+
+      window.alert(
+        error.message ||
+          "Unable to save Revenue data."
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  /* =========================
+     EDIT
+  ========================= */
+
+  function handleEdit() {
+    if (isLoading || isSaving) {
       return;
     }
 
-    // =================================================
-    // ALL REQUIRED FIELDS ARE FILLED
-    // =================================================
-    //
-    // Save and lock fields.
-    // =================================================
+    /*
+      Edit only unlocks the fields.
 
-    setIsSaved(true);
-  }
-
-  // ===================================================
-  // EDIT DATA
-  // ===================================================
-
-  function handleEdit() {
+      The shared server data is NOT changed until
+      Save is clicked.
+    */
     setIsSaved(false);
   }
 
-  // ===================================================
-  // REVENUE CALCULATIONS
-  // ===================================================
+  /* =========================
+     REVENUE TOTALS
+  ========================= */
 
   const revenueTotals = {};
 
   financialYears.forEach((year) => {
     revenueTotals[year] =
       getNumber(
-        revenue["Recruitment Revenue"]?.[year]
+        revenue["Recruitment Revenue"]?.[
+          year
+        ]
       ) +
       getNumber(
-        revenue["Franchisee Revenue"]?.[year]
+        revenue["Franchisee Revenue"]?.[
+          year
+        ]
       ) +
       getNumber(
-        revenue["Job portal Revenue"]?.[year]
+        revenue["Job portal Revenue"]?.[
+          year
+        ]
       );
   });
 
-  // ===================================================
-  // EXPENDITURE CALCULATIONS
-  // ===================================================
+  /* =========================
+     EXPENDITURE TOTALS
+  ========================= */
 
   const expenditureTotals = {};
 
@@ -505,28 +567,34 @@ function Revenue() {
       );
   });
 
-  // ===================================================
-  // SALARY CALCULATIONS
-  // ===================================================
+  /* =========================
+     SALARY TOTALS
+  ========================= */
 
   const salaryTotals = {};
 
   financialYears.forEach((year) => {
     salaryTotals[year] =
       getNumber(
-        salary["Recruitment Salary"]?.[year]
+        salary["Recruitment Salary"]?.[
+          year
+        ]
       ) +
       getNumber(
-        salary["Franchisee Salary"]?.[year]
+        salary["Franchisee Salary"]?.[
+          year
+        ]
       ) +
       getNumber(
-        salary["Job portal Salary"]?.[year]
+        salary["Job portal Salary"]?.[
+          year
+        ]
       );
   });
 
-  // ===================================================
-  // FINAL REVENUE CALCULATIONS
-  // ===================================================
+  /* =========================
+     FINAL REVENUE
+  ========================= */
 
   const finalRevenue = {
     Recruitment: {},
@@ -536,10 +604,11 @@ function Revenue() {
   };
 
   financialYears.forEach((year) => {
-    // Recruitment
     finalRevenue.Recruitment[year] =
       getNumber(
-        revenue["Recruitment Revenue"]?.[year]
+        revenue["Recruitment Revenue"]?.[
+          year
+        ]
       ) -
       getNumber(
         expenditure[
@@ -547,13 +616,16 @@ function Revenue() {
         ]?.[year]
       ) -
       getNumber(
-        salary["Recruitment Salary"]?.[year]
+        salary["Recruitment Salary"]?.[
+          year
+        ]
       );
 
-    // Franchisee
     finalRevenue.Franchisee[year] =
       getNumber(
-        revenue["Franchisee Revenue"]?.[year]
+        revenue["Franchisee Revenue"]?.[
+          year
+        ]
       ) -
       getNumber(
         expenditure[
@@ -561,13 +633,16 @@ function Revenue() {
         ]?.[year]
       ) -
       getNumber(
-        salary["Franchisee Salary"]?.[year]
+        salary["Franchisee Salary"]?.[
+          year
+        ]
       );
 
-    // Job portal
     finalRevenue["Job portal"][year] =
       getNumber(
-        revenue["Job portal Revenue"]?.[year]
+        revenue["Job portal Revenue"]?.[
+          year
+        ]
       ) -
       getNumber(
         expenditure[
@@ -575,39 +650,43 @@ function Revenue() {
         ]?.[year]
       ) -
       getNumber(
-        salary["Job portal Salary"]?.[year]
+        salary["Job portal Salary"]?.[
+          year
+        ]
       );
 
-    // Total Final Revenue
     finalRevenue.Total[year] =
       finalRevenue.Recruitment[year] +
       finalRevenue.Franchisee[year] +
       finalRevenue["Job portal"][year];
   });
 
-  // ===================================================
-  // OVERALL REVENUE
-  // ===================================================
+  /* =========================
+     OVERALL REVENUE
+  ========================= */
 
   const overallRevenue = {
     ...finalRevenue.Total,
   };
 
-  // ===================================================
-  // INCOME TAX
-  // ===================================================
+  /* =========================
+     INCOME TAX
+  ========================= */
 
   const incomeTax = {};
 
   financialYears.forEach((year) => {
     incomeTax[year] =
       overallRevenue[year] *
-      (getNumber(incomeTaxPercentage) / 100);
+      (getNumber(
+        incomeTaxPercentage
+      ) /
+        100);
   });
 
-  // ===================================================
-  // NET INCOME
-  // ===================================================
+  /* =========================
+     NET INCOME
+  ========================= */
 
   const netIncome = {};
 
@@ -617,9 +696,9 @@ function Revenue() {
       incomeTax[year];
   });
 
-  // ===================================================
-  // FORMAT NUMBER
-  // ===================================================
+  /* =========================
+     FORMAT NUMBER
+  ========================= */
 
   function formatNumber(value) {
     return value.toLocaleString("en-IN", {
@@ -627,414 +706,352 @@ function Revenue() {
     });
   }
 
-  // ===================================================
-  // RENDER
-  // ===================================================
+  /* =========================
+     UI
+  ========================= */
 
   return (
     <div className="revenue-page">
-
-      {/* =================================================
-          PAGE HEADER
-      ================================================= */}
-
       <div className="revenue-page-header">
-
         <h1>Revenue</h1>
 
         <p>
           Manage revenue, expenditure, salary and
           final income details.
         </p>
-
       </div>
 
-      {/* =================================================
-          REVENUE SECTION
-      ================================================= */}
+      {/* =========================
+          REVENUE
+      ========================= */}
 
       <div className="revenue-section">
-
         <div className="revenue-section-header">
-
           <h2>Revenue</h2>
-
         </div>
 
         <div className="revenue-table-wrapper">
-
           <table className="revenue-table">
-
             <thead>
-
               <tr>
-
                 <th>Revenue Type</th>
 
                 {financialYears.map((year) => (
-                  <th key={year}>{year}</th>
+                  <th key={year}>
+                    {year}
+                  </th>
                 ))}
-
               </tr>
-
             </thead>
 
             <tbody>
-
               {revenueRows.map((row) => (
-
                 <tr key={row}>
-
                   <td>{row}</td>
 
-                  {financialYears.map((year) => (
-
-                    <td key={year}>
-
-                      <AmountInput
-                        value={
-                          revenue[row]?.[year] || ""
-                        }
-                        disabled={isSaved}
-                        onChange={(value) =>
-                          handleRevenueChange(
-                            row,
-                            year,
-                            value
-                          )
-                        }
-                      />
-
-                    </td>
-
-                  ))}
-
+                  {financialYears.map(
+                    (year) => (
+                      <td key={year}>
+                        <AmountInput
+                          value={
+                            revenue[row]?.[
+                              year
+                            ] || ""
+                          }
+                          disabled={
+                            isSaved ||
+                            isLoading ||
+                            isSaving
+                          }
+                          onChange={(value) =>
+                            handleRevenueChange(
+                              row,
+                              year,
+                              value
+                            )
+                          }
+                        />
+                      </td>
+                    )
+                  )}
                 </tr>
-
               ))}
 
               <tr className="total-row">
-
                 <td>Total Revenue</td>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    {formatNumber(
-                      revenueTotals[year]
-                    )}
-
-                  </td>
-
-                ))}
-
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        revenueTotals[year]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
-      {/* =================================================
-          EXPENDITURE SECTION
-      ================================================= */}
+      {/* =========================
+          EXPENDITURE
+      ========================= */}
 
       <div className="revenue-section">
-
         <div className="revenue-section-header">
-
           <h2>Expenditure</h2>
-
         </div>
 
         <div className="revenue-table-wrapper">
-
           <table className="revenue-table">
-
             <thead>
-
               <tr>
-
                 <th>Expenditure Type</th>
 
                 {financialYears.map((year) => (
-                  <th key={year}>{year}</th>
+                  <th key={year}>
+                    {year}
+                  </th>
                 ))}
-
               </tr>
-
             </thead>
 
             <tbody>
+              {expenditureRows.map(
+                (row) => (
+                  <tr key={row}>
+                    <td>{row}</td>
 
-              {expenditureRows.map((row) => (
-
-                <tr key={row}>
-
-                  <td>{row}</td>
-
-                  {financialYears.map((year) => (
-
-                    <td key={year}>
-
-                      <AmountInput
-                        value={
-                          expenditure[row]?.[year] ||
-                          ""
-                        }
-                        disabled={isSaved}
-                        onChange={(value) =>
-                          handleExpenditureChange(
-                            row,
-                            year,
-                            value
-                          )
-                        }
-                      />
-
-                    </td>
-
-                  ))}
-
-                </tr>
-
-              ))}
+                    {financialYears.map(
+                      (year) => (
+                        <td key={year}>
+                          <AmountInput
+                            value={
+                              expenditure[
+                                row
+                              ]?.[
+                                year
+                              ] || ""
+                            }
+                            disabled={
+                              isSaved ||
+                              isLoading ||
+                              isSaving
+                            }
+                            onChange={(
+                              value
+                            ) =>
+                              handleExpenditureChange(
+                                row,
+                                year,
+                                value
+                              )
+                            }
+                          />
+                        </td>
+                      )
+                    )}
+                  </tr>
+                )
+              )}
 
               <tr className="total-row">
+                <td>
+                  Total Expenditure
+                </td>
 
-                <td>Total Expenditure</td>
-
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    {formatNumber(
-                      expenditureTotals[year]
-                    )}
-
-                  </td>
-
-                ))}
-
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        expenditureTotals[
+                          year
+                        ]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
-      {/* =================================================
-          SALARY SECTION
-      ================================================= */}
+      {/* =========================
+          SALARY
+      ========================= */}
 
       <div className="revenue-section">
-
         <div className="revenue-section-header">
-
           <h2>Salary</h2>
-
         </div>
 
         <div className="revenue-table-wrapper">
-
           <table className="revenue-table">
-
             <thead>
-
               <tr>
-
                 <th>Salary Type</th>
 
                 {financialYears.map((year) => (
-                  <th key={year}>{year}</th>
+                  <th key={year}>
+                    {year}
+                  </th>
                 ))}
-
               </tr>
-
             </thead>
 
             <tbody>
-
               {salaryRows.map((row) => (
-
                 <tr key={row}>
-
                   <td>{row}</td>
 
-                  {financialYears.map((year) => (
-
-                    <td key={year}>
-
-                      <AmountInput
-                        value={
-                          salary[row]?.[year] || ""
-                        }
-                        disabled={isSaved}
-                        onChange={(value) =>
-                          handleSalaryChange(
-                            row,
-                            year,
-                            value
-                          )
-                        }
-                      />
-
-                    </td>
-
-                  ))}
-
+                  {financialYears.map(
+                    (year) => (
+                      <td key={year}>
+                        <AmountInput
+                          value={
+                            salary[row]?.[
+                              year
+                            ] || ""
+                          }
+                          disabled={
+                            isSaved ||
+                            isLoading ||
+                            isSaving
+                          }
+                          onChange={(value) =>
+                            handleSalaryChange(
+                              row,
+                              year,
+                              value
+                            )
+                          }
+                        />
+                      </td>
+                    )
+                  )}
                 </tr>
-
               ))}
 
               <tr className="total-row">
-
                 <td>Total Salary</td>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    {formatNumber(
-                      salaryTotals[year]
-                    )}
-
-                  </td>
-
-                ))}
-
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        salaryTotals[year]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
-      {/* =================================================
-          FINAL REVENUE SECTION
-      ================================================= */}
+      {/* =========================
+          FINAL REVENUE
+      ========================= */}
 
       <div className="revenue-section">
-
         <div className="revenue-section-header">
-
           <h2>Final Revenue</h2>
-
         </div>
 
         <div className="revenue-table-wrapper">
-
           <table className="revenue-table">
-
             <thead>
-
               <tr>
-
                 <th>Revenue Type</th>
 
                 {financialYears.map((year) => (
-                  <th key={year}>{year}</th>
+                  <th key={year}>
+                    {year}
+                  </th>
                 ))}
-
               </tr>
-
             </thead>
 
             <tbody>
-
               <tr>
-
                 <td>Recruitment</td>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    {formatNumber(
-                      finalRevenue.Recruitment[year]
-                    )}
-
-                  </td>
-
-                ))}
-
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        finalRevenue
+                          .Recruitment[
+                          year
+                        ]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
 
               <tr>
-
                 <td>Franchisee</td>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    {formatNumber(
-                      finalRevenue.Franchisee[year]
-                    )}
-
-                  </td>
-
-                ))}
-
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        finalRevenue
+                          .Franchisee[
+                          year
+                        ]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
 
               <tr>
-
                 <td>Job portal</td>
 
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    {formatNumber(
-                      finalRevenue["Job portal"][year]
-                    )}
-
-                  </td>
-
-                ))}
-
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        finalRevenue[
+                          "Job portal"
+                        ][year]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
 
               <tr className="total-row">
+                <td>
+                  Total Final Revenue
+                </td>
 
-                <td>Total Final Revenue</td>
-
-                {financialYears.map((year) => (
-
-                  <td key={year}>
-
-                    {formatNumber(
-                      finalRevenue.Total[year]
-                    )}
-
-                  </td>
-
-                ))}
-
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        finalRevenue.Total[
+                          year
+                        ]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
-      {/* =================================================
+      {/* =========================
           OVERALL REVENUE
-      ================================================= */}
+      ========================= */}
 
       <div className="revenue-section overall-revenue-section">
         <div className="revenue-section-header">
@@ -1048,91 +1065,117 @@ function Revenue() {
                 <th></th>
 
                 {financialYears.map((year) => (
-                  <th key={year}>{year}</th>
+                  <th key={year}>
+                    {year}
+                  </th>
                 ))}
               </tr>
             </thead>
 
             <tbody>
-              {/* Overall Revenue */}
               <tr>
                 <td>Overall Revenue</td>
 
-                {financialYears.map((year) => (
-                  <td key={year}>
-                    {formatNumber(overallRevenue[year])}
-                  </td>
-                ))}
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        overallRevenue[
+                          year
+                        ]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
 
-              {/* Income Tax % */}
               <tr>
                 <td>Income Tax %</td>
 
-                {financialYears.map((year) => (
-                  <td key={year}>
-                    <div className="tax-input-wrapper">
-                      <TaxInput
-                        value={incomeTaxPercentage}
-                        disabled={isSaved}
-                        onChange={handleIncomeTaxChange}
-                      />
-                      <span>%</span>
-                    </div>
-                  </td>
-                ))}
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      <div className="tax-input-wrapper">
+                        <TaxInput
+                          value={
+                            incomeTaxPercentage
+                          }
+                          disabled={
+                            isSaved ||
+                            isLoading ||
+                            isSaving
+                          }
+                          onChange={
+                            handleIncomeTaxChange
+                          }
+                        />
+
+                        <span>%</span>
+                      </div>
+                    </td>
+                  )
+                )}
               </tr>
 
-              {/* Income Tax */}
               <tr>
                 <td>Income Tax</td>
 
-                {financialYears.map((year) => (
-                  <td key={year}>
-                    {formatNumber(incomeTax[year])}
-                  </td>
-                ))}
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        incomeTax[year]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
 
-              {/* Net Income */}
               <tr className="net-income-row">
                 <td>Net Income</td>
 
-                {financialYears.map((year) => (
-                  <td key={year}>
-                    {formatNumber(netIncome[year])}
-                  </td>
-                ))}
+                {financialYears.map(
+                  (year) => (
+                    <td key={year}>
+                      {formatNumber(
+                        netIncome[year]
+                      )}
+                    </td>
+                  )
+                )}
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* =================================================
-          SAVE / EDIT BUTTONS
-      ================================================= */}
+      {/* =========================
+          SAVE / EDIT
+      ========================= */}
 
       <div className="revenue-action-buttons">
-
         <button
           type="button"
           className="revenue-save-button"
           onClick={handleSave}
+          disabled={
+            isLoading || isSaving
+          }
         >
-          Save
+          {isSaving ? "Saving..." : "Save"}
         </button>
 
         <button
           type="button"
           className="revenue-edit-button"
           onClick={handleEdit}
+          disabled={
+            isLoading || isSaving
+          }
         >
           Edit
         </button>
-
       </div>
-
     </div>
   );
 }
