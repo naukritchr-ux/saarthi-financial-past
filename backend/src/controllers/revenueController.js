@@ -1,17 +1,7 @@
-const REVENUE_BLOB_PATH = "revenue/tchr-revenue-data.json";
+const { put, get } = require("@vercel/blob");
 
-/*
-  We use dynamic import here so this CommonJS backend
-  can safely use the current @vercel/blob package.
-*/
-async function getBlobFunctions() {
-  const blob = await import("@vercel/blob");
-
-  return {
-    put: blob.put,
-    get: blob.get,
-  };
-}
+const REVENUE_BLOB_PATH =
+  "revenue/tchr-revenue-data.json";
 
 /* =========================
    GET REVENUE DATA
@@ -19,18 +9,24 @@ async function getBlobFunctions() {
 
 async function getRevenueData(req, res) {
   try {
-    const { get } = await getBlobFunctions();
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error(
+        "BLOB_READ_WRITE_TOKEN is not configured in Vercel."
+      );
+    }
 
-    const result = await get(REVENUE_BLOB_PATH, {
-      access: "private",
-      useCache: false,
-    });
+    const result = await get(
+      REVENUE_BLOB_PATH,
+      {
+        access: "private",
+        useCache: false,
+      }
+    );
 
     /*
-      No Revenue file has been saved yet.
-      This is not an error.
+      Blob does not exist yet.
     */
-    if (!result || result.statusCode !== 200) {
+    if (!result) {
       return res.status(200).json({
         success: true,
         data: null,
@@ -39,45 +35,39 @@ async function getRevenueData(req, res) {
     }
 
     /*
-      Convert the Blob stream into text.
+      Read the private Blob stream.
     */
-    const text = await new Response(result.stream).text();
+    const text = await new Response(
+      result.stream
+    ).text();
 
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch (parseError) {
-      console.error(
-        "Revenue Blob JSON parse error:",
-        parseError
-      );
-
-      return res.status(500).json({
-        success: false,
-        message: "Saved Revenue data is corrupted.",
+    if (!text) {
+      return res.status(200).json({
+        success: true,
+        data: null,
+        exists: false,
       });
     }
+
+    const data = JSON.parse(text);
 
     return res.status(200).json({
       success: true,
       data,
       exists: true,
-      updatedAt: data?.updatedAt || null,
+      updatedAt: data.updatedAt || null,
     });
   } catch (error) {
     console.error(
-      "GET /api/revenue error:",
+      "GET /api/revenue ERROR:",
       error
     );
 
     return res.status(500).json({
       success: false,
       message: "Unable to load shared Revenue data.",
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : undefined,
+      error: error.message,
+      code: error.code || null,
     });
   }
 }
@@ -88,7 +78,11 @@ async function getRevenueData(req, res) {
 
 async function saveRevenueData(req, res) {
   try {
-    const { put } = await getBlobFunctions();
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error(
+        "BLOB_READ_WRITE_TOKEN is not configured in Vercel."
+      );
+    }
 
     const body = req.body;
 
@@ -99,9 +93,6 @@ async function saveRevenueData(req, res) {
       });
     }
 
-    /*
-      Keep the same data structure used by Revenue.jsx.
-    */
     const dataToSave = {
       revenue: body.revenue || {},
       expenditure: body.expenditure || {},
@@ -112,45 +103,36 @@ async function saveRevenueData(req, res) {
       updatedAt: new Date().toISOString(),
     };
 
-    /*
-      Save one shared JSON object.
-
-      Same pathname is intentionally used every time.
-      allowOverwrite allows Save/Edit to update
-      the existing shared Revenue data.
-    */
     const blob = await put(
       REVENUE_BLOB_PATH,
       JSON.stringify(dataToSave),
       {
         access: "private",
-        allowOverwrite: true,
         addRandomSuffix: false,
+        allowOverwrite: true,
         contentType: "application/json",
-        cacheControlMaxAge: 60,
       }
     );
 
     return res.status(200).json({
       success: true,
-      message: "Revenue data saved successfully.",
+      message:
+        "Revenue data saved successfully.",
       data: dataToSave,
       pathname: blob.pathname,
-      etag: blob.etag,
     });
   } catch (error) {
     console.error(
-      "POST /api/revenue error:",
+      "POST /api/revenue ERROR:",
       error
     );
 
     return res.status(500).json({
       success: false,
-      message: "Unable to save shared Revenue data.",
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : undefined,
+      message:
+        "Unable to save shared Revenue data.",
+      error: error.message,
+      code: error.code || null,
     });
   }
 }
