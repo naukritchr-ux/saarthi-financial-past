@@ -6,6 +6,7 @@
     "build": "npm --prefix frontend install && npm --prefix frontend run build"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "@vercel/blob": "^2.8.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
