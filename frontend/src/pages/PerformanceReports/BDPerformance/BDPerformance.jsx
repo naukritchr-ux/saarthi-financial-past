@@ -149,6 +149,23 @@ function getBDMember(row) {
 
 
 /* =========================================================
+   GET TANN
+   UNIQUE CLIENT IDENTIFIER
+========================================================= */
+
+function getTANN(row) {
+
+  return String(
+    row?.tann ??
+    row?.TANN ??
+    row?.["TANN"] ??
+    ""
+  ).trim();
+
+}
+
+
+/* =========================================================
    GET INDUSTRY
 ========================================================= */
 
@@ -896,10 +913,25 @@ function BDPerformance() {
             member,
             {
               member,
-              clients: 0,
-              franchisees: new Set(),
+
+              /*
+               * Unique acquired clients
+               */
+              acquiredClients:
+                new Set(),
+
+              /*
+               * Total enquiry records
+               */
+              enquiries: 0,
+
+              franchisees:
+                new Set(),
+
               billing: 0,
+
               netAmount: 0,
+
               bdExpenditure: 0
             }
           );
@@ -911,8 +943,38 @@ function BDPerformance() {
           map.get(member);
 
 
-        data.clients += 1;
+        /* =================================================
+           TOTAL ENQUIRIES
+        ================================================= */
 
+        data.enquiries += 1;
+
+
+        /* =================================================
+           UNIQUE ACQUIRED CLIENT
+           
+           TANN is used as the unique client identifier.
+           
+           If TANN is empty, the row is not added to
+           acquired client count.
+        ================================================= */
+
+        const tann =
+          getTANN(row);
+
+
+        if (tann) {
+
+          data.acquiredClients.add(
+            tann.toUpperCase()
+          );
+
+        }
+
+
+        /* =================================================
+           FRANCHISEE
+        ================================================= */
 
         const franchiseName =
           getFranchiseName(row);
@@ -926,6 +988,10 @@ function BDPerformance() {
 
         }
 
+
+        /* =================================================
+           FINANCIAL VALUES
+        ================================================= */
 
         data.billing +=
           financialValues.billing;
@@ -946,11 +1012,17 @@ function BDPerformance() {
       )
         .filter(
           item =>
-            item.clients > 0
+            item.enquiries > 0
         )
         .map(item => ({
 
           ...item,
+
+          /*
+           * Convert Sets into numbers for display
+           */
+          acquiredClients:
+            item.acquiredClients.size,
 
           franchisees:
             item.franchisees.size
@@ -958,7 +1030,8 @@ function BDPerformance() {
         }))
         .sort(
           (a, b) =>
-            b.clients - a.clients
+            b.acquiredClients -
+            a.acquiredClients
         );
 
     }, [
@@ -1658,6 +1731,10 @@ function BDPerformance() {
                 </th>
 
                 <th>
+                  Total Enquiries
+                </th>
+
+                <th>
                   No. of Franchisee
                 </th>
 
@@ -1695,8 +1772,8 @@ function BDPerformance() {
                   <td
                     colSpan={
                       hasBDExpenditurePercentage
-                        ? "7"
-                        : "6"
+                        ? "8"
+                        : "7"
                     }
                     className="bd-empty"
                   >
@@ -1739,12 +1816,33 @@ function BDPerformance() {
                       </td>
 
 
+                      {/* =================================
+                          UNIQUE ACQUIRED CLIENT
+                      ================================= */}
+
                       <td>
 
                         <span className="bd-client-count">
 
                           {
-                            member.clients
+                            member.acquiredClients
+                          }
+
+                        </span>
+
+                      </td>
+
+
+                      {/* =================================
+                          TOTAL ENQUIRIES
+                      ================================= */}
+
+                      <td>
+
+                        <span className="bd-client-count">
+
+                          {
+                            member.enquiries
                           }
 
                         </span>
