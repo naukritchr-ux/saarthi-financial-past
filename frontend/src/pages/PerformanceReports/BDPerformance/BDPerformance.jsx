@@ -111,7 +111,6 @@ function toNumber(value) {
   return Number.isFinite(number)
     ? number
     : 0;
-
 }
 
 
@@ -149,16 +148,19 @@ function getBDMember(row) {
 
 
 /* =========================================================
-   GET TANN
-   UNIQUE CLIENT IDENTIFIER
+   GET COMPANY NAME
+
+   UNIQUE ACQUIRED CLIENT IS BASED ON
+   COMPANY NAME
 ========================================================= */
 
-function getTANN(row) {
+function getCompanyName(row) {
 
   return String(
-    row?.tann ??
-    row?.TANN ??
-    row?.["TANN"] ??
+    row?.company_name ??
+    row?.["Company Name"] ??
+    row?.CompanyName ??
+    row?.companyName ??
     ""
   ).trim();
 
@@ -271,7 +273,6 @@ function getBDExpenditure(
   const billing =
     getBilling(row);
 
-
   if (
     percentage === null ||
     percentage === undefined ||
@@ -282,10 +283,8 @@ function getBDExpenditure(
 
   }
 
-
   const rate =
     Number(percentage);
-
 
   if (
     !Number.isFinite(rate) ||
@@ -295,7 +294,6 @@ function getBDExpenditure(
     return 0;
 
   }
-
 
   return billing * (
     rate / 100
@@ -328,12 +326,10 @@ function getFinancialYear(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
-
   if (dateValue) {
 
     const date =
       new Date(dateValue);
-
 
     if (
       !Number.isNaN(
@@ -347,7 +343,6 @@ function getFinancialYear(row) {
       const year =
         date.getFullYear();
 
-
       if (month >= 4) {
 
         return `${year}-${String(
@@ -355,7 +350,6 @@ function getFinancialYear(row) {
         ).slice(-2)}`;
 
       }
-
 
       return `${year - 1}-${String(
         year
@@ -365,12 +359,10 @@ function getFinancialYear(row) {
 
   }
 
-
   const acquiredYear =
     row?.acquired_year ??
     row?.["Aquired Year"] ??
     row?.["Acquired Year"];
-
 
   if (
     acquiredYear !== undefined &&
@@ -380,7 +372,6 @@ function getFinancialYear(row) {
 
     const year =
       Number(acquiredYear);
-
 
     if (
       Number.isFinite(year) &&
@@ -394,7 +385,6 @@ function getFinancialYear(row) {
     }
 
   }
-
 
   return "";
 
@@ -410,15 +400,12 @@ function getMonth(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
-
   if (!dateValue) {
     return "";
   }
 
-
   const date =
     new Date(dateValue);
-
 
   if (
     Number.isNaN(
@@ -429,7 +416,6 @@ function getMonth(row) {
     return "";
 
   }
-
 
   return date.getMonth() + 1;
 
@@ -525,15 +511,12 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         bdExpenditure: 0
 
       };
 
     }
-
 
     return {
 
@@ -570,15 +553,12 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         bdExpenditure: 0
 
       };
 
     }
-
 
     return {
 
@@ -609,15 +589,12 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         bdExpenditure: 0
 
       };
 
     }
-
 
     return {
 
@@ -648,15 +625,12 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         bdExpenditure: 0
 
       };
 
     }
-
 
     return {
 
@@ -675,9 +649,7 @@ function getFinancialValues(
   return {
 
     billing: 0,
-
     netAmount: 0,
-
     bdExpenditure: 0
 
   };
@@ -705,7 +677,6 @@ function BDTooltip({
 
   }
 
-
   return (
 
     <div className="bd-modern-tooltip">
@@ -713,7 +684,6 @@ function BDTooltip({
       <div className="bd-tooltip-label">
         {label}
       </div>
-
 
       {payload.map(
         (item, index) => (
@@ -726,7 +696,6 @@ function BDTooltip({
             <span>
               {item.name}
             </span>
-
 
             <strong>
 
@@ -815,19 +784,16 @@ function BDPerformance() {
       const years =
         new Set();
 
-
       rows.forEach(row => {
 
         const year =
           getFinancialYear(row);
-
 
         if (year) {
           years.add(year);
         }
 
       });
-
 
       return Array.from(years)
         .sort((a, b) => {
@@ -837,12 +803,10 @@ function BDPerformance() {
               String(a).slice(0, 4)
             );
 
-
           const yearB =
             Number(
               String(b).slice(0, 4)
             );
-
 
           return yearA - yearB;
 
@@ -853,6 +817,12 @@ function BDPerformance() {
 
   /* =======================================================
      BD MEMBER SUMMARY TABLE
+
+     Total Acquired Client:
+     UNIQUE Company Name
+
+     Total Enquiries:
+     EVERY FILTERED ROW
   ======================================================= */
 
   const memberData =
@@ -873,6 +843,10 @@ function BDPerformance() {
         }
 
 
+        /* ================================================
+           FINANCIAL YEAR FILTER
+        ================================================= */
+
         if (
           selectedFinancialYear &&
           getFinancialYear(row) !==
@@ -883,6 +857,10 @@ function BDPerformance() {
 
         }
 
+
+        /* ================================================
+           INFO STATUS FILTER
+        ================================================= */
 
         const info =
           getInfoStatus(row);
@@ -899,6 +877,10 @@ function BDPerformance() {
         }
 
 
+        /* ================================================
+           FINANCIAL VALUES
+        ================================================= */
+
         const financialValues =
           getFinancialValues(
             row,
@@ -907,21 +889,27 @@ function BDPerformance() {
           );
 
 
+        /* ================================================
+           CREATE MEMBER RECORD
+        ================================================= */
+
         if (!map.has(member)) {
 
           map.set(
             member,
             {
+
               member,
 
               /*
-               * Unique acquired clients
+               * Set stores unique Company Names.
                */
-              acquiredClients:
+              clients:
                 new Set(),
 
               /*
-               * Total enquiry records
+               * Every filtered row is
+               * one enquiry.
                */
               enquiries: 0,
 
@@ -933,6 +921,7 @@ function BDPerformance() {
               netAmount: 0,
 
               bdExpenditure: 0
+
             }
           );
 
@@ -943,36 +932,37 @@ function BDPerformance() {
           map.get(member);
 
 
-        /* =================================================
-           TOTAL ENQUIRIES
+        /* ================================================
+           TOTAL ACQUIRED CLIENT
+
+           UNIQUE COMPANY NAME
         ================================================= */
 
-        data.enquiries += 1;
+        const companyName =
+          getCompanyName(row);
 
 
-        /* =================================================
-           UNIQUE ACQUIRED CLIENT
-           
-           TANN is used as the unique client identifier.
-           
-           If TANN is empty, the row is not added to
-           acquired client count.
-        ================================================= */
+        if (companyName) {
 
-        const tann =
-          getTANN(row);
-
-
-        if (tann) {
-
-          data.acquiredClients.add(
-            tann.toUpperCase()
+          data.clients.add(
+            companyName
+              .toLowerCase()
+              .trim()
           );
 
         }
 
 
-        /* =================================================
+        /* ================================================
+           TOTAL ENQUIRIES
+
+           EVERY MATCHING ROW
+        ================================================= */
+
+        data.enquiries += 1;
+
+
+        /* ================================================
            FRANCHISEE
         ================================================= */
 
@@ -989,8 +979,8 @@ function BDPerformance() {
         }
 
 
-        /* =================================================
-           FINANCIAL VALUES
+        /* ================================================
+           FINANCIAL TOTALS
         ================================================= */
 
         data.billing +=
@@ -1010,28 +1000,35 @@ function BDPerformance() {
       return Array.from(
         map.values()
       )
+
         .filter(
           item =>
             item.enquiries > 0
         )
+
         .map(item => ({
 
           ...item,
 
           /*
-           * Convert Sets into numbers for display
+           * Convert unique Company Name Set
+           * into the final count.
            */
-          acquiredClients:
-            item.acquiredClients.size,
+          clients:
+            item.clients.size,
 
+          /*
+           * Convert franchise Set
+           * into the final count.
+           */
           franchisees:
             item.franchisees.size
 
         }))
+
         .sort(
           (a, b) =>
-            b.acquiredClients -
-            a.acquiredClients
+            b.clients - a.clients
         );
 
     }, [
@@ -1052,7 +1049,6 @@ function BDPerformance() {
       if (!selectedMember) {
         return [];
       }
-
 
       return rows.filter(
         row => {
@@ -1297,9 +1293,13 @@ function BDPerformance() {
           map.set(
             year,
             {
+
               year,
+
               clients: 0,
+
               billing: 0
+
             }
           );
 
@@ -1336,12 +1336,10 @@ function BDPerformance() {
             String(a.year).slice(0, 4)
           );
 
-
         const yearB =
           Number(
             String(b.year).slice(0, 4)
           );
-
 
         return yearA - yearB;
 
@@ -1376,10 +1374,17 @@ function BDPerformance() {
           monthMap.set(
             index + 1,
             {
-              month: month.full,
-              monthShort: month.short,
+
+              month:
+                month.full,
+
+              monthShort:
+                month.short,
+
               clients: 0,
+
               billing: 0
+
             }
           );
 
@@ -1730,6 +1735,8 @@ function BDPerformance() {
                   Total Acquired Client
                 </th>
 
+                {/* NEW COLUMN */}
+
                 <th>
                   Total Enquiries
                 </th>
@@ -1793,6 +1800,9 @@ function BDPerformance() {
                       }
                     >
 
+
+                      {/* BD MEMBER */}
+
                       <td>
 
                         <div className="bd-name">
@@ -1816,16 +1826,14 @@ function BDPerformance() {
                       </td>
 
 
-                      {/* =================================
-                          UNIQUE ACQUIRED CLIENT
-                      ================================= */}
+                      {/* UNIQUE ACQUIRED CLIENT */}
 
                       <td>
 
                         <span className="bd-client-count">
 
                           {
-                            member.acquiredClients
+                            member.clients
                           }
 
                         </span>
@@ -1833,9 +1841,7 @@ function BDPerformance() {
                       </td>
 
 
-                      {/* =================================
-                          TOTAL ENQUIRIES
-                      ================================= */}
+                      {/* TOTAL ENQUIRIES */}
 
                       <td>
 
@@ -1850,6 +1856,8 @@ function BDPerformance() {
                       </td>
 
 
+                      {/* FRANCHISEE */}
+
                       <td>
 
                         <span className="bd-client-count">
@@ -1862,6 +1870,8 @@ function BDPerformance() {
 
                       </td>
 
+
+                      {/* BILLING */}
 
                       <td>
 
@@ -1878,6 +1888,8 @@ function BDPerformance() {
                       </td>
 
 
+                      {/* NET AMOUNT */}
+
                       <td>
 
                         <span className="bd-net-value">
@@ -1892,6 +1904,8 @@ function BDPerformance() {
 
                       </td>
 
+
+                      {/* BD EXPENDITURE */}
 
                       {hasBDExpenditurePercentage && (
 
@@ -1911,6 +1925,8 @@ function BDPerformance() {
 
                       )}
 
+
+                      {/* PERFORMANCE */}
 
                       <td>
 
@@ -1958,9 +1974,10 @@ function BDPerformance() {
 
         <div
           className="bd-performance-overlay"
-          onClick={handleCloseModal}
+          onClick={
+            handleCloseModal
+          }
         >
-
 
           <div
             className="bd-performance-modal"
@@ -1997,7 +2014,9 @@ function BDPerformance() {
               <button
                 type="button"
                 className="bd-modal-close"
-                onClick={handleCloseModal}
+                onClick={
+                  handleCloseModal
+                }
                 aria-label="Close"
               >
                 ×
@@ -2113,7 +2132,6 @@ function BDPerformance() {
 
               </div>
 
-
             </div>
 
 
@@ -2132,7 +2150,6 @@ function BDPerformance() {
                   Financial Year
                 </label>
 
-
                 <select
                   id="bd-financial-year"
                   value={
@@ -2148,7 +2165,6 @@ function BDPerformance() {
                   <option value="">
                     None
                   </option>
-
 
                   {financialYears.map(
                     year => (
@@ -2173,7 +2189,6 @@ function BDPerformance() {
                 <label>
                   Info Status
                 </label>
-
 
                 <select
                   value={
@@ -2228,7 +2243,6 @@ function BDPerformance() {
                 </strong>
 
               </div>
-
 
             </div>
 
@@ -2465,7 +2479,6 @@ function BDPerformance() {
 
               </div>
 
-
             </div>
 
 
@@ -2489,13 +2502,14 @@ function BDPerformance() {
               <button
                 type="button"
                 className="bd-footer-close"
-                onClick={handleCloseModal}
+                onClick={
+                  handleCloseModal
+                }
               >
                 Close
               </button>
 
             </div>
-
 
           </div>
 
