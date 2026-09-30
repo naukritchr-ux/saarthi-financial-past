@@ -15,6 +15,9 @@ const DataContext = createContext();
 
 /* =========================================================
    API URL
+
+   Frontend continues to use the backend API.
+   Supabase credentials are NOT used here.
 ========================================================= */
 
 const API_URL =
@@ -24,14 +27,10 @@ const API_URL =
 
 
 /* =========================================================
-   FIXED EXCEL FILE NAME
-
-   This is the file used by the backend.
-   Keep this name only for display.
+   DATA SOURCE STATUS
 ========================================================= */
 
-const EXCEL_FILE_NAME =
-  "enquiry sheet  old.xlsx";
+const DATA_SOURCE_NAME = "Connected";
 
 
 /* =========================================================
@@ -92,6 +91,10 @@ function normalizeCity(value) {
 
 /* =========================================================
    MAP BACKEND ROW
+
+   The backend converts Supabase fields into the
+   existing API structure, so the rest of the application
+   does not need to change.
 ========================================================= */
 
 function mapBackendRow(record) {
@@ -440,17 +443,31 @@ export function DataProvider({
   const [rows, setRows] =
     useState([]);
 
+
   const [fileName, setFileName] =
     useState("");
+
 
   const [lastRefresh, setLastRefresh] =
     useState(null);
 
+
   const [loading, setLoading] =
     useState(true);
 
+
   const [error, setError] =
     useState(null);
+
+
+  /* =======================================================
+     CONNECTION STATUS
+
+     This value is controlled by the actual API response.
+  ======================================================= */
+
+  const [connectionStatus, setConnectionStatus] =
+    useState("Connecting...");
 
 
   /* =======================================================
@@ -503,8 +520,7 @@ export function DataProvider({
   /* =========================================================
      FETCH DATA FROM BACKEND
 
-     Cache busting is added so the browser does not reuse
-     an old /api/ledger response.
+     Backend now gets data from Supabase client_master.
   ========================================================= */
 
   const fetchLedgerData = useCallback(
@@ -516,6 +532,7 @@ export function DataProvider({
 
         setError(null);
 
+
         console.log(
           "Loading latest ledger data from:",
           API_URL
@@ -526,6 +543,7 @@ export function DataProvider({
           API_URL.includes("?")
             ? "&"
             : "?";
+
 
         const requestUrl =
           `${API_URL}${separator}_refresh=${Date.now()}`;
@@ -542,6 +560,7 @@ export function DataProvider({
               headers: {
                 "Cache-Control":
                   "no-cache",
+
                 "Pragma":
                   "no-cache"
               }
@@ -585,7 +604,7 @@ export function DataProvider({
 
 
         /*
-         * Update the actual dashboard data.
+         * Update actual dashboard data.
          */
 
         setRows(
@@ -594,17 +613,29 @@ export function DataProvider({
 
 
         /*
-         * This is the fixed Excel file used
-         * by the backend.
+         * Connection is confirmed only after
+         * successful API response.
          */
 
-        setFileName(
-          EXCEL_FILE_NAME
+        setConnectionStatus(
+          DATA_SOURCE_NAME
         );
 
 
         /*
-         * IMPORTANT:
+         * Keep fileName for compatibility
+         * with any existing components.
+         *
+         * It is NOT used for displaying
+         * the connection status in Topbar.
+         */
+
+        setFileName(
+          DATA_SOURCE_NAME
+        );
+
+
+        /*
          * Update refresh time ONLY after
          * successful API response.
          */
@@ -638,12 +669,17 @@ export function DataProvider({
 
 
         /*
+         * Actual connection status.
+         */
+
+        setConnectionStatus(
+          "Disconnected"
+        );
+
+
+        /*
          * Do NOT erase existing rows when
-         * an automatic refresh temporarily fails.
-         *
-         * This prevents the dashboard from
-         * becoming blank because of a temporary
-         * network/API issue.
+         * automatic refresh temporarily fails.
          */
 
         return null;
@@ -675,7 +711,7 @@ export function DataProvider({
 
   /* =========================================================
      AUTOMATIC REFRESH
-     
+
      Every 60 seconds.
   ========================================================= */
 
@@ -755,9 +791,10 @@ export function DataProvider({
 
   /* =========================================================
      LOAD EXCEL DATA
-     
-     Kept for compatibility with existing
-     components.
+
+     Kept for compatibility with existing components.
+
+     It is NOT used for normal application loading.
   ========================================================= */
 
   function loadExcelData(
@@ -779,20 +816,19 @@ export function DataProvider({
     );
 
 
-    if (file) {
+    /*
+     * Keep compatibility with existing components,
+     * but identify the actual permanent data source.
+     */
 
-      setFileName(
-        file.name ||
-        EXCEL_FILE_NAME
-      );
+    setFileName(
+      DATA_SOURCE_NAME
+    );
 
-    } else {
 
-      setFileName(
-        EXCEL_FILE_NAME
-      );
-
-    }
+    setConnectionStatus(
+      DATA_SOURCE_NAME
+    );
 
 
     setLastRefresh(
@@ -1219,6 +1255,8 @@ export function DataProvider({
         error,
 
         fileName,
+
+        connectionStatus,
 
         lastRefresh,
 

@@ -1,149 +1,79 @@
-const XLSX = require("xlsx");
-const path = require("path");
-const fs = require("fs");
+const { createClient } = require("@supabase/supabase-js");
 
 /* =========================================================
-   EXCEL FILE PATH
+   SUPABASE CONFIGURATION
 ========================================================= */
 
-const BACKEND_ROOT = path.resolve(__dirname, "../..");
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
-const EXCEL_FILE = path.join(
-  BACKEND_ROOT,
-  "data",
-  "enquiry sheet  old.xlsx"
+if (!SUPABASE_URL) {
+  console.error("ERROR: SUPABASE_URL is not configured");
+}
+
+if (!SUPABASE_SECRET_KEY) {
+  console.error(
+    "ERROR: SUPABASE_SECRET_KEY is not configured"
+  );
+}
+
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_SECRET_KEY
 );
+
+/* =========================================================
+   SUPABASE TABLE
+========================================================= */
+
+const TABLE_NAME = "client_master";
+
+/*
+  Supabase/PostgREST can return a limited number of rows
+  per request.
+
+  Therefore we fetch the table in batches.
+*/
+const BATCH_SIZE = 1000;
+
+/* =========================================================
+   LOG
+========================================================= */
 
 console.log("==========================================");
 console.log("TCHR LEDGER CONTROLLER");
-console.log("BACKEND ROOT:", BACKEND_ROOT);
-console.log("EXCEL FILE:", EXCEL_FILE);
-console.log("EXCEL EXISTS:", fs.existsSync(EXCEL_FILE));
+console.log("DATABASE: SUPABASE");
+console.log("TABLE:", TABLE_NAME);
+console.log("SUPABASE CONFIGURED:", Boolean(SUPABASE_URL));
+console.log(
+  "SUPABASE SECRET CONFIGURED:",
+  Boolean(SUPABASE_SECRET_KEY)
+);
 console.log("==========================================");
 
-
 /* =========================================================
-   EXCEL COLUMN MAPPING
-========================================================= */
-
-const COLUMN_MAP = {
-  "Company Name": "company_name",
-  "TANN": "tann",
-  "Client Status": "client_status",
-  "BD Member": "bd_member",
-  "Team Leader": "team_leader",
-  "Franchise Name": "franchise_name",
-  "Industry": "industry",
-  "Sub Industry": "sub_industry",
-  "City": "city",
-  "GSTNumber": "gst_number",
-  "No Of Employees": "no_of_employees",
-  "Date Client Acquired": "date_client_acquired",
-  "Date of Allocation": "date_of_allocation",
-  "Date of Reallocation": "date_of_reallocation",
-  "Placement Fees": "placement_fees",
-  "Salary From": "salary_from",
-  "Salary Offered": "salary_offered",
-  "Date of Joining": "date_of_joining",
-  "Bill Date": "bill_date",
-  "Bill Number": "bill_number",
-  "Service Charges": "service_charges",
-  "Total Bill Amount": "total_bill_amount",
-  "Date Received": "date_received",
-  "Amount Received": "amount_received",
-  "Franchisee Share": "franchisee_share",
-  "Paid On Date": "paid_on_date",
-  "SOA No": "soa_no",
-  "Info": "info",
-  "Aquired Year": "acquired_year",
-  "Allotment Year": "allotment_year",
-  "Joining Date": "joining_year",
-  "Bill Date Year": "bill_year",
-  "Recived Year": "received_year",
-  "Paid Date": "paid_year"
-};
-
-
-/* =========================================================
-   HEADER NORMALIZATION
-========================================================= */
-
-function normalizeHeader(value) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value)
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
-}
-
-
-/* =========================================================
-   NORMALIZED COLUMN MAP
-========================================================= */
-
-const NORMALIZED_COLUMN_MAP = {};
-
-Object.keys(COLUMN_MAP).forEach((excelColumn) => {
-  NORMALIZED_COLUMN_MAP[
-    normalizeHeader(excelColumn)
-  ] = COLUMN_MAP[excelColumn];
-});
-
-
-/* =========================================================
-   DATE FIELDS
-========================================================= */
-
-const DATE_FIELDS = [
-  "date_client_acquired",
-  "date_of_allocation",
-  "date_of_reallocation",
-  "date_of_joining",
-  "bill_date",
-  "date_received",
-  "paid_on_date"
-];
-
-
-/* =========================================================
-   NUMBER FIELDS
-========================================================= */
-
-const NUMBER_FIELDS = [
-  "no_of_employees",
-  "placement_fees",
-  "salary_from",
-  "salary_offered",
-  "service_charges",
-  "total_bill_amount",
-  "amount_received",
-  "franchisee_share"
-];
-
-
-/* =========================================================
-   DEFAULT RECORD
+   EMPTY RECORD
+   Keeps the same response structure as the old controller.
 ========================================================= */
 
 function createEmptyRecord() {
   return {
-    id: "",
+    id: null,
 
     company_name: "",
     tann: "",
     tds: "",
+
     client_status: "",
     bd_member: "",
     team_leader: "",
     franchise_name: "",
+
     industry: "",
     sub_industry: "",
     city: "",
-    gst_number: "",
 
+    gst_number: "",
     no_of_employees: "",
 
     date_client_acquired: "",
@@ -166,11 +96,11 @@ function createEmptyRecord() {
     amount_received: "",
 
     franchisee_share: "",
-
     paid_on_date: "",
-    soa_no: "",
 
+    soa_no: "",
     info: "",
+
     position_name: "",
 
     acquired_year: "",
@@ -185,9 +115,27 @@ function createEmptyRecord() {
   };
 }
 
+/* =========================================================
+   VALUE HELPER
+========================================================= */
+
+function emptyIfNull(value) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  return value;
+}
 
 /* =========================================================
-   DATE NORMALIZATION
+   DATE HELPER
+
+   Supabase may return DATE/TIMESTAMP values as strings.
+
+   Keep them in a frontend-compatible format.
 ========================================================= */
 
 function normalizeDate(value) {
@@ -199,48 +147,22 @@ function normalizeDate(value) {
     return "";
   }
 
-  /* Excel serial date */
-
-  if (typeof value === "number") {
-    const excelDate =
-      XLSX.SSF.parse_date_code(value);
-
-    if (excelDate) {
-      const year = String(excelDate.y).padStart(
-        4,
-        "0"
-      );
-
-      const month = String(excelDate.m).padStart(
-        2,
-        "0"
-      );
-
-      const day = String(excelDate.d).padStart(
-        2,
-        "0"
-      );
-
-      return `${year}-${month}-${day}`;
-    }
-  }
-
-  /* JavaScript Date */
-
   if (value instanceof Date) {
-    if (!Number.isNaN(value.getTime())) {
-      const year = value.getFullYear();
-
-      const month = String(
-        value.getMonth() + 1
-      ).padStart(2, "0");
-
-      const day = String(
-        value.getDate()
-      ).padStart(2, "0");
-
-      return `${year}-${month}-${day}`;
+    if (Number.isNaN(value.getTime())) {
+      return "";
     }
+
+    const year = value.getFullYear();
+
+    const month = String(
+      value.getMonth() + 1
+    ).padStart(2, "0");
+
+    const day = String(
+      value.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   }
 
   const stringValue = String(value).trim();
@@ -249,264 +171,355 @@ function normalizeDate(value) {
     return "";
   }
 
-  /* YYYY-MM-DD */
+  /*
+    If Supabase returns:
+    2024-04-25
+    2024-04-25T00:00:00+00:00
+  */
 
-  if (
-    /^\d{4}-\d{1,2}-\d{1,2}$/.test(
-      stringValue
-    )
-  ) {
-    const parts = stringValue.split("-");
+  const isoMatch =
+    stringValue.match(
+      /^(\d{4}-\d{2}-\d{2})/
+    );
 
-    return `${parts[0]}-${String(
-      parts[1]
-    ).padStart(2, "0")}-${String(
-      parts[2]
-    ).padStart(2, "0")}`;
-  }
-
-  /* DD/MM/YYYY */
-
-  if (
-    /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(
-      stringValue
-    )
-  ) {
-    const parts = stringValue.split("/");
-
-    return `${parts[2]}-${String(
-      parts[1]
-    ).padStart(2, "0")}-${String(
-      parts[0]
-    ).padStart(2, "0")}`;
-  }
-
-  /* DD-MM-YYYY */
-
-  if (
-    /^\d{1,2}-\d{1,2}-\d{4}$/.test(
-      stringValue
-    )
-  ) {
-    const parts = stringValue.split("-");
-
-    return `${parts[2]}-${String(
-      parts[1]
-    ).padStart(2, "0")}-${String(
-      parts[0]
-    ).padStart(2, "0")}`;
-  }
-
-  /* JavaScript parsable date */
-
-  const parsedDate = new Date(stringValue);
-
-  if (!Number.isNaN(parsedDate.getTime())) {
-    const year = parsedDate.getFullYear();
-
-    const month = String(
-      parsedDate.getMonth() + 1
-    ).padStart(2, "0");
-
-    const day = String(
-      parsedDate.getDate()
-    ).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
+  if (isoMatch) {
+    return isoMatch[1];
   }
 
   return stringValue;
 }
 
-
 /* =========================================================
-   NUMBER NORMALIZATION
+   SUPABASE RECORD -> OLD API RECORD
+
+   IMPORTANT:
+   Your existing DataContext expects these API field names.
+
+   Actual client_master fields include:
+     aquired_year
+     allotment_year
+     joining_date
+     bill_date_year
+     recived_year
+     paid_date
+
+   We convert them back to:
+     acquired_year
+     allotment_year
+     joining_year
+     bill_year
+     received_year
+     paid_year
+
+   This means the frontend does NOT need to be rewritten.
 ========================================================= */
 
-function normalizeNumber(value) {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return "";
+function mapSupabaseRecord(record) {
+  const result = createEmptyRecord();
+
+  if (!record) {
+    return result;
   }
 
-  if (typeof value === "number") {
-    return value;
-  }
+  result.id = record.id ?? null;
 
-  const cleaned = String(value)
-    .replace(/₹/g, "")
-    .replace(/,/g, "")
-    .trim();
+  /* =======================================================
+     BASIC CLIENT INFORMATION
+  ======================================================= */
 
-  if (!cleaned) {
-    return "";
-  }
+  result.company_name =
+    emptyIfNull(record.company_name);
 
-  const numberValue = Number(cleaned);
+  result.tann =
+    emptyIfNull(record.tann);
 
-  if (!Number.isNaN(numberValue)) {
-    return numberValue;
-  }
+  /*
+    TDS was not imported into client_master.
+    Keep empty for frontend compatibility.
+  */
+  result.tds = "";
 
-  return value;
-}
+  result.client_status =
+    emptyIfNull(record.client_status);
 
+  result.bd_member =
+    emptyIfNull(record.bd_member);
 
-/* =========================================================
-   NORMALIZE EXCEL ROW
-========================================================= */
+  result.team_leader =
+    emptyIfNull(record.team_leader);
 
-function normalizeRow(excelRow, index) {
-  const record = createEmptyRecord();
+  result.franchise_name =
+    emptyIfNull(record.franchise_name);
 
-  record.id = index + 1;
+  result.industry =
+    emptyIfNull(record.industry);
 
-  Object.keys(excelRow).forEach(
-    (originalHeader) => {
-      const normalizedHeader =
-        normalizeHeader(originalHeader);
+  result.sub_industry =
+    emptyIfNull(record.sub_industry);
 
-      const fieldName =
-        NORMALIZED_COLUMN_MAP[
-          normalizedHeader
-        ];
+  result.city =
+    emptyIfNull(record.city);
 
-      if (!fieldName) {
-        return;
-      }
+  result.gst_number =
+    emptyIfNull(record.gst_number);
 
-      let value =
-        excelRow[originalHeader];
+  result.no_of_employees =
+    emptyIfNull(record.no_of_employees);
 
-      if (DATE_FIELDS.includes(fieldName)) {
-        value = normalizeDate(value);
-      }
+  /* =======================================================
+     DATES
+  ======================================================= */
 
-      if (NUMBER_FIELDS.includes(fieldName)) {
-        value = normalizeNumber(value);
-      }
-
-      if (
-        value !== null &&
-        value !== undefined &&
-        typeof value === "string"
-      ) {
-        value = value.trim();
-      }
-
-      record[fieldName] = value;
-    }
-  );
-
-  return record;
-}
-
-
-/* =========================================================
-   READ EXCEL DATA
-========================================================= */
-
-function readExcelData() {
-  try {
-    console.log(
-      "Reading Excel file:"
+  result.date_client_acquired =
+    normalizeDate(
+      record.date_client_acquired
     );
 
-    console.log(EXCEL_FILE);
+  result.date_of_allocation =
+    normalizeDate(
+      record.date_of_allocation
+    );
 
-    if (!fs.existsSync(EXCEL_FILE)) {
-      throw new Error(
-        `Excel file not found: ${EXCEL_FILE}`
+  result.date_of_reallocation =
+    normalizeDate(
+      record.date_of_reallocation
+    );
+
+  result.date_of_joining =
+    normalizeDate(
+      record.date_of_joining
+    );
+
+  result.bill_date =
+    normalizeDate(
+      record.bill_date
+    );
+
+  result.date_received =
+    normalizeDate(
+      record.date_received
+    );
+
+  result.paid_on_date =
+    normalizeDate(
+      record.paid_on_date
+    );
+
+  /* =======================================================
+     FINANCIAL INFORMATION
+  ======================================================= */
+
+  result.placement_fees =
+    emptyIfNull(record.placement_fees);
+
+  result.salary_from =
+    emptyIfNull(record.salary_from);
+
+  result.salary_offered =
+    emptyIfNull(record.salary_offered);
+
+  result.bill_number =
+    emptyIfNull(record.bill_number);
+
+  result.service_charges =
+    emptyIfNull(record.service_charges);
+
+  result.total_bill_amount =
+    emptyIfNull(record.total_bill_amount);
+
+  result.amount_received =
+    emptyIfNull(record.amount_received);
+
+  result.franchisee_share =
+    emptyIfNull(record.franchisee_share);
+
+  result.soa_no =
+    emptyIfNull(record.soa_no);
+
+  /* =======================================================
+     STATUS / INFO
+  ======================================================= */
+
+  result.info =
+    emptyIfNull(record.info);
+
+  /*
+    Position Name was not part of the Supabase import.
+  */
+  result.position_name = "";
+
+  /* =======================================================
+     YEAR FIELDS
+
+     IMPORTANT:
+     client_master uses the original Excel spelling
+     for some columns.
+  ======================================================= */
+
+  result.acquired_year =
+    emptyIfNull(
+      record.aquired_year
+    );
+
+  result.allotment_year =
+    emptyIfNull(
+      record.allotment_year
+    );
+
+  /*
+    Excel "Joining Date" was imported into
+    client_master.joining_date.
+
+    The old API expected joining_year.
+  */
+  result.joining_year =
+    normalizeDate(
+      record.joining_date
+    );
+
+  /*
+    Excel "Bill Date Year" was imported into
+    client_master.bill_date_year.
+  */
+  result.bill_year =
+    emptyIfNull(
+      record.bill_date_year
+    );
+
+  /*
+    Excel "Recived Year" was imported into
+    client_master.recived_year.
+  */
+  result.received_year =
+    emptyIfNull(
+      record.recived_year
+    );
+
+  /*
+    Excel "Paid Date" was imported into
+    client_master.paid_date.
+  */
+  result.paid_year =
+    normalizeDate(
+      record.paid_date
+    );
+
+  /* =======================================================
+     TIMESTAMPS
+  ======================================================= */
+
+  result.created_at =
+    emptyIfNull(record.created_at);
+
+  result.updated_at =
+    emptyIfNull(record.updated_at);
+
+  return result;
+}
+
+/* =========================================================
+   GET ALL SUPABASE RECORDS
+
+   Fetches records in batches.
+
+   This is important because:
+   6,378 records > common 1,000-row API limit.
+========================================================= */
+
+async function getAllSupabaseRecords() {
+  const allRecords = [];
+
+  let from = 0;
+
+  while (true) {
+    const to =
+      from + BATCH_SIZE - 1;
+
+    console.log(
+      `Fetching Supabase records ${from} - ${to}`
+    );
+
+    const {
+      data,
+      error
+    } = await supabase
+      .from(TABLE_NAME)
+      .select("*")
+      .order("id", {
+        ascending: true
+      })
+      .range(from, to);
+
+    if (error) {
+      console.error(
+        "SUPABASE SELECT ERROR:",
+        error
       );
-    }
 
-    const workbook =
-      XLSX.readFile(EXCEL_FILE, {
-        cellDates: true
-      });
+      throw error;
+    }
 
     if (
-      !workbook.SheetNames ||
-      workbook.SheetNames.length === 0
+      !data ||
+      data.length === 0
     ) {
-      throw new Error(
-        "Excel workbook does not contain any sheets"
-      );
+      break;
     }
 
-    const firstSheetName =
-      workbook.SheetNames[0];
+    allRecords.push(...data);
 
     console.log(
-      "Reading worksheet:",
-      firstSheetName
+      `Fetched ${data.length} records. Total: ${allRecords.length}`
     );
 
-    const worksheet =
-      workbook.Sheets[firstSheetName];
-
-    if (!worksheet) {
-      throw new Error(
-        `Unable to read worksheet: ${firstSheetName}`
-      );
+    /*
+      If fewer than BATCH_SIZE were returned,
+      this was the last batch.
+    */
+    if (
+      data.length < BATCH_SIZE
+    ) {
+      break;
     }
 
-    const rows =
-      XLSX.utils.sheet_to_json(
-        worksheet,
-        {
-          defval: "",
-          raw: true
-        }
-      );
-
-    console.log(
-      "Excel rows found:",
-      rows.length
-    );
-
-    const records = rows.map(
-      (row, index) =>
-        normalizeRow(row, index)
-    );
-
-    console.log(
-      "Normalized records:",
-      records.length
-    );
-
-    return records;
-
-  } catch (error) {
-    console.error(
-      "READ EXCEL ERROR:",
-      error
-    );
-
-    throw error;
+    from += BATCH_SIZE;
   }
-}
 
+  return allRecords;
+}
 
 /* =========================================================
    GET ALL LEDGER RECORDS
    GET /api/ledger
 ========================================================= */
 
-async function getLedgerRecords(req, res) {
+async function getLedgerRecords(
+  req,
+  res
+) {
   try {
+    console.log(
+      "GET /api/ledger"
+    );
+
+    const supabaseRecords =
+      await getAllSupabaseRecords();
+
     const records =
-      readExcelData();
+      supabaseRecords.map(
+        mapSupabaseRecord
+      );
+
+    console.log(
+      "Total ledger records returned:",
+      records.length
+    );
 
     return res.status(200).json({
       success: true,
       count: records.length,
       data: records
     });
-
   } catch (error) {
     console.error(
       "GET LEDGER RECORDS ERROR:",
@@ -517,14 +530,12 @@ async function getLedgerRecords(req, res) {
       success: false,
       message:
         "Unable to load ledger records",
-      error: error.message,
-      excelFile: EXCEL_FILE,
-      excelExists:
-        fs.existsSync(EXCEL_FILE)
+      error:
+        error?.message ||
+        "Unknown error"
     });
   }
 }
-
 
 /* =========================================================
    GET SINGLE LEDGER RECORD
@@ -539,17 +550,42 @@ async function getLedgerRecordById(
     const { id } =
       req.params;
 
-    const records =
-      readExcelData();
+    if (
+      id === undefined ||
+      id === null ||
+      String(id).trim() === ""
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Ledger record ID is required"
+      });
+    }
 
-    const record =
-      records.find(
-        (item) =>
-          String(item.id) ===
-          String(id)
+    console.log(
+      "GET /api/ledger/:id",
+      id
+    );
+
+    const {
+      data,
+      error
+    } = await supabase
+      .from(TABLE_NAME)
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      console.error(
+        "SUPABASE SINGLE RECORD ERROR:",
+        error
       );
 
-    if (!record) {
+      throw error;
+    }
+
+    if (!data) {
       return res.status(404).json({
         success: false,
         message:
@@ -557,11 +593,13 @@ async function getLedgerRecordById(
       });
     }
 
+    const record =
+      mapSupabaseRecord(data);
+
     return res.status(200).json({
       success: true,
       data: record
     });
-
   } catch (error) {
     console.error(
       "GET LEDGER RECORD ERROR:",
@@ -572,11 +610,12 @@ async function getLedgerRecordById(
       success: false,
       message:
         "Unable to load ledger record",
-      error: error.message
+      error:
+        error?.message ||
+        "Unknown error"
     });
   }
 }
-
 
 /* =========================================================
    EXPORT

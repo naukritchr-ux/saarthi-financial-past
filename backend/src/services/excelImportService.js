@@ -1,5 +1,6 @@
 const XLSX = require("xlsx");
 const path = require("path");
+const { createClient } = require("@supabase/supabase-js");
 
 const db = require("../config/database");
 
@@ -12,6 +13,38 @@ const excelPath = path.join(
   __dirname,
   "../../data/enquiry sheet  old.xlsx"
 );
+
+
+// ======================================================
+// Supabase
+// ======================================================
+
+const SUPABASE_URL =
+  process.env.SUPABASE_URL;
+
+const SUPABASE_SECRET_KEY =
+  process.env.SUPABASE_SECRET_KEY;
+
+
+if (!SUPABASE_URL) {
+  throw new Error(
+    "SUPABASE_URL environment variable is missing."
+  );
+}
+
+
+if (!SUPABASE_SECRET_KEY) {
+  throw new Error(
+    "SUPABASE_SECRET_KEY environment variable is missing."
+  );
+}
+
+
+const supabase =
+  createClient(
+    SUPABASE_URL,
+    SUPABASE_SECRET_KEY
+  );
 
 
 // ======================================================
@@ -32,7 +65,8 @@ function cleanString(value) {
     return null;
   }
 
-  const text = String(value).trim();
+  const text =
+    String(value).trim();
 
   return text === ""
     ? null
@@ -59,19 +93,20 @@ function cleanNumber(value) {
     return Number.isFinite(value)
       ? value
       : 0;
-
   }
 
-  const cleaned = String(value)
-    .replace(/,/g, "")
-    .replace(/[₹$]/g, "")
-    .trim();
+  const cleaned =
+    String(value)
+      .replace(/,/g, "")
+      .replace(/[₹$]/g, "")
+      .trim();
 
   if (cleaned === "") {
     return 0;
   }
 
-  const number = Number(cleaned);
+  const number =
+    Number(cleaned);
 
   return Number.isNaN(number)
     ? 0
@@ -106,7 +141,6 @@ function cleanEmployees(value) {
     return Number.isFinite(value)
       ? Math.round(value)
       : null;
-
   }
 
   const text =
@@ -128,10 +162,79 @@ function cleanEmployees(value) {
 
 
 // ------------------------------------------------------
+// Validate Date
+// ------------------------------------------------------
+
+function isValidDateParts(
+  year,
+  month,
+  day
+) {
+
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day)
+  ) {
+    return false;
+  }
+
+  if (
+    year < 1900 ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return false;
+  }
+
+
+  // ----------------------------------------------------
+  // Make sure the actual calendar date exists
+  // ----------------------------------------------------
+
+  const date =
+    new Date(
+      year,
+      month - 1,
+      day
+    );
+
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+}
+
+
+// ------------------------------------------------------
 // Clean Date
+// ------------------------------------------------------
+//
+// Supabase DATE format:
+//
+// YYYY-MM-DD
+//
+// Handles:
+//
+// - Excel serial dates
+// - JavaScript Date
+// - DD/MM/YYYY
+// - DD-MM-YYYY
+// - YYYY-MM-DD
+// - invalid/empty Excel dates
+//
+// Invalid dates become NULL.
+//
 // ------------------------------------------------------
 
 function cleanDate(value) {
+
+  // ----------------------------------------------------
+  // Empty value
+  // ----------------------------------------------------
 
   if (
     value === undefined ||
@@ -148,6 +251,11 @@ function cleanDate(value) {
 
   if (typeof value === "number") {
 
+    // Excel 0 / negative values are invalid
+    if (value <= 0) {
+      return null;
+    }
+
     const parsed =
       XLSX.SSF.parse_date_code(value);
 
@@ -155,13 +263,30 @@ function cleanDate(value) {
       return null;
     }
 
+    const year =
+      Number(parsed.y);
+
     const month =
-      String(parsed.m).padStart(2, "0");
+      Number(parsed.m);
 
     const day =
-      String(parsed.d).padStart(2, "0");
+      Number(parsed.d);
 
-    return `${parsed.y}-${month}-${day}`;
+    if (
+      !isValidDateParts(
+        year,
+        month,
+        day
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      `${year}-` +
+      `${String(month).padStart(2, "0")}-` +
+      `${String(day).padStart(2, "0")}`
+    );
   }
 
 
@@ -183,28 +308,181 @@ function cleanDate(value) {
       value.getFullYear();
 
     const month =
-      String(
-        value.getMonth() + 1
-      ).padStart(2, "0");
+      value.getMonth() + 1;
 
     const day =
-      String(value.getDate())
-      .padStart(2, "0");
+      value.getDate();
 
-    return `${year}-${month}-${day}`;
+    if (
+      !isValidDateParts(
+        year,
+        month,
+        day
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      `${year}-` +
+      `${String(month).padStart(2, "0")}-` +
+      `${String(day).padStart(2, "0")}`
+    );
   }
 
 
   // ----------------------------------------------------
-  // String date
+  // String value
   // ----------------------------------------------------
 
   const text =
     String(value).trim();
 
-  if (text === "") {
+  if (
+    text === "" ||
+    text === "0" ||
+    text === "00" ||
+    text.toLowerCase() === "null" ||
+    text.toLowerCase() === "undefined" ||
+    text.toLowerCase() === "n/a" ||
+    text.toLowerCase() === "na"
+  ) {
     return null;
   }
+
+
+  // ----------------------------------------------------
+  // Invalid zero dates
+  // ----------------------------------------------------
+
+  if (
+    text.includes("1900-01-00") ||
+    text.includes("00/00/1900") ||
+    text.includes("00-00-1900") ||
+    text.includes("00/01/1900") ||
+    text.includes("00-01-1900")
+  ) {
+    return null;
+  }
+
+
+  // ----------------------------------------------------
+  // DD/MM/YYYY
+  // ----------------------------------------------------
+
+  let match =
+    text.match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    );
+
+  if (match) {
+
+    const day =
+      Number(match[1]);
+
+    const month =
+      Number(match[2]);
+
+    const year =
+      Number(match[3]);
+
+    if (
+      !isValidDateParts(
+        year,
+        month,
+        day
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      `${year}-` +
+      `${String(month).padStart(2, "0")}-` +
+      `${String(day).padStart(2, "0")}`
+    );
+  }
+
+
+  // ----------------------------------------------------
+  // DD-MM-YYYY
+  // ----------------------------------------------------
+
+  match =
+    text.match(
+      /^(\d{1,2})-(\d{1,2})-(\d{4})$/
+    );
+
+  if (match) {
+
+    const day =
+      Number(match[1]);
+
+    const month =
+      Number(match[2]);
+
+    const year =
+      Number(match[3]);
+
+    if (
+      !isValidDateParts(
+        year,
+        month,
+        day
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      `${year}-` +
+      `${String(month).padStart(2, "0")}-` +
+      `${String(day).padStart(2, "0")}`
+    );
+  }
+
+
+  // ----------------------------------------------------
+  // YYYY-MM-DD
+  // ----------------------------------------------------
+
+  match =
+    text.match(
+      /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+    );
+
+  if (match) {
+
+    const year =
+      Number(match[1]);
+
+    const month =
+      Number(match[2]);
+
+    const day =
+      Number(match[3]);
+
+    if (
+      !isValidDateParts(
+        year,
+        month,
+        day
+      )
+    ) {
+      return null;
+    }
+
+    return (
+      `${year}-` +
+      `${String(month).padStart(2, "0")}-` +
+      `${String(day).padStart(2, "0")}`
+    );
+  }
+
+
+  // ----------------------------------------------------
+  // Fallback parser
+  // ----------------------------------------------------
 
   const date =
     new Date(text);
@@ -221,15 +499,26 @@ function cleanDate(value) {
     date.getFullYear();
 
   const month =
-    String(
-      date.getMonth() + 1
-    ).padStart(2, "0");
+    date.getMonth() + 1;
 
   const day =
-    String(date.getDate())
-    .padStart(2, "0");
+    date.getDate();
 
-  return `${year}-${month}-${day}`;
+  if (
+    !isValidDateParts(
+      year,
+      month,
+      day
+    )
+  ) {
+    return null;
+  }
+
+  return (
+    `${year}-` +
+    `${String(month).padStart(2, "0")}-` +
+    `${String(day).padStart(2, "0")}`
+  );
 }
 
 
@@ -267,13 +556,9 @@ function cleanYear(value) {
   }
 
 
-  // Financial year
-  //
-  // Example:
-  // 2023-2024
-  //
-  // Result:
-  // 2023
+  // ----------------------------------------------------
+  // Find first four-digit year
+  // ----------------------------------------------------
 
   const match =
     text.match(/\d{4}/);
@@ -286,7 +571,6 @@ function cleanYear(value) {
     return year === 0
       ? null
       : year;
-
   }
 
 
@@ -305,14 +589,385 @@ function cleanYear(value) {
 
 
 // ======================================================
+// Convert Excel Row -> Supabase Row
+// ======================================================
+
+function convertToSupabaseRow(row) {
+
+  return {
+
+    company_name:
+      cleanString(
+        row["Company Name"]
+      ),
+
+    tann:
+      cleanString(
+        row["TANN"]
+      ),
+
+    client_status:
+      cleanString(
+        row["Client Status"]
+      ),
+
+    bd_member:
+      cleanString(
+        row["BD Member"]
+      ),
+
+    team_leader:
+      cleanString(
+        row["Team Leader"]
+      ),
+
+    franchise_name:
+      cleanString(
+        row["Franchise Name"]
+      ),
+
+    industry:
+      cleanString(
+        row["Industry"]
+      ),
+
+    sub_industry:
+      cleanString(
+        row["Sub Industry"]
+      ),
+
+    city:
+      cleanString(
+        row["City"]
+      ),
+
+    gst_number:
+      cleanString(
+        row["GSTNumber"]
+      ),
+
+    no_of_employees:
+      cleanEmployees(
+        row["No Of Employees"]
+      ),
+
+    date_client_acquired:
+      cleanDate(
+        row["Date Client Acquired"]
+      ),
+
+    date_of_allocation:
+      cleanDate(
+        row["Date of Allocation"]
+      ),
+
+    date_of_reallocation:
+      cleanDate(
+        row["Date of Reallocation"]
+      ),
+
+    placement_fees:
+      cleanNumber(
+        row["Placement Fees"]
+      ),
+
+    salary_from:
+      cleanNumber(
+        row["Salary From"]
+      ),
+
+    salary_offered:
+      cleanNumber(
+        row["Salary Offered"]
+      ),
+
+    date_of_joining:
+      cleanDate(
+        row["Date of Joining"]
+      ),
+
+    bill_date:
+      cleanDate(
+        row["Bill Date"]
+      ),
+
+    bill_number:
+      cleanString(
+        row["Bill Number"]
+      ),
+
+    service_charges:
+      cleanNumber(
+        row["Service Charges"]
+      ),
+
+    total_bill_amount:
+      cleanNumber(
+        row["Total Bill Amount"]
+      ),
+
+    date_received:
+      cleanDate(
+        row["Date Received"]
+      ),
+
+    amount_received:
+      cleanNumber(
+        row["Amount Received"]
+      ),
+
+    franchisee_share:
+      cleanNumber(
+        row["Franchisee Share"]
+      ),
+
+    paid_on_date:
+      cleanDate(
+        row["Paid On Date"]
+      ),
+
+    soa_no:
+      cleanString(
+        row["SOA No"]
+      ),
+
+    info:
+      cleanString(
+        row["Info"]
+      ),
+
+    aquired_year:
+      cleanYear(
+        row["Aquired Year"]
+      ),
+
+    allotment_year:
+      cleanYear(
+        row["Allotment Year"]
+      ),
+
+    joining_date:
+      cleanDate(
+        row["Joining Date"]
+      ),
+
+    bill_date_year:
+      cleanYear(
+        row["Bill Date Year"]
+      ),
+
+    recived_year:
+      cleanYear(
+        row["Recived  Year"]
+      ),
+
+    paid_date:
+      cleanDate(
+        row["Paid Date"]
+      )
+  };
+}
+
+
+// ======================================================
+// Import Into Supabase
+// ======================================================
+
+async function importIntoSupabase(rows) {
+
+  console.log(
+    "\n================================="
+  );
+
+  console.log(
+    "SUPABASE CLIENT MASTER IMPORT"
+  );
+
+  console.log(
+    "=================================\n"
+  );
+
+
+  // ====================================================
+  // Check Existing Records
+  // ====================================================
+
+  const {
+    count,
+    error: countError
+  } =
+    await supabase
+      .from("client_master")
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true
+        }
+      );
+
+
+  if (countError) {
+
+    throw new Error(
+      `Unable to check Supabase client_master: ${countError.message}`
+    );
+  }
+
+
+  console.log(
+    `Existing Supabase client_master records: ${count || 0}`
+  );
+
+
+  // ====================================================
+  // Prevent Duplicate Import
+  // ====================================================
+
+  if (
+    count &&
+    count > 0
+  ) {
+
+    throw new Error(
+      `Supabase client_master already contains ${count} records. Import stopped to prevent duplicate records.`
+    );
+  }
+
+
+  // ====================================================
+  // Convert Rows
+  // ====================================================
+
+  console.log(
+    "\nPreparing records for Supabase..."
+  );
+
+
+  const supabaseRows =
+    rows.map(
+      convertToSupabaseRow
+    );
+
+
+  console.log(
+    `Prepared ${supabaseRows.length} records.`
+  );
+
+
+  // ====================================================
+  // Batch Insert
+  // ====================================================
+
+  const batchSize = 500;
+
+  let imported = 0;
+
+
+  for (
+    let i = 0;
+    i < supabaseRows.length;
+    i += batchSize
+  ) {
+
+    const batch =
+      supabaseRows.slice(
+        i,
+        i + batchSize
+      );
+
+
+    const {
+      error
+    } =
+      await supabase
+        .from("client_master")
+        .insert(batch);
+
+
+    if (error) {
+
+      throw new Error(
+        `Supabase insert failed at records ${i + 1}-${i + batch.length}: ${error.message}`
+      );
+    }
+
+
+    imported +=
+      batch.length;
+
+
+    console.log(
+      `Supabase imported ${imported} / ${supabaseRows.length}`
+    );
+  }
+
+
+  // ====================================================
+  // Verify Count
+  // ====================================================
+
+  const {
+    count: finalCount,
+    error: verifyError
+  } =
+    await supabase
+      .from("client_master")
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true
+        }
+      );
+
+
+  if (verifyError) {
+
+    throw new Error(
+      `Supabase verification failed: ${verifyError.message}`
+    );
+  }
+
+
+  console.log(
+    `\nSupabase client_master final count: ${finalCount}`
+  );
+
+
+  if (
+    finalCount !== rows.length
+  ) {
+
+    throw new Error(
+      `Supabase count mismatch. Excel: ${rows.length}, Supabase: ${finalCount}`
+    );
+  }
+
+
+  console.log(
+    "\nSUPABASE IMPORT SUCCESS"
+  );
+}
+
+
+// ======================================================
 // Import Excel
 // ======================================================
 
 async function importExcel() {
 
-  console.log("\n=================================");
-  console.log("TCHR EXCEL IMPORT");
-  console.log("=================================\n");
+  console.log(
+    "\n================================="
+  );
+
+  console.log(
+    "TCHR EXCEL IMPORT"
+  );
+
+  console.log(
+    "=================================\n"
+  );
 
 
   // ====================================================
@@ -367,7 +1022,6 @@ async function importExcel() {
     throw new Error(
       `Sheet "${sheetName}" not found`
     );
-
   }
 
 
@@ -400,7 +1054,6 @@ async function importExcel() {
     throw new Error(
       "Excel sheet contains no records."
     );
-
   }
 
 
@@ -494,7 +1147,6 @@ async function importExcel() {
     throw new Error(
       `Missing Excel columns: ${missingColumns.join(", ")}`
     );
-
   }
 
 
@@ -504,7 +1156,16 @@ async function importExcel() {
 
 
   // ====================================================
-  // Database Connection
+  // SUPABASE IMPORT
+  // ====================================================
+
+  await importIntoSupabase(
+    rows
+  );
+
+
+  // ====================================================
+  // Existing MySQL Import
   // ====================================================
 
   const connection =
@@ -525,7 +1186,7 @@ async function importExcel() {
     // ==================================================
 
     console.log(
-      "\nRemoving previous imported data..."
+      "\nRemoving previous imported data from ledger_records..."
     );
 
 
@@ -544,11 +1205,6 @@ async function importExcel() {
     for (
       const row of rows
     ) {
-
-
-      // =================================================
-      // Prepare 36 Values
-      // =================================================
 
       const values = [
 
@@ -746,20 +1402,11 @@ async function importExcel() {
         throw new Error(
           `Column/value mismatch at Excel row ${imported + 2}. Expected 36 values but received ${values.length}.`
         );
-
       }
 
 
       // =================================================
-      // IMPORTANT FIX
-      // =================================================
-      //
-      // Generate placeholders automatically.
-      //
-      // This prevents:
-      //
-      // SQL placeholders != values
-      //
+      // Generate SQL Placeholders
       // =================================================
 
       const placeholders =
@@ -859,9 +1506,8 @@ async function importExcel() {
       ) {
 
         console.log(
-          `Imported ${imported} / ${rows.length}`
+          `MySQL imported ${imported} / ${rows.length}`
         );
-
       }
 
     }
@@ -879,12 +1525,13 @@ async function importExcel() {
     );
 
     console.log(
-      `SUCCESS: ${imported} records imported`
+      `MYSQL SUCCESS: ${imported} records imported`
     );
 
     console.log(
       "=================================\n"
     );
+
 
   } catch (error) {
 
@@ -896,7 +1543,7 @@ async function importExcel() {
 
 
     console.error(
-      "\nIMPORT FAILED"
+      "\nMYSQL IMPORT FAILED"
     );
 
     console.error(
@@ -912,6 +1559,34 @@ async function importExcel() {
 
   }
 
+
+  // ====================================================
+  // Final Success
+  // ====================================================
+
+  console.log(
+    "\n================================="
+  );
+
+  console.log(
+    `TOTAL EXCEL RECORDS: ${rows.length}`
+  );
+
+  console.log(
+    "SUPABASE: client_master"
+  );
+
+  console.log(
+    "MYSQL: ledger_records"
+  );
+
+  console.log(
+    "EXCEL IMPORT COMPLETED SUCCESSFULLY"
+  );
+
+  console.log(
+    "=================================\n"
+  );
 }
 
 
