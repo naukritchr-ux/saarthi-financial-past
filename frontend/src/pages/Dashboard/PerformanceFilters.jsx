@@ -859,9 +859,7 @@ function PerformanceFilters() {
 
       clientStatus: "",
 
-      enquiryStatus: "",
-
-      position: ""
+      enquiryStatus: ""
 
     };
 
@@ -879,6 +877,8 @@ function PerformanceFilters() {
 
   /* =========================================================
      ADDITIONAL FILTERS
+     
+     POSITION FILTER REMOVED
      ========================================================= */
 
   const additionalFilters = [
@@ -933,15 +933,6 @@ function PerformanceFilters() {
       field: "city",
       options:
         cityOptions
-    },
-
-    {
-      label: "Position",
-      field: "position",
-      options:
-        getUniqueValues(
-          "Position Name"
-        )
     }
 
   ];
@@ -1147,7 +1138,9 @@ function PerformanceFilters() {
                 key={value}
                 value={value}
               >
+
                 {value}
+
               </option>
 
             )
@@ -1320,7 +1313,9 @@ function PerformanceFilters() {
               applyFilters
             }
           >
+
             Apply Filters
+
           </button>
 
 
@@ -1331,7 +1326,9 @@ function PerformanceFilters() {
               clearFilters
             }
           >
+
             Clear Filters
+
           </button>
 
         </div>
@@ -1350,7 +1347,9 @@ function PerformanceFilters() {
         <div
           className="base-performance-title"
         >
+
           Base Filters
+
         </div>
 
 
@@ -1467,7 +1466,9 @@ function PerformanceFilters() {
         <div
           className="additional-filter-title"
         >
+
           Additional Filters
+
         </div>
 
 
@@ -1537,7 +1538,9 @@ function PerformanceFilters() {
                       key={status}
                       value={status}
                     >
+
                       {status}
+
                     </option>
 
                   )
@@ -1601,9 +1604,11 @@ function PerformanceFilters() {
                         status.value
                       }
                     >
+
                       {
                         status.label
                       }
+
                     </option>
 
                   )
@@ -1627,4 +1632,3 @@ function PerformanceFilters() {
 
 
 export default PerformanceFilters;
-
