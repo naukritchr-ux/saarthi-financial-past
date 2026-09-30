@@ -111,6 +111,23 @@ const formatNumber = (value) => {
 
 
 /* ============================================================
+   COMPANY NAME
+   UNIQUE ACQUIRED CLIENT KEY
+   ============================================================ */
+
+const getCompanyName = (row) => {
+
+  return normalizeValue(
+    row?.company_name ??
+    row?.CompanyName ??
+    row?.companyName ??
+    row?.["Company Name"]
+  );
+
+};
+
+
+/* ============================================================
    INDUSTRY
    ============================================================ */
 
@@ -316,9 +333,11 @@ const matchesInfoStatus = (
     selectedStatus || "All"
   ).toUpperCase();
 
+
   if (status === "ALL") {
     return true;
   }
+
 
   return (
     getInfoStatus(row) === status
@@ -338,6 +357,7 @@ const getMostFrequent = (
 
   const counts = {};
 
+
   rows.forEach((row) => {
 
     const value =
@@ -352,9 +372,11 @@ const getMostFrequent = (
 
   });
 
+
   let result = "-";
 
   let highest = 0;
+
 
   Object.entries(counts).forEach(
     ([value, count]) => {
@@ -416,31 +438,6 @@ const getIndustryExpenditure = (
 
 /* ============================================================
    FINANCIAL CALCULATION
-
-   ALL:
-     Billing = Total Billing
-     Expenditure = entered %
-     Net Amount = Billing - Expenditure
-
-   R:
-     Billing = R Billing
-     Expenditure = entered %
-     Net Amount = Billing - Expenditure
-
-   RV:
-     Billing = RV Billing
-     Expenditure = 0
-     Net Amount = 0
-
-   C:
-     Billing = C Billing
-     Expenditure = 0
-     Net Amount = 0
-
-   CN:
-     Billing = CN Billing
-     Expenditure = 0
-     Net Amount = 0
    ============================================================ */
 
 const getFinancialValues = (
@@ -923,6 +920,11 @@ function IndustryPerformance() {
 
   /* ==========================================================
      INDUSTRY TABLE DATA
+
+     CHANGES:
+       - totalClients = UNIQUE Company Name
+       - totalEnquiries = TOTAL enquiry rows
+       - Both follow FY + Info Status
      ========================================================== */
 
   const industryData =
@@ -1007,11 +1009,61 @@ function IndustryPerformance() {
 
         if (!grouped[industry]) {
 
-          grouped[industry] = [];
+          grouped[industry] = {
+
+            rows: [],
+
+            companyNames: new Set(),
+
+            franchiseNames: new Set()
+
+          };
 
         }
 
-        grouped[industry].push(row);
+        grouped[industry].rows.push(
+          row
+        );
+
+
+        /* ================================================
+           UNIQUE COMPANY NAME
+        ================================================= */
+
+        const companyName =
+          getCompanyName(row);
+
+        if (companyName) {
+
+          grouped[industry]
+            .companyNames
+            .add(
+              companyName
+                .replace(/\s+/g, " ")
+                .trim()
+                .toUpperCase()
+            );
+
+        }
+
+
+        /* ================================================
+           UNIQUE FRANCHISE
+           Existing functionality preserved
+        ================================================= */
+
+        const franchiseName =
+          getFranchiseName(row);
+
+        if (franchiseName) {
+
+          grouped[industry]
+            .franchiseNames
+            .add(
+              franchiseName
+            );
+
+        }
 
       });
 
@@ -1020,7 +1072,7 @@ function IndustryPerformance() {
         grouped
       )
         .map(
-          ([industry, industryRows]) => {
+          ([industry, industryDataGroup]) => {
 
             let totalBilling = 0;
 
@@ -1029,11 +1081,7 @@ function IndustryPerformance() {
             let netAmount = 0;
 
 
-            const franchiseNames =
-              new Set();
-
-
-            industryRows.forEach(
+            industryDataGroup.rows.forEach(
               (row) => {
 
                 const financial =
@@ -1055,19 +1103,6 @@ function IndustryPerformance() {
                 netAmount +=
                   financial.netAmount;
 
-
-                const franchiseName =
-                  getFranchiseName(row);
-
-
-                if (franchiseName) {
-
-                  franchiseNames.add(
-                    franchiseName
-                  );
-
-                }
-
               }
             );
 
@@ -1076,11 +1111,31 @@ function IndustryPerformance() {
 
               industry,
 
+              /* ==========================================
+                 UNIQUE ACQUIRED CLIENTS
+              ========================================== */
+
               totalClients:
-                industryRows.length,
+                industryDataGroup
+                  .companyNames
+                  .size,
+
+
+              /* ==========================================
+                 TOTAL ENQUIRIES
+              ========================================== */
+
+              totalEnquiries:
+                industryDataGroup
+                  .rows
+                  .length,
+
 
               noOfFranchisee:
-                franchiseNames.size,
+                industryDataGroup
+                  .franchiseNames
+                  .size,
+
 
               totalBilling,
 
@@ -1355,6 +1410,8 @@ function IndustryPerformance() {
 
   /* ==========================================================
      YEAR PERFORMANCE
+
+     Client count = UNIQUE Company Name
      ========================================================== */
 
   const yearPerformance =
@@ -1401,16 +1458,34 @@ function IndustryPerformance() {
 
               clients: 0,
 
-              billing: 0
+              billing: 0,
+
+              companyNames:
+                new Set()
 
             };
 
           }
 
 
-          grouped[
-            financialYear
-          ].clients += 1;
+          const companyName =
+            getCompanyName(row);
+
+
+          if (companyName) {
+
+            grouped[
+              financialYear
+            ]
+              .companyNames
+              .add(
+                companyName
+                  .replace(/\s+/g, " ")
+                  .trim()
+                  .toUpperCase()
+              );
+
+          }
 
 
           const financial =
@@ -1431,6 +1506,18 @@ function IndustryPerformance() {
 
 
       return Object.values(grouped)
+        .map((item) => ({
+
+          year:
+            item.year,
+
+          clients:
+            item.companyNames.size,
+
+          billing:
+            item.billing
+
+        }))
         .sort(
           (a, b) =>
             a.year.localeCompare(
@@ -1447,6 +1534,8 @@ function IndustryPerformance() {
 
   /* ==========================================================
      MONTHLY PERFORMANCE
+
+     Client count = UNIQUE Company Name
      ========================================================== */
 
   const monthlyPerformance =
@@ -1464,7 +1553,10 @@ function IndustryPerformance() {
 
             clients: 0,
 
-            billing: 0
+            billing: 0,
+
+            companyNames:
+              new Set()
 
           };
 
@@ -1488,8 +1580,22 @@ function IndustryPerformance() {
             grouped[month]
           ) {
 
-            grouped[month]
-              .clients += 1;
+            const companyName =
+              getCompanyName(row);
+
+
+            if (companyName) {
+
+              grouped[month]
+                .companyNames
+                .add(
+                  companyName
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .toUpperCase()
+                );
+
+            }
 
 
             const financial =
@@ -1502,7 +1608,7 @@ function IndustryPerformance() {
 
             grouped[month]
               .billing +=
-                financial.billing;
+              financial.billing;
 
           }
 
@@ -1511,8 +1617,20 @@ function IndustryPerformance() {
 
 
       return financialMonths.map(
-        (month) =>
-          grouped[month]
+        (month) => ({
+
+          month,
+
+          clients:
+            grouped[month]
+              .companyNames
+              .size,
+
+          billing:
+            grouped[month]
+              .billing
+
+        })
       );
 
     }, [
@@ -1588,6 +1706,9 @@ function IndustryPerformance() {
 
   /* ==========================================================
      MODAL SUMMARY
+
+     clients = UNIQUE Company Name
+     totalEnquiries = TOTAL enquiry rows
      ========================================================== */
 
   const modalSummary =
@@ -1600,8 +1721,28 @@ function IndustryPerformance() {
       let netAmount = 0;
 
 
+      const companyNames =
+        new Set();
+
+
       reportRows.forEach(
         (row) => {
+
+          const companyName =
+            getCompanyName(row);
+
+
+          if (companyName) {
+
+            companyNames.add(
+              companyName
+                .replace(/\s+/g, " ")
+                .trim()
+                .toUpperCase()
+            );
+
+          }
+
 
           const financial =
             getFinancialValues(
@@ -1628,7 +1769,14 @@ function IndustryPerformance() {
 
       return {
 
+        /* UNIQUE ACQUIRED CLIENTS */
+
         clients:
+          companyNames.size,
+
+        /* TOTAL ENQUIRIES */
+
+        totalEnquiries:
           reportRows.length,
 
         totalBilling,
@@ -1648,6 +1796,8 @@ function IndustryPerformance() {
 
   /* ==========================================================
      MODAL YEAR PERFORMANCE
+
+     Client count = UNIQUE Company Name
      ========================================================== */
 
   const modalYearPerformance =
@@ -1691,16 +1841,34 @@ function IndustryPerformance() {
 
               clients: 0,
 
-              billing: 0
+              billing: 0,
+
+              companyNames:
+                new Set()
 
             };
 
           }
 
 
-          grouped[
-            financialYear
-          ].clients += 1;
+          const companyName =
+            getCompanyName(row);
+
+
+          if (companyName) {
+
+            grouped[
+              financialYear
+            ]
+              .companyNames
+              .add(
+                companyName
+                  .replace(/\s+/g, " ")
+                  .trim()
+                  .toUpperCase()
+              );
+
+          }
 
 
           const financial =
@@ -1721,6 +1889,18 @@ function IndustryPerformance() {
 
 
       return Object.values(grouped)
+        .map((item) => ({
+
+          year:
+            item.year,
+
+          clients:
+            item.companyNames.size,
+
+          billing:
+            item.billing
+
+        }))
         .sort(
           (a, b) =>
             a.year.localeCompare(
@@ -1737,6 +1917,8 @@ function IndustryPerformance() {
 
   /* ==========================================================
      MODAL MONTHLY PERFORMANCE
+
+     Client count = UNIQUE Company Name
      ========================================================== */
 
   const modalMonthlyPerformance =
@@ -1754,7 +1936,10 @@ function IndustryPerformance() {
 
             clients: 0,
 
-            billing: 0
+            billing: 0,
+
+            companyNames:
+              new Set()
 
           };
 
@@ -1777,8 +1962,22 @@ function IndustryPerformance() {
             grouped[month]
           ) {
 
-            grouped[month]
-              .clients += 1;
+            const companyName =
+              getCompanyName(row);
+
+
+            if (companyName) {
+
+              grouped[month]
+                .companyNames
+                .add(
+                  companyName
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .toUpperCase()
+                );
+
+            }
 
 
             const financial =
@@ -1791,7 +1990,7 @@ function IndustryPerformance() {
 
             grouped[month]
               .billing +=
-                financial.billing;
+              financial.billing;
 
           }
 
@@ -1800,8 +1999,20 @@ function IndustryPerformance() {
 
 
       return financialMonths.map(
-        (month) =>
-          grouped[month]
+        (month) => ({
+
+          month,
+
+          clients:
+            grouped[month]
+              .companyNames
+              .size,
+
+          billing:
+            grouped[month]
+              .billing
+
+        })
       );
 
     }, [
@@ -2261,7 +2472,11 @@ function IndustryPerformance() {
                 </th>
 
                 <th>
-                  Client Count
+                  Total Acquired Client
+                </th>
+
+                <th>
+                  Total Enquiries
                 </th>
 
                 <th>
@@ -2302,8 +2517,8 @@ function IndustryPerformance() {
                   <td
                     colSpan={
                       hasIndustryExpenditurePercentage
-                        ? 7
-                        : 6
+                        ? 8
+                        : 7
                     }
                     className="industry-no-data"
                   >
@@ -2349,12 +2564,33 @@ function IndustryPerformance() {
                       </td>
 
 
+                      {/* ====================================
+                          UNIQUE ACQUIRED CLIENT
+                      ==================================== */}
+
                       <td>
 
                         <span className="industry-client-count">
 
                           {formatNumber(
                             item.totalClients
+                          )}
+
+                        </span>
+
+                      </td>
+
+
+                      {/* ====================================
+                          TOTAL ENQUIRIES
+                      ==================================== */}
+
+                      <td>
+
+                        <span className="industry-client-count">
+
+                          {formatNumber(
+                            item.totalEnquiries
                           )}
 
                         </span>
@@ -2522,13 +2758,30 @@ function IndustryPerformance() {
                 <div className="industry-summary-card">
 
                   <span className="industry-summary-label">
-                    Client Count
+                    Total Acquired Client
                   </span>
 
                   <strong className="industry-summary-value">
 
                     {formatNumber(
                       modalSummary.clients
+                    )}
+
+                  </strong>
+
+                </div>
+
+
+                <div className="industry-summary-card">
+
+                  <span className="industry-summary-label">
+                    Total Enquiries
+                  </span>
+
+                  <strong className="industry-summary-value">
+
+                    {formatNumber(
+                      modalSummary.totalEnquiries
                     )}
 
                   </strong>
@@ -2693,8 +2946,8 @@ function IndustryPerformance() {
                       </h3>
 
                       <p>
-                        Clients acquired by
-                        financial year
+                        Unique clients acquired
+                        by financial year
                       </p>
 
                     </div>
