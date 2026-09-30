@@ -144,6 +144,24 @@ function getFranchise(row) {
 
 
 /* =========================================================
+   GET COMPANY NAME
+   USED FOR UNIQUE ACQUIRED CLIENT COUNT
+========================================================= */
+
+function getCompanyName(row) {
+
+  return String(
+    row?.company_name ??
+    row?.["Company Name"] ??
+    row?.company ??
+    row?.["Company"] ??
+    ""
+  ).trim();
+
+}
+
+
+/* =========================================================
    GET INDUSTRY
 ========================================================= */
 
@@ -769,6 +787,16 @@ function FranchisePerformance() {
 
   /* =======================================================
      FRANCHISE SUMMARY TABLE
+
+     Total Enquiries:
+       Number of enquiry rows.
+
+     Total Acquired Client:
+       Number of UNIQUE Company Names.
+
+     Both follow:
+       - Financial Year filter
+       - Info Status filter
   ======================================================= */
 
   const franchiseData =
@@ -795,10 +823,25 @@ function FranchisePerformance() {
             franchise,
             {
               franchise,
-              clients: 0,
+
+              /*
+               * Total enquiries = all matching
+               * enquiry rows.
+               */
+              enquiries: 0,
+
+              /*
+               * Unique company names are
+               * stored in a Set.
+               */
+              companyNames: new Set(),
+
               billing: 0,
+
               franchiseShare: 0,
+
               franchiseExpenditure: 0,
+
               netAmount: 0
             }
           );
@@ -811,8 +854,7 @@ function FranchisePerformance() {
 
 
         /*
-         * Main table uses the selected
-         * Financial Year and Info filter.
+         * Financial Year filter
          */
 
         if (
@@ -826,15 +868,65 @@ function FranchisePerformance() {
         }
 
 
+        /*
+         * Info Status filter
+         *
+         * The same financial filter used
+         * for billing is applied to the
+         * enquiry/client counts.
+         */
+
+        if (
+          selectedInfoStatus &&
+          selectedInfoStatus !== "ALL" &&
+          getInfoStatus(row) !==
+            selectedInfoStatus
+        ) {
+
+          return;
+
+        }
+
+
+        /* -----------------------------------------------
+           TOTAL ENQUIRIES
+        ------------------------------------------------ */
+
+        data.enquiries += 1;
+
+
+        /* -----------------------------------------------
+           UNIQUE ACQUIRED CLIENTS
+           
+           Company Name is the unique key.
+           
+           Empty company names are not counted
+           as a unique acquired client.
+        ------------------------------------------------ */
+
+        const companyName =
+          getCompanyName(row);
+
+
+        if (companyName) {
+
+          data.companyNames.add(
+            companyName.toUpperCase()
+          );
+
+        }
+
+
+        /* -----------------------------------------------
+           FINANCIAL VALUES
+        ------------------------------------------------ */
+
         const financialValues =
           getFinancialValues(
             row,
             selectedInfoStatus,
             franchiseExpenditurePercentage
           );
-
-
-        data.clients += 1;
 
 
         data.billing +=
@@ -858,9 +950,39 @@ function FranchisePerformance() {
       return Array.from(
         map.values()
       )
+        .map(item => ({
+
+          franchise:
+            item.franchise,
+
+          /*
+           * UNIQUE COMPANY COUNT
+           */
+          clients:
+            item.companyNames.size,
+
+          /*
+           * TOTAL ENQUIRY COUNT
+           */
+          enquiries:
+            item.enquiries,
+
+          billing:
+            item.billing,
+
+          franchiseShare:
+            item.franchiseShare,
+
+          franchiseExpenditure:
+            item.franchiseExpenditure,
+
+          netAmount:
+            item.netAmount
+
+        }))
         .filter(
           item =>
-            item.clients > 0
+            item.enquiries > 0
         )
         .sort(
           (a, b) =>
@@ -1609,6 +1731,10 @@ function FranchisePerformance() {
                 </th>
 
                 <th>
+                  Total Enquiries
+                </th>
+
+                <th>
                   Total Billing
                 </th>
 
@@ -1642,8 +1768,8 @@ function FranchisePerformance() {
                   <td
                     colSpan={
                       hasFranchiseExpenditurePercentage
-                        ? "6"
-                        : "5"
+                        ? "7"
+                        : "6"
                     }
                     className="franchise-empty"
                   >
@@ -1690,12 +1816,33 @@ function FranchisePerformance() {
                       </td>
 
 
+                      {/* =================================
+                          UNIQUE ACQUIRED CLIENTS
+                      ================================= */}
+
                       <td>
 
                         <span className="franchise-client-count">
 
                           {
                             franchise.clients
+                          }
+
+                        </span>
+
+                      </td>
+
+
+                      {/* =================================
+                          TOTAL ENQUIRIES
+                      ================================= */}
+
+                      <td>
+
+                        <span className="franchise-client-count">
+
+                          {
+                            franchise.enquiries
                           }
 
                         </span>
