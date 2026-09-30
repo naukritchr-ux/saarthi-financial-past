@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 
@@ -34,8 +36,8 @@ app.get("/api/health", (req, res) => {
   res.json({
     success: true,
     message: "Backend connected successfully",
-    database: false,
-    dataSource: "Excel + Vercel Blob",
+    database: true,
+    dataSource: "Supabase",
   });
 });
 
