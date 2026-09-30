@@ -149,6 +149,30 @@ function getTeamLeader(row) {
 
 
 /* =========================================================
+   GET COMPANY NAME
+   Used to calculate UNIQUE acquired clients
+========================================================= */
+
+function getCompanyName(row) {
+
+  return String(
+    row?.company_name ??
+    row?.["Company Name"] ??
+    row?.company ??
+    row?.["Company"] ??
+    row?.client_name ??
+    row?.["Client Name"] ??
+    row?.tann ??
+    row?.["TANN"] ??
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+}
+
+
+/* =========================================================
    GET INDUSTRY
 ========================================================= */
 
@@ -471,9 +495,7 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         tlExpenditure: 0
 
       };
@@ -510,9 +532,7 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         tlExpenditure: 0
 
       };
@@ -522,9 +542,7 @@ function getFinancialValues(
     return {
 
       billing,
-
       netAmount: 0,
-
       tlExpenditure: 0
 
     };
@@ -547,9 +565,7 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         tlExpenditure: 0
 
       };
@@ -559,9 +575,7 @@ function getFinancialValues(
     return {
 
       billing,
-
       netAmount: 0,
-
       tlExpenditure: 0
 
     };
@@ -584,9 +598,7 @@ function getFinancialValues(
       return {
 
         billing: 0,
-
         netAmount: 0,
-
         tlExpenditure: 0
 
       };
@@ -596,9 +608,7 @@ function getFinancialValues(
     return {
 
       billing,
-
       netAmount: 0,
-
       tlExpenditure: 0
 
     };
@@ -609,9 +619,7 @@ function getFinancialValues(
   return {
 
     billing: 0,
-
     netAmount: 0,
-
     tlExpenditure: 0
 
   };
@@ -777,6 +785,12 @@ function TeamLeaderPerformance() {
 
   /* =======================================================
      TEAM LEADER SUMMARY TABLE
+
+     Total Acquired Client:
+     UNIQUE Company Name
+
+     Total Enquiries:
+     ALL enquiry rows
   ======================================================= */
 
   const leaderData =
@@ -817,10 +831,19 @@ function TeamLeaderPerformance() {
             leader,
             {
               leader,
-              clients: 0,
+
+              /* Unique acquired clients */
+              clients: new Set(),
+
+              /* Total enquiry records */
+              enquiries: 0,
+
               franchisees: new Set(),
+
               billing: 0,
+
               netAmount: 0,
+
               tlExpenditure: 0
             }
           );
@@ -830,7 +853,38 @@ function TeamLeaderPerformance() {
         const data =
           map.get(leader);
 
-        data.clients += 1;
+
+        /* =================================================
+           TOTAL ENQUIRIES
+
+           Every row represents an enquiry.
+        ================================================= */
+
+        data.enquiries += 1;
+
+
+        /* =================================================
+           UNIQUE ACQUIRED CLIENT
+
+           Company Name is used as the unique
+           client identifier.
+        ================================================= */
+
+        const companyName =
+          getCompanyName(row);
+
+        if (companyName) {
+
+          data.clients.add(
+            companyName
+          );
+
+        }
+
+
+        /* =================================================
+           FRANCHISEES
+        ================================================= */
 
         const franchiseName =
           getFranchiseName(row);
@@ -843,6 +897,11 @@ function TeamLeaderPerformance() {
 
         }
 
+
+        /* =================================================
+           FINANCIAL VALUES
+        ================================================= */
+
         data.billing +=
           financialValues.billing;
 
@@ -854,17 +913,25 @@ function TeamLeaderPerformance() {
 
       });
 
+
       return Array.from(
         map.values()
       )
         .map(item => ({
+
           ...item,
+
+          /* Convert Set to count */
+          clients:
+            item.clients.size,
+
           franchisees:
             item.franchisees.size
+
         }))
         .filter(
           item =>
-            item.clients > 0
+            item.enquiries > 0
         )
         .sort(
           (a, b) =>
@@ -1528,6 +1595,10 @@ function TeamLeaderPerformance() {
                 </th>
 
                 <th>
+                  Total Enquiries
+                </th>
+
+                <th>
                   No. of Franchisee
                 </th>
 
@@ -1565,8 +1636,8 @@ function TeamLeaderPerformance() {
                   <td
                     colSpan={
                       hasTLExpenditurePercentage
-                        ? "7"
-                        : "6"
+                        ? "8"
+                        : "7"
                     }
                     className="tl-empty"
                   >
@@ -1609,12 +1680,33 @@ function TeamLeaderPerformance() {
                       </td>
 
 
+                      {/* =================================================
+                          UNIQUE ACQUIRED CLIENT
+                      ================================================= */}
+
                       <td>
 
                         <span className="tl-client-count">
 
                           {
                             leader.clients
+                          }
+
+                        </span>
+
+                      </td>
+
+
+                      {/* =================================================
+                          TOTAL ENQUIRIES
+                      ================================================= */}
+
+                      <td>
+
+                        <span className="tl-client-count">
+
+                          {
+                            leader.enquiries
                           }
 
                         </span>
