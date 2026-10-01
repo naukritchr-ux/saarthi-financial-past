@@ -34,16 +34,6 @@ const DATA_SOURCE_NAME = "Connected";
 
 
 /* =========================================================
-   AUTO REFRESH
-
-   Dashboard checks the backend every 60 seconds.
-========================================================= */
-
-const AUTO_REFRESH_INTERVAL =
-  60 * 1000;
-
-
-/* =========================================================
    STATUS MAPPING
 ========================================================= */
 
@@ -679,7 +669,7 @@ export function DataProvider({
 
         /*
          * Do NOT erase existing rows when
-         * automatic refresh temporarily fails.
+         * refresh temporarily fails.
          */
 
         return null;
@@ -697,92 +687,17 @@ export function DataProvider({
 
 
   /* =========================================================
-     INITIAL LOAD
+     INITIAL LOAD ONLY
+
+     Data is loaded once when the application starts.
+
+     There is NO automatic 60-second refresh.
+     There is NO refresh when returning to the tab.
   ========================================================= */
 
   useEffect(() => {
 
     fetchLedgerData();
-
-  }, [
-    fetchLedgerData
-  ]);
-
-
-  /* =========================================================
-     AUTOMATIC REFRESH
-
-     Every 60 seconds.
-  ========================================================= */
-
-  useEffect(() => {
-
-    const interval =
-      setInterval(
-        () => {
-
-          console.log(
-            "Automatic dashboard refresh..."
-          );
-
-          fetchLedgerData();
-
-        },
-        AUTO_REFRESH_INTERVAL
-      );
-
-
-    return () => {
-
-      clearInterval(
-        interval
-      );
-
-    };
-
-  }, [
-    fetchLedgerData
-  ]);
-
-
-  /* =========================================================
-     REFRESH WHEN USER RETURNS TO TAB
-  ========================================================= */
-
-  useEffect(() => {
-
-    function handleVisibilityChange() {
-
-      if (
-        document.visibilityState ===
-        "visible"
-      ) {
-
-        console.log(
-          "Dashboard became visible. Refreshing..."
-        );
-
-        fetchLedgerData();
-
-      }
-
-    }
-
-
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
-
-
-    return () => {
-
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibilityChange
-      );
-
-    };
 
   }, [
     fetchLedgerData
