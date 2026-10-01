@@ -209,14 +209,17 @@
   color: #9CA3AF;
 }
 
+/* Remove number spinner */
 .city-filter-group input[type="number"]::-webkit-inner-spin-button,
 .city-filter-group input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .city-filter-group input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* =========================================================
@@ -757,20 +760,29 @@
   box-sizing: border-box;
 }
 
+/* Recharts responsive container */
 .city-chart-container .recharts-responsive-container {
   width: 100% !important;
   height: 100% !important;
   min-width: 0 !important;
+  min-height: 0 !important;
 }
 
 .city-chart-container .recharts-wrapper {
   max-width: 100%;
+  max-height: 100%;
 }
 
 /* =========================================================
    RECHARTS
 ========================================================= */
 
+/* SVG must remain visible */
+.city-chart-container .recharts-surface {
+  overflow: visible;
+}
+
+/* Cartesian grid */
 .city-chart-container
 .recharts-cartesian-grid-horizontal
 line {
@@ -783,10 +795,10 @@ line {
   stroke: transparent;
 }
 
+/* Axes */
 .city-chart-container
 .recharts-xAxis
 line,
-
 .city-chart-container
 .recharts-yAxis
 line {
@@ -796,7 +808,6 @@ line {
 .city-chart-container
 .recharts-xAxis
 .recharts-cartesian-axis-tick-value,
-
 .city-chart-container
 .recharts-yAxis
 .recharts-cartesian-axis-tick-value {
@@ -804,14 +815,34 @@ line {
   font-size: 10px;
 }
 
-.city-chart-container
-.recharts-bar-rectangle {
+/* =========================================================
+   BAR VISIBILITY
+========================================================= */
+
+.city-chart-container .recharts-bar {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.city-chart-container .recharts-bar-rectangle {
+  opacity: 1 !important;
+  visibility: visible !important;
   transition: opacity 0.2s ease;
 }
 
-.city-chart-container
-.recharts-bar-rectangle:hover {
-  opacity: 0.8;
+.city-chart-container .recharts-bar-rectangle:hover {
+  opacity: 0.8 !important;
+}
+
+/* Ensure SVG paths/rectangles are visible */
+.city-chart-container .recharts-bar-rectangle path,
+.city-chart-container .recharts-bar-rectangle rect {
+  visibility: visible !important;
+}
+
+/* Prevent generic SVG rules from removing bar fill */
+.city-chart-container .recharts-bar-rectangle[fill] {
+  fill-opacity: 1 !important;
 }
 
 /* =========================================================

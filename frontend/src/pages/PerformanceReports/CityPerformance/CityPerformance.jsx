@@ -959,9 +959,18 @@ export default function CityPerformance() {
       )
         .map((item) => ({
           year: item.year,
-          clients:
-            item.clients.size,
-          billing: item.billing
+
+          clients: Number(
+            item.clients.size
+          ),
+
+          billing: Number(
+            Number.isFinite(
+              item.billing
+            )
+              ? item.billing
+              : 0
+          )
         }))
         .sort((a, b) => {
           const yearA = Number(
@@ -985,6 +994,15 @@ export default function CityPerformance() {
 
      Financial Year:
      April → March
+
+     IMPORTANT:
+     Calendar month numbers:
+     Jan = 1
+     Feb = 2
+     Mar = 3
+     Apr = 4
+     ...
+     Dec = 12
   ========================================================= */
 
   const monthlyReportData =
@@ -992,25 +1010,6 @@ export default function CityPerformance() {
       if (!selectedFinancialYear) {
         return [];
       }
-
-      /*
-       * IMPORTANT:
-       *
-       * getMonth() returns normal calendar
-       * month numbers:
-       *
-       * January   = 1
-       * February  = 2
-       * March     = 3
-       * April     = 4
-       * ...
-       * December  = 12
-       *
-       * Financial year order is:
-       *
-       * April → May → ... → December
-       * → January → February → March
-       */
 
       const financialMonthNumbers = [
         4,
@@ -1089,8 +1088,8 @@ export default function CityPerformance() {
       });
 
       /*
-       * Return strictly in Financial Year order:
-       * April → March
+       * Always return all 12 financial
+       * year months in correct order.
        */
 
       return financialMonths.map(
@@ -1105,12 +1104,21 @@ export default function CityPerformance() {
 
           return {
             month: item.month,
+
             monthShort:
               item.monthShort,
-            clients:
-              item.clients.size,
-            billing:
-              item.billing
+
+            clients: Number(
+              item.clients.size
+            ),
+
+            billing: Number(
+              Number.isFinite(
+                item.billing
+              )
+                ? item.billing
+                : 0
+            )
           };
         }
       );
@@ -1123,12 +1131,52 @@ export default function CityPerformance() {
 
   /* =========================================================
      ACTIVE REPORT DATA
+
+     IMPORTANT:
+     Normalize chart values before
+     sending them to Recharts.
   ========================================================= */
 
-  const reportData =
-    selectedFinancialYear
-      ? monthlyReportData
-      : yearlyReportData;
+  const reportData = useMemo(() => {
+    const sourceData =
+      selectedFinancialYear
+        ? monthlyReportData
+        : yearlyReportData;
+
+    return sourceData.map((item) => ({
+      ...item,
+
+      clients:
+        Number.isFinite(
+          Number(item.clients)
+        )
+          ? Number(item.clients)
+          : 0,
+
+      billing:
+        Number.isFinite(
+          Number(item.billing)
+        )
+          ? Number(item.billing)
+          : 0
+    }));
+  }, [
+    selectedFinancialYear,
+    monthlyReportData,
+    yearlyReportData
+  ]);
+
+  /* =========================================================
+     DEBUG CHART DATA
+
+     This confirms exactly what is
+     being passed to Recharts.
+  ========================================================= */
+
+  console.log(
+    "CITY PERFORMANCE REPORT DATA:",
+    reportData
+  );
 
   /* =========================================================
      HANDLERS
@@ -1142,6 +1190,7 @@ export default function CityPerformance() {
      * opening a city starts with yearly report
      * and all info statuses.
      */
+
     setSelectedFinancialYear("");
     setSelectedInfoStatus("");
   }
@@ -1771,18 +1820,13 @@ export default function CityPerformance() {
 
                 </div>
 
-                {/* IMPORTANT:
-                    Explicit height prevents
-                    ResponsiveContainer from
-                    rendering at 0px height.
-                */}
-
                 <div
                   className="city-chart-container"
                   style={{
                     width: "100%",
                     height: "320px",
-                    minHeight: "320px"
+                    minHeight: "320px",
+                    minWidth: 0
                   }}
                 >
 
@@ -1791,15 +1835,17 @@ export default function CityPerformance() {
                     <ResponsiveContainer
                       width="100%"
                       height="100%"
+                      minWidth={0}
+                      minHeight={0}
                     >
 
                       <BarChart
                         data={reportData}
                         margin={{
-                          top: 15,
+                          top: 20,
                           right: 20,
                           left: 10,
-                          bottom: 10
+                          bottom: 20
                         }}
                       >
 
@@ -1828,6 +1874,10 @@ export default function CityPerformance() {
                           }}
                           tickLine={false}
                           axisLine={false}
+                          domain={[
+                            0,
+                            "auto"
+                          ]}
                         />
 
                         <Tooltip
@@ -1847,6 +1897,8 @@ export default function CityPerformance() {
                             0
                           ]}
                           barSize={32}
+                          maxBarSize={45}
+                          minPointSize={3}
                         />
 
                       </BarChart>
@@ -1892,18 +1944,13 @@ export default function CityPerformance() {
 
                 </div>
 
-                {/* IMPORTANT:
-                    Explicit height prevents
-                    ResponsiveContainer from
-                    rendering at 0px height.
-                */}
-
                 <div
                   className="city-chart-container"
                   style={{
                     width: "100%",
                     height: "320px",
-                    minHeight: "320px"
+                    minHeight: "320px",
+                    minWidth: 0
                   }}
                 >
 
@@ -1912,15 +1959,17 @@ export default function CityPerformance() {
                     <ResponsiveContainer
                       width="100%"
                       height="100%"
+                      minWidth={0}
+                      minHeight={0}
                     >
 
                       <BarChart
                         data={reportData}
                         margin={{
-                          top: 15,
+                          top: 20,
                           right: 20,
                           left: 10,
-                          bottom: 10
+                          bottom: 20
                         }}
                       >
 
@@ -1948,6 +1997,10 @@ export default function CityPerformance() {
                           }}
                           tickLine={false}
                           axisLine={false}
+                          domain={[
+                            0,
+                            "auto"
+                          ]}
                           tickFormatter={(value) =>
                             `₹${(
                               Number(value) /
@@ -1973,6 +2026,8 @@ export default function CityPerformance() {
                             0
                           ]}
                           barSize={32}
+                          maxBarSize={45}
+                          minPointSize={3}
                         />
 
                       </BarChart>
