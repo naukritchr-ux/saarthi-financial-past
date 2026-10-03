@@ -19,54 +19,18 @@ import "./CityPerformance.css";
 ========================================================= */
 
 const financialMonths = [
-  {
-    full: "April",
-    short: "Apr"
-  },
-  {
-    full: "May",
-    short: "May"
-  },
-  {
-    full: "June",
-    short: "Jun"
-  },
-  {
-    full: "July",
-    short: "Jul"
-  },
-  {
-    full: "August",
-    short: "Aug"
-  },
-  {
-    full: "September",
-    short: "Sep"
-  },
-  {
-    full: "October",
-    short: "Oct"
-  },
-  {
-    full: "November",
-    short: "Nov"
-  },
-  {
-    full: "December",
-    short: "Dec"
-  },
-  {
-    full: "January",
-    short: "Jan"
-  },
-  {
-    full: "February",
-    short: "Feb"
-  },
-  {
-    full: "March",
-    short: "Mar"
-  }
+  { full: "April", short: "Apr", number: 4 },
+  { full: "May", short: "May", number: 5 },
+  { full: "June", short: "Jun", number: 6 },
+  { full: "July", short: "Jul", number: 7 },
+  { full: "August", short: "Aug", number: 8 },
+  { full: "September", short: "Sep", number: 9 },
+  { full: "October", short: "Oct", number: 10 },
+  { full: "November", short: "Nov", number: 11 },
+  { full: "December", short: "Dec", number: 12 },
+  { full: "January", short: "Jan", number: 1 },
+  { full: "February", short: "Feb", number: 2 },
+  { full: "March", short: "Mar", number: 3 }
 ];
 
 /* =========================================================
@@ -105,67 +69,83 @@ function formatCurrency(value) {
 }
 
 /* =========================================================
+   NORMALIZE TEXT
+========================================================= */
+
+function normalizeText(value) {
+  return String(
+    value === null || value === undefined
+      ? ""
+      : value
+  )
+    .trim();
+}
+
+/* =========================================================
    FIELD GETTERS
 ========================================================= */
 
 function getCity(row) {
-  return String(
+  return normalizeText(
     row?.city ??
       row?.["City"] ??
       ""
-  ).trim();
+  );
 }
 
+/*
+  IMPORTANT:
+
+  Acquired client identity is Company Name.
+
+  Do NOT use TANN as a fallback here because:
+  - TANN is not the same thing as Company Name
+  - blank Company Name should not automatically become a client
+  - acquired client count must be based on unique Company Name
+*/
+
 function getCompanyName(row) {
-  return String(
+  const value =
     row?.company_name ??
-      row?.["Company Name"] ??
-      row?.company ??
-      row?.["Company"] ??
-      row?.client_name ??
-      row?.["Client Name"] ??
-      row?.tann ??
-      row?.["TANN"] ??
-      ""
-  )
-    .trim()
+    row?.["Company Name"] ??
+    "";
+
+  return normalizeText(value)
     .toLowerCase();
 }
 
-function getTeamLeader(row) {
-  return String(
-    row?.team_leader ??
-      row?.["Team Leader"] ??
+function getDisplayCompanyName(row) {
+  return normalizeText(
+    row?.company_name ??
+      row?.["Company Name"] ??
       ""
-  ).trim();
+  );
 }
 
 function getIndustry(row) {
-  return String(
+  return normalizeText(
     row?.industry ??
       row?.["Industry"] ??
       ""
-  ).trim();
+  );
 }
 
 function getFranchiseName(row) {
-  return String(
+  return normalizeText(
     row?.franchise_name ??
       row?.["Franchise Name"] ??
       row?.franchise ??
       row?.["Franchise"] ??
       ""
-  ).trim();
+  );
 }
 
 function getInfoStatus(row) {
-  return String(
+  return normalizeText(
     row?.info ??
       row?.["Info"] ??
       ""
-  )
-    .trim()
-    .toUpperCase();
+  ).toUpperCase();
 }
 
 function getBilling(row) {
@@ -215,11 +195,113 @@ function getTLExpenditure(row, percentage) {
 }
 
 function getClientAcquiredDate(row) {
-  return (
+  return normalizeText(
     row?.date_client_acquired ??
-    row?.["Date Client Acquired"] ??
-    ""
+      row?.["Date Client Acquired"] ??
+      ""
   );
+}
+
+/* =========================================================
+   SAFE DATE PARSER
+========================================================= */
+
+function parseDateOnly(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  const stringValue = String(value).trim();
+
+  if (!stringValue) {
+    return null;
+  }
+
+  /*
+    YYYY-MM-DD
+
+    Parse manually instead of:
+      new Date("YYYY-MM-DD")
+
+    This prevents timezone-related month/year
+    changes in different browsers/environments.
+  */
+
+  const isoMatch =
+    stringValue.match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+  if (isoMatch) {
+    const year = Number(isoMatch[1]);
+    const month = Number(isoMatch[2]);
+    const day = Number(isoMatch[3]);
+
+    const date = new Date(
+      year,
+      month - 1,
+      day
+    );
+
+    if (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    ) {
+      return date;
+    }
+
+    return null;
+  }
+
+  /*
+    DD/MM/YYYY
+  */
+
+  const indianMatch =
+    stringValue.match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    );
+
+  if (indianMatch) {
+    const day = Number(indianMatch[1]);
+    const month = Number(indianMatch[2]);
+    const year = Number(indianMatch[3]);
+
+    const date = new Date(
+      year,
+      month - 1,
+      day
+    );
+
+    if (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    ) {
+      return date;
+    }
+
+    return null;
+  }
+
+  /*
+    Fallback for other valid date strings.
+  */
+
+  const parsed = new Date(stringValue);
+
+  if (
+    Number.isNaN(parsed.getTime())
+  ) {
+    return null;
+  }
+
+  return parsed;
 }
 
 /* =========================================================
@@ -227,14 +309,19 @@ function getClientAcquiredDate(row) {
 ========================================================= */
 
 function getFinancialYear(row) {
-  const dateValue = getClientAcquiredDate(row);
+  const dateValue =
+    getClientAcquiredDate(row);
 
   if (dateValue) {
-    const date = new Date(dateValue);
+    const date =
+      parseDateOnly(dateValue);
 
-    if (!Number.isNaN(date.getTime())) {
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
+    if (date) {
+      const month =
+        date.getMonth() + 1;
+
+      const year =
+        date.getFullYear();
 
       if (month >= 4) {
         return `${year}-${String(
@@ -248,8 +335,24 @@ function getFinancialYear(row) {
     }
   }
 
+  /*
+    IMPORTANT:
+    Actual Supabase column is:
+
+      aquired_year
+
+    Backend maps it to:
+
+      acquired_year
+
+    DataContext maps it to:
+
+      Aquired Year
+  */
+
   const acquiredYear =
     row?.acquired_year ??
+    row?.aquired_year ??
     row?.["Aquired Year"] ??
     row?.["Acquired Year"];
 
@@ -258,7 +361,13 @@ function getFinancialYear(row) {
     acquiredYear !== null &&
     acquiredYear !== ""
   ) {
-    const year = Number(acquiredYear);
+    const year =
+      Number(
+        String(acquiredYear)
+          .replace(/^FY\s*/i, "")
+          .split("-")[0]
+          .trim()
+      );
 
     if (
       Number.isFinite(year) &&
@@ -282,13 +391,14 @@ function getMonth(row) {
     getClientAcquiredDate(row);
 
   if (!dateValue) {
-    return "";
+    return null;
   }
 
-  const date = new Date(dateValue);
+  const date =
+    parseDateOnly(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
-    return "";
+  if (!date) {
+    return null;
   }
 
   return date.getMonth() + 1;
@@ -303,8 +413,12 @@ function getFinancialValues(
   infoFilter = "",
   expenditurePercentage
 ) {
-  const info = getInfoStatus(row);
-  const billing = getBilling(row);
+  const info =
+    getInfoStatus(row);
+
+  const billing =
+    getBilling(row);
+
   const franchiseeShare =
     getFranchiseeShare(row);
 
@@ -316,7 +430,8 @@ function getFinancialValues(
     return {
       billing,
       netAmount:
-        billing - franchiseeShare,
+        billing -
+        franchiseeShare,
       tlExpenditure:
         getTLExpenditure(
           row,
@@ -333,7 +448,8 @@ function getFinancialValues(
     return {
       billing,
       netAmount:
-        billing - franchiseeShare,
+        billing -
+        franchiseeShare,
       tlExpenditure:
         getTLExpenditure(
           row,
@@ -428,31 +544,31 @@ function CityTooltip({
 
   return (
     <div className="city-modern-tooltip">
-
       <div className="city-tooltip-label">
         {label}
       </div>
 
-      {payload.map((item, index) => (
-        <div
-          className="city-tooltip-row"
-          key={index}
-        >
-          <span>
-            {item.name}
-          </span>
+      {payload.map(
+        (item, index) => (
+          <div
+            className="city-tooltip-row"
+            key={index}
+          >
+            <span>
+              {item.name}
+            </span>
 
-          <strong>
-            {item.name ===
-            "Total Billing"
-              ? formatCurrency(
-                  item.value
-                )
-              : item.value}
-          </strong>
-        </div>
-      ))}
-
+            <strong>
+              {item.name ===
+              "Total Billing"
+                ? formatCurrency(
+                    item.value
+                  )
+                : item.value}
+            </strong>
+          </div>
+        )
+      )}
     </div>
   );
 }
@@ -462,7 +578,8 @@ function CityTooltip({
 ========================================================= */
 
 export default function CityPerformance() {
-  const { rows = [] } = useData();
+  const { rows = [] } =
+    useData();
 
   const [
     selectedCity,
@@ -491,258 +608,146 @@ export default function CityPerformance() {
   const hasCityExpenditurePercentage =
     cityExpenditurePercentage !== "" &&
     Number.isFinite(
-      Number(cityExpenditurePercentage)
+      Number(
+        cityExpenditurePercentage
+      )
     ) &&
-    Number(cityExpenditurePercentage) >= 0;
+    Number(
+      cityExpenditurePercentage
+    ) >= 0;
 
   /* =========================================================
      FINANCIAL YEARS
   ========================================================= */
 
-  const financialYears = useMemo(() => {
-    const years = new Set();
+  const financialYears =
+    useMemo(() => {
+      const years =
+        new Set();
 
-    rows.forEach((row) => {
-      const financialYear =
-        getFinancialYear(row);
+      rows.forEach((row) => {
+        const year =
+          getFinancialYear(row);
 
-      if (financialYear) {
-        years.add(financialYear);
-      }
-    });
+        if (year) {
+          years.add(year);
+        }
+      });
 
-    return Array.from(years).sort(
-      (a, b) => {
-        const yearA = Number(
-          a.split("-")[0]
-        );
+      return Array.from(
+        years
+      ).sort((a, b) => {
+        const yearA =
+          Number(
+            a.split("-")[0]
+          );
 
-        const yearB = Number(
-          b.split("-")[0]
-        );
+        const yearB =
+          Number(
+            b.split("-")[0]
+          );
 
         return yearA - yearB;
-      }
-    );
-  }, [rows]);
+      });
+    }, [rows]);
 
   /* =========================================================
      CITY DATA
-
-     - enquiries = enquiry rows
-     - clients = UNIQUE company names
-     - FY filter applies
-     - Info filter applies
+     
+     REQUIRED:
+       Total Acquired Client = UNIQUE Company Name
+       Total Enquiries      = TOTAL ROWS
   ========================================================= */
 
-  const cityData = useMemo(() => {
-    const grouped = new Map();
+  const cityData =
+    useMemo(() => {
+      const grouped =
+        new Map();
 
-    rows.forEach((row) => {
-      const city = getCity(row);
+      rows.forEach((row) => {
+        const city =
+          getCity(row);
 
-      if (!city) {
-        return;
-      }
-
-      if (
-        selectedFinancialYear &&
-        getFinancialYear(row) !==
-          selectedFinancialYear
-      ) {
-        return;
-      }
-
-      if (
-        selectedInfoStatus &&
-        getInfoStatus(row) !==
-          selectedInfoStatus
-      ) {
-        return;
-      }
-
-      if (!grouped.has(city)) {
-        grouped.set(city, {
-          city,
-          clients: new Set(),
-          enquiries: 0,
-          franchisees: new Set(),
-          billing: 0,
-          netAmount: 0,
-          tlExpenditure: 0
-        });
-      }
-
-      const item =
-        grouped.get(city);
-
-      /* =====================================================
-         TOTAL ENQUIRIES
-      ===================================================== */
-
-      item.enquiries += 1;
-
-      /* =====================================================
-         UNIQUE ACQUIRED CLIENT
-      ===================================================== */
-
-      const companyName =
-        getCompanyName(row);
-
-      if (companyName) {
-        item.clients.add(
-          companyName
-        );
-      }
-
-      /* =====================================================
-         UNIQUE FRANCHISEE
-      ===================================================== */
-
-      const franchiseName =
-        getFranchiseName(row);
-
-      if (franchiseName) {
-        item.franchisees.add(
-          franchiseName
-        );
-      }
-
-      /* =====================================================
-         FINANCIAL VALUES
-      ===================================================== */
-
-      const financialValues =
-        getFinancialValues(
-          row,
-          selectedInfoStatus,
-          cityExpenditurePercentage
-        );
-
-      item.billing +=
-        financialValues.billing;
-
-      item.netAmount +=
-        financialValues.netAmount;
-
-      item.tlExpenditure +=
-        financialValues.tlExpenditure;
-    });
-
-    return Array.from(
-      grouped.values()
-    )
-      .map((item) => ({
-        ...item,
-        clients:
-          item.clients.size,
-        franchisees:
-          item.franchisees.size
-      }))
-      .filter(
-        (item) =>
-          item.enquiries > 0
-      )
-      .sort((a, b) => {
-        if (
-          b.clients !==
-          a.clients
-        ) {
-          return (
-            b.clients -
-            a.clients
-          );
+        if (!city) {
+          return;
         }
 
-        return (
-          b.enquiries -
-          a.enquiries
-        );
-      });
-  }, [
-    rows,
-    selectedFinancialYear,
-    selectedInfoStatus,
-    cityExpenditurePercentage
-  ]);
+        /* FINANCIAL YEAR */
 
-  /* =========================================================
-     SELECTED CITY ROWS
-  ========================================================= */
+        if (
+          selectedFinancialYear &&
+          getFinancialYear(row) !==
+            selectedFinancialYear
+        ) {
+          return;
+        }
 
-  const selectedRows = useMemo(() => {
-    if (!selectedCity) {
-      return [];
-    }
+        /* INFO STATUS */
 
-    return rows.filter((row) => {
+        if (
+          selectedInfoStatus &&
+          getInfoStatus(row) !==
+            selectedInfoStatus
+        ) {
+          return;
+        }
 
-      if (
-        getCity(row) !==
-        selectedCity
-      ) {
-        return false;
-      }
+        if (
+          !grouped.has(city)
+        ) {
+          grouped.set(city, {
+            city,
+            clients: new Set(),
+            enquiries: 0,
+            franchisees: new Set(),
+            billing: 0,
+            netAmount: 0,
+            tlExpenditure: 0
+          });
+        }
 
-      if (
-        selectedFinancialYear &&
-        getFinancialYear(row) !==
-          selectedFinancialYear
-      ) {
-        return false;
-      }
+        const item =
+          grouped.get(city);
 
-      if (
-        selectedInfoStatus &&
-        getInfoStatus(row) !==
-          selectedInfoStatus
-      ) {
-        return false;
-      }
+        /* ================================================
+           TOTAL ENQUIRIES
 
-      return true;
-    });
-  }, [
-    rows,
-    selectedCity,
-    selectedFinancialYear,
-    selectedInfoStatus
-  ]);
+           Every database row = 1 enquiry.
+        ================================================= */
 
-  /* =========================================================
-     PERFORMANCE SUMMARY
-  ========================================================= */
+        item.enquiries += 1;
 
-  const performanceSummary =
-    useMemo(() => {
-      const companies = new Set();
-
-      let enquiries = 0;
-      let totalBilling = 0;
-      let totalFranchiseeShare = 0;
-      let totalTLExpenditure = 0;
-      let netAmount = 0;
-
-      selectedRows.forEach((row) => {
-
-        enquiries += 1;
-
-        /* ===================================================
+        /* ================================================
            UNIQUE ACQUIRED CLIENT
-        =================================================== */
+
+           Company Name only.
+        ================================================= */
 
         const companyName =
           getCompanyName(row);
 
         if (companyName) {
-          companies.add(
+          item.clients.add(
             companyName
           );
         }
 
-        /* ===================================================
+        /* ================================================
+           UNIQUE FRANCHISEE
+        ================================================= */
+
+        const franchiseName =
+          getFranchiseName(row);
+
+        if (franchiseName) {
+          item.franchisees.add(
+            franchiseName
+          );
+        }
+
+        /* ================================================
            FINANCIAL VALUES
-        =================================================== */
+        ================================================= */
 
         const financialValues =
           getFinancialValues(
@@ -751,27 +756,153 @@ export default function CityPerformance() {
             cityExpenditurePercentage
           );
 
-        totalBilling +=
+        item.billing +=
           financialValues.billing;
 
-        netAmount +=
+        item.netAmount +=
           financialValues.netAmount;
 
-        totalTLExpenditure +=
+        item.tlExpenditure +=
           financialValues.tlExpenditure;
-
-        /* ===================================================
-           FRANCHISEE SHARE
-        =================================================== */
-
-        if (
-          !selectedInfoStatus ||
-          selectedInfoStatus === "R"
-        ) {
-          totalFranchiseeShare +=
-            getFranchiseeShare(row);
-        }
       });
+
+      return Array.from(
+        grouped.values()
+      )
+        .map((item) => ({
+          ...item,
+          clients:
+            item.clients.size,
+          franchisees:
+            item.franchisees.size
+        }))
+        .filter(
+          (item) =>
+            item.enquiries > 0
+        )
+        .sort((a, b) => {
+          if (
+            b.clients !==
+            a.clients
+          ) {
+            return (
+              b.clients -
+              a.clients
+            );
+          }
+
+          return (
+            b.enquiries -
+            a.enquiries
+          );
+        });
+    }, [
+      rows,
+      selectedFinancialYear,
+      selectedInfoStatus,
+      cityExpenditurePercentage
+    ]);
+
+  /* =========================================================
+     SELECTED CITY ROWS
+  ========================================================= */
+
+  const selectedRows =
+    useMemo(() => {
+      if (!selectedCity) {
+        return [];
+      }
+
+      return rows.filter(
+        (row) => {
+          if (
+            getCity(row) !==
+            selectedCity
+          ) {
+            return false;
+          }
+
+          if (
+            selectedFinancialYear &&
+            getFinancialYear(row) !==
+              selectedFinancialYear
+          ) {
+            return false;
+          }
+
+          if (
+            selectedInfoStatus &&
+            getInfoStatus(row) !==
+              selectedInfoStatus
+          ) {
+            return false;
+          }
+
+          return true;
+        }
+      );
+    }, [
+      rows,
+      selectedCity,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
+
+  /* =========================================================
+     PERFORMANCE SUMMARY
+  ========================================================= */
+
+  const performanceSummary =
+    useMemo(() => {
+      const companies =
+        new Set();
+
+      let enquiries = 0;
+      let totalBilling = 0;
+      let totalFranchiseeShare = 0;
+      let totalTLExpenditure = 0;
+      let netAmount = 0;
+
+      selectedRows.forEach(
+        (row) => {
+          enquiries += 1;
+
+          const companyName =
+            getCompanyName(row);
+
+          if (companyName) {
+            companies.add(
+              companyName
+            );
+          }
+
+          const financialValues =
+            getFinancialValues(
+              row,
+              selectedInfoStatus,
+              cityExpenditurePercentage
+            );
+
+          totalBilling +=
+            financialValues.billing;
+
+          netAmount +=
+            financialValues.netAmount;
+
+          totalTLExpenditure +=
+            financialValues.tlExpenditure;
+
+          if (
+            !selectedInfoStatus ||
+            selectedInfoStatus === "R"
+          ) {
+            totalFranchiseeShare +=
+              getFranchiseeShare(
+                row
+              );
+          }
+        }
+      );
 
       const acquiredClients =
         companies.size;
@@ -805,34 +936,59 @@ export default function CityPerformance() {
 
   /* =========================================================
      BEST INDUSTRY
+     
+     Unique company based.
   ========================================================= */
 
   const bestIndustry =
     useMemo(() => {
-      const counts = new Map();
+      const industryCompanies =
+        new Map();
 
-      selectedRows.forEach((row) => {
-        const industry =
-          getIndustry(row);
+      selectedRows.forEach(
+        (row) => {
+          const industry =
+            getIndustry(row);
 
-        if (!industry) {
-          return;
+          const company =
+            getCompanyName(row);
+
+          if (
+            !industry ||
+            !company
+          ) {
+            return;
+          }
+
+          if (
+            !industryCompanies.has(
+              industry
+            )
+          ) {
+            industryCompanies.set(
+              industry,
+              new Set()
+            );
+          }
+
+          industryCompanies
+            .get(industry)
+            .add(company);
         }
-
-        counts.set(
-          industry,
-          (counts.get(industry) ||
-            0) + 1
-        );
-      });
+      );
 
       let best = "—";
       let highest = 0;
 
-      counts.forEach(
-        (count, industry) => {
-          if (count > highest) {
-            highest = count;
+      industryCompanies.forEach(
+        (companies, industry) => {
+          if (
+            companies.size >
+            highest
+          ) {
+            highest =
+              companies.size;
+
             best = industry;
           }
         }
@@ -843,39 +999,39 @@ export default function CityPerformance() {
 
   /* =========================================================
      BEST CITY
+     
+     Modal is already for selected city.
   ========================================================= */
 
-  const bestCity = useMemo(() => {
-    const counts = new Map();
-
-    selectedRows.forEach((row) => {
-      const city = getCity(row);
-
-      if (!city) {
-        return;
+  const bestCity =
+    useMemo(() => {
+      if (!selectedCity) {
+        return "—";
       }
 
-      counts.set(
-        city,
-        (counts.get(city) || 0) +
-          1
-      );
-    });
+      const companies =
+        new Set();
 
-    let best = "—";
-    let highest = 0;
+      selectedRows.forEach(
+        (row) => {
+          const company =
+            getCompanyName(row);
 
-    counts.forEach(
-      (count, city) => {
-        if (count > highest) {
-          highest = count;
-          best = city;
+          if (company) {
+            companies.add(
+              company
+            );
+          }
         }
-      }
-    );
+      );
 
-    return best;
-  }, [selectedRows]);
+      return companies.size > 0
+        ? selectedCity
+        : "—";
+    }, [
+      selectedCity,
+      selectedRows
+    ]);
 
   /* =========================================================
      FRANCHISEE
@@ -889,7 +1045,9 @@ export default function CityPerformance() {
       selectedRows.forEach(
         (row) => {
           const franchiseName =
-            getFranchiseName(row);
+            getFranchiseName(
+              row
+            );
 
           if (franchiseName) {
             franchisees.add(
@@ -903,279 +1061,396 @@ export default function CityPerformance() {
     }, [selectedRows]);
 
   /* =========================================================
-     YEARLY REPORT
-
-     Client Acquired = UNIQUE COMPANY
-     Billing = filtered billing
+     GRAPH ROWS
   ========================================================= */
 
-  const yearlyReportData =
+  const graphRows =
     useMemo(() => {
-      const yearlyMap = new Map();
+      if (!selectedCity) {
+        return [];
+      }
 
-      selectedRows.forEach((row) => {
-        const year =
-          getFinancialYear(row);
+      return rows.filter(
+        (row) => {
+          if (
+            getCity(row) !==
+            selectedCity
+          ) {
+            return false;
+          }
 
-        if (!year) {
-          return;
+          if (
+            selectedFinancialYear &&
+            getFinancialYear(row) !==
+              selectedFinancialYear
+          ) {
+            return false;
+          }
+
+          if (
+            selectedInfoStatus &&
+            getInfoStatus(row) !==
+              selectedInfoStatus
+          ) {
+            return false;
+          }
+
+          return true;
         }
+      );
+    }, [
+      rows,
+      selectedCity,
+      selectedFinancialYear,
+      selectedInfoStatus
+    ]);
 
-        if (
-          !yearlyMap.has(year)
-        ) {
-          yearlyMap.set(year, {
-            year,
-            clients: new Set(),
-            billing: 0
-          });
+  /* =========================================================
+     CLIENT GRAPH DATA
+     
+     IMPORTANT:
+     
+     FY selected:
+       April → March
+       unique Company Name per month
+
+     FY not selected:
+       FY-wise unique Company Name
+  ========================================================= */
+
+  const clientGraphData =
+    useMemo(() => {
+      if (!selectedCity) {
+        return [];
+      }
+
+      /* =====================================================
+         MONTHLY
+      ===================================================== */
+
+      if (selectedFinancialYear) {
+        const monthMap =
+          new Map();
+
+        financialMonths.forEach(
+          (month) => {
+            monthMap.set(
+              month.number,
+              {
+                month:
+                  month.full,
+                monthShort:
+                  month.short,
+                clients:
+                  new Set()
+              }
+            );
+          }
+        );
+
+        graphRows.forEach(
+          (row) => {
+            const monthNumber =
+              getMonth(row);
+
+            if (
+              !monthMap.has(
+                monthNumber
+              )
+            ) {
+              return;
+            }
+
+            const companyName =
+              getCompanyName(row);
+
+            if (!companyName) {
+              return;
+            }
+
+            monthMap
+              .get(monthNumber)
+              .clients.add(
+                companyName
+              );
+          }
+        );
+
+        return financialMonths.map(
+          (month) => {
+            const item =
+              monthMap.get(
+                month.number
+              );
+
+            return {
+              month:
+                month.full,
+              monthShort:
+                month.short,
+              clients:
+                item.clients.size
+            };
+          }
+        );
+      }
+
+      /* =====================================================
+         YEARLY
+      ===================================================== */
+
+      const yearlyMap =
+        new Map();
+
+      graphRows.forEach(
+        (row) => {
+          const year =
+            getFinancialYear(row);
+
+          const companyName =
+            getCompanyName(row);
+
+          if (
+            !year ||
+            !companyName
+          ) {
+            return;
+          }
+
+          if (
+            !yearlyMap.has(year)
+          ) {
+            yearlyMap.set(
+              year,
+              new Set()
+            );
+          }
+
+          yearlyMap
+            .get(year)
+            .add(companyName);
         }
-
-        const item =
-          yearlyMap.get(year);
-
-        const companyName =
-          getCompanyName(row);
-
-        if (companyName) {
-          item.clients.add(
-            companyName
-          );
-        }
-
-        const financialValues =
-          getFinancialValues(
-            row,
-            selectedInfoStatus,
-            cityExpenditurePercentage
-          );
-
-        item.billing +=
-          financialValues.billing;
-      });
+      );
 
       return Array.from(
-        yearlyMap.values()
+        yearlyMap.entries()
       )
-        .map((item) => ({
-          year: item.year,
-
-          clients: Number(
-            item.clients.size
-          ),
-
-          billing: Number(
-            Number.isFinite(
-              item.billing
-            )
-              ? item.billing
-              : 0
-          )
-        }))
+        .map(
+          ([year, companies]) => ({
+            year,
+            clients:
+              companies.size
+          })
+        )
         .sort((a, b) => {
-          const yearA = Number(
-            a.year.split("-")[0]
-          );
+          const yearA =
+            Number(
+              a.year.split("-")[0]
+            );
 
-          const yearB = Number(
-            b.year.split("-")[0]
-          );
+          const yearB =
+            Number(
+              b.year.split("-")[0]
+            );
 
           return yearA - yearB;
         });
     }, [
-      selectedRows,
-      selectedInfoStatus,
-      cityExpenditurePercentage
+      graphRows,
+      selectedCity,
+      selectedFinancialYear
     ]);
 
   /* =========================================================
-     MONTHLY REPORT
-
-     Financial Year:
-     April → March
-
-     IMPORTANT:
-     Calendar month numbers:
-     Jan = 1
-     Feb = 2
-     Mar = 3
-     Apr = 4
-     ...
-     Dec = 12
+     BILLING GRAPH DATA
   ========================================================= */
 
-  const monthlyReportData =
+  const billingGraphData =
     useMemo(() => {
-      if (!selectedFinancialYear) {
+      if (!selectedCity) {
         return [];
       }
 
-      const financialMonthNumbers = [
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        1,
-        2,
-        3
-      ];
+      /* =====================================================
+         MONTHLY
+      ===================================================== */
 
-      const monthMap = new Map();
+      if (selectedFinancialYear) {
+        const monthMap =
+          new Map();
 
-      financialMonths.forEach(
-        (month, index) => {
-          const calendarMonth =
-            financialMonthNumbers[index];
+        financialMonths.forEach(
+          (month) => {
+            monthMap.set(
+              month.number,
+              {
+                month:
+                  month.full,
+                monthShort:
+                  month.short,
+                billing: 0
+              }
+            );
+          }
+        );
 
-          monthMap.set(
-            calendarMonth,
-            {
-              month: month.full,
+        graphRows.forEach(
+          (row) => {
+            const monthNumber =
+              getMonth(row);
+
+            if (
+              !monthMap.has(
+                monthNumber
+              )
+            ) {
+              return;
+            }
+
+            const financialValues =
+              getFinancialValues(
+                row,
+                selectedInfoStatus,
+                cityExpenditurePercentage
+              );
+
+            monthMap.get(
+              monthNumber
+            ).billing +=
+              Number.isFinite(
+                financialValues.billing
+              )
+                ? financialValues.billing
+                : 0;
+          }
+        );
+
+        return financialMonths.map(
+          (month) => {
+            const item =
+              monthMap.get(
+                month.number
+              );
+
+            return {
+              month:
+                month.full,
               monthShort:
                 month.short,
-              clients: new Set(),
-              billing: 0
-            }
-          );
-        }
-      );
+              billing:
+                Number.isFinite(
+                  item.billing
+                )
+                  ? item.billing
+                  : 0
+            };
+          }
+        );
+      }
 
-      selectedRows.forEach((row) => {
-        const month =
-          getMonth(row);
+      /* =====================================================
+         YEARLY
+      ===================================================== */
 
-        if (
-          !monthMap.has(month)
-        ) {
-          return;
-        }
+      const yearlyMap =
+        new Map();
 
-        const item =
-          monthMap.get(month);
+      graphRows.forEach(
+        (row) => {
+          const year =
+            getFinancialYear(row);
 
-        /* ===============================================
-           UNIQUE COMPANY
-        =============================================== */
+          if (!year) {
+            return;
+          }
 
-        const companyName =
-          getCompanyName(row);
+          if (
+            !yearlyMap.has(year)
+          ) {
+            yearlyMap.set(
+              year,
+              0
+            );
+          }
 
-        if (companyName) {
-          item.clients.add(
-            companyName
-          );
-        }
-
-        /* ===============================================
-           FILTERED BILLING
-        =============================================== */
-
-        const financialValues =
-          getFinancialValues(
-            row,
-            selectedInfoStatus,
-            cityExpenditurePercentage
-          );
-
-        item.billing +=
-          financialValues.billing;
-      });
-
-      /*
-       * Always return all 12 financial
-       * year months in correct order.
-       */
-
-      return financialMonths.map(
-        (month, index) => {
-          const calendarMonth =
-            financialMonthNumbers[index];
-
-          const item =
-            monthMap.get(
-              calendarMonth
+          const financialValues =
+            getFinancialValues(
+              row,
+              selectedInfoStatus,
+              cityExpenditurePercentage
             );
 
-          return {
-            month: item.month,
-
-            monthShort:
-              item.monthShort,
-
-            clients: Number(
-              item.clients.size
-            ),
-
-            billing: Number(
-              Number.isFinite(
-                item.billing
+          yearlyMap.set(
+            year,
+            yearlyMap.get(year) +
+              (
+                Number.isFinite(
+                  financialValues.billing
+                )
+                  ? financialValues.billing
+                  : 0
               )
-                ? item.billing
-                : 0
-            )
-          };
+          );
         }
       );
+
+      return Array.from(
+        yearlyMap.entries()
+      )
+        .map(
+          ([year, billing]) => ({
+            year,
+            billing:
+              Number.isFinite(
+                billing
+              )
+                ? billing
+                : 0
+          })
+        )
+        .sort((a, b) => {
+          const yearA =
+            Number(
+              a.year.split("-")[0]
+            );
+
+          const yearB =
+            Number(
+              b.year.split("-")[0]
+            );
+
+          return yearA - yearB;
+        });
     }, [
-      selectedRows,
+      graphRows,
+      selectedCity,
       selectedFinancialYear,
       selectedInfoStatus,
       cityExpenditurePercentage
     ]);
 
   /* =========================================================
-     ACTIVE REPORT DATA
-
-     IMPORTANT:
-     Normalize chart values before
-     sending them to Recharts.
-  ========================================================= */
-
-  const reportData = useMemo(() => {
-    const sourceData =
-      selectedFinancialYear
-        ? monthlyReportData
-        : yearlyReportData;
-
-    return sourceData.map((item) => ({
-      ...item,
-
-      clients:
-        Number.isFinite(
-          Number(item.clients)
-        )
-          ? Number(item.clients)
-          : 0,
-
-      billing:
-        Number.isFinite(
-          Number(item.billing)
-        )
-          ? Number(item.billing)
-          : 0
-    }));
-  }, [
-    selectedFinancialYear,
-    monthlyReportData,
-    yearlyReportData
-  ]);
-
-  /* =========================================================
-     DEBUG CHART DATA
-
-     This confirms exactly what is
-     being passed to Recharts.
+     DEBUG
   ========================================================= */
 
   console.log(
-    "CITY PERFORMANCE REPORT DATA:",
-    reportData
+    "CITY PERFORMANCE DATABASE ROWS:",
+    rows.length
+  );
+
+  console.log(
+    "CITY PERFORMANCE GRAPH ROWS:",
+    graphRows.length
+  );
+
+  console.log(
+    "CITY PERFORMANCE CLIENT GRAPH:",
+    clientGraphData
+  );
+
+  console.log(
+    "CITY PERFORMANCE BILLING GRAPH:",
+    billingGraphData
   );
 
   /* =========================================================
@@ -1184,13 +1459,6 @@ export default function CityPerformance() {
 
   function handleViewPerformance(city) {
     setSelectedCity(city);
-
-    /*
-     * Existing behavior preserved:
-     * opening a city starts with yearly report
-     * and all info statuses.
-     */
-
     setSelectedFinancialYear("");
     setSelectedInfoStatus("");
   }
@@ -1202,15 +1470,42 @@ export default function CityPerformance() {
   }
 
   /* =========================================================
+     CHART KEY
+  ========================================================= */
+
+  const chartKey = [
+    selectedCity,
+    selectedFinancialYear,
+    selectedInfoStatus,
+    graphRows.length,
+    clientGraphData
+      .map(
+        (item) =>
+          `${item.clients}-${
+            item.year ||
+            item.monthShort
+          }`
+      )
+      .join("|"),
+    billingGraphData
+      .map(
+        (item) =>
+          `${item.billing}-${
+            item.year ||
+            item.monthShort
+          }`
+      )
+      .join("|")
+  ].join("-");
+
+  /* =========================================================
      RENDER
   ========================================================= */
 
   return (
     <div className="city-performance-page">
 
-      {/* =====================================================
-          PAGE HEADER
-      ===================================================== */}
+      {/* PAGE HEADER */}
 
       <div className="city-page-header">
 
@@ -1230,9 +1525,7 @@ export default function CityPerformance() {
 
       </div>
 
-      {/* =====================================================
-          TABLE CARD
-      ===================================================== */}
+      {/* CITY TABLE */}
 
       <div className="city-table-card">
 
@@ -1263,9 +1556,7 @@ export default function CityPerformance() {
 
         </div>
 
-        {/* ===================================================
-            FILTERS
-        =================================================== */}
+        {/* FILTERS */}
 
         <div className="city-performance-filters">
 
@@ -1286,7 +1577,6 @@ export default function CityPerformance() {
                 )
               }
             >
-
               <option value="">
                 All Financial Years
               </option>
@@ -1374,9 +1664,7 @@ export default function CityPerformance() {
 
         </div>
 
-        {/* ===================================================
-            PERFORMANCE TABLE
-        =================================================== */}
+        {/* TABLE */}
 
         <div className="city-table-wrapper">
 
@@ -1427,7 +1715,6 @@ export default function CityPerformance() {
             <tbody>
 
               {cityData.length > 0 ? (
-
                 cityData.map(
                   (item) => (
                     <tr
@@ -1525,9 +1812,7 @@ export default function CityPerformance() {
                     </tr>
                   )
                 )
-
               ) : (
-
                 <tr>
 
                   <td
@@ -1543,7 +1828,6 @@ export default function CityPerformance() {
                   </td>
 
                 </tr>
-
               )}
 
             </tbody>
@@ -1574,9 +1858,7 @@ export default function CityPerformance() {
             }
           >
 
-            {/* =================================================
-                MODAL HEADER
-            ================================================= */}
+            {/* MODAL HEADER */}
 
             <div className="city-modal-header">
 
@@ -1610,9 +1892,7 @@ export default function CityPerformance() {
 
             </div>
 
-            {/* =================================================
-                SUMMARY
-            ================================================= */}
+            {/* SUMMARY */}
 
             <div className="city-summary-grid">
 
@@ -1700,9 +1980,7 @@ export default function CityPerformance() {
 
             </div>
 
-            {/* =================================================
-                REPORT CONTROLS
-            ================================================= */}
+            {/* REPORT CONTROLS */}
 
             <div className="city-report-controls">
 
@@ -1793,9 +2071,7 @@ export default function CityPerformance() {
 
             <div className="city-report-graphs">
 
-              {/* ===============================================
-                  CLIENT ACQUIRED CHART
-              =============================================== */}
+              {/* CLIENT ACQUIRED */}
 
               <div className="city-chart-card">
 
@@ -1826,21 +2102,26 @@ export default function CityPerformance() {
                     width: "100%",
                     height: "320px",
                     minHeight: "320px",
-                    minWidth: 0
+                    minWidth: "300px",
+                    position: "relative"
                   }}
                 >
 
-                  {reportData.length > 0 ? (
+                  {clientGraphData.length > 0 ? (
 
                     <ResponsiveContainer
+                      key={`clients-${chartKey}`}
                       width="100%"
-                      height="100%"
-                      minWidth={0}
-                      minHeight={0}
+                      height={320}
+                      minWidth={1}
+                      minHeight={320}
+                      debounce={50}
                     >
 
                       <BarChart
-                        data={reportData}
+                        data={clientGraphData}
+                        width={500}
+                        height={320}
                         margin={{
                           top: 20,
                           right: 20,
@@ -1899,6 +2180,7 @@ export default function CityPerformance() {
                           barSize={32}
                           maxBarSize={45}
                           minPointSize={3}
+                          isAnimationActive={false}
                         />
 
                       </BarChart>
@@ -1918,9 +2200,7 @@ export default function CityPerformance() {
 
               </div>
 
-              {/* ===============================================
-                  BILLING CHART
-              =============================================== */}
+              {/* BILLING */}
 
               <div className="city-chart-card">
 
@@ -1950,21 +2230,26 @@ export default function CityPerformance() {
                     width: "100%",
                     height: "320px",
                     minHeight: "320px",
-                    minWidth: 0
+                    minWidth: "300px",
+                    position: "relative"
                   }}
                 >
 
-                  {reportData.length > 0 ? (
+                  {billingGraphData.length > 0 ? (
 
                     <ResponsiveContainer
+                      key={`billing-${chartKey}`}
                       width="100%"
-                      height="100%"
-                      minWidth={0}
-                      minHeight={0}
+                      height={320}
+                      minWidth={1}
+                      minHeight={320}
+                      debounce={50}
                     >
 
                       <BarChart
-                        data={reportData}
+                        data={billingGraphData}
+                        width={500}
+                        height={320}
                         margin={{
                           top: 20,
                           right: 20,
@@ -2028,6 +2313,7 @@ export default function CityPerformance() {
                           barSize={32}
                           maxBarSize={45}
                           minPointSize={3}
+                          isAnimationActive={false}
                         />
 
                       </BarChart>
@@ -2049,9 +2335,7 @@ export default function CityPerformance() {
 
             </div>
 
-            {/* =================================================
-                MODAL FOOTER
-            ================================================= */}
+            {/* FOOTER */}
 
             <div className="city-modal-footer">
 
