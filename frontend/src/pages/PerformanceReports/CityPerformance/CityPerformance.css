@@ -3,157 +3,225 @@
 ========================================================= */
 
 .city-performance-page {
-  width: 100%;
   min-height: 100%;
-  padding: 24px;
+  width: 100%;
+  padding: 28px;
   box-sizing: border-box;
-  background: #f7f6f2;
-  color: #252525;
+  background: #F7F4EC;
+  color: #1B2A4A;
 }
 
-
 /* =========================================================
-   PAGE HEADER
+   PAGE HEADER - LEFT ALIGNED
 ========================================================= */
 
 .city-page-header {
-  margin-bottom: 24px;
+  display: block;
+  width: 100%;
+  margin: 0 0 24px 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: left;
 }
 
 .city-page-eyebrow {
-  margin-bottom: 6px;
+  display: block;
+  width: 100%;
+  margin: 0 0 6px 0;
+  padding: 0;
+  color: #B78A34;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.6px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  line-height: 1.2;
   text-transform: uppercase;
-  color: #b78a34;
+  text-align: left;
 }
 
 .city-page-header h1 {
+  display: block;
+  width: 100%;
   margin: 0;
-  font-size: 28px;
+  padding: 0;
+  color: #1B2A4A;
+  font-size: 30px;
+  font-weight: 800;
   line-height: 1.2;
-  font-weight: 700;
-  color: #252525;
+  text-align: left;
 }
 
 .city-page-header p {
-  margin: 8px 0 0;
+  display: block;
+  width: 100%;
+  margin: 8px 0 0 0;
+  padding: 0;
+  color: #7A7F87;
   font-size: 14px;
-  line-height: 1.6;
-  color: #777;
+  line-height: 1.5;
+  text-align: left;
 }
 
-
 /* =========================================================
-   TABLE CARD
+   MAIN TABLE CARD
 ========================================================= */
 
 .city-table-card {
   width: 100%;
-  background: #ffffff;
-  border: 1px solid #e8e4db;
-  border-radius: 14px;
-  box-shadow: 0 4px 18px rgba(40, 35, 25, 0.05);
   overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid #DCD5C2;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(27, 42, 74, 0.06);
 }
 
 .city-table-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 22px 24px;
-  border-bottom: 1px solid #eeeae2;
+  min-height: 70px;
+  padding: 0 24px;
+  border-bottom: 1px solid #E8E3D7;
+  box-sizing: border-box;
 }
 
 .city-table-header h2 {
   margin: 0;
+  color: #1B2A4A;
   font-size: 18px;
-  font-weight: 700;
-  color: #292929;
+  font-weight: 750;
 }
 
 .city-table-header p {
   margin: 5px 0 0;
-  font-size: 13px;
-  color: #858585;
+  color: #8A8E95;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .city-member-count {
   display: flex;
   align-items: center;
   gap: 7px;
-  white-space: nowrap;
+  color: #8A8E95;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .city-member-count strong {
+  color: #1B2A4A;
   font-size: 18px;
-  font-weight: 700;
-  color: #b78a34;
+  font-weight: 800;
 }
 
 .city-member-count span {
+  color: #8A8E95;
   font-size: 12px;
-  color: #858585;
+  font-weight: 600;
 }
 
-
 /* =========================================================
-   FILTERS
+   CITY PERFORMANCE FILTERS
 ========================================================= */
 
 .city-performance-filters {
   display: flex;
   align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 18px 24px;
-  background: #fcfbf8;
-  border-bottom: 1px solid #eeeae2;
+  gap: 18px;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
+  box-sizing: border-box;
 }
 
 .city-filter-group {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  min-width: 190px;
+  gap: 6px;
 }
 
 .city-filter-group label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #666;
-  letter-spacing: 0.4px;
+  color: #4B5563;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
-.city-filter-group select,
-.city-filter-group input {
-  width: 100%;
+.city-filter-group select {
+  width: 220px;
   height: 40px;
   padding: 0 12px;
-  box-sizing: border-box;
-  border: 1px solid #dcd7cc;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #333;
-  font-size: 13px;
+  background-color: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 7px;
   outline: none;
+  color: #111827;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  box-sizing: border-box;
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
-.city-filter-group select:focus,
-.city-filter-group input:focus {
-  border-color: #b78a34;
+.city-filter-group select:hover {
+  border-color: #9CA3AF;
+  background-color: #FAFAFA;
+}
+
+.city-filter-group select:focus {
+  border-color: #6B7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
+}
+
+.city-filter-group select option {
+  padding: 10px;
+  background: #FFFFFF;
+  color: #111827;
+}
+
+/* =========================================================
+   EXPENDITURE INPUT
+========================================================= */
+
+.city-filter-group input[type="number"] {
+  width: 220px;
+  height: 40px;
+  padding: 8px 10px;
+  background-color: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 7px;
+  outline: none;
+  color: #333333;
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.city-filter-group input[type="number"]:focus {
+  border-color: #B78A34;
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.1);
 }
 
-.city-filter-group input::placeholder {
-  color: #aaa;
+.city-filter-group input[type="number"]::placeholder {
+  color: #9CA3AF;
 }
 
+/* Remove number spinner */
+
+.city-filter-group input[type="number"]::-webkit-inner-spin-button,
+.city-filter-group input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.city-filter-group input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 
 /* =========================================================
    TABLE WRAPPER
@@ -162,50 +230,58 @@
 .city-table-wrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* =========================================================
+   PERFORMANCE TABLE
+========================================================= */
 
 .city-performance-table {
   width: 100%;
-  min-width: 950px;
+  min-width: 920px;
   border-collapse: collapse;
-  table-layout: auto;
+  border-spacing: 0;
 }
 
 .city-performance-table thead {
-  background: #faf9f6;
+  background: #F8F6F0;
 }
 
 .city-performance-table th {
-  padding: 14px 18px;
-  border-bottom: 1px solid #e7e2d9;
-  color: #777;
+  padding: 14px 20px;
+  border-bottom: 1px solid #E5E0D5;
+  color: #6E7480;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
   text-align: left;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .city-performance-table td {
-  padding: 15px 18px;
-  border-bottom: 1px solid #f0ede7;
-  color: #3c3c3c;
-  font-size: 13px;
+  padding: 15px 20px;
+  border-bottom: 1px solid #EEEAE1;
+  color: #303846;
+  font-size: 14px;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .city-performance-table tbody tr {
-  transition: background 0.15s ease;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .city-performance-table tbody tr:hover {
-  background: #fcfbf8;
+  background: #FCFBF7;
 }
 
 .city-performance-table tbody tr:last-child td {
   border-bottom: none;
 }
-
 
 /* =========================================================
    CITY NAME
@@ -214,66 +290,60 @@
 .city-name {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 150px;
+  gap: 11px;
+  min-width: 170px;
+  color: #1B2A4A;
+  font-weight: 700;
 }
 
 .city-avatar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 34px;
   height: 34px;
   flex: 0 0 34px;
-  border-radius: 50%;
-  background: #f1eadb;
-  color: #9a7128;
+  background: #F1E7D1;
+  border: 1px solid #E0CFA7;
+  border-radius: 9px;
+  color: #B78A34;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
 }
-
-.city-name span {
-  font-weight: 600;
-  color: #303030;
-}
-
 
 /* =========================================================
-   CLIENT COUNT
+   TABLE VALUES
 ========================================================= */
 
 .city-client-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: #f5efe3;
-  color: #9a7128;
-  font-weight: 700;
+  min-width: 34px;
+  color: #1B2A4A;
+  font-size: 14px;
+  font-weight: 750;
 }
 
-
-/* =========================================================
-   BILLING / NET / EXPENDITURE
-========================================================= */
-
 .city-billing-value {
-  color: #26734d;
-  font-weight: 700;
+  color: #26734D;
+  font-size: 14px;
+  font-weight: 750;
 }
 
 .city-net-value {
-  color: #3f5f50;
-  font-weight: 600;
+  color: #1B2A4A;
+  font-size: 14px;
+  font-weight: 750;
 }
 
 .city-expenditure-value {
-  color: #9b5d35;
-  font-weight: 600;
+  color: #B78A34;
+  font-size: 14px;
+  font-weight: 750;
+  white-space: nowrap;
 }
-
 
 /* =========================================================
    VIEW PERFORMANCE BUTTON
@@ -282,138 +352,170 @@
 .city-view-performance-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 12px;
-  border: 1px solid #ddd6c9;
-  border-radius: 7px;
-  background: #ffffff;
-  color: #8f6a2b;
-  font-size: 12px;
-  font-weight: 700;
+  justify-content: center;
+  gap: 8px;
+  min-width: 150px;
+  padding: 8px 13px;
+  background: #F5F0E4;
+  border: 1px solid #DCCFAF;
+  border-radius: 8px;
+  color: #1B2A4A;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 750;
   white-space: nowrap;
   transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.15s ease;
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .city-view-performance-btn:hover {
-  background: #faf5e9;
-  border-color: #cdb37c;
+  background: #EDE3CC;
+  border-color: #CBAE6A;
   transform: translateY(-1px);
 }
 
+.city-view-performance-btn:active {
+  transform: translateY(0);
+}
+
 .city-view-arrow {
+  color: #B78A34;
   font-size: 15px;
+  font-weight: 800;
   line-height: 1;
 }
 
-
 /* =========================================================
-   EMPTY TABLE
+   EMPTY STATE
 ========================================================= */
 
 .city-empty {
-  height: 120px;
+  height: 140px;
+  color: #8A8E95 !important;
+  font-size: 14px !important;
   text-align: center !important;
-  color: #999 !important;
-  font-size: 13px !important;
 }
 
-
 /* =========================================================
-   PERFORMANCE OVERLAY
+   MODAL OVERLAY
 ========================================================= */
 
 .city-performance-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  background: rgba(17, 27, 45, 0.62);
   box-sizing: border-box;
-  background: rgba(20, 20, 20, 0.48);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(5px);
 }
 
-
 /* =========================================================
-   PERFORMANCE MODAL
+   MODAL
 ========================================================= */
 
 .city-performance-modal {
-  width: min(1180px, 100%);
+  width: min(1080px, 100%);
   max-height: calc(100vh - 48px);
   overflow-y: auto;
-  background: #ffffff;
+  background: #F7F4EC;
+  border: 1px solid #DCD5C2;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.25),
+    0 5px 20px rgba(27, 42, 74, 0.1);
+  scrollbar-color: #C9C0AA transparent;
+  scrollbar-width: thin;
 }
 
+.city-performance-modal::-webkit-scrollbar {
+  width: 7px;
+}
+
+.city-performance-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.city-performance-modal::-webkit-scrollbar-thumb {
+  background: #C9C0AA;
+  border-radius: 10px;
+}
 
 /* =========================================================
    MODAL HEADER
 ========================================================= */
 
 .city-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
-  padding: 24px 26px;
-  border-bottom: 1px solid #eeeae2;
+  min-height: 82px;
+  padding: 20px 28px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E4DED1;
+  box-sizing: border-box;
 }
 
 .city-modal-eyebrow {
-  margin-bottom: 6px;
+  margin-bottom: 5px;
+  color: #B78A34;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 1.5px;
-  color: #b78a34;
+  text-transform: uppercase;
 }
 
 .city-modal-header h2 {
   margin: 0;
+  color: #1B2A4A;
   font-size: 24px;
+  font-weight: 800;
   line-height: 1.2;
-  color: #252525;
 }
 
 .city-modal-header p {
-  margin: 6px 0 0;
-  color: #888;
-  font-size: 13px;
+  margin: 5px 0 0;
+  color: #8A8E95;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .city-modal-close {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  flex: 0 0 36px;
-  border: 1px solid #e2ddd3;
-  border-radius: 50%;
-  background: #ffffff;
-  color: #666;
-  font-size: 24px;
-  line-height: 1;
+  padding: 0;
+  background: #F5F2EA;
+  border: 1px solid #DDD5C5;
+  border-radius: 9px;
+  color: #1B2A4A;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
   transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .city-modal-close:hover {
-  background: #f7f4ee;
-  border-color: #cfc6b8;
-  color: #333;
+  background: #EDE7D9;
+  border-color: #CFC3AC;
+  transform: rotate(3deg);
 }
-
 
 /* =========================================================
    SUMMARY CARDS
@@ -421,53 +523,87 @@
 
 .city-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  padding: 20px 26px;
-  background: #fcfbf8;
-  border-bottom: 1px solid #eeeae2;
+  padding: 18px 28px 0;
+  box-sizing: border-box;
 }
 
 .city-summary-card {
-  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 88px;
   padding: 14px 16px;
-  box-sizing: border-box;
-  border: 1px solid #e8e2d8;
+  background: #FFFFFF;
+  border: 1px solid #DCD5C2;
   border-radius: 10px;
-  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(27, 42, 74, 0.04);
+  box-sizing: border-box;
 }
 
 .city-summary-label {
   display: block;
-  margin-bottom: 7px;
-  color: #858585;
+  margin-bottom: 6px;
+  color: #858A92;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
-.city-summary-value {
-  display: block;
-  color: #303030;
-  font-size: 17px;
-  font-weight: 700;
+.city-summary-text {
+  color: #1B2A4A;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
-.city-summary-text {
-  display: block;
-  overflow: hidden;
-  color: #303030;
-  font-size: 14px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.city-summary-value {
+  color: #1B2A4A;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  word-break: break-word;
 }
 
 .city-summary-net {
-  color: #26734d;
+  color: #1B2A4A;
 }
 
+/* =========================================================
+   SUMMARY CARD VARIANTS
+========================================================= */
+
+.city-top-city-card {
+  border-left: 4px solid #B78A34;
+}
+
+.city-enquiry-card {
+  border-left: 4px solid #B78A34;
+}
+
+.city-enquiry-card .city-summary-value {
+  color: #1B2A4A;
+}
+
+.city-share-card {
+  border-left: 4px solid #26734D;
+}
+
+.city-share-card .city-summary-value {
+  color: #26734D;
+}
+
+.city-net-card {
+  border-left: 4px solid #1B2A4A;
+}
+
+.city-net-card .city-summary-value {
+  color: #1B2A4A;
+}
 
 /* =========================================================
    REPORT CONTROLS
@@ -476,42 +612,55 @@
 .city-report-controls {
   display: flex;
   align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 20px 26px 12px;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 20px 28px 0;
+  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid #DCD5C2;
+  border-radius: 10px;
+  box-sizing: border-box;
 }
 
-.city-report-period {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 210px;
+.city-report-controls > div:first-child {
+  min-width: 220px;
 }
 
-.city-report-period label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #666;
-  letter-spacing: 0.3px;
+.city-report-controls label {
+  display: block;
+  margin-bottom: 6px;
+  color: #4B5563;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.city-report-period select {
-  height: 40px;
+.city-report-controls select {
+  width: 100%;
+  height: 38px;
   padding: 0 12px;
-  border: 1px solid #dcd7cc;
+  background: #FFFFFF;
+  border: 1px solid #D7D0C1;
   border-radius: 8px;
-  background: #ffffff;
-  color: #333;
-  font-size: 13px;
   outline: none;
+  color: #1B2A4A;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  box-sizing: border-box;
 }
 
-.city-report-period select:focus {
-  border-color: #b78a34;
+.city-report-controls select:focus {
+  border-color: #B78A34;
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.1);
 }
 
+.city-report-period {
+  color: #7A7F87;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
 
 /* =========================================================
    REPORT GRAPHS
@@ -520,18 +669,26 @@
 .city-report-graphs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  padding: 12px 26px 24px;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 28px 0;
+  box-sizing: border-box;
 }
+
+/* =========================================================
+   CHART CARD
+========================================================= */
 
 .city-chart-card {
+  width: 100%;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #e8e4dc;
+  background: #FFFFFF;
+  border: 1px solid #DCD5C2;
   border-radius: 12px;
-  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(27, 42, 74, 0.04);
+  box-sizing: border-box;
 }
-
 
 /* =========================================================
    CHART HEADING
@@ -540,65 +697,71 @@
 .city-chart-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 17px 18px 12px;
+  gap: 11px;
+  min-width: 0;
+  padding: 16px 17px 12px;
+  border-bottom: 1px solid #EEEAE1;
+  box-sizing: border-box;
+}
+
+.city-chart-heading > div:nth-child(2) {
+  margin-left: auto;
 }
 
 .city-chart-heading h3 {
   margin: 0;
-  color: #303030;
-  font-size: 15px;
-  font-weight: 700;
+  color: #1B2A4A;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .city-chart-heading p {
-  margin: 4px 0 0;
-  color: #929292;
-  font-size: 11px;
+  margin: 3px 0 0;
+  color: #8A8E95;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .city-chart-indicator {
-  padding: 5px 9px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  white-space: nowrap;
+  width: auto;
+  min-width: 9px;
+  height: 34px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .city-client-indicator {
-  background: #f5efe3;
-  color: #9a7128;
+  background: #F1E7D1;
+  color: #8F6926;
 }
 
 .city-billing-indicator {
-  background: #eaf4ee;
-  color: #26734d;
+  background: #E1EFE8;
+  color: #26734D;
 }
 
-
 /* =========================================================
-   RECHARTS CONTAINER
+   CHART CONTAINER
 ========================================================= */
 
 .city-chart-container {
   position: relative;
   width: 100%;
-  height: 320px;
   min-width: 0;
+  height: 320px;
   min-height: 320px;
-  padding: 0 8px 8px 0;
+  padding: 8px 8px 10px 0;
   box-sizing: border-box;
 }
 
-
-/*
-   IMPORTANT:
-   Do not use aggressive selectors against
-   .recharts-bar-rectangle path / rect.
-
-   Recharts creates the SVG bar elements itself.
-*/
+/* Recharts responsive container */
 
 .city-chart-container .recharts-responsive-container {
   width: 100% !important;
@@ -608,55 +771,60 @@
 }
 
 .city-chart-container .recharts-wrapper {
-  width: 100% !important;
-  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
 }
+
+/* =========================================================
+   RECHARTS
+========================================================= */
+
+/* SVG must remain visible */
 
 .city-chart-container .recharts-surface {
   overflow: visible;
 }
 
+/* Cartesian grid */
 
-/* =========================================================
-   RECHARTS AXES
-========================================================= */
-
-.city-chart-container .recharts-cartesian-axis-line {
-  stroke: #ddd8ce;
+.city-chart-container
+.recharts-cartesian-grid-horizontal
+line {
+  stroke: #E9E5DC;
 }
 
-.city-chart-container .recharts-cartesian-axis-tick-line {
-  stroke: #ddd8ce;
-}
-
-.city-chart-container .recharts-cartesian-axis-tick-value {
-  fill: #858585;
-  font-size: 10px;
-}
-
-
-/* =========================================================
-   RECHARTS GRID
-========================================================= */
-
-.city-chart-container .recharts-cartesian-grid-horizontal line {
-  stroke: #ece8e0;
-  stroke-width: 1;
-}
-
-.city-chart-container .recharts-cartesian-grid-vertical line {
+.city-chart-container
+.recharts-cartesian-grid-vertical
+line {
   stroke: transparent;
 }
 
+/* Axes */
+
+.city-chart-container
+.recharts-xAxis
+line,
+
+.city-chart-container
+.recharts-yAxis
+line {
+  stroke: #D9D4C9;
+}
+
+.city-chart-container
+.recharts-xAxis
+.recharts-cartesian-axis-tick-value,
+
+.city-chart-container
+.recharts-yAxis
+.recharts-cartesian-axis-tick-value {
+  fill: #858A92;
+  font-size: 10px;
+}
 
 /* =========================================================
-   RECHARTS BAR
+   BAR VISIBILITY
 ========================================================= */
-
-/*
-   Keep these rules simple.
-   They ensure the bars are not hidden by CSS.
-*/
 
 .city-chart-container .recharts-bar {
   opacity: 1 !important;
@@ -666,58 +834,25 @@
 .city-chart-container .recharts-bar-rectangle {
   opacity: 1 !important;
   visibility: visible !important;
+  transition: opacity 0.2s ease;
 }
 
-
-/*
-   Explicitly preserve SVG rendering.
-   No fill override here because the JSX
-   controls the bar colours.
-*/
-
-.city-chart-container svg {
-  display: block;
-  overflow: visible;
+.city-chart-container .recharts-bar-rectangle:hover {
+  opacity: 0.8 !important;
 }
 
+/* Ensure SVG paths/rectangles are visible */
 
-/* =========================================================
-   TOOLTIP
-========================================================= */
-
-.city-modern-tooltip {
-  min-width: 150px;
-  padding: 10px 12px;
-  border: 1px solid #e2ddd3;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+.city-chart-container .recharts-bar-rectangle path,
+.city-chart-container .recharts-bar-rectangle rect {
+  visibility: visible !important;
 }
 
-.city-tooltip-label {
-  margin-bottom: 7px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #eeeae2;
-  color: #555;
-  font-size: 11px;
-  font-weight: 700;
-}
+/* Prevent generic SVG rules from removing bar fill */
 
-.city-tooltip-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 3px 0;
-  color: #777;
-  font-size: 11px;
+.city-chart-container .recharts-bar-rectangle[fill] {
+  fill-opacity: 1 !important;
 }
-
-.city-tooltip-row strong {
-  color: #303030;
-  font-size: 11px;
-}
-
 
 /* =========================================================
    NO CHART DATA
@@ -728,12 +863,57 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
-  min-height: 260px;
-  color: #999;
+  height: 320px;
+  min-height: 320px;
+  color: #92969D;
   font-size: 13px;
+  font-weight: 600;
+  box-sizing: border-box;
 }
 
+/* =========================================================
+   CUSTOM TOOLTIP
+========================================================= */
+
+.city-modern-tooltip {
+  min-width: 170px;
+  padding: 11px 12px;
+  background: #FFFFFF;
+  border: 1px solid #DCD5C2;
+  border-radius: 9px;
+  box-shadow: 0 8px 25px rgba(27, 42, 74, 0.13);
+}
+
+.city-tooltip-label {
+  margin-bottom: 5px;
+  color: #7A7F87;
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.city-tooltip-city {
+  margin-bottom: 7px;
+  color: #1B2A4A;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.city-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 5px;
+  color: #777D86;
+  font-size: 11px;
+}
+
+.city-tooltip-row strong {
+  color: #1B2A4A;
+  font-size: 11px;
+  font-weight: 800;
+}
 
 /* =========================================================
    MODAL FOOTER
@@ -742,129 +922,235 @@
 .city-modal-footer {
   display: flex;
   justify-content: flex-end;
-  padding: 16px 26px 22px;
-  border-top: 1px solid #eeeae2;
+  padding: 18px 28px 22px;
 }
 
 .city-footer-close {
-  min-width: 90px;
-  height: 38px;
-  padding: 0 18px;
-  border: 1px solid #d8d2c7;
+  min-width: 88px;
+  padding: 9px 18px;
+  background: #1B2A4A;
+  border: 1px solid #1B2A4A;
   border-radius: 8px;
-  background: #ffffff;
-  color: #555;
-  font-size: 12px;
-  font-weight: 700;
+  color: #FFFFFF;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 750;
   transition:
-    background 0.2s ease,
-    border-color 0.2s ease;
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .city-footer-close:hover {
-  background: #f7f4ee;
-  border-color: #c9c0b2;
+  background: #263A61;
+  transform: translateY(-1px);
 }
 
+.city-footer-close:active {
+  transform: translateY(0);
+}
 
 /* =========================================================
-   SCROLLBAR
+   TABLET
 ========================================================= */
 
-.city-performance-modal::-webkit-scrollbar {
-  width: 8px;
-}
-
-.city-performance-modal::-webkit-scrollbar-track {
-  background: #f5f3ef;
-}
-
-.city-performance-modal::-webkit-scrollbar-thumb {
-  border-radius: 8px;
-  background: #d5d0c7;
-}
-
-.city-table-wrapper::-webkit-scrollbar {
-  height: 7px;
-}
-
-.city-table-wrapper::-webkit-scrollbar-track {
-  background: #f5f3ef;
-}
-
-.city-table-wrapper::-webkit-scrollbar-thumb {
-  border-radius: 7px;
-  background: #d5d0c7;
-}
-
-
-/* =========================================================
-   RESPONSIVE — TABLET
-========================================================= */
-
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .city-performance-page {
-    padding: 18px;
+    padding: 22px;
+  }
+
+  .city-table-header {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .city-performance-filters {
+    padding-left: 22px;
+    padding-right: 22px;
   }
 
   .city-summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .city-report-controls {
+    margin-left: 22px;
+    margin-right: 22px;
+  }
+
+  .city-report-graphs {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .city-modal-footer {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 850px) {
+  .city-page-header h1 {
+    font-size: 26px;
+  }
+
+  .city-performance-filters {
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .city-filter-group select,
+  .city-filter-group input[type="number"] {
+    width: 210px;
   }
 
   .city-report-graphs {
     grid-template-columns: 1fr;
   }
 
-  .city-chart-container {
-    height: 320px;
-    min-height: 320px;
-  }
-}
-
-
-/* =========================================================
-   RESPONSIVE — MOBILE
-========================================================= */
-
-@media (max-width: 600px) {
-  .city-performance-page {
-    padding: 12px;
-  }
-
-  .city-page-header h1 {
-    font-size: 23px;
-  }
-
-  .city-page-header p {
-    font-size: 13px;
-  }
-
-  .city-table-header {
+  .city-report-controls {
     align-items: flex-start;
-    padding: 18px;
-  }
-
-  .city-performance-filters {
     flex-direction: column;
-    align-items: stretch;
-    padding: 16px 18px;
   }
 
-  .city-filter-group {
+  .city-report-controls > div:first-child {
     width: 100%;
     min-width: 0;
   }
 
-  .city-filter-group select,
-  .city-filter-group input {
+  .city-report-period {
+    width: 100%;
+    text-align: left;
+  }
+
+  .city-chart-container {
+    height: 300px;
+    min-height: 300px;
+  }
+
+  .city-no-chart-data {
+    height: 300px;
+    min-height: 300px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .city-performance-page {
+    padding: 16px;
+  }
+
+  /* PAGE HEADER */
+
+  .city-page-header {
+    margin-bottom: 18px;
+    text-align: left;
+  }
+
+  .city-page-eyebrow {
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    text-align: left;
+  }
+
+  .city-page-header h1 {
+    font-size: 23px;
+    text-align: left;
+  }
+
+  .city-page-header p {
+    margin-top: 6px;
+    font-size: 12px;
+    text-align: left;
+  }
+
+  /* TABLE */
+
+  .city-table-card {
+    border-radius: 11px;
+  }
+
+  .city-table-header {
+    min-height: 62px;
+    padding: 0 16px;
+  }
+
+  .city-table-header h2 {
+    font-size: 16px;
+  }
+
+  .city-table-header p {
+    font-size: 10px;
+  }
+
+  .city-member-count strong {
+    font-size: 16px;
+  }
+
+  .city-member-count span {
+    font-size: 10px;
+  }
+
+  .city-performance-table {
+    min-width: 920px;
+  }
+
+  .city-performance-table th {
+    padding: 12px 14px;
+    font-size: 9px;
+  }
+
+  .city-performance-table td {
+    padding: 13px 14px;
+    font-size: 12px;
+  }
+
+  .city-name {
+    gap: 8px;
+    min-width: 140px;
+  }
+
+  .city-avatar {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  .city-view-performance-btn {
+    min-width: 140px;
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  /* FILTERS */
+
+  .city-performance-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  .city-filter-group {
     width: 100%;
   }
 
-  .city-performance-table th,
-  .city-performance-table td {
-    padding: 12px 14px;
+  .city-filter-group select,
+  .city-filter-group input[type="number"] {
+    width: 100%;
   }
+
+  /* MODAL */
 
   .city-performance-overlay {
     align-items: flex-start;
@@ -873,72 +1159,188 @@
 
   .city-performance-modal {
     max-height: calc(100vh - 20px);
-    border-radius: 12px;
+    border-radius: 13px;
   }
 
   .city-modal-header {
-    padding: 18px;
+    min-height: 70px;
+    padding: 16px 17px;
+  }
+
+  .city-modal-eyebrow {
+    font-size: 9px;
   }
 
   .city-modal-header h2 {
     font-size: 20px;
   }
 
-  .city-summary-grid {
-    grid-template-columns: 1fr;
-    padding: 16px 18px;
+  .city-modal-header p {
+    font-size: 10px;
   }
 
+  .city-modal-close {
+    width: 33px;
+    height: 33px;
+    font-size: 22px;
+  }
+
+  /* SUMMARY */
+
+  .city-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 15px 17px 0;
+  }
+
+  .city-summary-card {
+    min-height: 82px;
+    padding: 13px 14px;
+  }
+
+  .city-summary-label {
+    margin-bottom: 5px;
+    font-size: 9px;
+  }
+
+  .city-summary-text {
+    font-size: 14px;
+  }
+
+  .city-summary-value {
+    font-size: 17px;
+  }
+
+  /* REPORT CONTROLS */
+
   .city-report-controls {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 16px 18px 10px;
+    margin: 16px 17px 0;
+    padding: 14px;
+  }
+
+  .city-report-controls select {
+    height: 36px;
+    font-size: 12px;
   }
 
   .city-report-period {
+    font-size: 11px;
+  }
+
+  /* CHARTS */
+
+  .city-report-graphs {
+    grid-template-columns: 1fr;
+    gap: 11px;
+    padding: 15px 17px 0;
+  }
+
+  .city-chart-card {
     width: 100%;
     min-width: 0;
   }
 
-  .city-report-period select {
-    width: 100%;
-  }
-
-  .city-report-graphs {
-    padding: 10px 18px 18px;
-  }
-
   .city-chart-heading {
-    padding: 15px;
+    padding: 14px;
   }
 
-  .city-chart-container {
-    height: 300px;
-    min-height: 300px;
-    padding-right: 4px;
+  .city-chart-heading h3 {
+    font-size: 13px;
   }
 
-  .city-modal-footer {
-    padding: 14px 18px 18px;
-  }
-}
-
-
-/* =========================================================
-   VERY SMALL SCREENS
-========================================================= */
-
-@media (max-width: 400px) {
-  .city-chart-heading {
-    align-items: flex-start;
+  .city-chart-heading p {
+    font-size: 9px;
   }
 
   .city-chart-indicator {
-    display: none;
+    height: 30px;
+    padding: 0 7px;
+    font-size: 8px;
   }
 
   .city-chart-container {
-    height: 280px;
-    min-height: 280px;
+    width: 100%;
+    min-width: 0;
+    height: 290px;
+    min-height: 290px;
+    padding-right: 5px;
+  }
+
+  .city-no-chart-data {
+    height: 290px;
+    min-height: 290px;
+  }
+
+  /* FOOTER */
+
+  .city-modal-footer {
+    padding: 15px 17px 18px;
+  }
+
+  .city-footer-close {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+  .city-performance-page {
+    padding: 12px;
+  }
+
+  .city-page-header {
+    text-align: left;
+  }
+
+  .city-page-eyebrow,
+  .city-page-header h1,
+  .city-page-header p {
+    text-align: left;
+  }
+
+  .city-page-header h1 {
+    font-size: 21px;
+  }
+
+  .city-table-header {
+    padding: 0 13px;
+  }
+
+  .city-performance-filters {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .city-summary-grid {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .city-report-controls {
+    margin-left: 13px;
+    margin-right: 13px;
+  }
+
+  .city-report-graphs {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .city-modal-footer {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .city-chart-container {
+    height: 260px;
+    min-height: 260px;
+  }
+
+  .city-no-chart-data {
+    height: 260px;
+    min-height: 260px;
   }
 }
