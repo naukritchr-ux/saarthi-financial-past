@@ -210,6 +210,7 @@
 }
 
 /* Remove number spinner */
+
 .city-filter-group input[type="number"]::-webkit-inner-spin-button,
 .city-filter-group input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -761,6 +762,7 @@
 }
 
 /* Recharts responsive container */
+
 .city-chart-container .recharts-responsive-container {
   width: 100% !important;
   height: 100% !important;
@@ -778,11 +780,13 @@
 ========================================================= */
 
 /* SVG must remain visible */
+
 .city-chart-container .recharts-surface {
   overflow: visible;
 }
 
 /* Cartesian grid */
+
 .city-chart-container
 .recharts-cartesian-grid-horizontal
 line {
@@ -796,9 +800,11 @@ line {
 }
 
 /* Axes */
+
 .city-chart-container
 .recharts-xAxis
 line,
+
 .city-chart-container
 .recharts-yAxis
 line {
@@ -808,6 +814,7 @@ line {
 .city-chart-container
 .recharts-xAxis
 .recharts-cartesian-axis-tick-value,
+
 .city-chart-container
 .recharts-yAxis
 .recharts-cartesian-axis-tick-value {
@@ -835,12 +842,14 @@ line {
 }
 
 /* Ensure SVG paths/rectangles are visible */
+
 .city-chart-container .recharts-bar-rectangle path,
 .city-chart-container .recharts-bar-rectangle rect {
   visibility: visible !important;
 }
 
 /* Prevent generic SVG rules from removing bar fill */
+
 .city-chart-container .recharts-bar-rectangle[fill] {
   fill-opacity: 1 !important;
 }
