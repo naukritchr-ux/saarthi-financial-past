@@ -19,6 +19,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 20px;
   margin-bottom: 24px;
 }
 
@@ -66,8 +67,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
   padding: 20px 22px;
   border-bottom: 1px solid #E8E3D7;
+  background: #FFFFFF;
 }
 
 .industry-table-header h2 {
@@ -103,7 +106,7 @@
 }
 
 /* =========================================================
-   TABLE HEADER CELLS
+   TABLE HEADER
 ========================================================= */
 
 .industry-table thead th {
@@ -124,6 +127,7 @@
 ========================================================= */
 
 .industry-table tbody tr {
+  background: #FFFFFF;
   transition: background 0.2s ease;
 }
 
@@ -298,15 +302,15 @@
   width: min(1120px, 100%);
   max-height: calc(100vh - 48px);
 
-  overflow-y: auto;
   overflow-x: hidden;
+  overflow-y: auto;
 
   background: #FFFFFF;
+
   border: 1px solid #DCD5C2;
   border-radius: 18px;
 
-  box-shadow:
-    0 25px 70px rgba(10, 20, 35, 0.25);
+  box-shadow: 0 25px 70px rgba(10, 20, 35, 0.25);
 
   animation: industryModalIn 0.25s ease;
 }
@@ -331,33 +335,41 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 20px;
 
   padding: 24px 28px 20px;
 
   border-bottom: 1px solid #E8E3D7;
+
   background: #FFFFFF;
 }
 
 .industry-modal-eyebrow {
   margin-bottom: 5px;
+
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.5px;
+
   color: #B78A34;
 }
 
 .industry-modal-header h2 {
   margin: 0;
+
   font-size: 24px;
   line-height: 1.3;
   font-weight: 700;
+
   color: #1B2A4A;
 }
 
 .industry-modal-header p {
   margin: 5px 0 0;
+
   font-size: 13px;
   line-height: 1.4;
+
   color: #7A7F87;
 }
 
@@ -368,6 +380,7 @@
 .industry-modal-close {
   width: 36px;
   height: 36px;
+
   flex: 0 0 36px;
 
   display: flex;
@@ -380,6 +393,7 @@
   border-radius: 9px;
 
   background: #FAF8F3;
+
   color: #1B2A4A;
 
   font-family: inherit;
@@ -426,17 +440,16 @@
 
   box-sizing: border-box;
 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
   background: #FFFFFF;
 
   border: 1px solid #DCD5C2;
   border-radius: 10px;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  box-shadow:
-    0 3px 10px rgba(27, 42, 74, 0.04);
+  box-shadow: 0 3px 10px rgba(27, 42, 74, 0.04);
 }
 
 .industry-summary-label {
@@ -446,8 +459,10 @@
 
   font-size: 10px;
   line-height: 1.3;
+
   font-weight: 700;
   letter-spacing: 0.8px;
+
   text-transform: uppercase;
 
   color: #7A7F87;
@@ -458,6 +473,7 @@
 
   font-size: 18px;
   line-height: 1.25;
+
   font-weight: 800;
 
   color: #1B2A4A;
@@ -468,6 +484,7 @@
 
   font-size: 14px;
   line-height: 1.35;
+
   font-weight: 700;
 
   color: #1B2A4A;
@@ -487,12 +504,14 @@
 }
 
 /* =========================================================
-   INDUSTRY CARD
+   TOP INDUSTRY CARD
 ========================================================= */
 
 .industry-top-industry-card {
   justify-content: flex-start;
+
   min-height: 88px;
+
   padding-top: 14px;
 }
 
@@ -503,6 +522,7 @@
 .industry-sub-industry-list {
   display: flex;
   flex-wrap: wrap;
+
   gap: 6px;
 
   margin-top: 10px;
@@ -511,6 +531,7 @@
 .industry-sub-industry-tag {
   display: inline-flex;
   align-items: center;
+
   gap: 5px;
 
   padding: 5px 8px;
@@ -519,10 +540,12 @@
   border-radius: 6px;
 
   background: #FBF8F0;
+
   color: #5D6470;
 
   font-size: 10px;
   line-height: 1.2;
+
   font-weight: 600;
 }
 
@@ -539,6 +562,7 @@
   border-radius: 5px;
 
   background: #EDE3CB;
+
   color: #8A6827;
 
   font-size: 9px;
@@ -588,6 +612,8 @@
 .industry-performance-filters {
   display: flex;
   align-items: flex-end;
+  flex-wrap: wrap;
+
   gap: 18px;
 
   padding: 16px 20px;
@@ -601,13 +627,17 @@
 .industry-filter-group {
   display: flex;
   flex-direction: column;
+
   gap: 6px;
 }
 
 .industry-filter-group label {
   font-size: 12px;
+
   font-weight: 600;
+
   color: #4B5563;
+
   letter-spacing: 0.2px;
 }
 
@@ -621,6 +651,7 @@
   border-radius: 7px;
 
   background: #FFFFFF;
+
   color: #111827;
 
   font-family: inherit;
@@ -628,6 +659,7 @@
   font-weight: 500;
 
   outline: none;
+
   cursor: pointer;
 
   transition:
@@ -642,10 +674,9 @@
 }
 
 .industry-filter-group select:focus {
-  border-color: #6B7280;
+  border-color: #B78A34;
 
-  box-shadow:
-    0 0 0 3px rgba(107, 114, 128, 0.10);
+  box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
 }
 
 .industry-expenditure-value {
@@ -672,6 +703,7 @@ input[type="number"] {
   border-radius: 7px;
 
   background: #FFFFFF;
+
   color: #1B2A4A;
 
   font-family: inherit;
@@ -679,6 +711,7 @@ input[type="number"] {
   font-weight: 600;
 
   outline: none;
+
   cursor: text;
 
   transition:
@@ -697,8 +730,7 @@ input[type="number"]:hover {
 input[type="number"]:focus {
   border-color: #B78A34;
 
-  box-shadow:
-    0 0 0 3px rgba(183, 138, 52, 0.10);
+  box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
 }
 
 .industry-performance-filters
@@ -706,18 +738,6 @@ input[type="number"]:focus {
 input[type="number"]::placeholder {
   color: #89919D;
   font-weight: 500;
-}
-
-/* Remove number arrows */
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"]::-webkit-inner-spin-button,
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"]::-webkit-outer-spin-button {
-  opacity: 0.7;
 }
 
 /* =========================================================
@@ -744,15 +764,20 @@ input[type="number"]::-webkit-outer-spin-button {
 .industry-report-period {
   display: flex;
   flex-direction: column;
+
   gap: 6px;
 }
 
 .industry-report-period label,
 .industry-report-period > span {
   font-size: 10px;
+
   font-weight: 800;
+
   letter-spacing: 0.7px;
+
   text-transform: uppercase;
+
   color: #7A7F87;
 }
 
@@ -765,6 +790,7 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 7px;
 
   background: #FFFFFF;
+
   color: #1B2A4A;
 
   font-family: inherit;
@@ -772,6 +798,7 @@ input[type="number"]::-webkit-outer-spin-button {
   font-weight: 600;
 
   outline: none;
+
   cursor: pointer;
 
   transition:
@@ -779,11 +806,14 @@ input[type="number"]::-webkit-outer-spin-button {
     box-shadow 0.2s ease;
 }
 
+.industry-report-period select:hover {
+  border-color: #C9C0AD;
+}
+
 .industry-report-period select:focus {
   border-color: #B78A34;
 
-  box-shadow:
-    0 0 0 3px rgba(183, 138, 52, 0.12);
+  box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.12);
 }
 
 .industry-report-period strong {
@@ -793,6 +823,7 @@ input[type="number"]::-webkit-outer-spin-button {
   align-items: center;
 
   font-size: 14px;
+
   font-weight: 700;
 
   color: #1B2A4A;
@@ -805,8 +836,7 @@ input[type="number"]::-webkit-outer-spin-button {
 .industry-report-graphs {
   display: grid;
 
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
   gap: 14px;
 
@@ -827,8 +857,9 @@ input[type="number"]::-webkit-outer-spin-button {
   border: 1px solid #DCD5C2;
   border-radius: 12px;
 
-  box-shadow:
-    0 3px 12px rgba(27, 42, 74, 0.035);
+  box-shadow: 0 3px 12px rgba(27, 42, 74, 0.035);
+
+  overflow: hidden;
 }
 
 /* =========================================================
@@ -840,12 +871,15 @@ input[type="number"]::-webkit-outer-spin-button {
   align-items: center;
   justify-content: space-between;
 
+  gap: 12px;
+
   margin-bottom: 12px;
 }
 
 .industry-chart-heading > div {
   display: flex;
   align-items: center;
+
   gap: 8px;
 }
 
@@ -853,6 +887,7 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 
   font-size: 14px;
+
   font-weight: 700;
 
   color: #1B2A4A;
@@ -860,7 +895,9 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .industry-chart-heading > span {
   font-size: 10px;
+
   font-weight: 600;
+
   color: #8A8F96;
 }
 
@@ -873,6 +910,8 @@ input[type="number"]::-webkit-outer-spin-button {
   height: 8px;
 
   display: inline-block;
+
+  flex: 0 0 8px;
 
   border-radius: 50%;
 }
@@ -894,69 +933,88 @@ input[type="number"]::-webkit-outer-spin-button {
 
   width: 100%;
   height: 275px;
-  min-height: 275px;
 
+  min-height: 275px;
   min-width: 0;
 
   box-sizing: border-box;
 }
 
-.industry-chart-container .recharts-responsive-container {
-  width: 100% !important;
-  height: 100% !important;
+/*
+   IMPORTANT:
+   Do not force Recharts internal width/height.
+   ResponsiveContainer calculates these itself.
+*/
 
-  min-width: 0 !important;
-  min-height: 0 !important;
+.industry-chart-container
+.recharts-responsive-container {
+  width: 100%;
+  height: 100%;
 }
 
-.industry-chart-container .recharts-wrapper {
-  width: 100% !important;
-  height: 100% !important;
+/* =========================================================
+   RECHARTS BASE STYLING
+========================================================= */
 
+.industry-chart-container
+.recharts-wrapper {
   outline: none;
 }
 
-.industry-chart-container .recharts-surface {
+.industry-chart-container
+.recharts-surface {
   overflow: visible;
 }
 
-.industry-chart-container .recharts-cartesian-grid-horizontal line {
+.industry-chart-container
+.recharts-cartesian-grid-horizontal
+line {
   stroke: #E9E5DC;
 }
 
-.industry-chart-container .recharts-cartesian-grid-vertical line {
+.industry-chart-container
+.recharts-cartesian-grid-vertical
+line {
   stroke: transparent;
 }
 
-.industry-chart-container .recharts-xAxis line,
-.industry-chart-container .recharts-yAxis line {
+.industry-chart-container
+.recharts-xAxis
+line,
+.industry-chart-container
+.recharts-yAxis
+line {
   stroke: #DCD7CC;
 }
 
-.industry-chart-container .recharts-text {
-  fill: #7A7F87;
-}
-
-.industry-chart-container .recharts-cartesian-axis-tick-value {
+.industry-chart-container
+.recharts-xAxis
+.recharts-cartesian-axis-tick
+text,
+.industry-chart-container
+.recharts-yAxis
+.recharts-cartesian-axis-tick
+text {
   fill: #7A7F87;
   font-size: 10px;
 }
 
-.industry-chart-container .recharts-bar {
-  opacity: 1 !important;
-  visibility: visible !important;
+.industry-chart-container
+.recharts-label {
+  fill: #1B2A4A;
 }
 
-.industry-chart-container .recharts-bar-rectangle {
-  opacity: 1 !important;
-  visibility: visible !important;
+.industry-chart-container
+.recharts-tooltip-wrapper {
+  outline: none;
 }
 
-.industry-chart-container .recharts-bar-rectangle path,
-.industry-chart-container .recharts-bar-rectangle rect {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
+/*
+   IMPORTANT:
+   Do not set .recharts-bar opacity,
+   visibility, path, or rect here.
+   Recharts controls those elements.
+*/
 
 /* =========================================================
    NO CHART DATA
@@ -971,6 +1029,7 @@ input[type="number"]::-webkit-outer-spin-button {
   justify-content: center;
 
   font-size: 13px;
+
   color: #8A8F96;
 }
 
@@ -988,15 +1047,16 @@ input[type="number"]::-webkit-outer-spin-button {
   border: 1px solid #DCD5C2;
   border-radius: 9px;
 
-  box-shadow:
-    0 8px 25px rgba(27, 42, 74, 0.12);
+  box-shadow: 0 8px 25px rgba(27, 42, 74, 0.12);
 }
 
 .industry-tooltip-label {
   margin-bottom: 5px;
 
   font-size: 10px;
+
   font-weight: 700;
+
   letter-spacing: 0.5px;
 
   color: #8A8F96;
@@ -1007,6 +1067,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
   font-size: 12px;
   line-height: 1.3;
+
   font-weight: 800;
 
   color: #1B2A4A;
@@ -1022,11 +1083,13 @@ input[type="number"]::-webkit-outer-spin-button {
   padding-top: 5px;
 
   font-size: 11px;
+
   color: #6E737C;
 }
 
 .industry-tooltip-row strong {
   color: #1B2A4A;
+
   font-weight: 800;
 }
 
@@ -1050,6 +1113,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .industry-modal-footer > span {
   font-size: 11px;
+
   color: #7A7F87;
 }
 
@@ -1060,9 +1124,11 @@ input[type="number"]::-webkit-outer-spin-button {
   border-radius: 7px;
 
   background: #1B2A4A;
+
   color: #FFFFFF;
 
   font-family: inherit;
+
   font-size: 12px;
   font-weight: 700;
 
@@ -1075,6 +1141,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .industry-footer-close:hover {
   background: #263B62;
+
   transform: translateY(-1px);
 }
 
@@ -1092,6 +1159,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .industry-performance-modal::-webkit-scrollbar-thumb {
   background: #D2C8B4;
+
   border-radius: 10px;
 }
 
@@ -1240,11 +1308,13 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .industry-performance-overlay {
     align-items: flex-start;
+
     padding: 10px;
   }
 
   .industry-performance-modal {
     max-height: calc(100vh - 20px);
+
     border-radius: 14px;
   }
 
@@ -1263,7 +1333,9 @@ input[type="number"]::-webkit-outer-spin-button {
   .industry-modal-close {
     width: 32px;
     height: 32px;
+
     flex-basis: 32px;
+
     font-size: 20px;
   }
 
@@ -1285,7 +1357,9 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .industry-performance-filters {
     flex-direction: column;
+
     align-items: stretch;
+
     gap: 14px;
 
     padding: 14px 16px;
@@ -1303,6 +1377,7 @@ input[type="number"]::-webkit-outer-spin-button {
   .industry-filter-group
   input[type="number"] {
     width: 100%;
+
     min-width: 0;
   }
 
@@ -1310,6 +1385,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .industry-report-controls {
     flex-direction: column;
+
     align-items: stretch;
 
     margin: 18px 17px 0;
@@ -1342,6 +1418,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .industry-modal-footer {
     flex-direction: column;
+
     align-items: stretch;
 
     padding: 13px 17px;
@@ -1387,6 +1464,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .industry-performance-modal {
     max-height: calc(100vh - 12px);
+
     border-radius: 12px;
   }
 
