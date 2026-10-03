@@ -1,6 +1,6 @@
 /* =========================================================
    INDUSTRY PERFORMANCE PAGE
-   ========================================================= */
+========================================================= */
 
 .industry-performance-page {
   min-height: 100vh;
@@ -11,10 +11,9 @@
   color: #1B2A4A;
 }
 
-
 /* =========================================================
    PAGE HEADER
-   ========================================================= */
+========================================================= */
 
 .industry-page-header {
   display: flex;
@@ -46,10 +45,9 @@
   color: #7A7F87;
 }
 
-
 /* =========================================================
    TABLE CARD
-   ========================================================= */
+========================================================= */
 
 .industry-table-card {
   width: 100%;
@@ -60,10 +58,9 @@
   box-shadow: 0 5px 18px rgba(27, 42, 74, 0.05);
 }
 
-
 /* =========================================================
    TABLE HEADER
-   ========================================================= */
+========================================================= */
 
 .industry-table-header {
   display: flex;
@@ -88,10 +85,9 @@
   color: #7A7F87;
 }
 
-
 /* =========================================================
    TABLE WRAPPER
-   ========================================================= */
+========================================================= */
 
 .industry-table-wrapper {
   width: 100%;
@@ -106,10 +102,9 @@
   table-layout: auto;
 }
 
-
 /* =========================================================
    TABLE HEADER CELLS
-   ========================================================= */
+========================================================= */
 
 .industry-table thead th {
   padding: 14px 20px;
@@ -117,19 +112,16 @@
   border-bottom: 1px solid #E4DFD2;
   text-align: left;
   white-space: nowrap;
-
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-
   color: #6E737C;
 }
 
-
 /* =========================================================
    TABLE BODY
-   ========================================================= */
+========================================================= */
 
 .industry-table tbody tr {
   transition: background 0.2s ease;
@@ -143,7 +135,6 @@
   padding: 16px 20px;
   border-bottom: 1px solid #EEEAE1;
   vertical-align: middle;
-
   font-size: 14px;
   color: #1B2A4A;
 }
@@ -152,10 +143,9 @@
   border-bottom: none;
 }
 
-
 /* =========================================================
    INDUSTRY NAME
-   ========================================================= */
+========================================================= */
 
 .industry-name {
   display: flex;
@@ -168,16 +158,12 @@
   width: 36px;
   height: 36px;
   flex: 0 0 36px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 9px;
-
   background: #F2E8D0;
   color: #B78A34;
-
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
@@ -189,24 +175,19 @@
   color: #1B2A4A;
 }
 
-
 /* =========================================================
    TABLE VALUES
-   ========================================================= */
+========================================================= */
 
 .industry-client-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   min-width: 34px;
   padding: 5px 9px;
-
   border-radius: 7px;
-
   background: #F4F1E8;
   color: #1B2A4A;
-
   font-size: 13px;
   font-weight: 700;
 }
@@ -223,31 +204,24 @@
   color: #1B2A4A;
 }
 
-
 /* =========================================================
    VIEW PERFORMANCE BUTTON
-   ========================================================= */
+========================================================= */
 
 .industry-view-performance-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-
   padding: 8px 13px;
-
   border: 1px solid #D8C79F;
   border-radius: 7px;
-
   background: #FFFDF8;
   color: #B78A34;
-
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-
   cursor: pointer;
-
   transition:
     background 0.2s ease,
     color 0.2s ease,
@@ -272,23 +246,20 @@
   transform: translateX(2px);
 }
 
-
 /* =========================================================
    EMPTY TABLE
-   ========================================================= */
+========================================================= */
 
 .industry-empty {
   padding: 45px 20px !important;
   text-align: center !important;
-
   font-size: 14px !important;
   color: #8A8F96 !important;
 }
 
-
 /* =========================================================
    MODAL OVERLAY
-   ========================================================= */
+========================================================= */
 
 .industry-performance-overlay {
   position: fixed;
@@ -319,10 +290,9 @@
   }
 }
 
-
 /* =========================================================
    MODAL
-   ========================================================= */
+========================================================= */
 
 .industry-performance-modal {
   width: min(1120px, 100%);
@@ -332,7 +302,6 @@
   overflow-x: hidden;
 
   background: #FFFFFF;
-
   border: 1px solid #DCD5C2;
   border-radius: 18px;
 
@@ -354,10 +323,9 @@
   }
 }
 
-
 /* =========================================================
    MODAL HEADER
-   ========================================================= */
+========================================================= */
 
 .industry-modal-header {
   display: flex;
@@ -372,37 +340,30 @@
 
 .industry-modal-eyebrow {
   margin-bottom: 5px;
-
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.5px;
-
   color: #B78A34;
 }
 
 .industry-modal-header h2 {
   margin: 0;
-
   font-size: 24px;
   line-height: 1.3;
   font-weight: 700;
-
   color: #1B2A4A;
 }
 
 .industry-modal-header p {
   margin: 5px 0 0;
-
   font-size: 13px;
   line-height: 1.4;
-
   color: #7A7F87;
 }
 
-
 /* =========================================================
    CLOSE BUTTON
-   ========================================================= */
+========================================================= */
 
 .industry-modal-close {
   width: 36px;
@@ -439,16 +400,13 @@
   color: #FFFFFF;
 }
 
-
 /* =========================================================
    SUMMARY GRID
-   ========================================================= */
+========================================================= */
 
 .industry-summary-grid {
   display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
   gap: 12px;
 
@@ -457,10 +415,9 @@
   box-sizing: border-box;
 }
 
-
 /* =========================================================
    SUMMARY CARD
-   ========================================================= */
+========================================================= */
 
 .industry-summary-card {
   min-height: 88px;
@@ -489,7 +446,6 @@
 
   font-size: 10px;
   line-height: 1.3;
-
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -502,7 +458,6 @@
 
   font-size: 18px;
   line-height: 1.25;
-
   font-weight: 800;
 
   color: #1B2A4A;
@@ -513,7 +468,6 @@
 
   font-size: 14px;
   line-height: 1.35;
-
   font-weight: 700;
 
   color: #1B2A4A;
@@ -532,23 +486,19 @@
   color: #8A8F96;
 }
 
-
 /* =========================================================
    INDUSTRY CARD
-   ========================================================= */
+========================================================= */
 
 .industry-top-industry-card {
   justify-content: flex-start;
-
   min-height: 88px;
-
   padding-top: 14px;
 }
 
-
 /* =========================================================
    SUB INDUSTRY LIST
-   ========================================================= */
+========================================================= */
 
 .industry-sub-industry-list {
   display: flex;
@@ -595,10 +545,9 @@
   font-weight: 800;
 }
 
-
 /* =========================================================
    ENQUIRY CARD
-   ========================================================= */
+========================================================= */
 
 .industry-enquiry-card {
   border-left: 4px solid #B78A34;
@@ -608,10 +557,9 @@
   color: #1B2A4A;
 }
 
-
 /* =========================================================
    FRANCHISE SHARE CARD
-   ========================================================= */
+========================================================= */
 
 .industry-share-card {
   border-left: 4px solid #26734D;
@@ -621,10 +569,9 @@
   color: #26734D;
 }
 
-
 /* =========================================================
    NET AMOUNT CARD
-   ========================================================= */
+========================================================= */
 
 .industry-net-card {
   border-left: 4px solid #1B2A4A;
@@ -634,18 +581,158 @@
   color: #1B2A4A;
 }
 
+/* =========================================================
+   PERFORMANCE FILTERS
+========================================================= */
+
+.industry-performance-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+
+  padding: 16px 20px;
+
+  background: #FFFFFF;
+
+  border-top: 1px solid #E5E7EB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.industry-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.industry-filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4B5563;
+  letter-spacing: 0.2px;
+}
+
+.industry-filter-group select {
+  width: 220px;
+  height: 40px;
+
+  padding: 0 36px 0 12px;
+
+  border: 1px solid #D1D5DB;
+  border-radius: 7px;
+
+  background: #FFFFFF;
+  color: #111827;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+
+  outline: none;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.industry-filter-group select:hover {
+  border-color: #9CA3AF;
+  background-color: #FAFAFA;
+}
+
+.industry-filter-group select:focus {
+  border-color: #6B7280;
+
+  box-shadow:
+    0 0 0 3px rgba(107, 114, 128, 0.10);
+}
+
+.industry-expenditure-value {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   EXPENDITURE INPUT
+========================================================= */
+
+.industry-performance-filters
+.industry-filter-group
+input[type="number"] {
+  width: 210px;
+  min-width: 210px;
+  height: 39px;
+
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #D7D0C0;
+  border-radius: 7px;
+
+  background: #FFFFFF;
+  color: #1B2A4A;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  outline: none;
+  cursor: text;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.industry-performance-filters
+.industry-filter-group
+input[type="number"]:hover {
+  border-color: #C9C0AD;
+}
+
+.industry-performance-filters
+.industry-filter-group
+input[type="number"]:focus {
+  border-color: #B78A34;
+
+  box-shadow:
+    0 0 0 3px rgba(183, 138, 52, 0.10);
+}
+
+.industry-performance-filters
+.industry-filter-group
+input[type="number"]::placeholder {
+  color: #89919D;
+  font-weight: 500;
+}
+
+/* Remove number arrows */
+
+.industry-performance-filters
+.industry-filter-group
+input[type="number"]::-webkit-inner-spin-button,
+
+.industry-performance-filters
+.industry-filter-group
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.7;
+}
 
 /* =========================================================
    REPORT CONTROLS
-   ========================================================= */
+========================================================= */
 
 .industry-report-controls {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+
   gap: 18px;
 
   margin: 22px 28px 0;
+
   padding: 16px;
 
   background: #FAF8F2;
@@ -666,7 +753,6 @@
   font-weight: 800;
   letter-spacing: 0.7px;
   text-transform: uppercase;
-
   color: #7A7F87;
 }
 
@@ -712,10 +798,9 @@
   color: #1B2A4A;
 }
 
-
 /* =========================================================
    CHART SECTION
-   ========================================================= */
+========================================================= */
 
 .industry-report-graphs {
   display: grid;
@@ -728,10 +813,9 @@
   padding: 18px 28px 24px;
 }
 
-
 /* =========================================================
    CHART CARD
-   ========================================================= */
+========================================================= */
 
 .industry-chart-card {
   min-width: 0;
@@ -747,10 +831,9 @@
     0 3px 12px rgba(27, 42, 74, 0.035);
 }
 
-
 /* =========================================================
    CHART HEADING
-   ========================================================= */
+========================================================= */
 
 .industry-chart-heading {
   display: flex;
@@ -778,14 +861,12 @@
 .industry-chart-heading > span {
   font-size: 10px;
   font-weight: 600;
-
   color: #8A8F96;
 }
 
-
 /* =========================================================
    CHART INDICATORS
-   ========================================================= */
+========================================================= */
 
 .industry-chart-indicator {
   width: 8px;
@@ -804,23 +885,47 @@
   background: #26734D;
 }
 
-
 /* =========================================================
    CHART CONTAINER
-   ========================================================= */
+========================================================= */
 
 .industry-chart-container {
+  position: relative;
+
   width: 100%;
   height: 275px;
   min-height: 275px;
+
+  min-width: 0;
+
+  box-sizing: border-box;
+}
+
+.industry-chart-container .recharts-responsive-container {
+  width: 100% !important;
+  height: 100% !important;
+
+  min-width: 0 !important;
+  min-height: 0 !important;
 }
 
 .industry-chart-container .recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+
   outline: none;
+}
+
+.industry-chart-container .recharts-surface {
+  overflow: visible;
 }
 
 .industry-chart-container .recharts-cartesian-grid-horizontal line {
   stroke: #E9E5DC;
+}
+
+.industry-chart-container .recharts-cartesian-grid-vertical line {
+  stroke: transparent;
 }
 
 .industry-chart-container .recharts-xAxis line,
@@ -832,10 +937,30 @@
   fill: #7A7F87;
 }
 
+.industry-chart-container .recharts-cartesian-axis-tick-value {
+  fill: #7A7F87;
+  font-size: 10px;
+}
+
+.industry-chart-container .recharts-bar {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.industry-chart-container .recharts-bar-rectangle {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.industry-chart-container .recharts-bar-rectangle path,
+.industry-chart-container .recharts-bar-rectangle rect {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
 
 /* =========================================================
    NO CHART DATA
-   ========================================================= */
+========================================================= */
 
 .industry-no-chart-data {
   width: 100%;
@@ -849,10 +974,9 @@
   color: #8A8F96;
 }
 
-
 /* =========================================================
    CUSTOM TOOLTIP
-   ========================================================= */
+========================================================= */
 
 .industry-modern-tooltip {
   min-width: 170px;
@@ -883,7 +1007,6 @@
 
   font-size: 12px;
   line-height: 1.3;
-
   font-weight: 800;
 
   color: #1B2A4A;
@@ -893,12 +1016,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 16px;
 
   padding-top: 5px;
 
   font-size: 11px;
-
   color: #6E737C;
 }
 
@@ -907,15 +1030,15 @@
   font-weight: 800;
 }
 
-
 /* =========================================================
    MODAL FOOTER
-   ========================================================= */
+========================================================= */
 
 .industry-modal-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 15px;
 
   padding: 14px 28px;
@@ -955,10 +1078,9 @@
   transform: translateY(-1px);
 }
 
-
 /* =========================================================
    SCROLLBAR
-   ========================================================= */
+========================================================= */
 
 .industry-performance-modal::-webkit-scrollbar {
   width: 7px;
@@ -977,13 +1099,11 @@
   background: #B78A34;
 }
 
-
 /* =========================================================
    RESPONSIVE - 1100px
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 1100px) {
-
   .industry-performance-page {
     padding: 22px;
   }
@@ -1012,16 +1132,13 @@
     padding-left: 22px;
     padding-right: 22px;
   }
-
 }
-
 
 /* =========================================================
    RESPONSIVE - 850px
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 850px) {
-
   .industry-performance-page {
     padding: 18px;
   }
@@ -1032,6 +1149,7 @@
 
   .industry-summary-grid {
     grid-template-columns: 1fr 1fr;
+
     padding-left: 18px;
     padding-right: 18px;
   }
@@ -1053,6 +1171,10 @@
     min-height: 260px;
   }
 
+  .industry-performance-filters {
+    flex-wrap: wrap;
+  }
+
   .industry-modal-header {
     padding-left: 18px;
     padding-right: 18px;
@@ -1062,20 +1184,16 @@
     padding-left: 18px;
     padding-right: 18px;
   }
-
 }
-
 
 /* =========================================================
    RESPONSIVE - 600px
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 600px) {
-
   .industry-performance-page {
     padding: 14px;
   }
-
 
   /* PAGE HEADER */
 
@@ -1094,7 +1212,6 @@
   .industry-page-header p {
     font-size: 12px;
   }
-
 
   /* TABLE */
 
@@ -1119,12 +1236,10 @@
     padding: 13px 14px;
   }
 
-
   /* MODAL */
 
   .industry-performance-overlay {
     align-items: flex-start;
-
     padding: 10px;
   }
 
@@ -1149,10 +1264,8 @@
     width: 32px;
     height: 32px;
     flex-basis: 32px;
-
     font-size: 20px;
   }
-
 
   /* SUMMARY */
 
@@ -1168,6 +1281,30 @@
     min-height: 82px;
   }
 
+  /* FILTERS */
+
+  .industry-performance-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+
+    padding: 14px 16px;
+  }
+
+  .industry-filter-group {
+    width: 100%;
+  }
+
+  .industry-filter-group select {
+    width: 100%;
+  }
+
+  .industry-performance-filters
+  .industry-filter-group
+  input[type="number"] {
+    width: 100%;
+    min-width: 0;
+  }
 
   /* CONTROLS */
 
@@ -1176,13 +1313,13 @@
     align-items: stretch;
 
     margin: 18px 17px 0;
+
     padding: 13px;
   }
 
   .industry-report-period select {
     width: 100%;
   }
-
 
   /* GRAPHS */
 
@@ -1201,7 +1338,6 @@
     min-height: 245px;
   }
 
-
   /* FOOTER */
 
   .industry-modal-footer {
@@ -1218,16 +1354,13 @@
   .industry-footer-close {
     width: 100%;
   }
-
 }
-
 
 /* =========================================================
    RESPONSIVE - 400px
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 400px) {
-
   .industry-performance-page {
     padding: 10px;
   }
@@ -1284,199 +1417,4 @@
     height: 220px;
     min-height: 220px;
   }
-
-}
-
-/* ============================================================
-   INDUSTRY PERFORMANCE FILTERS
-   ============================================================ */
-
-.industry-performance-filters {
-  display: flex;
-  align-items: flex-end;
-  gap: 18px;
-  padding: 16px 20px;
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-
-.industry-filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-
-.industry-filter-group label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #4b5563;
-  letter-spacing: 0.2px;
-}
-
-
-.industry-filter-group select {
-  width: 220px;
-  height: 40px;
-  padding: 0 36px 0 12px;
-
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
-
-  background: #ffffff;
-  color: #111827;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-
-  outline: none;
-  cursor: pointer;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
-}
-
-
-.industry-filter-group select:hover {
-  border-color: #9ca3af;
-  background-color: #fafafa;
-}
-
-
-.industry-filter-group select:focus {
-  border-color: #6b7280;
-
-  box-shadow:
-    0 0 0 3px rgba(107, 114, 128, 0.10);
-}
-
-
-.industry-expenditure-value {
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-
-@media (max-width: 850px) {
-
-  .industry-performance-filters {
-    flex-wrap: wrap;
-  }
-
-}
-
-
-@media (max-width: 600px) {
-
-  .industry-performance-filters {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-  }
-
-  .industry-filter-group {
-    width: 100%;
-  }
-
-  .industry-filter-group select {
-    width: 100%;
-  }
-
-}
-
-
-
-/* =========================================================
-   INDUSTRY EXPENDITURE % INPUT
-========================================================= */
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"] {
-
-  min-width: 210px;
-
-  width: 210px;
-
-  height: 39px;
-
-  padding: 0 12px;
-
-  box-sizing: border-box;
-
-  border: 1px solid #D7D0C0;
-
-  border-radius: 7px;
-
-  background: #FFFFFF;
-
-  color: #1B2A4A;
-
-  font-family: inherit;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  outline: none;
-
-  cursor: text;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-
-}
-
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"]:hover {
-
-  border-color: #C9C0AD;
-
-}
-
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"]:focus {
-
-  border-color: #B78A34;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(183, 138, 52, 0.10);
-
-}
-
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"]::placeholder {
-
-  color: #89919D;
-
-  font-weight: 500;
-
-}
-
-
-/* Remove default number arrows */
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"]::-webkit-inner-spin-button,
-
-.industry-performance-filters
-.industry-filter-group
-input[type="number"]::-webkit-outer-spin-button {
-
-  opacity: 0.7;
-
 }
