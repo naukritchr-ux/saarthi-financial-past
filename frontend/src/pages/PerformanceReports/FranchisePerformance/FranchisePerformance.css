@@ -19,29 +19,32 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
   margin-bottom: 25px;
 }
 
 .franchise-page-eyebrow {
+  margin-bottom: 7px;
+  color: #B78A34;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.8px;
-  color: #B78A34;
-  margin-bottom: 7px;
 }
 
 .franchise-page-header h1 {
   margin: 0;
+  color: #1B2A4A;
   font-family: "Fraunces", serif;
   font-size: 30px;
   font-weight: 600;
-  color: #1B2A4A;
+  line-height: 1.2;
 }
 
 .franchise-page-header p {
   margin: 7px 0 0;
-  font-size: 14px;
   color: #6B7280;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 
@@ -50,10 +53,12 @@
 ========================================================= */
 
 .franchise-table-card {
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
   background: #FFFFFF;
   border: 1px solid #E2DCCB;
   border-radius: 14px;
-  overflow: hidden;
   box-shadow: 0 5px 18px rgba(27, 42, 74, 0.06);
 }
 
@@ -61,26 +66,29 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
   padding: 22px 25px;
   border-bottom: 1px solid #E8E3D7;
 }
 
 .franchise-table-header h2 {
   margin: 0;
+  color: #1B2A4A;
   font-size: 18px;
   font-weight: 700;
-  color: #1B2A4A;
 }
 
 .franchise-table-header p {
   margin: 5px 0 0;
-  font-size: 13px;
   color: #7B8491;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .franchise-member-count {
   min-width: 75px;
   padding: 9px 13px;
+  box-sizing: border-box;
   text-align: center;
   border-radius: 9px;
   background: #F7F4EC;
@@ -92,9 +100,9 @@
 .franchise-member-count span {
   display: block;
   margin-top: 2px;
+  color: #7B8491;
   font-size: 10px;
   font-weight: 600;
-  color: #7B8491;
 }
 
 
@@ -105,12 +113,13 @@
 .franchise-table-wrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .franchise-table {
   width: 100%;
-  border-collapse: collapse;
   min-width: 850px;
+  border-collapse: collapse;
 }
 
 .franchise-table thead {
@@ -120,19 +129,21 @@
 .franchise-table th {
   padding: 15px 22px;
   text-align: left;
+  border-bottom: 1px solid #E8E3D7;
+  color: #68717E;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: #68717E;
-  border-bottom: 1px solid #E8E3D7;
+  white-space: nowrap;
 }
 
 .franchise-table td {
   padding: 17px 22px;
   border-bottom: 1px solid #EEEAE1;
-  font-size: 14px;
   color: #344054;
+  font-size: 14px;
+  vertical-align: middle;
 }
 
 .franchise-table tbody tr {
@@ -158,6 +169,7 @@
   gap: 11px;
   color: #1B2A4A;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .franchise-avatar {
@@ -167,6 +179,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   border-radius: 50%;
   background: #EFE7D5;
   color: #1B2A4A;
@@ -186,6 +199,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 9px;
+  box-sizing: border-box;
   border-radius: 7px;
   background: #F3F5F8;
   color: #1B2A4A;
@@ -195,36 +209,59 @@
 .franchise-billing-value {
   color: #26734D;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .franchise-net-value {
   color: #1B2A4A;
   font-weight: 700;
+  white-space: nowrap;
+}
+
+.franchise-expenditure-value {
+  color: #B78A34;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 
 /* =========================================================
-   VIEW BUTTON
+   VIEW PERFORMANCE BUTTON
 ========================================================= */
 
 .franchise-view-performance-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
+  padding: 9px 14px;
   border: none;
   border-radius: 7px;
-  padding: 9px 14px;
   background: #1B2A4A;
   color: #FFFFFF;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  white-space: nowrap;
 }
 
 .franchise-view-performance-btn:hover {
   background: #263B62;
   transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(27, 42, 74, 0.15);
+}
+
+.franchise-view-performance-btn:active {
+  transform: translateY(0);
+}
+
+.franchise-view-performance-btn:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
 }
 
 .franchise-view-arrow {
@@ -234,13 +271,14 @@
 
 
 /* =========================================================
-   EMPTY
+   EMPTY STATE
 ========================================================= */
 
 .franchise-empty {
-  text-align: center !important;
   padding: 45px 20px !important;
+  text-align: center !important;
   color: #7B8491 !important;
+  font-size: 14px !important;
 }
 
 
@@ -259,6 +297,7 @@
   box-sizing: border-box;
   background: rgba(17, 27, 45, 0.58);
   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 
@@ -269,7 +308,9 @@
 .franchise-performance-modal {
   width: min(1180px, 100%);
   max-height: 92vh;
+  overflow-x: hidden;
   overflow-y: auto;
+  box-sizing: border-box;
   background: #F7F4EC;
   border-radius: 18px;
   box-shadow: 0 30px 80px rgba(16, 24, 40, 0.30);
@@ -277,7 +318,6 @@
 }
 
 @keyframes franchiseModalIn {
-
   from {
     opacity: 0;
     transform: translateY(18px) scale(0.98);
@@ -287,7 +327,6 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-
 }
 
 
@@ -299,17 +338,19 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 20px;
   padding: 27px 30px 23px;
+  box-sizing: border-box;
   background: #FFFFFF;
   border-bottom: 1px solid #E4DED0;
 }
 
 .franchise-modal-eyebrow {
   margin-bottom: 5px;
+  color: #B78A34;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.8px;
-  color: #B78A34;
 }
 
 .franchise-modal-header h2 {
@@ -318,20 +359,24 @@
   font-family: "Fraunces", serif;
   font-size: 27px;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .franchise-modal-header p {
   margin: 6px 0 0;
-  font-size: 13px;
   color: #7B8491;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .franchise-modal-close {
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   border: 1px solid #DED8CA;
   border-radius: 9px;
   background: #FFFFFF;
@@ -339,12 +384,21 @@
   font-size: 25px;
   line-height: 1;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .franchise-modal-close:hover {
   background: #F7F4EC;
+  border-color: #CFC7B6;
   transform: rotate(3deg);
+}
+
+.franchise-modal-close:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
 }
 
 
@@ -354,7 +408,7 @@
 
 .franchise-summary-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 13px;
   padding: 20px 25px;
 }
@@ -372,21 +426,22 @@
 .franchise-summary-label {
   display: block;
   margin-bottom: 9px;
+  color: #7B8491;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: #7B8491;
 }
 
 .franchise-summary-text {
   display: block;
+  overflow: hidden;
   color: #1B2A4A;
   font-size: 16px;
-  font-weight: 750;
-  white-space: nowrap;
-  overflow: hidden;
+  font-weight: 700;
+  line-height: 1.3;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .franchise-summary-value {
@@ -394,6 +449,7 @@
   color: #1B2A4A;
   font-size: 18px;
   font-weight: 800;
+  line-height: 1.3;
 }
 
 .franchise-summary-share {
@@ -416,23 +472,32 @@
   gap: 20px;
   margin: 0 25px 18px;
   padding: 17px 19px;
+  box-sizing: border-box;
   background: #FFFFFF;
   border: 1px solid #E2DCCB;
   border-radius: 11px;
 }
 
+.franchise-report-controls > div {
+  min-width: 0;
+}
+
 .franchise-report-controls label {
   display: block;
   margin-bottom: 7px;
+  color: #5F6875;
   font-size: 11px;
   font-weight: 700;
-  color: #5F6875;
+  line-height: 1.3;
 }
 
-.franchise-report-controls select {
+.franchise-report-controls select,
+.franchise-report-controls input[type="number"] {
+  width: 210px;
   min-width: 210px;
   height: 39px;
-  padding: 0 35px 0 12px;
+  padding: 0 12px;
+  box-sizing: border-box;
   border: 1px solid #D7D0C0;
   border-radius: 7px;
   background: #FFFFFF;
@@ -441,12 +506,41 @@
   font-size: 13px;
   font-weight: 600;
   outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.franchise-report-controls select {
+  padding-right: 35px;
   cursor: pointer;
 }
 
-.franchise-report-controls select:focus {
+.franchise-report-controls input[type="number"] {
+  cursor: text;
+}
+
+.franchise-report-controls select:hover,
+.franchise-report-controls input[type="number"]:hover {
+  border-color: #C9C0AD;
+}
+
+.franchise-report-controls select:focus,
+.franchise-report-controls input[type="number"]:focus {
   border-color: #B78A34;
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
+}
+
+.franchise-report-controls input[type="number"]::placeholder {
+  color: #89919D;
+  font-weight: 500;
+}
+
+/* Remove default number arrows */
+
+.franchise-report-controls input[type="number"]::-webkit-inner-spin-button,
+.franchise-report-controls input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.7;
 }
 
 .franchise-report-period {
@@ -456,16 +550,17 @@
 .franchise-report-period span {
   display: block;
   margin-bottom: 5px;
+  color: #89919D;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: #89919D;
 }
 
 .franchise-report-period strong {
   color: #1B2A4A;
   font-size: 14px;
+  font-weight: 700;
 }
 
 
@@ -482,16 +577,17 @@
 
 .franchise-chart-card {
   min-width: 0;
+  overflow: hidden;
   background: #FFFFFF;
   border: 1px solid #E2DCCB;
   border-radius: 12px;
-  overflow: hidden;
 }
 
 .franchise-chart-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 15px;
   padding: 16px 18px;
   border-bottom: 1px solid #EEEAE1;
 }
@@ -499,26 +595,32 @@
 .franchise-chart-heading > div {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 9px;
 }
 
 .franchise-chart-heading h3 {
   margin: 0;
+  overflow: hidden;
   color: #1B2A4A;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .franchise-chart-heading > span {
+  flex-shrink: 0;
+  color: #8A929E;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #8A929E;
 }
 
 .franchise-chart-indicator {
   width: 9px;
   height: 9px;
+  flex-shrink: 0;
   display: inline-block;
   border-radius: 50%;
 }
@@ -532,12 +634,14 @@
 }
 
 .franchise-chart-container {
+  width: 100%;
   height: 285px;
   padding: 15px 13px 10px 5px;
   box-sizing: border-box;
 }
 
 .franchise-no-chart-data {
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
@@ -554,6 +658,7 @@
 .franchise-modern-tooltip {
   min-width: 150px;
   padding: 11px 13px;
+  box-sizing: border-box;
   background: #1B2A4A;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(27, 42, 74, 0.20);
@@ -579,6 +684,7 @@
 
 .franchise-tooltip-row strong {
   color: #FFFFFF;
+  font-weight: 700;
 }
 
 
@@ -590,7 +696,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
   padding: 15px 25px;
+  box-sizing: border-box;
   background: #FFFFFF;
   border-top: 1px solid #E4DED0;
 }
@@ -598,9 +706,11 @@
 .franchise-modal-footer span {
   color: #7B8491;
   font-size: 12px;
+  line-height: 1.4;
 }
 
 .franchise-footer-close {
+  flex-shrink: 0;
   padding: 9px 19px;
   border: none;
   border-radius: 7px;
@@ -609,16 +719,28 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .franchise-footer-close:hover {
   background: #263B62;
+  transform: translateY(-1px);
+}
+
+.franchise-footer-close:active {
+  transform: translateY(0);
+}
+
+.franchise-footer-close:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
 }
 
 
 /* =========================================================
-   SCROLLBAR
+   MODAL SCROLLBAR
 ========================================================= */
 
 .franchise-performance-modal::-webkit-scrollbar {
@@ -640,17 +762,21 @@
 
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE - 1100px
 ========================================================= */
 
 @media (max-width: 1100px) {
 
   .franchise-summary-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
 }
 
+
+/* =========================================================
+   RESPONSIVE - 850px
+========================================================= */
 
 @media (max-width: 850px) {
 
@@ -658,8 +784,12 @@
     padding: 20px;
   }
 
+  .franchise-page-header {
+    align-items: flex-start;
+  }
+
   .franchise-summary-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .franchise-report-graphs {
@@ -671,12 +801,23 @@
     flex-direction: column;
   }
 
+  .franchise-report-controls select,
+  .franchise-report-controls input[type="number"] {
+    width: 100%;
+    min-width: 0;
+  }
+
   .franchise-report-period {
+    width: 100%;
     text-align: left;
   }
 
 }
 
+
+/* =========================================================
+   RESPONSIVE - 600px
+========================================================= */
 
 @media (max-width: 600px) {
 
@@ -684,8 +825,44 @@
     padding: 14px;
   }
 
+  .franchise-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
   .franchise-page-header h1 {
     font-size: 24px;
+  }
+
+  .franchise-page-header p {
+    font-size: 13px;
+  }
+
+  .franchise-table-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .franchise-member-count {
+    align-self: flex-start;
+  }
+
+  .franchise-table th,
+  .franchise-table td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .franchise-performance-overlay {
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .franchise-performance-modal {
+    max-height: 96vh;
+    border-radius: 14px;
   }
 
   .franchise-modal-header {
@@ -696,8 +873,14 @@
     font-size: 22px;
   }
 
-  .franchise-performance-overlay {
-    padding: 10px;
+  .franchise-modal-header p {
+    font-size: 12px;
+  }
+
+  .franchise-modal-close {
+    width: 34px;
+    height: 34px;
+    font-size: 22px;
   }
 
   .franchise-summary-grid {
@@ -705,8 +888,13 @@
     padding: 15px;
   }
 
+  .franchise-summary-card {
+    min-height: 78px;
+  }
+
   .franchise-report-controls {
     margin: 0 15px 15px;
+    padding: 15px;
   }
 
   .franchise-report-graphs {
@@ -718,83 +906,54 @@
   }
 
   .franchise-modal-footer {
+    align-items: flex-start;
+    flex-direction: column;
     padding: 13px 15px;
   }
 
+  .franchise-footer-close {
+    width: 100%;
+  }
+
 }
+
+
 /* =========================================================
-   FRANCHISE EXPENDITURE % INPUT
+   RESPONSIVE - VERY SMALL SCREENS
 ========================================================= */
 
-.franchise-report-controls input[type="number"] {
+@media (max-width: 400px) {
 
-  min-width: 210px;
+  .franchise-performance-page {
+    padding: 10px;
+  }
 
-  width: 210px;
+  .franchise-table-header {
+    padding: 15px;
+  }
 
-  height: 39px;
+  .franchise-performance-overlay {
+    padding: 6px;
+  }
 
-  padding: 0 12px;
+  .franchise-performance-modal {
+    border-radius: 12px;
+  }
 
-  box-sizing: border-box;
+  .franchise-modal-header {
+    padding: 18px 14px;
+  }
 
-  border: 1px solid #D7D0C0;
+  .franchise-summary-grid {
+    padding: 12px;
+  }
 
-  border-radius: 7px;
+  .franchise-report-controls {
+    margin: 0 12px 12px;
+  }
 
-  background: #FFFFFF;
-
-  color: #1B2A4A;
-
-  font-family: inherit;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  outline: none;
-
-  cursor: text;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-
-}
-
-
-.franchise-report-controls input[type="number"]:hover {
-
-  border-color: #C9C0AD;
-
-}
-
-
-.franchise-report-controls input[type="number"]:focus {
-
-  border-color: #B78A34;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(183, 138, 52, 0.10);
-
-}
-
-
-.franchise-report-controls input[type="number"]::placeholder {
-
-  color: #89919D;
-
-  font-weight: 500;
-
-}
-
-
-/* Remove default number arrows */
-
-.franchise-report-controls input[type="number"]::-webkit-inner-spin-button,
-.franchise-report-controls input[type="number"]::-webkit-outer-spin-button {
-
-  opacity: 0.7;
+  .franchise-report-graphs {
+    padding: 0 12px 12px;
+  }
 
 }

@@ -1,6 +1,7 @@
 import {
   useMemo,
-  useState
+  useState,
+  useEffect
 } from "react";
 
 import {
@@ -25,54 +26,18 @@ import "./FranchisePerformance.css";
 ========================================================= */
 
 const financialMonths = [
-  {
-    full: "April",
-    short: "Apr"
-  },
-  {
-    full: "May",
-    short: "May"
-  },
-  {
-    full: "June",
-    short: "Jun"
-  },
-  {
-    full: "July",
-    short: "Jul"
-  },
-  {
-    full: "August",
-    short: "Aug"
-  },
-  {
-    full: "September",
-    short: "Sep"
-  },
-  {
-    full: "October",
-    short: "Oct"
-  },
-  {
-    full: "November",
-    short: "Nov"
-  },
-  {
-    full: "December",
-    short: "Dec"
-  },
-  {
-    full: "January",
-    short: "Jan"
-  },
-  {
-    full: "February",
-    short: "Feb"
-  },
-  {
-    full: "March",
-    short: "Mar"
-  }
+  { full: "April", short: "Apr", month: 4 },
+  { full: "May", short: "May", month: 5 },
+  { full: "June", short: "Jun", month: 6 },
+  { full: "July", short: "Jul", month: 7 },
+  { full: "August", short: "Aug", month: 8 },
+  { full: "September", short: "Sep", month: 9 },
+  { full: "October", short: "Oct", month: 10 },
+  { full: "November", short: "Nov", month: 11 },
+  { full: "December", short: "Dec", month: 12 },
+  { full: "January", short: "Jan", month: 1 },
+  { full: "February", short: "Feb", month: 2 },
+  { full: "March", short: "Mar", month: 3 }
 ];
 
 
@@ -81,7 +46,6 @@ const financialMonths = [
 ========================================================= */
 
 function toNumber(value) {
-
   if (
     value === null ||
     value === undefined ||
@@ -91,9 +55,7 @@ function toNumber(value) {
   }
 
   if (typeof value === "number") {
-    return Number.isFinite(value)
-      ? value
-      : 0;
+    return Number.isFinite(value) ? value : 0;
   }
 
   const cleanedValue = String(value)
@@ -104,9 +66,7 @@ function toNumber(value) {
 
   const number = Number(cleanedValue);
 
-  return Number.isFinite(number)
-    ? number
-    : 0;
+  return Number.isFinite(number) ? number : 0;
 }
 
 
@@ -115,7 +75,6 @@ function toNumber(value) {
 ========================================================= */
 
 function formatCurrency(value) {
-
   return new Intl.NumberFormat(
     "en-IN",
     {
@@ -124,7 +83,18 @@ function formatCurrency(value) {
       maximumFractionDigits: 0
     }
   ).format(toNumber(value));
+}
 
+
+/* =========================================================
+   NORMALIZE COMPANY NAME
+========================================================= */
+
+function normalizeCompanyKey(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toUpperCase();
 }
 
 
@@ -133,23 +103,22 @@ function formatCurrency(value) {
 ========================================================= */
 
 function getFranchise(row) {
-
   return String(
     row?.franchise_name ??
     row?.["Franchise Name"] ??
+    row?.franchise ??
+    row?.["Franchise"] ??
+    row?.franchiseName ??
     ""
   ).trim();
-
 }
 
 
 /* =========================================================
    GET COMPANY NAME
-   USED FOR UNIQUE ACQUIRED CLIENT COUNT
 ========================================================= */
 
 function getCompanyName(row) {
-
   return String(
     row?.company_name ??
     row?.["Company Name"] ??
@@ -157,7 +126,6 @@ function getCompanyName(row) {
     row?.["Company"] ??
     ""
   ).trim();
-
 }
 
 
@@ -166,13 +134,12 @@ function getCompanyName(row) {
 ========================================================= */
 
 function getIndustry(row) {
-
   return String(
     row?.industry ??
     row?.["Industry"] ??
+    row?.["Industry Name"] ??
     ""
   ).trim();
-
 }
 
 
@@ -181,71 +148,64 @@ function getIndustry(row) {
 ========================================================= */
 
 function getCity(row) {
-
   return String(
     row?.city ??
     row?.["City"] ??
     ""
   ).trim();
-
 }
 
 
 /* =========================================================
    GET INFO STATUS
-   DATABASE FIELD:
-   info
 ========================================================= */
 
 function getInfoStatus(row) {
-
   return String(
     row?.info ??
     row?.["Info"] ??
+    row?.info_status ??
+    row?.["Info Status"] ??
+    row?.information_status ??
+    row?.["Information Status"] ??
     ""
   )
     .trim()
     .toUpperCase();
-
 }
 
 
 /* =========================================================
    GET BILLING
-
-   DATABASE FIELD:
-   total_bill_amount
-
-   NO TANN
-   NO TDS
 ========================================================= */
 
 function getBilling(row) {
-
   return toNumber(
     row?.total_bill_amount ??
     row?.["Total Bill Amount"] ??
+    row?.billing ??
+    row?.["Billing"] ??
+    row?.total_billing ??
+    row?.["Total Billing"] ??
     0
   );
-
 }
 
 
 /* =========================================================
    GET FRANCHISE SHARE
-
-   DATABASE FIELD:
-   franchisee_share
 ========================================================= */
 
 function getFranchiseeShare(row) {
-
   return toNumber(
     row?.franchisee_share ??
     row?.["Franchisee Share"] ??
+    row?.franchise_cost ??
+    row?.["Franchise Cost"] ??
+    row?.franchisee_cost ??
+    row?.["Franchisee Cost"] ??
     0
   );
-
 }
 
 
@@ -257,9 +217,7 @@ function getFranchiseExpenditure(
   row,
   percentage
 ) {
-
-  const billing =
-    getBilling(row);
+  const billing = getBilling(row);
 
   if (
     percentage === null ||
@@ -269,50 +227,22 @@ function getFranchiseExpenditure(
     return 0;
   }
 
-  const rate =
-    Number(percentage);
+  const rate = Number(percentage);
 
   if (
     !Number.isFinite(rate) ||
-    rate < 0
+    rate < 0 ||
+    rate > 100
   ) {
     return 0;
   }
 
-  return billing * (
-    rate / 100
-  );
-
+  return billing * (rate / 100);
 }
 
 
 /* =========================================================
    GET FINANCIAL VALUES
-
-   ALL:
-   Total Billing = R + RV + C + CN
-   Net Amount = Billing - Franchisee Share
-   Franchise Expenditure = Billing × entered %
-
-   R:
-   Billing = R Billing
-   Net Amount = R Billing - R Franchisee Share
-   Expenditure = R Billing × entered %
-
-   RV:
-   Billing = RV Billing
-   Net Amount = 0
-   Expenditure = 0
-
-   C:
-   Billing = C Billing
-   Net Amount = 0
-   Expenditure = 0
-
-   CN:
-   Billing = CN Billing
-   Net Amount = 0
-   Expenditure = 0
 ========================================================= */
 
 function getFinancialValues(
@@ -320,218 +250,78 @@ function getFinancialValues(
   infoFilter = "",
   percentage
 ) {
-
-  const info =
-    getInfoStatus(row);
-
-  const billing =
-    getBilling(row);
-
-  const franchiseeShare =
-    getFranchiseeShare(row);
-
-
-  /* =======================================================
-     ALL
-  ======================================================= */
+  const info = getInfoStatus(row);
+  const billing = getBilling(row);
+  const franchiseeShare = getFranchiseeShare(row);
 
   if (
     !infoFilter ||
     infoFilter === "ALL"
   ) {
-
     return {
-
-      billing:
-        billing,
-
+      billing,
+      franchiseeShare,
       netAmount:
-        billing -
-        franchiseeShare,
-
+        billing - franchiseeShare,
       franchiseExpenditure:
         getFranchiseExpenditure(
           row,
           percentage
         )
-
     };
-
   }
 
-
-  /* =======================================================
-     R
-  ======================================================= */
-
-  if (
-    infoFilter === "R"
-  ) {
-
-    if (
-      info !== "R"
-    ) {
-
+  if (infoFilter === "R") {
+    if (info !== "R") {
       return {
-
         billing: 0,
-
+        franchiseeShare: 0,
         netAmount: 0,
-
         franchiseExpenditure: 0
-
       };
-
     }
 
-
     return {
-
-      billing:
-        billing,
-
+      billing,
+      franchiseeShare,
       netAmount:
-        billing -
-        franchiseeShare,
-
+        billing - franchiseeShare,
       franchiseExpenditure:
         getFranchiseExpenditure(
           row,
           percentage
         )
-
     };
-
   }
 
-
-  /* =======================================================
-     RV
-  ======================================================= */
-
   if (
-    infoFilter === "RV"
-  ) {
-
-    if (
-      info !== "RV"
-    ) {
-
-      return {
-
-        billing: 0,
-
-        netAmount: 0,
-
-        franchiseExpenditure: 0
-
-      };
-
-    }
-
-
-    return {
-
-      billing:
-        billing,
-
-      netAmount: 0,
-
-      franchiseExpenditure: 0
-
-    };
-
-  }
-
-
-  /* =======================================================
-     C
-  ======================================================= */
-
-  if (
-    infoFilter === "C"
-  ) {
-
-    if (
-      info !== "C"
-    ) {
-
-      return {
-
-        billing: 0,
-
-        netAmount: 0,
-
-        franchiseExpenditure: 0
-
-      };
-
-    }
-
-
-    return {
-
-      billing:
-        billing,
-
-      netAmount: 0,
-
-      franchiseExpenditure: 0
-
-    };
-
-  }
-
-
-  /* =======================================================
-     CN
-  ======================================================= */
-
-  if (
+    infoFilter === "RV" ||
+    infoFilter === "C" ||
     infoFilter === "CN"
   ) {
-
-    if (
-      info !== "CN"
-    ) {
-
+    if (info !== infoFilter) {
       return {
-
         billing: 0,
-
+        franchiseeShare: 0,
         netAmount: 0,
-
         franchiseExpenditure: 0
-
       };
-
     }
 
-
     return {
-
-      billing:
-        billing,
-
+      billing,
+      franchiseeShare: 0,
       netAmount: 0,
-
       franchiseExpenditure: 0
-
     };
-
   }
 
-
   return {
-
     billing: 0,
-
+    franchiseeShare: 0,
     netAmount: 0,
-
     franchiseExpenditure: 0
-
   };
-
 }
 
 
@@ -540,13 +330,94 @@ function getFinancialValues(
 ========================================================= */
 
 function getClientAcquiredDate(row) {
-
   return (
     row?.date_client_acquired ??
     row?.["Date Client Acquired"] ??
+    row?.client_acquired_date ??
+    row?.["Client Acquired Date"] ??
+    row?.date_acquired ??
+    row?.["Date Acquired"] ??
     ""
   );
+}
 
+
+/* =========================================================
+   PARSE DATE
+========================================================= */
+
+function parseDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime())
+      ? null
+      : value;
+  }
+
+  const stringValue = String(value).trim();
+
+  if (!stringValue) {
+    return null;
+  }
+
+  const ddmmyyyy =
+    stringValue.match(
+      /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/
+    );
+
+  if (ddmmyyyy) {
+    const day = Number(ddmmyyyy[1]);
+    const month = Number(ddmmyyyy[2]);
+    const year = Number(ddmmyyyy[3]);
+
+    const date = new Date(
+      year,
+      month - 1,
+      day
+    );
+
+    if (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    ) {
+      return date;
+    }
+  }
+
+  const isoDate =
+    stringValue.match(
+      /^(\d{4})-(\d{1,2})-(\d{1,2})/
+    );
+
+  if (isoDate) {
+    const year = Number(isoDate[1]);
+    const month = Number(isoDate[2]);
+    const day = Number(isoDate[3]);
+
+    const date = new Date(
+      year,
+      month - 1,
+      day
+    );
+
+    if (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    ) {
+      return date;
+    }
+  }
+
+  const date = new Date(stringValue);
+
+  return Number.isNaN(date.getTime())
+    ? null
+    : date;
 }
 
 
@@ -555,80 +426,56 @@ function getClientAcquiredDate(row) {
 ========================================================= */
 
 function getFinancialYear(row) {
-
   const dateValue =
     getClientAcquiredDate(row);
 
+  const date =
+    parseDate(dateValue);
 
-  if (dateValue) {
+  if (date) {
+    const month =
+      date.getMonth() + 1;
 
-    const date =
-      new Date(dateValue);
+    const year =
+      date.getFullYear();
 
-
-    if (
-      !Number.isNaN(
-        date.getTime()
-      )
-    ) {
-
-      const month =
-        date.getMonth() + 1;
-
-      const year =
-        date.getFullYear();
-
-
-      if (month >= 4) {
-
-        return `${year}-${String(
-          year + 1
-        ).slice(-2)}`;
-
-      }
-
-
-      return `${year - 1}-${String(
-        year
+    if (month >= 4) {
+      return `${year}-${String(
+        year + 1
       ).slice(-2)}`;
-
     }
 
+    return `${year - 1}-${String(
+      year
+    ).slice(-2)}`;
   }
-
 
   const acquiredYear =
     row?.acquired_year ??
     row?.["Aquired Year"] ??
-    row?.["Acquired Year"];
-
+    row?.["Acquired Year"] ??
+    row?.aquired_year ??
+    row?.["aquired_year"];
 
   if (
     acquiredYear !== undefined &&
     acquiredYear !== null &&
     acquiredYear !== ""
   ) {
-
     const year =
       Number(acquiredYear);
-
 
     if (
       Number.isFinite(year) &&
       year > 1900
     ) {
-
       return `${year}-${String(
         year + 1
       ).slice(-2)}`;
-
     }
-
   }
 
-
   return "";
-
 }
 
 
@@ -637,31 +484,17 @@ function getFinancialYear(row) {
 ========================================================= */
 
 function getMonth(row) {
-
   const dateValue =
     getClientAcquiredDate(row);
 
-
-  if (!dateValue) {
-    return "";
-  }
-
-
   const date =
-    new Date(dateValue);
+    parseDate(dateValue);
 
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (!date) {
     return "";
   }
-
 
   return date.getMonth() + 1;
-
 }
 
 
@@ -674,57 +507,42 @@ function FranchiseTooltip({
   payload,
   label
 }) {
-
   if (
     !active ||
     !payload ||
     !payload.length
   ) {
-
     return null;
-
   }
 
-
   return (
-
     <div className="franchise-modern-tooltip">
 
       <div className="franchise-tooltip-label">
         {label}
       </div>
 
-
       {payload.map(
         (item, index) => (
-
           <div
             className="franchise-tooltip-row"
             key={index}
           >
-
             <span>
               {item.name}
             </span>
 
-
             <strong>
-
               {item.name === "Total Billing"
                 ? formatCurrency(item.value)
                 : item.value}
-
             </strong>
-
           </div>
-
         )
       )}
 
     </div>
-
   );
-
 }
 
 
@@ -740,27 +558,24 @@ function FranchisePerformance() {
 
 
   /* =======================================================
-     STATE
+     MAIN PAGE FILTERS
   ======================================================= */
-
-  const [
-    selectedFranchise,
-    setSelectedFranchise
-  ] = useState("");
-
 
   const [
     selectedFinancialYear,
     setSelectedFinancialYear
   ] = useState("");
 
-
   const [
     selectedInfoStatus,
     setSelectedInfoStatus
   ] = useState("");
 
-
+  /*
+   * MAIN PAGE EXPENDITURE %
+   *
+   * This state belongs ONLY to the main table.
+   */
   const [
     franchiseExpenditurePercentage,
     setFranchiseExpenditurePercentage
@@ -768,7 +583,39 @@ function FranchisePerformance() {
 
 
   /* =======================================================
-     EXPENDITURE PERCENTAGE VALIDITY
+     MODAL / REPORT FILTERS
+  ======================================================= */
+
+  const [
+    selectedFranchise,
+    setSelectedFranchise
+  ] = useState("");
+
+  const [
+    reportFinancialYear,
+    setReportFinancialYear
+  ] = useState("");
+
+  const [
+    reportInfoStatus,
+    setReportInfoStatus
+  ] = useState("");
+
+  /*
+   * MODAL EXPENDITURE %
+   *
+   * IMPORTANT:
+   * This is completely independent from the
+   * main-page expenditure percentage.
+   */
+  const [
+    reportFranchiseExpenditurePercentage,
+    setReportFranchiseExpenditurePercentage
+  ] = useState("");
+
+
+  /* =======================================================
+     MAIN EXPENDITURE VALIDITY
   ======================================================= */
 
   const hasFranchiseExpenditurePercentage =
@@ -782,99 +629,119 @@ function FranchisePerformance() {
     ) &&
     Number(
       franchiseExpenditurePercentage
-    ) >= 0;
+    ) >= 0 &&
+    Number(
+      franchiseExpenditurePercentage
+    ) <= 100;
 
 
   /* =======================================================
-     FRANCHISE SUMMARY TABLE
+     REPORT EXPENDITURE VALIDITY
+  ======================================================= */
 
-     Total Enquiries:
-       Number of enquiry rows.
+  const hasReportFranchiseExpenditurePercentage =
+    reportFranchiseExpenditurePercentage !== "" &&
+    reportFranchiseExpenditurePercentage !== null &&
+    reportFranchiseExpenditurePercentage !== undefined &&
+    Number.isFinite(
+      Number(
+        reportFranchiseExpenditurePercentage
+      )
+    ) &&
+    Number(
+      reportFranchiseExpenditurePercentage
+    ) >= 0 &&
+    Number(
+      reportFranchiseExpenditurePercentage
+    ) <= 100;
 
-     Total Acquired Client:
-       Number of UNIQUE Company Names.
 
-     Both follow:
-       - Financial Year filter
-       - Info Status filter
+  /* =======================================================
+     FINANCIAL YEARS
+  ======================================================= */
+
+  const financialYears =
+    useMemo(() => {
+
+      const years = new Set();
+
+      rows.forEach(row => {
+        const year =
+          getFinancialYear(row);
+
+        if (year) {
+          years.add(year);
+        }
+      });
+
+      return Array.from(years)
+        .sort((a, b) => {
+
+          const yearA =
+            Number(
+              String(a).slice(0, 4)
+            );
+
+          const yearB =
+            Number(
+              String(b).slice(0, 4)
+            );
+
+          return yearA - yearB;
+        });
+
+    }, [rows]);
+
+
+  /* =======================================================
+     MAIN FRANCHISE SUMMARY TABLE
   ======================================================= */
 
   const franchiseData =
     useMemo(() => {
 
-      const map =
-        new Map();
-
+      const map = new Map();
 
       rows.forEach(row => {
 
         const franchise =
           getFranchise(row);
 
-
         if (!franchise) {
           return;
         }
 
-
         if (!map.has(franchise)) {
-
           map.set(
             franchise,
             {
               franchise,
-
-              /*
-               * Total enquiries = all matching
-               * enquiry rows.
-               */
               enquiries: 0,
-
-              /*
-               * Unique company names are
-               * stored in a Set.
-               */
               companyNames: new Set(),
-
               billing: 0,
-
               franchiseShare: 0,
-
               franchiseExpenditure: 0,
-
               netAmount: 0
             }
           );
-
         }
-
 
         const data =
           map.get(franchise);
 
 
-        /*
-         * Financial Year filter
-         */
+        /* Financial Year */
 
         if (
           selectedFinancialYear &&
           getFinancialYear(row) !==
             selectedFinancialYear
         ) {
-
           return;
-
         }
 
 
-        /*
-         * Info Status filter
-         *
-         * The same financial filter used
-         * for billing is applied to the
-         * enquiry/client counts.
-         */
+        /* Info Status */
 
         if (
           selectedInfoStatus &&
@@ -882,67 +749,52 @@ function FranchisePerformance() {
           getInfoStatus(row) !==
             selectedInfoStatus
         ) {
-
           return;
-
         }
 
 
-        /* -----------------------------------------------
-           TOTAL ENQUIRIES
-        ------------------------------------------------ */
+        /* Total Enquiries */
 
         data.enquiries += 1;
 
 
-        /* -----------------------------------------------
-           UNIQUE ACQUIRED CLIENTS
-           
-           Company Name is the unique key.
-           
-           Empty company names are not counted
-           as a unique acquired client.
-        ------------------------------------------------ */
+        /* Unique Company */
 
         const companyName =
           getCompanyName(row);
 
-
-        if (companyName) {
-
-          data.companyNames.add(
-            companyName.toUpperCase()
+        const companyKey =
+          normalizeCompanyKey(
+            companyName
           );
 
+        if (companyKey) {
+          data.companyNames.add(
+            companyKey
+          );
         }
 
 
-        /* -----------------------------------------------
-           FINANCIAL VALUES
-        ------------------------------------------------ */
+        /* Financial Values */
 
-        const financialValues =
+        const values =
           getFinancialValues(
             row,
             selectedInfoStatus,
             franchiseExpenditurePercentage
           );
 
-
         data.billing +=
-          financialValues.billing;
-
+          values.billing;
 
         data.franchiseShare +=
-          getFranchiseeShare(row);
-
+          values.franchiseeShare;
 
         data.franchiseExpenditure +=
-          financialValues.franchiseExpenditure;
-
+          values.franchiseExpenditure;
 
         data.netAmount +=
-          financialValues.netAmount;
+          values.netAmount;
 
       });
 
@@ -951,19 +803,12 @@ function FranchisePerformance() {
         map.values()
       )
         .map(item => ({
-
           franchise:
             item.franchise,
 
-          /*
-           * UNIQUE COMPANY COUNT
-           */
           clients:
             item.companyNames.size,
 
-          /*
-           * TOTAL ENQUIRY COUNT
-           */
           enquiries:
             item.enquiries,
 
@@ -978,7 +823,6 @@ function FranchisePerformance() {
 
           netAmount:
             item.netAmount
-
         }))
         .filter(
           item =>
@@ -998,52 +842,6 @@ function FranchisePerformance() {
 
 
   /* =======================================================
-     FINANCIAL YEARS
-  ======================================================= */
-
-  const financialYears =
-    useMemo(() => {
-
-      const years =
-        new Set();
-
-
-      rows.forEach(row => {
-
-        const year =
-          getFinancialYear(row);
-
-
-        if (year) {
-          years.add(year);
-        }
-
-      });
-
-
-      return Array.from(years)
-        .sort((a, b) => {
-
-          const yearA =
-            Number(
-              String(a).slice(0, 4)
-            );
-
-
-          const yearB =
-            Number(
-              String(b).slice(0, 4)
-            );
-
-
-          return yearA - yearB;
-
-        });
-
-    }, [rows]);
-
-
-  /* =======================================================
      SELECTED FRANCHISE ROWS
   ======================================================= */
 
@@ -1054,40 +852,41 @@ function FranchisePerformance() {
         return [];
       }
 
+      return rows.filter(row => {
 
-      return rows.filter(
-        row => {
-
-          if (
-            getFranchise(row) !==
-            selectedFranchise
-          ) {
-
-            return false;
-
-          }
-
-
-          if (
-            selectedFinancialYear &&
-            getFinancialYear(row) !==
-              selectedFinancialYear
-          ) {
-
-            return false;
-
-          }
-
-
-          return true;
-
+        if (
+          getFranchise(row) !==
+          selectedFranchise
+        ) {
+          return false;
         }
-      );
+
+        if (
+          reportFinancialYear &&
+          getFinancialYear(row) !==
+            reportFinancialYear
+        ) {
+          return false;
+        }
+
+        if (
+          reportInfoStatus &&
+          reportInfoStatus !== "ALL" &&
+          getInfoStatus(row) !==
+            reportInfoStatus
+        ) {
+          return false;
+        }
+
+        return true;
+
+      });
 
     }, [
       rows,
       selectedFranchise,
-      selectedFinancialYear
+      reportFinancialYear,
+      reportInfoStatus
     ]);
 
 
@@ -1106,41 +905,53 @@ function FranchisePerformance() {
 
       let netAmount = 0;
 
+      const companyNames =
+        new Set();
+
+      let totalEnquiries = 0;
+
 
       selectedRows.forEach(row => {
 
+        totalEnquiries += 1;
+
+
+        const companyName =
+          getCompanyName(row);
+
+        const companyKey =
+          normalizeCompanyKey(
+            companyName
+          );
+
+        if (companyKey) {
+          companyNames.add(
+            companyKey
+          );
+        }
+
+
+        /*
+         * IMPORTANT:
+         * Modal uses reportFranchiseExpenditurePercentage,
+         * NOT the main-page percentage.
+         */
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus,
-            franchiseExpenditurePercentage
+            reportInfoStatus,
+            reportFranchiseExpenditurePercentage
           );
 
 
         totalBilling +=
           values.billing;
 
-
-        /*
-         * Franchisee Share is included
-         * in Net Amount calculation only
-         * when status is All or R.
-         */
-
-        if (
-          !selectedInfoStatus ||
-          selectedInfoStatus === "R"
-        ) {
-
-          totalFranchiseShare +=
-            getFranchiseeShare(row);
-
-        }
-
+        totalFranchiseShare +=
+          values.franchiseeShare;
 
         totalFranchiseExpenditure +=
           values.franchiseExpenditure;
-
 
         netAmount +=
           values.netAmount;
@@ -1149,21 +960,19 @@ function FranchisePerformance() {
 
 
       return {
-
         totalBilling,
-
         totalFranchiseShare,
-
         totalFranchiseExpenditure,
-
-        netAmount
-
+        netAmount,
+        totalEnquiries,
+        totalClients:
+          companyNames.size
       };
 
     }, [
       selectedRows,
-      selectedInfoStatus,
-      franchiseExpenditurePercentage
+      reportInfoStatus,
+      reportFranchiseExpenditurePercentage
     ]);
 
 
@@ -1174,43 +983,60 @@ function FranchisePerformance() {
   const bestIndustry =
     useMemo(() => {
 
-      const counts =
+      const industryCompanies =
         new Map();
-
 
       selectedRows.forEach(row => {
 
         const industry =
           getIndustry(row);
 
+        const company =
+          normalizeCompanyKey(
+            getCompanyName(row)
+          );
 
-        if (!industry) {
+        if (
+          !industry ||
+          !company
+        ) {
           return;
         }
 
+        if (
+          !industryCompanies.has(
+            industry
+          )
+        ) {
+          industryCompanies.set(
+            industry,
+            new Set()
+          );
+        }
 
-        counts.set(
-          industry,
-          (counts.get(industry) || 0) + 1
-        );
+        industryCompanies
+          .get(industry)
+          .add(company);
 
       });
 
 
       let best = "";
-
       let highest = 0;
 
 
-      counts.forEach(
-        (count, industry) => {
+      industryCompanies.forEach(
+        (companies, industry) => {
 
-          if (count > highest) {
+          if (
+            companies.size >
+            highest
+          ) {
+            highest =
+              companies.size;
 
-            highest = count;
-
-            best = industry;
-
+            best =
+              industry;
           }
 
         }
@@ -1229,43 +1055,58 @@ function FranchisePerformance() {
   const bestCity =
     useMemo(() => {
 
-      const counts =
+      const cityCompanies =
         new Map();
-
 
       selectedRows.forEach(row => {
 
         const city =
           getCity(row);
 
+        const company =
+          normalizeCompanyKey(
+            getCompanyName(row)
+          );
 
-        if (!city) {
+        if (
+          !city ||
+          !company
+        ) {
           return;
         }
 
+        if (
+          !cityCompanies.has(city)
+        ) {
+          cityCompanies.set(
+            city,
+            new Set()
+          );
+        }
 
-        counts.set(
-          city,
-          (counts.get(city) || 0) + 1
-        );
+        cityCompanies
+          .get(city)
+          .add(company);
 
       });
 
 
       let best = "";
-
       let highest = 0;
 
 
-      counts.forEach(
-        (count, city) => {
+      cityCompanies.forEach(
+        (companies, city) => {
 
-          if (count > highest) {
+          if (
+            companies.size >
+            highest
+          ) {
+            highest =
+              companies.size;
 
-            highest = count;
-
-            best = city;
-
+            best =
+              city;
           }
 
         }
@@ -1284,48 +1125,56 @@ function FranchisePerformance() {
   const yearlyReportData =
     useMemo(() => {
 
-      const map =
-        new Map();
-
+      const map = new Map();
 
       selectedRows.forEach(row => {
 
         const year =
           getFinancialYear(row);
 
-
         if (!year) {
           return;
         }
 
-
         if (!map.has(year)) {
-
           map.set(
             year,
             {
               year,
-              clients: 0,
+              companyNames:
+                new Set(),
               billing: 0
             }
           );
-
         }
-
 
         const data =
           map.get(year);
 
 
+        const company =
+          normalizeCompanyKey(
+            getCompanyName(row)
+          );
+
+        if (company) {
+          data.companyNames.add(
+            company
+          );
+        }
+
+
+        /*
+         * Modal report uses its own
+         * expenditure percentage.
+         */
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus,
-            franchiseExpenditurePercentage
+            reportInfoStatus,
+            reportFranchiseExpenditurePercentage
           );
 
-
-        data.clients += 1;
 
         data.billing +=
           values.billing;
@@ -1335,28 +1184,37 @@ function FranchisePerformance() {
 
       return Array.from(
         map.values()
-      ).sort((a, b) => {
+      )
+        .map(item => ({
+          year:
+            item.year,
 
-        const yearA =
-          Number(
-            String(a.year).slice(0, 4)
-          );
+          clients:
+            item.companyNames.size,
 
+          billing:
+            item.billing
+        }))
+        .sort((a, b) => {
 
-        const yearB =
-          Number(
-            String(b.year).slice(0, 4)
-          );
+          const yearA =
+            Number(
+              String(a.year).slice(0, 4)
+            );
 
+          const yearB =
+            Number(
+              String(b.year).slice(0, 4)
+            );
 
-        return yearA - yearB;
+          return yearA - yearB;
 
-      });
+        });
 
     }, [
       selectedRows,
-      selectedInfoStatus,
-      franchiseExpenditurePercentage
+      reportInfoStatus,
+      reportFranchiseExpenditurePercentage
     ]);
 
 
@@ -1367,25 +1225,31 @@ function FranchisePerformance() {
   const monthlyReportData =
     useMemo(() => {
 
-      if (!selectedFinancialYear) {
+      if (!reportFinancialYear) {
         return [];
       }
-
 
       const monthMap =
         new Map();
 
 
       financialMonths.forEach(
-        (month, index) => {
+        month => {
 
           monthMap.set(
-            index + 1,
+            month.month,
             {
-              month: month.full,
-              monthShort: month.short,
-              clients: 0,
-              billing: 0
+              month:
+                month.full,
+
+              monthShort:
+                month.short,
+
+              companyNames:
+                new Set(),
+
+              billing:
+                0
             }
           );
 
@@ -1398,14 +1262,11 @@ function FranchisePerformance() {
         const year =
           getFinancialYear(row);
 
-
         if (
           year !==
-          selectedFinancialYear
+          reportFinancialYear
         ) {
-
           return;
-
         }
 
 
@@ -1416,9 +1277,7 @@ function FranchisePerformance() {
         if (
           !monthMap.has(month)
         ) {
-
           return;
-
         }
 
 
@@ -1426,15 +1285,28 @@ function FranchisePerformance() {
           monthMap.get(month);
 
 
+        const company =
+          normalizeCompanyKey(
+            getCompanyName(row)
+          );
+
+        if (company) {
+          data.companyNames.add(
+            company
+          );
+        }
+
+
+        /*
+         * Modal report uses its own
+         * expenditure percentage.
+         */
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus,
-            franchiseExpenditurePercentage
+            reportInfoStatus,
+            reportFranchiseExpenditurePercentage
           );
-
-
-        data.clients += 1;
 
 
         data.billing +=
@@ -1443,34 +1315,36 @@ function FranchisePerformance() {
       });
 
 
-      const orderedMonths = [
+      return financialMonths.map(
+        month => {
 
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        1,
-        2,
-        3
+          const data =
+            monthMap.get(
+              month.month
+            );
 
-      ];
+          return {
+            month:
+              data.month,
 
+            monthShort:
+              data.monthShort,
 
-      return orderedMonths.map(
-        month =>
-          monthMap.get(month)
+            clients:
+              data.companyNames.size,
+
+            billing:
+              data.billing
+          };
+
+        }
       );
 
     }, [
       selectedRows,
-      selectedFinancialYear,
-      selectedInfoStatus,
-      franchiseExpenditurePercentage
+      reportFinancialYear,
+      reportInfoStatus,
+      reportFranchiseExpenditurePercentage
     ]);
 
 
@@ -1479,7 +1353,7 @@ function FranchisePerformance() {
   ======================================================= */
 
   const reportData =
-    selectedFinancialYear
+    reportFinancialYear
       ? monthlyReportData
       : yearlyReportData;
 
@@ -1496,9 +1370,29 @@ function FranchisePerformance() {
       franchise
     );
 
-    setSelectedFinancialYear("");
+    /*
+     * Copy current main filters only when
+     * opening the modal.
+     *
+     * After opening, modal filters are independent.
+     */
+    setReportFinancialYear(
+      selectedFinancialYear
+    );
 
-    setSelectedInfoStatus("");
+    setReportInfoStatus(
+      selectedInfoStatus
+    );
+
+    /*
+     * Initial modal expenditure %
+     * is copied from the main filter.
+     *
+     * After this, both states are independent.
+     */
+    setReportFranchiseExpenditurePercentage(
+      franchiseExpenditurePercentage
+    );
 
   }
 
@@ -1508,14 +1402,49 @@ function FranchisePerformance() {
   ======================================================= */
 
   function handleCloseModal() {
-
     setSelectedFranchise("");
-
-    setSelectedFinancialYear("");
-
-    setSelectedInfoStatus("");
-
   }
+
+
+  /* =======================================================
+     ESCAPE KEY
+  ======================================================= */
+
+  useEffect(() => {
+
+    if (!selectedFranchise) {
+      return undefined;
+    }
+
+
+    const handleKeyDown =
+      event => {
+
+        if (
+          event.key === "Escape"
+        ) {
+          handleCloseModal();
+        }
+
+      };
+
+
+    document.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+
+    return () => {
+
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+
+    };
+
+  }, [selectedFranchise]);
 
 
   /* =======================================================
@@ -1525,7 +1454,6 @@ function FranchisePerformance() {
   return (
 
     <div className="franchise-performance-page">
-
 
       {/* ===================================================
           PAGE HEADER
@@ -1558,7 +1486,6 @@ function FranchisePerformance() {
       =================================================== */}
 
       <div className="franchise-table-card">
-
 
         <div className="franchise-table-header">
 
@@ -1600,6 +1527,8 @@ function FranchisePerformance() {
           }}
         >
 
+          {/* FINANCIAL YEAR */}
+
           <div>
 
             <label>
@@ -1638,6 +1567,8 @@ function FranchisePerformance() {
 
           </div>
 
+
+          {/* INFO STATUS */}
 
           <div>
 
@@ -1681,7 +1612,7 @@ function FranchisePerformance() {
           </div>
 
 
-          {/* FRANCHISE EXPENDITURE % */}
+          {/* MAIN FRANCHISE EXPENDITURE % */}
 
           <div>
 
@@ -1695,6 +1626,7 @@ function FranchisePerformance() {
               id="franchise-expenditure-percentage"
               type="number"
               min="0"
+              max="100"
               step="0.01"
               value={
                 franchiseExpenditurePercentage
@@ -1702,9 +1634,20 @@ function FranchisePerformance() {
               placeholder="Enter %"
               onChange={event => {
 
-                setFranchiseExpenditurePercentage(
-                  event.target.value
-                );
+                const value =
+                  event.target.value;
+
+                if (
+                  value === "" ||
+                  (
+                    Number(value) >= 0 &&
+                    Number(value) <= 100
+                  )
+                ) {
+                  setFranchiseExpenditurePercentage(
+                    value
+                  );
+                }
 
               }}
             />
@@ -1768,8 +1711,8 @@ function FranchisePerformance() {
                   <td
                     colSpan={
                       hasFranchiseExpenditurePercentage
-                        ? "7"
-                        : "6"
+                        ? 7
+                        : 6
                     }
                     className="franchise-empty"
                   >
@@ -1804,11 +1747,9 @@ function FranchisePerformance() {
                           </div>
 
                           <span>
-
                             {
                               franchise.franchise
                             }
-
                           </span>
 
                         </div>
@@ -1816,9 +1757,7 @@ function FranchisePerformance() {
                       </td>
 
 
-                      {/* =================================
-                          UNIQUE ACQUIRED CLIENTS
-                      ================================= */}
+                      {/* UNIQUE CLIENTS */}
 
                       <td>
 
@@ -1833,9 +1772,7 @@ function FranchisePerformance() {
                       </td>
 
 
-                      {/* =================================
-                          TOTAL ENQUIRIES
-                      ================================= */}
+                      {/* TOTAL ENQUIRIES */}
 
                       <td>
 
@@ -1849,6 +1786,8 @@ function FranchisePerformance() {
 
                       </td>
 
+
+                      {/* BILLING */}
 
                       <td>
 
@@ -1865,6 +1804,8 @@ function FranchisePerformance() {
                       </td>
 
 
+                      {/* NET */}
+
                       <td>
 
                         <span className="franchise-net-value">
@@ -1879,6 +1820,8 @@ function FranchisePerformance() {
 
                       </td>
 
+
+                      {/* EXPENDITURE */}
 
                       {hasFranchiseExpenditurePercentage && (
 
@@ -1898,6 +1841,8 @@ function FranchisePerformance() {
 
                       )}
 
+
+                      {/* PERFORMANCE */}
 
                       <td>
 
@@ -1948,14 +1893,12 @@ function FranchisePerformance() {
           onClick={handleCloseModal}
         >
 
-
           <div
             className="franchise-performance-modal"
             onClick={event =>
               event.stopPropagation()
             }
           >
-
 
             {/* =============================================
                 MODAL HEADER
@@ -1998,7 +1941,6 @@ function FranchisePerformance() {
             ============================================= */}
 
             <div className="franchise-summary-grid">
-
 
               {/* BEST INDUSTRY */}
 
@@ -2051,6 +1993,52 @@ function FranchisePerformance() {
               </div>
 
 
+              {/* TOTAL ACQUIRED CLIENT */}
+
+              <div className="franchise-summary-card">
+
+                <span className="franchise-summary-label">
+                  Total Acquired Client
+                </span>
+
+                <strong className="franchise-summary-value">
+
+                  {
+                    performanceSummary.totalClients
+                  }
+
+                </strong>
+
+                <small>
+                  Unique Company Name
+                </small>
+
+              </div>
+
+
+              {/* TOTAL ENQUIRIES */}
+
+              <div className="franchise-summary-card franchise-summary-share">
+
+                <span className="franchise-summary-label">
+                  Total Enquiries
+                </span>
+
+                <strong className="franchise-summary-value">
+
+                  {
+                    performanceSummary.totalEnquiries
+                  }
+
+                </strong>
+
+                <small>
+                  Matching enquiry rows
+                </small>
+
+              </div>
+
+
               {/* FRANCHISE SHARE */}
 
               <div className="franchise-summary-card franchise-summary-share">
@@ -2072,31 +2060,9 @@ function FranchisePerformance() {
               </div>
 
 
-              {/* FRANCHISE EXPENDITURE */}
-
-              <div className="franchise-summary-card">
-
-                <span className="franchise-summary-label">
-                  Franchise Expenditure
-                </span>
-
-                <strong className="franchise-summary-value">
-
-                  {
-                    formatCurrency(
-                      performanceSummary.totalFranchiseExpenditure
-                    )
-                  }
-
-                </strong>
-
-                <small>
-                  {franchiseExpenditurePercentage !== ""
-                    ? `${franchiseExpenditurePercentage}% of Total Billing`
-                    : "Enter percentage in main filter"}
-                </small>
-
-              </div>
+              {/* =================================================
+                  FRANCHISE EXPENDITURE CARD REMOVED
+              ================================================= */}
 
 
               {/* NET AMOUNT */}
@@ -2119,7 +2085,6 @@ function FranchisePerformance() {
 
               </div>
 
-
             </div>
 
 
@@ -2129,6 +2094,7 @@ function FranchisePerformance() {
 
             <div className="franchise-report-controls">
 
+              {/* FINANCIAL YEAR */}
 
               <div>
 
@@ -2138,23 +2104,21 @@ function FranchisePerformance() {
                   Financial Year
                 </label>
 
-
                 <select
                   id="franchise-financial-year"
                   value={
-                    selectedFinancialYear
+                    reportFinancialYear
                   }
                   onChange={event =>
-                    setSelectedFinancialYear(
+                    setReportFinancialYear(
                       event.target.value
                     )
                   }
                 >
 
                   <option value="">
-                    None
+                    All Financial Years
                   </option>
-
 
                   {financialYears.map(
                     year => (
@@ -2174,19 +2138,20 @@ function FranchisePerformance() {
               </div>
 
 
+              {/* INFO STATUS */}
+
               <div>
 
                 <label>
                   Info Status
                 </label>
 
-
                 <select
                   value={
-                    selectedInfoStatus
+                    reportInfoStatus
                   }
                   onChange={event =>
-                    setSelectedInfoStatus(
+                    setReportInfoStatus(
                       event.target.value
                     )
                   }
@@ -2217,6 +2182,51 @@ function FranchisePerformance() {
               </div>
 
 
+              {/* MODAL FRANCHISE EXPENDITURE % */}
+
+              <div>
+
+                <label
+                  htmlFor="report-franchise-expenditure-percentage"
+                >
+                  Franchise Expenditure %
+                </label>
+
+                <input
+                  id="report-franchise-expenditure-percentage"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={
+                    reportFranchiseExpenditurePercentage
+                  }
+                  placeholder="Enter %"
+                  onChange={event => {
+
+                    const value =
+                      event.target.value;
+
+                    if (
+                      value === "" ||
+                      (
+                        Number(value) >= 0 &&
+                        Number(value) <= 100
+                      )
+                    ) {
+                      setReportFranchiseExpenditurePercentage(
+                        value
+                      );
+                    }
+
+                  }}
+                />
+
+              </div>
+
+
+              {/* REPORT PERIOD */}
+
               <div className="franchise-report-period">
 
                 <span>
@@ -2226,15 +2236,14 @@ function FranchisePerformance() {
                 <strong>
 
                   {
-                    selectedFinancialYear
-                      ? selectedFinancialYear
+                    reportFinancialYear
+                      ? reportFinancialYear
                       : "Yearly"
                   }
 
                 </strong>
 
               </div>
-
 
             </div>
 
@@ -2244,7 +2253,6 @@ function FranchisePerformance() {
             ============================================= */}
 
             <div className="franchise-report-graphs">
-
 
               {/* CLIENT ACQUIRED */}
 
@@ -2263,13 +2271,11 @@ function FranchisePerformance() {
                   </div>
 
                   <span>
-
                     {
-                      selectedFinancialYear
+                      reportFinancialYear
                         ? "Monthly"
                         : "Yearly"
                     }
-
                   </span>
 
                 </div>
@@ -2280,9 +2286,7 @@ function FranchisePerformance() {
                   {reportData.length === 0 ? (
 
                     <div className="franchise-no-chart-data">
-
                       No report data available.
-
                     </div>
 
                   ) : (
@@ -2309,7 +2313,7 @@ function FranchisePerformance() {
 
                         <XAxis
                           dataKey={
-                            selectedFinancialYear
+                            reportFinancialYear
                               ? "monthShort"
                               : "year"
                           }
@@ -2345,7 +2349,7 @@ function FranchisePerformance() {
                             0,
                             0
                           ]}
-                          barSize={32}
+                          maxBarSize={42}
                         />
 
                       </BarChart>
@@ -2376,13 +2380,11 @@ function FranchisePerformance() {
                   </div>
 
                   <span>
-
                     {
-                      selectedFinancialYear
+                      reportFinancialYear
                         ? "Monthly"
                         : "Yearly"
                     }
-
                   </span>
 
                 </div>
@@ -2393,9 +2395,7 @@ function FranchisePerformance() {
                   {reportData.length === 0 ? (
 
                     <div className="franchise-no-chart-data">
-
                       No report data available.
-
                     </div>
 
                   ) : (
@@ -2422,7 +2422,7 @@ function FranchisePerformance() {
 
                         <XAxis
                           dataKey={
-                            selectedFinancialYear
+                            reportFinancialYear
                               ? "monthShort"
                               : "year"
                           }
@@ -2462,7 +2462,7 @@ function FranchisePerformance() {
                             0,
                             0
                           ]}
-                          barSize={32}
+                          maxBarSize={42}
                         />
 
                       </BarChart>
@@ -2474,7 +2474,6 @@ function FranchisePerformance() {
                 </div>
 
               </div>
-
 
             </div>
 
@@ -2488,8 +2487,8 @@ function FranchisePerformance() {
               <span>
 
                 {
-                  selectedFinancialYear
-                    ? `Monthly report for ${selectedFinancialYear}`
+                  reportFinancialYear
+                    ? `Monthly report for ${reportFinancialYear}`
                     : "Yearly performance report"
                 }
 
@@ -2506,7 +2505,6 @@ function FranchisePerformance() {
 
             </div>
 
-
           </div>
 
         </div>
@@ -2516,7 +2514,6 @@ function FranchisePerformance() {
     </div>
 
   );
-
 }
 
 
