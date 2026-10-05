@@ -23,11 +23,11 @@
 }
 
 .tl-page-eyebrow {
+  margin-bottom: 7px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.8px;
   color: #B78A34;
-  margin-bottom: 7px;
 }
 
 .tl-page-header h1 {
@@ -138,6 +138,9 @@
   font-weight: 600;
   outline: none;
   cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .tl-filter-group select:focus {
@@ -157,8 +160,8 @@
 
 .tl-performance-table {
   width: 100%;
-  border-collapse: collapse;
   min-width: 900px;
+  border-collapse: collapse;
 }
 
 .tl-performance-table thead {
@@ -174,6 +177,7 @@
   text-transform: uppercase;
   color: #68717E;
   border-bottom: 1px solid #E8E3D7;
+  white-space: nowrap;
 }
 
 .tl-performance-table td {
@@ -181,6 +185,7 @@
   border-bottom: 1px solid #EEEAE1;
   font-size: 14px;
   color: #344054;
+  white-space: nowrap;
 }
 
 .tl-performance-table tbody tr {
@@ -272,12 +277,20 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .tl-view-performance-btn:hover {
   background: #263B62;
   transform: translateY(-1px);
+}
+
+.tl-view-performance-btn:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
 }
 
 .tl-view-arrow {
@@ -330,7 +343,6 @@
 }
 
 @keyframes tlModalIn {
-
   from {
     opacity: 0;
     transform: translateY(18px) scale(0.98);
@@ -340,7 +352,6 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-
 }
 
 
@@ -352,6 +363,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 20px;
   padding: 27px 30px 23px;
   background: #FFFFFF;
   border-bottom: 1px solid #E4DED0;
@@ -382,6 +394,7 @@
 .tl-modal-close {
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -392,12 +405,19 @@
   font-size: 25px;
   line-height: 1;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .tl-modal-close:hover {
   background: #F7F4EC;
   transform: rotate(3deg);
+}
+
+.tl-modal-close:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
 }
 
 
@@ -477,6 +497,13 @@
   border-radius: 11px;
 }
 
+.tl-report-filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .tl-report-controls label {
   display: block;
   margin-bottom: 7px;
@@ -498,6 +525,9 @@
   font-weight: 600;
   outline: none;
   cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .tl-report-controls select:focus {
@@ -506,6 +536,7 @@
 }
 
 .tl-report-period {
+  flex-shrink: 0;
   text-align: right;
 }
 
@@ -548,6 +579,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 16px 18px;
   border-bottom: 1px solid #EEEAE1;
 }
@@ -556,6 +588,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
+  min-width: 0;
 }
 
 .tl-chart-heading h3 {
@@ -566,6 +599,7 @@
 }
 
 .tl-chart-heading > span {
+  flex-shrink: 0;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -576,6 +610,7 @@
   width: 9px;
   height: 9px;
   display: inline-block;
+  flex-shrink: 0;
   border-radius: 50%;
 }
 
@@ -646,6 +681,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 15px;
   padding: 15px 25px;
   background: #FFFFFF;
   border-top: 1px solid #E4DED0;
@@ -657,6 +693,7 @@
 }
 
 .tl-footer-close {
+  flex-shrink: 0;
   padding: 9px 19px;
   border: none;
   border-radius: 7px;
@@ -665,11 +702,18 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .tl-footer-close:hover {
   background: #263B62;
+}
+
+.tl-footer-close:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
 }
 
 
@@ -696,6 +740,55 @@
 
 
 /* =========================================================
+   TL EXPENDITURE PERCENTAGE INPUT
+========================================================= */
+
+.tl-filter-group input[type="number"] {
+  min-width: 210px;
+  width: 210px;
+  height: 39px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid #D7D0C0;
+  border-radius: 7px;
+  background: #FFFFFF;
+  color: #1B2A4A;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  cursor: text;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.tl-filter-group input[type="number"]:focus {
+  border-color: #B78A34;
+  box-shadow:
+    0 0 0 3px
+    rgba(183, 138, 52, 0.10);
+}
+
+.tl-filter-group input[type="number"]::placeholder {
+  color: #89919D;
+  font-weight: 500;
+}
+
+.tl-filter-group input[type="number"]:hover {
+  border-color: #C9C0AD;
+}
+
+
+/* Remove number input arrows */
+
+.tl-filter-group input[type="number"]::-webkit-inner-spin-button,
+.tl-filter-group input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.7;
+}
+
+
+/* =========================================================
    RESPONSIVE
 ========================================================= */
 
@@ -714,23 +807,42 @@
     padding: 20px;
   }
 
+
+  .tl-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+
   .tl-summary-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
+
   .tl-report-graphs {
     grid-template-columns: 1fr;
   }
+
 
   .tl-performance-filters {
     align-items: flex-start;
     flex-direction: column;
   }
 
+
   .tl-report-controls {
     align-items: flex-start;
     flex-direction: column;
   }
+
+
+  .tl-report-filter-row {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
 
   .tl-report-period {
     text-align: left;
@@ -745,117 +857,138 @@
     padding: 14px;
   }
 
+
   .tl-page-header h1 {
     font-size: 24px;
   }
+
+
+  .tl-page-header p {
+    font-size: 13px;
+  }
+
+
+  .tl-table-header {
+    padding: 18px;
+  }
+
+
+  .tl-table-header h2 {
+    font-size: 16px;
+  }
+
+
+  .tl-table-header p {
+    font-size: 12px;
+  }
+
+
+  .tl-member-count {
+    min-width: 60px;
+    padding: 8px 10px;
+    font-size: 15px;
+  }
+
 
   .tl-modal-header {
     padding: 21px 18px;
   }
 
+
   .tl-modal-header h2 {
     font-size: 22px;
   }
 
+
+  .tl-modal-header p {
+    font-size: 12px;
+  }
+
+
   .tl-performance-overlay {
     padding: 10px;
   }
+
+
+  .tl-performance-modal {
+    max-height: 95vh;
+    border-radius: 14px;
+  }
+
 
   .tl-summary-grid {
     grid-template-columns: 1fr;
     padding: 15px;
   }
 
+
   .tl-performance-filters {
     margin: 0 15px 15px;
   }
+
+
+  .tl-filter-group {
+    width: 100%;
+  }
+
+
+  .tl-filter-group select,
+  .tl-filter-group input[type="number"] {
+    width: 100%;
+    min-width: 0;
+  }
+
 
   .tl-report-controls {
     margin: 0 15px 15px;
   }
 
+
+  .tl-report-filter-row {
+    width: 100%;
+  }
+
+
+  .tl-report-filter-row .tl-filter-group {
+    width: 100%;
+  }
+
+
+  .tl-report-controls select {
+    width: 100%;
+    min-width: 0;
+  }
+
+
+  .tl-report-period {
+    width: 100%;
+  }
+
+
   .tl-report-graphs {
     padding: 0 15px 15px;
   }
+
 
   .tl-chart-container {
     height: 250px;
   }
 
+
+  .tl-chart-heading {
+    padding: 14px;
+  }
+
+
   .tl-modal-footer {
+    align-items: flex-start;
+    flex-direction: column;
     padding: 13px 15px;
   }
 
-}
-/* =========================================================
-   TL EXPENDITURE PERCENTAGE INPUT
-========================================================= */
 
-.tl-filter-group input[type="number"] {
-
-  min-width: 210px;
-
-  width: 210px;
-
-  height: 39px;
-
-  padding: 0 12px;
-
-  box-sizing: border-box;
-
-  border: 1px solid #D7D0C0;
-
-  border-radius: 7px;
-
-  background: #FFFFFF;
-
-  color: #1B2A4A;
-
-  font-family: inherit;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  outline: none;
-
-  cursor: text;
-
-  transition: border-color 0.2s ease,
-              box-shadow 0.2s ease;
-
-}
-
-.tl-filter-group input[type="number"]:focus {
-
-  border-color: #B78A34;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(183, 138, 52, 0.10);
-
-}
-
-.tl-filter-group input[type="number"]::placeholder {
-
-  color: #89919D;
-
-  font-weight: 500;
-
-}
-
-.tl-filter-group input[type="number"]:hover {
-
-  border-color: #C9C0AD;
-
-}
-
-
-/* Remove number input arrows */
-
-.tl-filter-group input[type="number"]::-webkit-inner-spin-button,
-.tl-filter-group input[type="number"]::-webkit-outer-spin-button {
-
-  opacity: 0.7;
+  .tl-footer-close {
+    width: 100%;
+  }
 
 }
