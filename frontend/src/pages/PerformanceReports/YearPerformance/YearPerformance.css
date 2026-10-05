@@ -1,146 +1,167 @@
 /* =========================================================
-   YEAR PERFORMANCE / HISTORICAL ANALYTICS
-   ========================================================= */
+   YEAR PERFORMANCE
+   THEME:
+   Cream + Golden + Dark Blue
+========================================================= */
 
-.historical-analytics {
-  --primary: #2563eb;
-  --primary-light: #eff6ff;
-  --secondary: #7c3aed;
-  --secondary-light: #f5f3ff;
+:root {
+  --yp-cream: #fbf6e8;
+  --yp-cream-dark: #f3ead3;
+  --yp-cream-soft: #fffdf7;
 
-  --success: #16a34a;
-  --success-light: #f0fdf4;
+  --yp-gold: #c9a227;
+  --yp-gold-dark: #a98216;
+  --yp-gold-light: #e8d59a;
 
-  --danger: #dc2626;
-  --danger-light: #fef2f2;
+  --yp-blue: #17365d;
+  --yp-blue-dark: #0f2744;
+  --yp-blue-light: #28547f;
 
-  --warning: #d97706;
-  --warning-light: #fffbeb;
+  --yp-text: #17365d;
+  --yp-muted: #6b7280;
 
-  --cyan: #0891b2;
-  --cyan-light: #ecfeff;
+  --yp-border: #e4d6b5;
+  --yp-border-light: #eee4ce;
 
-  --pink: #db2777;
-  --pink-light: #fdf2f8;
+  --yp-white: #ffffff;
 
-  --indigo: #4f46e5;
-  --indigo-light: #eef2ff;
+  /* =====================================================
+     GRAPH COLORS
+  ===================================================== */
 
-  --orange: #ea580c;
-  --orange-light: #fff7ed;
+  --yp-billing: #2563eb;
+  --yp-billing-dark: #1d4ed8;
 
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
+  --yp-profit: #16a34a;
+  --yp-profit-dark: #15803d;
 
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
+  --yp-loss: #dc2626;
+  --yp-loss-dark: #b91c1c;
 
-  --background: #f8fafc;
-  --card: #ffffff;
+  --yp-grid: #e7dcc8;
 
+  --yp-shadow: 0 8px 24px rgba(23, 54, 93, 0.08);
+  --yp-shadow-hover: 0 12px 30px rgba(23, 54, 93, 0.14);
+
+  --yp-radius: 14px;
+}
+
+
+/* =========================================================
+   MAIN PAGE
+========================================================= */
+
+.year-performance {
   width: 100%;
   min-height: 100vh;
+
   padding: 28px;
-  box-sizing: border-box;
 
   background:
     linear-gradient(
       180deg,
-      #f8fafc 0%,
-      #f1f5f9 100%
+      var(--yp-cream-soft) 0%,
+      var(--yp-cream) 100%
     );
 
-  color: var(--text-primary);
+  color: var(--yp-text);
 
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  box-sizing: border-box;
 }
 
 
 /* =========================================================
    HEADER
-   ========================================================= */
+========================================================= */
 
-.historical-header {
+.performance-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 26px;
-  padding: 26px 28px;
+  width: 100%;
+
+  margin-bottom: 24px;
+  padding: 24px 28px;
 
   background:
     linear-gradient(
       135deg,
-      #ffffff 0%,
-      #eff6ff 100%
+      var(--yp-blue-dark),
+      var(--yp-blue)
     );
 
-  border: 1px solid #dbeafe;
-  border-radius: 18px;
+  border: 1px solid var(--yp-gold);
+  border-radius: var(--yp-radius);
 
-  box-shadow:
-    0 8px 24px rgba(37, 99, 235, 0.08);
+  box-shadow: var(--yp-shadow);
+
+  box-sizing: border-box;
 }
 
-.historical-header h1 {
+.performance-header h1 {
   margin: 0 0 8px;
 
+  color: var(--yp-white);
+
   font-size: 28px;
-  line-height: 1.2;
   font-weight: 800;
+  line-height: 1.2;
 
-  letter-spacing: -0.5px;
-
-  color: #1e3a8a;
+  letter-spacing: 0.2px;
 }
 
-.historical-header p {
+.performance-header p {
   margin: 0;
 
+  color: #e8edf4;
+
   font-size: 14px;
-  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
-.historical-header p strong {
-  color: var(--primary);
-  font-weight: 700;
+.performance-header p strong {
+  color: #f0d77d;
 }
 
 
 /* =========================================================
-   COMMON SECTION
-   ========================================================= */
+   FILTER SECTION
+========================================================= */
 
-.historical-section {
-  margin-bottom: 26px;
-  padding: 24px;
+.performance-filter-section {
+  width: 100%;
 
-  background: var(--card);
+  margin-bottom: 28px;
+  padding: 22px;
 
-  border: 1px solid var(--border);
-  border-radius: 18px;
+  background: var(--yp-cream-soft);
 
-  box-shadow:
-    0 5px 18px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--yp-border);
+  border-top: 4px solid var(--yp-gold);
 
-  overflow: hidden;
+  border-radius: var(--yp-radius);
+
+  box-shadow: var(--yp-shadow);
+
+  box-sizing: border-box;
 }
+
+.performance-filter-section .section-heading {
+  margin-bottom: 18px;
+}
+
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
 
 .section-heading {
   display: flex;
   align-items: center;
   gap: 14px;
 
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .section-heading > span {
@@ -148,105 +169,88 @@
   align-items: center;
   justify-content: center;
 
-  width: 38px;
-  height: 38px;
+  flex: 0 0 36px;
 
-  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
 
-  border-radius: 11px;
+  border-radius: 50%;
 
-  background:
-    linear-gradient(
-      135deg,
-      #2563eb,
-      #4f46e5
-    );
-
-  color: #ffffff;
+  background: var(--yp-gold);
+  color: var(--yp-blue-dark);
 
   font-size: 15px;
   font-weight: 800;
 
   box-shadow:
-    0 5px 12px rgba(37, 99, 235, 0.22);
+    0 4px 10px rgba(201, 162, 39, 0.22);
 }
 
 .section-heading h2 {
   margin: 0 0 4px;
 
-  font-size: 19px;
-  font-weight: 750;
+  color: var(--yp-blue);
 
-  color: #1e293b;
+  font-size: 21px;
+  font-weight: 800;
+
+  line-height: 1.25;
 }
 
 .section-heading p {
   margin: 0;
 
+  color: var(--yp-muted);
+
   font-size: 13px;
-  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 
 /* =========================================================
-   FILTER SECTION
-   ========================================================= */
+   FILTERS
+========================================================= */
 
-.historical-filter-section {
-  margin-bottom: 26px;
-  padding: 22px 24px;
-
-  background: #ffffff;
-
-  border: 1px solid #dbeafe;
-  border-radius: 18px;
-
-  box-shadow:
-    0 5px 18px rgba(37, 99, 235, 0.06);
-}
-
-.historical-filter-section .section-heading {
-  margin-bottom: 18px;
-}
-
-.historical-filter-section .section-heading h2 {
-  color: #1d4ed8;
-}
-
-.historical-filters {
+.performance-filters {
   display: grid;
 
   grid-template-columns:
     repeat(5, minmax(150px, 1fr));
 
   gap: 16px;
+
+  width: 100%;
 }
 
-.historical-filter {
+.performance-filter {
   display: flex;
   flex-direction: column;
   gap: 7px;
+
+  min-width: 0;
 }
 
-.historical-filter label {
+.performance-filter label {
+  color: var(--yp-blue);
+
   font-size: 12px;
   font-weight: 700;
 
-  color: #475569;
+  letter-spacing: 0.3px;
 }
 
-.historical-filter select {
+.performance-filter select {
   width: 100%;
   min-height: 42px;
 
-  padding: 0 12px;
+  padding: 9px 36px 9px 12px;
 
-  border: 1px solid #cbd5e1;
+  background-color: var(--yp-white);
+
+  color: var(--yp-blue);
+
+  border: 1px solid var(--yp-border);
   border-radius: 9px;
-
-  background: #ffffff;
-
-  color: #334155;
 
   font-size: 13px;
   font-weight: 600;
@@ -258,481 +262,688 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
-    background 0.2s ease;
+    background-color 0.2s ease;
+
+  box-sizing: border-box;
 }
 
-.historical-filter select:hover {
-  border-color: #93c5fd;
-  background: #f8fbff;
+.performance-filter select:hover {
+  border-color: var(--yp-gold);
+  background-color: #fffef9;
 }
 
-.historical-filter select:focus {
-  border-color: #2563eb;
+.performance-filter select:focus {
+  border-color: var(--yp-gold);
 
   box-shadow:
-    0 0 0 3px rgba(37, 99, 235, 0.12);
+    0 0 0 3px rgba(201, 162, 39, 0.16);
 }
 
 
 /* =========================================================
-   KPI CARDS
-   ========================================================= */
+   GENERAL SECTIONS
+========================================================= */
 
-.historical-kpi-grid {
+.performance-section {
+  width: 100%;
+
+  margin-bottom: 30px;
+  padding: 22px;
+
+  background: var(--yp-cream-soft);
+
+  border: 1px solid var(--yp-border);
+  border-radius: var(--yp-radius);
+
+  box-shadow: var(--yp-shadow);
+
+  box-sizing: border-box;
+
+  overflow: visible;
+}
+
+
+/* =========================================================
+   KPI GRID
+========================================================= */
+
+.performance-kpi-grid {
   display: grid;
 
   grid-template-columns:
     repeat(6, minmax(0, 1fr));
 
-  gap: 16px;
+  gap: 15px;
+
+  width: 100%;
 }
 
-.historical-kpi {
+.performance-kpi {
   position: relative;
-
-  min-height: 145px;
-
-  padding: 19px;
 
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 
-  border-radius: 15px;
+  min-width: 0;
+  min-height: 145px;
 
-  border: 1px solid var(--border);
+  padding: 18px;
 
-  background: #ffffff;
+  background:
+    linear-gradient(
+      145deg,
+      #fffdf7 0%,
+      #f8f0dd 100%
+    );
+
+  border: 1px solid var(--yp-border);
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 12px rgba(23, 54, 93, 0.06);
+
+  box-sizing: border-box;
 
   overflow: hidden;
 
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.historical-kpi::before {
+.performance-kpi::before {
   content: "";
 
   position: absolute;
 
-  left: 0;
   top: 0;
-  bottom: 0;
+  left: 0;
 
-  width: 4px;
+  width: 100%;
+  height: 4px;
 
-  background: var(--primary);
+  background: var(--yp-gold);
 }
 
-.historical-kpi:nth-child(1) {
-  background: linear-gradient(
-    135deg,
-    #ffffff,
-    #eff6ff
-  );
+.performance-kpi:hover {
+  transform: translateY(-3px);
+
+  border-color: var(--yp-gold);
+
+  box-shadow: var(--yp-shadow-hover);
 }
 
-.historical-kpi:nth-child(1)::before {
-  background: #2563eb;
-}
+.performance-kpi > span {
+  display: block;
 
-.historical-kpi:nth-child(2) {
-  background: linear-gradient(
-    135deg,
-    #ffffff,
-    #ecfeff
-  );
-}
+  margin-bottom: 10px;
 
-.historical-kpi:nth-child(2)::before {
-  background: #0891b2;
-}
+  color: var(--yp-blue);
 
-.historical-kpi:nth-child(3) {
-  background: linear-gradient(
-    135deg,
-    #ffffff,
-    #f5f3ff
-  );
-}
-
-.historical-kpi:nth-child(3)::before {
-  background: #7c3aed;
-}
-
-.historical-kpi:nth-child(4) {
-  background: linear-gradient(
-    135deg,
-    #ffffff,
-    #eef2ff
-  );
-}
-
-.historical-kpi:nth-child(4)::before {
-  background: #4f46e5;
-}
-
-.historical-kpi:nth-child(5) {
-  background: linear-gradient(
-    135deg,
-    #ffffff,
-    #f0fdf4
-  );
-}
-
-.historical-kpi:nth-child(5)::before {
-  background: #16a34a;
-}
-
-.historical-kpi:nth-child(6) {
-  background: linear-gradient(
-    135deg,
-    #ffffff,
-    #fef2f2
-  );
-}
-
-.historical-kpi:nth-child(6)::before {
-  background: #dc2626;
-}
-
-.historical-kpi:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 10px 24px rgba(15, 23, 42, 0.08);
-}
-
-.historical-kpi span {
   font-size: 12px;
   font-weight: 700;
 
-  color: #64748b;
+  line-height: 1.35;
 }
 
-.historical-kpi strong {
+.performance-kpi > strong {
   display: block;
 
-  margin: 9px 0;
+  margin-bottom: 8px;
+
+  color: var(--yp-blue-dark);
 
   font-size: 24px;
-  line-height: 1.15;
-
   font-weight: 800;
 
-  color: #1e293b;
+  line-height: 1.2;
+
+  word-break: break-word;
 }
 
-.historical-kpi small {
+.performance-kpi > small {
   display: block;
+
+  margin-top: auto;
+
+  color: var(--yp-muted);
 
   font-size: 11px;
   line-height: 1.4;
+}
 
-  color: #94a3b8;
+.performance-kpi .amount-value {
+  font-size: 21px;
+}
+
+.performance-kpi .profit-value {
+  color: var(--yp-profit);
+}
+
+.performance-kpi .loss-value {
+  color: var(--yp-loss);
 }
 
 
 /* =========================================================
    CHART CARDS
-   ========================================================= */
+========================================================= */
 
-.historical-chart-card,
+.performance-chart-card,
 .financial-chart-card {
+  position: relative;
+
   width: 100%;
+  min-width: 0;
 
-  padding: 15px 10px 8px;
+  padding: 12px;
 
-  border: 1px solid var(--border-light);
-  border-radius: 14px;
+  background: var(--yp-white);
 
-  background:
-    linear-gradient(
-      180deg,
-      #ffffff,
-      #f8fafc
-    );
+  border: 1px solid var(--yp-border-light);
+  border-radius: 12px;
 
   box-sizing: border-box;
+
+  overflow: visible;
+}
+
+.performance-chart-card {
+  min-height: 455px;
+}
+
+.year-wise-chart-card {
+  min-height: 455px;
+}
+
+.trend-chart-card {
+  min-height: 485px;
+}
+
+.financial-chart-card {
+  min-height: 425px;
+
+  margin-bottom: 18px;
+}
+
+.financial-chart-card:last-child {
+  margin-bottom: 0;
 }
 
 
 /* =========================================================
-   RECHARTS CUSTOMIZATION
-   ========================================================= */
+   RECHARTS CONTAINER
+========================================================= */
 
-.historical-chart-card .recharts-cartesian-grid-horizontal line,
-.historical-chart-card .recharts-cartesian-grid-vertical line,
-.financial-chart-card .recharts-cartesian-grid-horizontal line,
-.financial-chart-card .recharts-cartesian-grid-vertical line {
-  stroke: #e2e8f0;
-  stroke-opacity: 0.8;
+.performance-chart-card .recharts-responsive-container,
+.financial-chart-card .recharts-responsive-container {
+  width: 100% !important;
+  min-width: 0 !important;
 }
 
-.historical-chart-card .recharts-text,
-.financial-chart-card .recharts-text {
-  fill: #64748b;
-  font-size: 11px;
+.performance-chart-card .recharts-wrapper,
+.financial-chart-card .recharts-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+
+  min-height: 380px;
+
+  overflow: visible !important;
 }
 
-.historical-chart-card .recharts-legend-item-text,
-.financial-chart-card .recharts-legend-item-text {
-  color: #475569 !important;
+.performance-chart-card .recharts-surface,
+.financial-chart-card .recharts-surface {
+  display: block !important;
+
+  width: 100%;
+
+  overflow: visible !important;
+
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.performance-chart-card svg,
+.financial-chart-card svg {
+  display: block !important;
+
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  overflow: visible !important;
+}
+
+
+/* =========================================================
+   RECHARTS TEXT
+========================================================= */
+
+.recharts-text {
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: var(--yp-blue) !important;
+
   font-size: 12px;
+
   font-weight: 600;
 }
 
-.historical-chart-card .recharts-tooltip-wrapper,
-.financial-chart-card .recharts-tooltip-wrapper {
-  outline: none;
+.recharts-legend-item-text {
+  color: var(--yp-blue) !important;
+
+  font-size: 12px !important;
+  font-weight: 700 !important;
 }
 
 
 /* =========================================================
-   YEAR CARDS
-   ========================================================= */
+   CHART GRID
+========================================================= */
 
-.historical-year-cards {
-  display: grid;
+.performance-chart-card .recharts-cartesian-grid line,
+.financial-chart-card .recharts-cartesian-grid line {
+  stroke: var(--yp-grid) !important;
 
-  grid-template-columns:
-    repeat(auto-fit, minmax(190px, 1fr));
+  stroke-width: 1 !important;
 
-  gap: 14px;
-
-  margin-top: 18px;
+  opacity: 1 !important;
 }
 
-.historical-year-card {
-  position: relative;
+.performance-chart-card
+  .recharts-cartesian-grid-horizontal
+  line,
+.performance-chart-card
+  .recharts-cartesian-grid-vertical
+  line,
+.financial-chart-card
+  .recharts-cartesian-grid-horizontal
+  line,
+.financial-chart-card
+  .recharts-cartesian-grid-vertical
+  line {
+  stroke: var(--yp-grid) !important;
 
-  padding: 17px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-
-  border-radius: 13px;
-
-  border: 1px solid #dbeafe;
-
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff,
-      #eff6ff
-    );
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  opacity: 1 !important;
 }
 
-.historical-year-card:hover {
-  transform: translateY(-2px);
+
+/* =========================================================
+   CHART AXIS
+========================================================= */
+
+.performance-chart-card
+  .recharts-cartesian-axis-line,
+.performance-chart-card
+  .recharts-cartesian-axis-tick-line,
+.financial-chart-card
+  .recharts-cartesian-axis-line,
+.financial-chart-card
+  .recharts-cartesian-axis-tick-line {
+  stroke: var(--yp-gold) !important;
+
+  opacity: 1 !important;
+}
+
+.performance-chart-card
+  .recharts-cartesian-axis-tick-value,
+.financial-chart-card
+  .recharts-cartesian-axis-tick-value {
+  fill: var(--yp-blue) !important;
+
+  opacity: 1 !important;
+}
+
+
+/* =========================================================
+   BAR CHART
+   HIGH-CONTRAST COLORS
+========================================================= */
+
+/* Billing = Blue */
+.performance-chart-card
+  .recharts-bar-rectangle[fill="#2563eb"],
+.financial-chart-card
+  .recharts-bar-rectangle[fill="#2563eb"] {
+  fill: var(--yp-billing) !important;
+
+  opacity: 1 !important;
+}
+
+/* Profit = Green */
+.performance-chart-card
+  .recharts-bar-rectangle[fill="#16a34a"],
+.financial-chart-card
+  .recharts-bar-rectangle[fill="#16a34a"] {
+  fill: var(--yp-profit) !important;
+
+  opacity: 1 !important;
+}
+
+/* Loss = Red */
+.performance-chart-card
+  .recharts-bar-rectangle[fill="#dc2626"],
+.financial-chart-card
+  .recharts-bar-rectangle[fill="#dc2626"] {
+  fill: var(--yp-loss) !important;
+
+  opacity: 1 !important;
+}
+
+
+/* Generic Recharts bar visibility */
+.performance-chart-card .recharts-bar-rectangle,
+.financial-chart-card .recharts-bar-rectangle {
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+/* SVG path/rect visibility */
+.performance-chart-card
+  .recharts-bar-rectangle
+  path,
+.performance-chart-card
+  .recharts-bar-rectangle
+  rect,
+.financial-chart-card
+  .recharts-bar-rectangle
+  path,
+.financial-chart-card
+  .recharts-bar-rectangle
+  rect {
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+
+/* =========================================================
+   LINE CHART
+   HIGH-CONTRAST COLORS
+========================================================= */
+
+/* Billing line */
+.performance-chart-card
+  .recharts-line-curve[stroke="#2563eb"] {
+  stroke: var(--yp-billing) !important;
+
+  stroke-width: 4px !important;
+
+  opacity: 1 !important;
+}
+
+/* Profit line */
+.performance-chart-card
+  .recharts-line-curve[stroke="#16a34a"] {
+  stroke: var(--yp-profit) !important;
+
+  stroke-width: 4px !important;
+
+  opacity: 1 !important;
+}
+
+/* Loss line */
+.performance-chart-card
+  .recharts-line-curve[stroke="#dc2626"] {
+  stroke: var(--yp-loss) !important;
+
+  stroke-width: 4px !important;
+
+  opacity: 1 !important;
+}
+
+
+/* Generic line visibility */
+.performance-chart-card .recharts-line-curve {
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+
+/* =========================================================
+   LINE DOTS
+========================================================= */
+
+.performance-chart-card
+  .recharts-line-dots {
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+.performance-chart-card
+  .recharts-line-dot {
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+
+/* =========================================================
+   LEGEND
+========================================================= */
+
+.performance-chart-card
+  .recharts-legend-wrapper,
+.financial-chart-card
+  .recharts-legend-wrapper {
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+.recharts-default-legend {
+  visibility: visible !important;
+
+  opacity: 1 !important;
+}
+
+
+/* =========================================================
+   TOOLTIP
+========================================================= */
+
+.recharts-tooltip-wrapper {
+  z-index: 9999 !important;
+}
+
+.recharts-default-tooltip {
+  background: var(--yp-white) !important;
+
+  border: 1px solid var(--yp-gold) !important;
+
+  border-radius: 10px !important;
 
   box-shadow:
-    0 8px 20px rgba(37, 99, 235, 0.08);
+    0 8px 25px rgba(23, 54, 93, 0.16) !important;
 }
 
-.historical-year-card strong {
-  margin-bottom: 5px;
+.performance-tooltip {
+  position: relative;
 
-  font-size: 16px;
-  font-weight: 800;
+  min-width: 190px;
 
-  color: #1d4ed8;
+  padding: 12px 14px;
+
+  background: var(--yp-white);
+
+  border: 1px solid var(--yp-gold-light);
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 8px 25px rgba(23, 54, 93, 0.14);
+
+  box-sizing: border-box;
+
+  z-index: 1000;
 }
 
-.historical-year-card span {
+.performance-tooltip > strong {
+  display: block;
+
+  margin-bottom: 9px;
+  padding-bottom: 8px;
+
+  color: var(--yp-blue);
+
+  border-bottom:
+    1px solid var(--yp-border-light);
+
+  font-size: 13px;
+}
+
+.performance-tooltip-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
 
+  gap: 15px;
+
+  padding: 5px 0;
+
+  color: var(--yp-muted);
+
   font-size: 12px;
-
-  color: #64748b;
 }
 
-.historical-year-card span:nth-child(5) {
-  color: #4f46e5;
+.performance-tooltip-row span {
+  color: var(--yp-muted);
 }
 
-.historical-year-card span:nth-child(6) {
-  color: #16a34a;
-}
+.performance-tooltip-row strong {
+  color: var(--yp-blue-dark);
 
-.historical-year-card span:nth-child(7) {
-  color: #dc2626;
+  font-size: 12px;
 }
 
 
 /* =========================================================
    TREND SUMMARY
-   ========================================================= */
+========================================================= */
 
-.historical-trend-summary {
+.performance-trend-summary {
   display: grid;
 
   grid-template-columns:
-    repeat(3, 1fr);
+    repeat(3, minmax(0, 1fr));
 
-  gap: 15px;
+  gap: 14px;
 
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
-.historical-trend-summary > div {
+.performance-trend-summary > div {
   padding: 16px;
 
-  border-radius: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      var(--yp-cream-soft),
+      var(--yp-cream-dark)
+    );
 
-  border: 1px solid var(--border);
+  border: 1px solid var(--yp-border);
 
-  background: #f8fafc;
+  border-radius: 10px;
 
   text-align: center;
+
+  box-sizing: border-box;
 }
 
-.historical-trend-summary > div:nth-child(1) {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-}
-
-.historical-trend-summary > div:nth-child(2) {
-  background: #f5f3ff;
-  border-color: #ddd6fe;
-}
-
-.historical-trend-summary > div:nth-child(3) {
-  background: #ecfeff;
-  border-color: #a5f3fc;
-}
-
-.historical-trend-summary span {
+.performance-trend-summary span {
   display: block;
 
   margin-bottom: 6px;
 
+  color: var(--yp-muted);
+
   font-size: 12px;
-  font-weight: 650;
-
-  color: #64748b;
+  font-weight: 600;
 }
 
-.historical-trend-summary strong {
-  display: block;
+.performance-trend-summary strong {
+  color: var(--yp-blue);
 
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
-
-  color: #1e293b;
-}
-
-
-/* =========================================================
-   TWO COLUMN LAYOUT
-   ========================================================= */
-
-.historical-two-column {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  gap: 26px;
-
-  align-items: start;
-}
-
-.historical-two-column > .historical-section {
-  min-width: 0;
 }
 
 
 /* =========================================================
    RANKING
-   ========================================================= */
+========================================================= */
 
-.historical-ranking {
+.performance-ranking {
   display: flex;
   flex-direction: column;
 
-  gap: 10px;
+  width: 100%;
 
-  max-height: 600px;
+  background: var(--yp-white);
 
-  overflow-y: auto;
+  border: 1px solid var(--yp-border-light);
+  border-radius: 12px;
 
-  padding-right: 4px;
-}
-
-.historical-ranking::-webkit-scrollbar {
-  width: 5px;
-}
-
-.historical-ranking::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 10px;
-}
-
-.historical-ranking::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+  overflow: hidden;
 }
 
 .ranking-row {
   display: grid;
 
   grid-template-columns:
-    36px minmax(0, 1fr) auto;
+    45px minmax(0, 1fr) auto;
 
   align-items: center;
 
-  gap: 12px;
+  gap: 16px;
 
-  padding: 13px 14px;
+  min-height: 76px;
 
-  border: 1px solid #e2e8f0;
-  border-radius: 11px;
+  padding: 12px 18px;
 
-  background: #ffffff;
+  border-bottom:
+    1px solid var(--yp-border-light);
+
+  box-sizing: border-box;
 
   transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    background-color 0.2s ease;
+}
+
+.ranking-row:last-child {
+  border-bottom: none;
 }
 
 .ranking-row:hover {
-  background: #f8fafc;
-
-  transform: translateX(2px);
-
-  box-shadow:
-    0 5px 15px rgba(15, 23, 42, 0.06);
+  background: var(--yp-cream);
 }
 
 .ranking-number {
-  width: 31px;
-  height: 31px;
-
   display: flex;
   align-items: center;
   justify-content: center;
 
+  width: 32px;
+  height: 32px;
+
+  background: var(--yp-gold-light);
+
+  color: var(--yp-blue-dark);
+
   border-radius: 50%;
 
-  background:
-    linear-gradient(
-      135deg,
-      #dbeafe,
-      #e0e7ff
-    );
-
-  color: #3730a3;
-
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -743,176 +954,194 @@
 .ranking-name strong {
   display: block;
 
+  margin-bottom: 4px;
+
+  color: var(--yp-blue);
+
+  font-size: 14px;
+  font-weight: 750;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
-  font-size: 13px;
-  font-weight: 750;
-
-  color: #334155;
 }
 
 .ranking-name small {
   display: block;
 
-  margin-top: 4px;
+  color: var(--yp-muted);
 
-  font-size: 10.5px;
+  font-size: 11px;
+
   line-height: 1.4;
-
-  color: #94a3b8;
 }
 
 .ranking-value {
+  min-width: 155px;
+
   text-align: right;
 }
 
-.ranking-value strong,
-.ranking-row > strong {
+.ranking-value strong {
   display: block;
 
-  font-size: 13px;
-  font-weight: 800;
+  margin-bottom: 4px;
 
-  color: #2563eb;
+  color: var(--yp-blue-dark);
+
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .ranking-value small {
-  display: block;
+  color: var(--yp-profit);
 
-  margin-top: 4px;
-
-  font-size: 10.5px;
-
-  color: #16a34a;
-}
-
-
-/* =========================================================
-   INDUSTRY / CITY
-   ========================================================= */
-
-.historical-two-column
-  .historical-chart-card {
-  min-height: 400px;
-}
-
-.historical-two-column
-  .historical-ranking {
-  max-height: 400px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 
 /* =========================================================
    FINANCIAL ANALYSIS
-   ========================================================= */
+========================================================= */
 
 .financial-analysis-grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap: 16px;
-
-  margin-bottom: 20px;
-}
-
-.financial-analysis-grid > div {
-  position: relative;
-
-  padding: 19px;
-
-  min-height: 120px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  border-radius: 14px;
-
-  border: 1px solid var(--border);
-}
-
-.financial-analysis-grid > div:nth-child(1) {
-  background: #eef2ff;
-  border-color: #c7d2fe;
-}
-
-.financial-analysis-grid > div:nth-child(2) {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-}
-
-.financial-analysis-grid > div:nth-child(3) {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.financial-analysis-grid span {
-  font-size: 12px;
-  font-weight: 700;
-
-  color: #64748b;
-}
-
-.financial-analysis-grid strong {
-  margin: 8px 0;
-
-  font-size: 25px;
-  font-weight: 800;
-
-  color: #1e293b;
-}
-
-.financial-analysis-grid small {
-  font-size: 11px;
-
-  color: #94a3b8;
-}
-
-
-/* =========================================================
-   INSIGHTS
-   ========================================================= */
-
-.historical-insights {
   display: grid;
 
   grid-template-columns:
     repeat(3, minmax(0, 1fr));
 
   gap: 16px;
+
+  width: 100%;
+
+  margin-bottom: 18px;
+}
+
+.financial-analysis-grid > div {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 125px;
+
+  padding: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fffdf7,
+      var(--yp-cream-dark)
+    );
+
+  border: 1px solid var(--yp-border);
+
+  border-radius: 12px;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+.financial-analysis-grid > div::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 4px;
+
+  background: var(--yp-gold);
+}
+
+.financial-analysis-grid span {
+  margin-bottom: 9px;
+
+  color: var(--yp-blue);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.financial-analysis-grid strong {
+  margin-bottom: 8px;
+
+  color: var(--yp-blue-dark);
+
+  font-size: 22px;
+  font-weight: 800;
+
+  word-break: break-word;
+}
+
+.financial-analysis-grid small {
+  margin-top: auto;
+
+  color: var(--yp-muted);
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   FINANCIAL VALUE COLORS
+========================================================= */
+
+.financial-analysis-grid .profit-value {
+  color: var(--yp-profit);
+}
+
+.financial-analysis-grid .loss-value {
+  color: var(--yp-loss);
+}
+
+
+/* =========================================================
+   INSIGHTS
+========================================================= */
+
+.performance-insights {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  gap: 15px;
+
+  width: 100%;
 }
 
 .insight-card {
   position: relative;
 
-  padding: 19px;
+  min-width: 0;
+  min-height: 145px;
 
-  min-height: 125px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  border-radius: 14px;
-
-  border: 1px solid #e2e8f0;
+  padding: 18px;
 
   background:
     linear-gradient(
       145deg,
-      #ffffff,
-      #f8fafc
+      var(--yp-white),
+      var(--yp-cream-dark)
     );
+
+  border: 1px solid var(--yp-border);
+
+  border-radius: 12px;
+
+  box-sizing: border-box;
 
   overflow: hidden;
 
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .insight-card::before {
@@ -920,659 +1149,504 @@
 
   position: absolute;
 
-  left: 0;
-  right: 0;
   top: 0;
+  left: 0;
 
-  height: 3px;
+  width: 100%;
+  height: 4px;
 
-  background: #2563eb;
-}
-
-.insight-card:nth-child(2)::before {
-  background: #0891b2;
-}
-
-.insight-card:nth-child(3)::before {
-  background: #7c3aed;
-}
-
-.insight-card:nth-child(4)::before {
-  background: #16a34a;
-}
-
-.insight-card:nth-child(5)::before {
-  background: #ea580c;
-}
-
-.insight-card:nth-child(6)::before {
-  background: #db2777;
+  background: var(--yp-gold);
 }
 
 .insight-card:hover {
   transform: translateY(-3px);
 
-  box-shadow:
-    0 9px 22px rgba(15, 23, 42, 0.08);
+  border-color: var(--yp-gold);
+
+  box-shadow: var(--yp-shadow-hover);
 }
 
-.insight-card span {
+.insight-card > span {
+  display: block;
+
+  margin-bottom: 10px;
+
+  color: var(--yp-muted);
+
   font-size: 11px;
   font-weight: 700;
 
-  color: #64748b;
+  line-height: 1.35;
 }
 
-.insight-card strong {
-  margin: 10px 0 4px;
+.insight-card > strong {
+  display: block;
 
-  font-size: 17px;
+  margin-bottom: 8px;
+
+  color: var(--yp-blue);
+
+  font-size: 18px;
   font-weight: 800;
 
-  color: #334155;
+  line-height: 1.25;
 
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
-.insight-card p {
+.insight-card > p {
   margin: 0;
 
-  font-size: 12px;
-  font-weight: 650;
-
-  color: #2563eb;
-}
-
-
-/* =========================================================
-   DETAIL TOOLBAR
-   ========================================================= */
-
-.detail-toolbar {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-  margin-bottom: 16px;
-
-  padding: 13px;
-
-  border-radius: 12px;
-
-  background: #f8fafc;
-
-  border: 1px solid #e2e8f0;
-}
-
-.detail-toolbar input {
-  flex: 1;
-
-  min-width: 220px;
-
-  height: 40px;
-
-  padding: 0 13px;
-
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-
-  outline: none;
-
-  background: #ffffff;
-
-  color: #334155;
-
-  font-size: 12px;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.detail-toolbar input::placeholder {
-  color: #94a3b8;
-}
-
-.detail-toolbar input:focus {
-  border-color: #2563eb;
-
-  box-shadow:
-    0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.detail-toolbar > span {
-  white-space: nowrap;
-
-  font-size: 11px;
-
-  color: #64748b;
-}
-
-.detail-toolbar > span strong {
-  color: #2563eb;
-}
-
-.detail-toolbar button {
-  height: 40px;
-
-  padding: 0 16px;
-
-  border: none;
-  border-radius: 8px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #2563eb,
-      #4f46e5
-    );
-
-  color: #ffffff;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 4px 10px rgba(37, 99, 235, 0.2);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.detail-toolbar button:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 7px 15px rgba(37, 99, 235, 0.25);
-}
-
-.detail-toolbar button:active {
-  transform: translateY(0);
-}
-
-
-/* =========================================================
-   HISTORICAL TABLE
-   ========================================================= */
-
-.historical-table-wrapper {
-  width: 100%;
-
-  overflow-x: auto;
-
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-
-  background: #ffffff;
-}
-
-.historical-table-wrapper::-webkit-scrollbar {
-  height: 7px;
-}
-
-.historical-table-wrapper::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-.historical-table-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-
-.historical-table {
-  width: 100%;
-
-  min-width: 1100px;
-
-  border-collapse: separate;
-  border-spacing: 0;
-
-  font-size: 11.5px;
-}
-
-.historical-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-
-  padding: 13px 11px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #eff6ff,
-      #eef2ff
-    );
-
-  border-bottom: 1px solid #c7d2fe;
-
-  color: #3730a3;
-
-  font-size: 10.5px;
-  font-weight: 800;
-
-  text-align: left;
-
-  white-space: nowrap;
-}
-
-.historical-table tbody td {
-  padding: 12px 11px;
-
-  border-bottom: 1px solid #f1f5f9;
-
-  color: #64748b;
-
-  white-space: nowrap;
-
-  vertical-align: middle;
-}
-
-.historical-table tbody tr {
-  transition: background 0.15s ease;
-}
-
-.historical-table tbody tr:hover {
-  background: #f8fbff;
-}
-
-.historical-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.historical-table tbody td strong {
-  color: #334155;
-  font-weight: 700;
-}
-
-.historical-table tbody td:nth-child(7) {
-  font-weight: 800;
-}
-
-.historical-table tbody td:nth-child(7) {
-  color: #7c3aed;
-}
-
-.historical-table tbody td:nth-child(8) {
-  color: #2563eb;
-  font-weight: 700;
-}
-
-.historical-table tbody td:nth-child(9) {
-  color: #16a34a;
-  font-weight: 700;
-}
-
-.historical-table tbody td:nth-child(10) {
-  color: #16a34a;
-  font-weight: 700;
-}
-
-.historical-table tbody td:nth-child(11) {
-  color: #dc2626;
-  font-weight: 700;
-}
-
-.no-data-cell {
-  padding: 35px !important;
-
-  text-align: center;
-
-  color: #94a3b8 !important;
+  color: var(--yp-blue-dark);
 
   font-size: 13px;
+  font-weight: 700;
+
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
 }
 
 
 /* =========================================================
    NO DATA
-   ========================================================= */
+========================================================= */
 
 .no-data {
-  padding: 30px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 180px;
+
+  padding: 30px;
+
+  color: var(--yp-muted);
+
+  background: var(--yp-cream-soft);
+
+  border: 1px dashed var(--yp-gold-light);
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
 
   text-align: center;
 
-  border-radius: 10px;
+  box-sizing: border-box;
+}
 
-  background: #f8fafc;
 
-  border: 1px dashed #cbd5e1;
+/* =========================================================
+   CURSOR / PIE LABEL
+========================================================= */
 
-  color: #94a3b8;
+.recharts-tooltip-cursor {
+  fill: rgba(201, 162, 39, 0.08);
+}
+
+.recharts-pie-label-text {
+  fill: var(--yp-blue) !important;
 
   font-size: 12px;
-}
 
-
-/* =========================================================
-   HISTORICAL TOOLTIP
-   ========================================================= */
-
-.historical-tooltip {
-  min-width: 190px;
-
-  padding: 12px 14px;
-
-  border-radius: 10px;
-
-  background: #ffffff;
-
-  border: 1px solid #dbeafe;
-
-  box-shadow:
-    0 10px 25px rgba(15, 23, 42, 0.12);
-
-  font-size: 11px;
-}
-
-.historical-tooltip > strong {
-  display: block;
-
-  margin-bottom: 9px;
-  padding-bottom: 7px;
-
-  border-bottom: 1px solid #e2e8f0;
-
-  color: #1d4ed8;
-
-  font-size: 12px;
-}
-
-.historical-tooltip-row {
-  display: flex;
-
-  justify-content: space-between;
-
-  gap: 20px;
-
-  padding: 4px 0;
-
-  color: #64748b;
-}
-
-.historical-tooltip-row strong {
-  color: #334155;
-  font-weight: 750;
-}
-
-
-/* =========================================================
-   RECHARTS BAR COLORS
-   IMPORTANT:
-   NO BLACK GRAPH COLORS
-   ========================================================= */
-
-/* Year-wise chart */
-.historical-chart-card .recharts-bar-rectangle:nth-child(1) {
-  fill: #2563eb;
-}
-
-/* General SVG defaults */
-.historical-chart-card
-  .recharts-bar-rectangle {
-  transition: opacity 0.2s ease;
-}
-
-.historical-chart-card
-  .recharts-bar-rectangle:hover {
-  opacity: 0.8;
-}
-
-/*
-   Explicit colors can also be supplied directly
-   in JSX if desired.
-
-   Recommended palette:
-
-   Billing  = #2563EB
-   Profit   = #16A34A
-   Loss     = #DC2626
-   Clients  = #0891B2
-   Placement= #7C3AED
-   Enquiries= #EA580C
-*/
-
-
-/* =========================================================
-   PIE CHART
-   ========================================================= */
-
-.historical-chart-card
-  .recharts-pie-sector {
-  stroke: #ffffff;
-  stroke-width: 2px;
-}
-
-.historical-chart-card
-  .recharts-pie-label-text {
-  fill: #475569;
-  font-size: 11px;
   font-weight: 700;
 }
 
 
 /* =========================================================
-   RESPONSIVE
-   ========================================================= */
+   SCROLLBAR
+========================================================= */
+
+.performance-ranking::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.performance-ranking::-webkit-scrollbar-track {
+  background: var(--yp-cream);
+}
+
+.performance-ranking::-webkit-scrollbar-thumb {
+  background: var(--yp-gold-light);
+
+  border-radius: 10px;
+}
+
+.performance-ranking::-webkit-scrollbar-thumb:hover {
+  background: var(--yp-gold);
+}
+
+
+/* =========================================================
+   LARGE DESKTOP
+========================================================= */
 
 @media (max-width: 1400px) {
-  .historical-kpi-grid {
+
+  .performance-kpi-grid {
     grid-template-columns:
       repeat(3, minmax(0, 1fr));
   }
 
-  .historical-filters {
-    grid-template-columns:
-      repeat(3, minmax(160px, 1fr));
-  }
-
-  .historical-insights {
+  .performance-insights {
     grid-template-columns:
       repeat(3, minmax(0, 1fr));
   }
-}
 
-
-@media (max-width: 1100px) {
-  .historical-analytics {
-    padding: 20px;
-  }
-
-  .historical-two-column {
-    grid-template-columns: 1fr;
-  }
-
-  .historical-kpi-grid {
+  .performance-filters {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
-
-  .historical-insights {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
-
-  .historical-filters {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      repeat(3, minmax(180px, 1fr));
   }
 }
 
 
-@media (max-width: 768px) {
-  .historical-analytics {
-    padding: 14px;
-  }
+/* =========================================================
+   TABLET
+========================================================= */
 
-  .historical-header {
+@media (max-width: 1000px) {
+
+  .year-performance {
     padding: 20px;
-
-    border-radius: 14px;
   }
 
-  .historical-header h1 {
-    font-size: 23px;
+  .performance-header {
+    padding: 20px;
   }
 
-  .historical-section {
-    padding: 18px;
-
-    border-radius: 14px;
+  .performance-header h1 {
+    font-size: 24px;
   }
 
-  .historical-filter-section {
-    padding: 18px;
+  .performance-filters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
-  .historical-filters {
-    grid-template-columns: 1fr;
-  }
-
-  .historical-kpi-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .historical-trend-summary {
-    grid-template-columns: 1fr;
+  .performance-kpi-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
   .financial-analysis-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
   }
 
-  .historical-insights {
-    grid-template-columns: 1fr;
+  .performance-insights {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
-  .detail-toolbar {
-    flex-direction: column;
-
-    align-items: stretch;
+  /*
+     Do NOT hide chart overflow here.
+     Recharts needs the SVG drawing area visible.
+  */
+  .performance-chart-card,
+  .financial-chart-card {
+    overflow: visible;
   }
 
-  .detail-toolbar input {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .detail-toolbar > span {
-    text-align: center;
-  }
-
-  .detail-toolbar button {
-    width: 100%;
-  }
-
-  .historical-year-cards {
-    grid-template-columns: 1fr;
+  .ranking-row {
+    grid-template-columns:
+      40px minmax(0, 1fr) auto;
   }
 }
 
 
-@media (max-width: 520px) {
-  .historical-analytics {
-    padding: 10px;
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .year-performance {
+    padding: 12px;
   }
 
-  .historical-header {
-    padding: 16px;
+  .performance-header {
+    padding: 18px;
+
+    margin-bottom: 16px;
+
+    border-radius: 11px;
   }
 
-  .historical-header h1 {
-    font-size: 20px;
+  .performance-header h1 {
+    font-size: 21px;
   }
 
-  .historical-section {
-    padding: 14px;
+  .performance-header p {
+    font-size: 12px;
+  }
+
+  .performance-filter-section,
+  .performance-section {
+    padding: 15px;
+
+    margin-bottom: 18px;
+
+    border-radius: 11px;
   }
 
   .section-heading {
     gap: 10px;
+
+    margin-bottom: 15px;
   }
 
   .section-heading > span {
-    width: 32px;
-    height: 32px;
+    flex-basis: 30px;
 
-    border-radius: 9px;
+    width: 30px;
+    height: 30px;
 
     font-size: 12px;
   }
 
   .section-heading h2 {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .section-heading p {
     font-size: 11px;
   }
 
-  .historical-kpi strong {
-    font-size: 21px;
+  .performance-filters {
+    grid-template-columns: 1fr;
+
+    gap: 11px;
+  }
+
+  .performance-kpi-grid {
+    grid-template-columns: 1fr;
+
+    gap: 11px;
+  }
+
+  .performance-kpi {
+    min-height: 125px;
+
+    padding: 15px;
+  }
+
+  .performance-kpi > strong {
+    font-size: 22px;
+  }
+
+  .performance-kpi .amount-value {
+    font-size: 19px;
+  }
+
+  .performance-chart-card {
+    min-height: 390px;
+
+    padding: 5px;
+
+    overflow: visible;
+  }
+
+  .year-wise-chart-card {
+    min-height: 400px;
+  }
+
+  .trend-chart-card {
+    min-height: 425px;
+  }
+
+  .performance-chart-card .recharts-wrapper,
+  .financial-chart-card .recharts-wrapper {
+    min-height: 350px;
+  }
+
+  .performance-trend-summary {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .financial-analysis-grid {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .financial-chart-card {
+    min-height: 380px;
+
+    padding: 5px;
+
+    overflow: visible;
+  }
+
+  .performance-insights {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .insight-card {
+    min-height: 125px;
+
+    padding: 15px;
   }
 
   .ranking-row {
     grid-template-columns:
-      30px minmax(0, 1fr);
+      34px minmax(0, 1fr);
 
-    gap: 9px;
+    gap: 10px;
+
+    padding: 12px;
+  }
+
+  .ranking-number {
+    width: 28px;
+    height: 28px;
+
+    font-size: 11px;
+  }
+
+  .ranking-name strong {
+    font-size: 13px;
+  }
+
+  .ranking-name small {
+    font-size: 10px;
   }
 
   .ranking-value {
     grid-column: 2;
+
+    min-width: 0;
+
     text-align: left;
   }
 
-  .ranking-number {
-    width: 27px;
-    height: 27px;
+  .ranking-value strong {
+    font-size: 13px;
   }
 
-  .historical-chart-card,
-  .financial-chart-card {
-    padding: 8px 3px;
+  .ranking-value small {
+    font-size: 10px;
   }
 }
 
 
 /* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 430px) {
+
+  .year-performance {
+    padding: 8px;
+  }
+
+  .performance-header {
+    padding: 15px;
+  }
+
+  .performance-header h1 {
+    font-size: 19px;
+  }
+
+  .performance-section,
+  .performance-filter-section {
+    padding: 12px;
+  }
+
+  .performance-kpi > strong {
+    font-size: 20px;
+  }
+
+  .performance-kpi .amount-value {
+    font-size: 17px;
+  }
+
+  .section-heading h2 {
+    font-size: 16px;
+  }
+
+  .performance-chart-card {
+    min-height: 360px;
+
+    padding: 4px;
+  }
+
+  .financial-chart-card {
+    min-height: 350px;
+
+    padding: 4px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.performance-filter select:focus-visible {
+  outline: 2px solid var(--yp-gold);
+
+  outline-offset: 2px;
+}
+
+.performance-kpi:focus-within,
+.insight-card:focus-within {
+  border-color: var(--yp-gold);
+}
+
+
+/* =========================================================
    PRINT
-   ========================================================= */
+========================================================= */
 
 @media print {
-  .historical-analytics {
+
+  .year-performance {
     padding: 0;
 
     background: #ffffff;
   }
 
-  .historical-filter-section,
-  .detail-toolbar {
-    display: none;
+  .performance-filter-section {
+    box-shadow: none;
   }
 
-  .historical-section {
+  .performance-section {
     break-inside: avoid;
 
     box-shadow: none;
-
-    border: 1px solid #cbd5e1;
   }
 
-  .historical-two-column {
-    display: block;
+  .performance-header {
+    background: #ffffff;
+
+    border: 2px solid var(--yp-blue);
   }
 
-  .historical-chart-card,
-  .financial-chart-card {
-    break-inside: avoid;
+  .performance-header h1,
+  .performance-header p {
+    color: var(--yp-blue);
+  }
+
+  .performance-kpi,
+  .insight-card,
+  .financial-analysis-grid > div {
+    box-shadow: none;
+  }
+
+  /* Keep graph colors when printing */
+  .recharts-bar-rectangle {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .recharts-line-curve {
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 }

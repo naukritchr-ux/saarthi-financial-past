@@ -40,6 +40,25 @@ const financialMonths = [
 ];
 
 /* =========================================================
+   GRAPH COLORS
+========================================================= */
+
+const GRAPH_COLORS = {
+  billing: "#2563eb",
+  profit: "#16a34a",
+  loss: "#dc2626",
+  golden: "#c9a227",
+  darkBlue: "#17365d",
+  cream: "#fffaf0",
+  grid: "#e7dcc8"
+};
+
+const FINANCIAL_PIE_COLORS = [
+  GRAPH_COLORS.profit,
+  GRAPH_COLORS.loss
+];
+
+/* =========================================================
    NUMBER HELPERS
 ========================================================= */
 
@@ -53,7 +72,9 @@ function cleanNumber(value) {
   }
 
   if (typeof value === "number") {
-    return Number.isFinite(value) ? value : 0;
+    return Number.isFinite(value)
+      ? value
+      : 0;
   }
 
   const cleaned = String(value)
@@ -68,8 +89,19 @@ function cleanNumber(value) {
 
   const number = Number(cleaned);
 
-  return Number.isFinite(number) ? number : 0;
+  return Number.isFinite(number)
+    ? number
+    : 0;
 }
+
+/* =========================================================
+   FULL CURRENCY FORMAT
+
+   Used for overview cards.
+
+   Example:
+   ₹12,45,67,890
+========================================================= */
 
 function formatCurrency(value) {
   return `₹${cleanNumber(value).toLocaleString(
@@ -80,6 +112,10 @@ function formatCurrency(value) {
   )}`;
 }
 
+/* =========================================================
+   NUMBER FORMAT
+========================================================= */
+
 function formatNumber(value) {
   return cleanNumber(value).toLocaleString(
     "en-IN",
@@ -87,6 +123,31 @@ function formatNumber(value) {
       maximumFractionDigits: 0
     }
   );
+}
+
+/* =========================================================
+   CRORE FORMAT
+
+   Used on financial graph Y axes.
+
+   Example:
+   ₹1 Cr
+   ₹2 Cr
+   ₹5 Cr
+========================================================= */
+
+function formatCrore(value) {
+  const crore = cleanNumber(value) / 10000000;
+
+  if (crore === 0) {
+    return "₹0 Cr";
+  }
+
+  if (Number.isInteger(crore)) {
+    return `₹${crore} Cr`;
+  }
+
+  return `₹${crore.toFixed(1)} Cr`;
 }
 
 /* =========================================================
@@ -113,6 +174,10 @@ function firstValue(row, keys) {
   return "";
 }
 
+/* =========================================================
+   CLEAN TEXT
+========================================================= */
+
 function cleanText(value) {
   return String(value || "")
     .trim()
@@ -120,10 +185,10 @@ function cleanText(value) {
 }
 
 /* =========================================================
-   INFO
+   INFO STATUS
 
-   IMPORTANT:
-   Profit / Loss / Placement are based on THIS field.
+   R = Profit / Placement
+   C = Loss
 ========================================================= */
 
 function getInfoStatus(row) {
@@ -213,6 +278,9 @@ function getTeamLeader(row) {
 
 /* =========================================================
    INDUSTRY
+
+   Used only by the filter.
+   Industry analysis section has been removed.
 ========================================================= */
 
 function getIndustry(row) {
@@ -227,26 +295,6 @@ function getIndustry(row) {
       "business_type",
       "Sector",
       "sector"
-    ])
-  );
-}
-
-/* =========================================================
-   CITY
-========================================================= */
-
-function getCity(row) {
-  return cleanText(
-    firstValue(row, [
-      "City",
-      "city",
-      "City Name",
-      "city_name",
-      "CityName",
-      "Location",
-      "location",
-      "Branch",
-      "branch"
     ])
   );
 }
@@ -287,9 +335,7 @@ function parseDate(value) {
       : value;
   }
 
-  /*
-    Excel serial date support
-  */
+  /* Excel serial date support */
   if (typeof value === "number") {
     if (
       value > 20000 &&
@@ -318,9 +364,7 @@ function parseDate(value) {
     return null;
   }
 
-  /*
-    YYYY-MM-DD
-  */
+  /* YYYY-MM-DD */
   let match = text.match(
     /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/
   );
@@ -339,9 +383,7 @@ function parseDate(value) {
       : date;
   }
 
-  /*
-    DD/MM/YYYY or DD-MM-YYYY
-  */
+  /* DD/MM/YYYY or DD-MM-YYYY */
   match = text.match(
     /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/
   );
@@ -600,13 +642,14 @@ function getMonth(row) {
 /* =========================================================
    TOTAL BILL AMOUNT
 
-   IMPORTANT:
-   This is the ONLY amount used for:
+   ONLY AMOUNT SOURCE
+
+   Used for:
    - Total Billing
    - Profit
    - Loss
-   - Yearly Billing
-   - Historical Billing
+   - Year-Wise Billing
+   - Monthly Billing
 ========================================================= */
 
 function getTotalBillAmount(row) {
@@ -625,7 +668,7 @@ function getTotalBillAmount(row) {
 }
 
 /* =========================================================
-   REQUIRED BUSINESS METRICS
+   BUSINESS METRICS
 ========================================================= */
 
 /*
@@ -747,6 +790,10 @@ function sortYears(years) {
 
 /* =========================================================
    GROUP DATA
+
+   Used for:
+   - BD Performance
+   - Team Leader Performance
 ========================================================= */
 
 function createGroupedData(
@@ -830,9 +877,11 @@ function createGroupedData(
 
 /* =========================================================
    TOOLTIP
+
+   Currency values are shown completely.
 ========================================================= */
 
-function HistoricalTooltip({
+function PerformanceTooltip({
   active,
   payload,
   label
@@ -846,8 +895,7 @@ function HistoricalTooltip({
   }
 
   return (
-    <div className="historical-tooltip">
-
+    <div className="performance-tooltip">
       <strong>
         {label}
       </strong>
@@ -864,7 +912,7 @@ function HistoricalTooltip({
 
           return (
             <div
-              className="historical-tooltip-row"
+              className="performance-tooltip-row"
               key={`${item.dataKey}-${index}`}
             >
               <span>
@@ -884,7 +932,6 @@ function HistoricalTooltip({
           );
         }
       )}
-
     </div>
   );
 }
@@ -903,7 +950,7 @@ export default function YearPerformance() {
   } = useData();
 
   /* =======================================================
-     DATABASE DATA
+     SOURCE DATA
   ======================================================= */
 
   const sourceRows = useMemo(() => {
@@ -934,11 +981,15 @@ export default function YearPerformance() {
      FILTERS
   ======================================================= */
 
-  const [selectedYear, setSelectedYear] =
-    useState("All");
+  const [
+    selectedYear,
+    setSelectedYear
+  ] = useState("All");
 
-  const [selectedBD, setSelectedBD] =
-    useState("All");
+  const [
+    selectedBD,
+    setSelectedBD
+  ] = useState("All");
 
   const [
     selectedTeamLeader,
@@ -950,11 +1001,10 @@ export default function YearPerformance() {
     setSelectedIndustry
   ] = useState("All");
 
-  const [selectedInfo, setSelectedInfo] =
-    useState("All");
-
-  const [searchTerm, setSearchTerm] =
-    useState("");
+  const [
+    selectedInfo,
+    setSelectedInfo
+  ] = useState("All");
 
   /* =======================================================
      FILTER OPTIONS
@@ -1036,63 +1086,67 @@ export default function YearPerformance() {
   );
 
   /* =======================================================
-     FILTERED HISTORICAL DATA
+     FILTERED DATA
   ======================================================= */
 
-  const historicalRows = useMemo(() => {
-    return sourceRows.filter((row) => {
-      if (
-        selectedYear !== "All" &&
-        getFinancialYear(row) !==
-          selectedYear
-      ) {
-        return false;
-      }
+  const filteredPerformanceRows =
+    useMemo(() => {
+      return sourceRows.filter(
+        (row) => {
+          if (
+            selectedYear !==
+              "All" &&
+            getFinancialYear(row) !==
+              selectedYear
+          ) {
+            return false;
+          }
 
-      if (
-        selectedBD !== "All" &&
-        getBDMember(row) !==
-          selectedBD
-      ) {
-        return false;
-      }
+          if (
+            selectedBD !== "All" &&
+            getBDMember(row) !==
+              selectedBD
+          ) {
+            return false;
+          }
 
-      if (
-        selectedTeamLeader !==
-          "All" &&
-        getTeamLeader(row) !==
-          selectedTeamLeader
-      ) {
-        return false;
-      }
+          if (
+            selectedTeamLeader !==
+              "All" &&
+            getTeamLeader(row) !==
+              selectedTeamLeader
+          ) {
+            return false;
+          }
 
-      if (
-        selectedIndustry !==
-          "All" &&
-        getIndustry(row) !==
-          selectedIndustry
-      ) {
-        return false;
-      }
+          if (
+            selectedIndustry !==
+              "All" &&
+            getIndustry(row) !==
+              selectedIndustry
+          ) {
+            return false;
+          }
 
-      if (
-        selectedInfo !== "All" &&
-        getInfoStatus(row) !==
-          selectedInfo
-      ) {
-        return false;
-      }
+          if (
+            selectedInfo !== "All" &&
+            getInfoStatus(row) !==
+              selectedInfo
+          ) {
+            return false;
+          }
 
-      return true;
-    });
-  }, [
-    sourceRows,
-    selectedYear,
-    selectedBD,
-    selectedTeamLeader,
-    selectedIndustry,
-    selectedInfo
-  ]);
+          return true;
+        }
+      );
+    }, [
+      sourceRows,
+      selectedYear,
+      selectedBD,
+      selectedTeamLeader,
+      selectedIndustry,
+      selectedInfo
+    ]);
 
   /* =======================================================
      ANALYSIS PERIOD
@@ -1101,7 +1155,7 @@ export default function YearPerformance() {
   const analysisPeriod = useMemo(() => {
     const years = Array.from(
       new Set(
-        historicalRows
+        filteredPerformanceRows
           .map(getFinancialYear)
           .filter(Boolean)
       )
@@ -1111,16 +1165,16 @@ export default function YearPerformance() {
       sortYears(years);
 
     if (!sorted.length) {
-      return "No historical data";
+      return "No data";
     }
 
     return `${sorted[0]} to ${
       sorted[sorted.length - 1]
     }`;
-  }, [historicalRows]);
+  }, [filteredPerformanceRows]);
 
   /* =======================================================
-     HISTORICAL OVERVIEW
+     PERFORMANCE OVERVIEW
 
      EXACT BUSINESS RULES
   ======================================================= */
@@ -1129,76 +1183,170 @@ export default function YearPerformance() {
     return {
       totalAcquiredClients:
         getTotalAcquiredClients(
-          historicalRows
+          filteredPerformanceRows
         ),
 
       totalEnquiries:
         getTotalEnquiries(
-          historicalRows
+          filteredPerformanceRows
         ),
 
       totalPlacements:
         getTotalPlacements(
-          historicalRows
+          filteredPerformanceRows
         ),
 
       totalBilling:
         getTotalBilling(
-          historicalRows
+          filteredPerformanceRows
         ),
 
       profit:
         getProfit(
-          historicalRows
+          filteredPerformanceRows
         ),
 
       loss:
         getLoss(
-          historicalRows
+          filteredPerformanceRows
         )
     };
-  }, [historicalRows]);
+  }, [filteredPerformanceRows]);
 
   /* =======================================================
      YEAR-WISE DATA
+
+     IMPORTANT:
+     This explicitly creates:
+
+     {
+       year,
+       billing,
+       profit,
+       loss,
+       clients,
+       placements,
+       enquiries
+     }
+
+     so the chart uses dataKey="year"
+     correctly.
   ======================================================= */
 
   const yearlyData = useMemo(() => {
-    const grouped =
-      createGroupedData(
-        historicalRows,
-        getFinancialYear
-      );
+    const yearMap = new Map();
 
-    return sortYears(
-      grouped.map(
-        (item) => item.name
-      )
-    ).map((year) =>
-      grouped.find(
-        (item) =>
-          item.name === year
-      )
+    filteredPerformanceRows.forEach(
+      (row) => {
+        const year =
+          getFinancialYear(row);
+
+        if (!year) {
+          return;
+        }
+
+        if (!yearMap.has(year)) {
+          yearMap.set(year, {
+            year,
+            billing: 0,
+            profit: 0,
+            loss: 0,
+            enquiries: 0,
+            clients: new Set(),
+            placements: new Set()
+          });
+        }
+
+        const item =
+          yearMap.get(year);
+
+        const billing =
+          getTotalBillAmount(row);
+
+        const info =
+          getInfoStatus(row);
+
+        const companyKey =
+          getCompanyKey(row);
+
+        /* Total Enquiries */
+        item.enquiries += 1;
+
+        /* Total Acquired Client */
+        if (companyKey) {
+          item.clients.add(
+            companyKey
+          );
+        }
+
+        /* Total Billing */
+        item.billing += billing;
+
+        /* Profit + Placement */
+        if (info === "R") {
+          item.profit += billing;
+
+          if (companyKey) {
+            item.placements.add(
+              companyKey
+            );
+          }
+        }
+
+        /* Loss */
+        if (info === "C") {
+          item.loss += billing;
+        }
+      }
     );
-  }, [historicalRows]);
+
+    return Array.from(
+      yearMap.values()
+    )
+      .map((item) => ({
+        year: item.year,
+        billing: item.billing,
+        profit: item.profit,
+        loss: item.loss,
+        clients:
+          item.clients.size,
+        placements:
+          item.placements.size,
+        enquiries:
+          item.enquiries
+      }))
+      .sort((a, b) => {
+        const yearA =
+          Number(
+            String(a.year).match(
+              /20\d{2}/
+            )?.[0] || 0
+          );
+
+        const yearB =
+          Number(
+            String(b.year).match(
+              /20\d{2}/
+            )?.[0] || 0
+          );
+
+        return yearA - yearB;
+      });
+  }, [filteredPerformanceRows]);
 
   /* =======================================================
      MONTHLY TREND
 
-     Uses the same business rules:
      Billing = Total Bill Amount
      Profit = Info R
      Loss = Info C
-     Clients = unique Company Name
-     Placement = unique Company Name where R
-     Enquiries = rows
   ======================================================= */
 
   const monthlyTrend = useMemo(() => {
     return financialMonths.map(
       (month) => {
         const monthRows =
-          historicalRows.filter(
+          filteredPerformanceRows.filter(
             (row) =>
               getMonth(row) ===
               month.full
@@ -1239,7 +1387,7 @@ export default function YearPerformance() {
         };
       }
     );
-  }, [historicalRows]);
+  }, [filteredPerformanceRows]);
 
   /* =======================================================
      BD PERFORMANCE
@@ -1248,10 +1396,10 @@ export default function YearPerformance() {
   const bdPerformance = useMemo(
     () =>
       createGroupedData(
-        historicalRows,
+        filteredPerformanceRows,
         getBDMember
       ).slice(0, 15),
-    [historicalRows]
+    [filteredPerformanceRows]
   );
 
   /* =======================================================
@@ -1262,38 +1410,11 @@ export default function YearPerformance() {
     useMemo(
       () =>
         createGroupedData(
-          historicalRows,
+          filteredPerformanceRows,
           getTeamLeader
         ).slice(0, 15),
-      [historicalRows]
+      [filteredPerformanceRows]
     );
-
-  /* =======================================================
-     INDUSTRY PERFORMANCE
-  ======================================================= */
-
-  const industryPerformance =
-    useMemo(
-      () =>
-        createGroupedData(
-          historicalRows,
-          getIndustry
-        ).slice(0, 15),
-      [historicalRows]
-    );
-
-  /* =======================================================
-     CITY PERFORMANCE
-  ======================================================= */
-
-  const cityPerformance = useMemo(
-    () =>
-      createGroupedData(
-        historicalRows,
-        getCity
-      ).slice(0, 15),
-    [historicalRows]
-  );
 
   /* =======================================================
      FINANCIAL PIE DATA
@@ -1317,7 +1438,10 @@ export default function YearPerformance() {
   );
 
   /* =======================================================
-     HISTORICAL INSIGHTS
+     INSIGHTS
+
+     Industry insight removed because
+     Industry Analysis has been removed.
   ======================================================= */
 
   const insights = useMemo(() => {
@@ -1368,179 +1492,30 @@ export default function YearPerformance() {
         bdPerformance[0] || null,
       bestTeamLeader:
         teamLeaderPerformance[0] ||
-        null,
-      strongestIndustry:
-        industryPerformance[0] ||
         null
     };
   }, [
     yearlyData,
     bdPerformance,
-    teamLeaderPerformance,
-    industryPerformance
+    teamLeaderPerformance
   ]);
-
-  /* =======================================================
-     DETAIL TABLE
-  ======================================================= */
-
-  const detailRows = useMemo(() => {
-    const search =
-      searchTerm
-        .trim()
-        .toLowerCase();
-
-    return historicalRows
-      .filter((row) => {
-        if (!search) {
-          return true;
-        }
-
-        const searchable = [
-          getCompanyName(row),
-          getFinancialYear(row),
-          getBDMember(row),
-          getTeamLeader(row),
-          getIndustry(row),
-          getCity(row),
-          getInfoStatus(row)
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return searchable.includes(
-          search
-        );
-      })
-      .slice(0, 500);
-  }, [
-    historicalRows,
-    searchTerm
-  ]);
-
-  /* =======================================================
-     EXPORT CSV
-  ======================================================= */
-
-  const exportCSV = () => {
-    const headers = [
-      "Company Name",
-      "Financial Year",
-      "BD Member",
-      "Team Leader",
-      "Industry",
-      "City",
-      "Info",
-      "Total Bill Amount",
-      "Placement",
-      "Profit",
-      "Loss"
-    ];
-
-    const exportRows =
-      historicalRows.map(
-        (row) => {
-          const billing =
-            getTotalBillAmount(
-              row
-            );
-
-          const info =
-            getInfoStatus(row);
-
-          return [
-            getCompanyName(row),
-            getFinancialYear(row),
-            getBDMember(row),
-            getTeamLeader(row),
-            getIndustry(row),
-            getCity(row),
-            info,
-            billing,
-            info === "R"
-              ? "Yes"
-              : "No",
-            info === "R"
-              ? billing
-              : 0,
-            info === "C"
-              ? billing
-              : 0
-          ];
-        }
-      );
-
-    const csv = [
-      headers,
-      ...exportRows
-    ]
-      .map((row) =>
-        row
-          .map(
-            (value) =>
-              `"${String(
-                value ?? ""
-              ).replace(
-                /"/g,
-                '""'
-              )}"`
-          )
-          .join(",")
-      )
-      .join("\n");
-
-    const blob = new Blob(
-      [csv],
-      {
-        type:
-          "text/csv;charset=utf-8;"
-      }
-    );
-
-    const url =
-      URL.createObjectURL(
-        blob
-      );
-
-    const link =
-      document.createElement(
-        "a"
-      );
-
-    link.href = url;
-
-    link.download =
-      "historical-data-analytics.csv";
-
-    document.body.appendChild(
-      link
-    );
-
-    link.click();
-
-    document.body.removeChild(
-      link
-    );
-
-    URL.revokeObjectURL(url);
-  };
 
   /* =======================================================
      RENDER
   ======================================================= */
 
   return (
-    <div className="historical-analytics">
+    <div className="year-performance">
 
       {/* ===================================================
           HEADER
       =================================================== */}
 
-      <div className="historical-header">
+      <div className="performance-header">
 
         <div>
           <h1>
-            Historical Data Analytics
+            Year Performance
           </h1>
 
           <p>
@@ -1557,7 +1532,7 @@ export default function YearPerformance() {
           FILTERS
       =================================================== */}
 
-      <section className="historical-filter-section">
+      <section className="performance-filter-section">
 
         <div className="section-heading">
 
@@ -1565,15 +1540,20 @@ export default function YearPerformance() {
             <h2>
               Filters
             </h2>
+
+            <p>
+              Filter the performance
+              analysis
+            </p>
           </div>
 
         </div>
 
-        <div className="historical-filters">
+        <div className="performance-filters">
 
           {/* YEAR */}
 
-          <div className="historical-filter">
+          <div className="performance-filter">
 
             <label>
               Year
@@ -1601,13 +1581,14 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
+
             </select>
 
           </div>
 
           {/* BD */}
 
-          <div className="historical-filter">
+          <div className="performance-filter">
 
             <label>
               BD Member
@@ -1635,13 +1616,14 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
+
             </select>
 
           </div>
 
           {/* TEAM LEADER */}
 
-          <div className="historical-filter">
+          <div className="performance-filter">
 
             <label>
               Team Leader
@@ -1671,13 +1653,14 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
+
             </select>
 
           </div>
 
-          {/* INDUSTRY */}
+          {/* INDUSTRY FILTER */}
 
-          <div className="historical-filter">
+          <div className="performance-filter">
 
             <label>
               Industry
@@ -1707,13 +1690,14 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
+
             </select>
 
           </div>
 
           {/* INFO */}
 
-          <div className="historical-filter">
+          <div className="performance-filter">
 
             <label>
               Info Status
@@ -1741,6 +1725,7 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
+
             </select>
 
           </div>
@@ -1750,10 +1735,10 @@ export default function YearPerformance() {
       </section>
 
       {/* ===================================================
-          1. HISTORICAL OVERVIEW
+          1. PERFORMANCE OVERVIEW
       =================================================== */}
 
-      <section className="historical-section">
+      <section className="performance-section">
 
         <div className="section-heading">
 
@@ -1761,20 +1746,22 @@ export default function YearPerformance() {
 
           <div>
             <h2>
-              Historical Overview
+              Performance Overview
             </h2>
 
             <p>
-              Overall historical
-              performance
+              Overall performance
+              summary
             </p>
           </div>
 
         </div>
 
-        <div className="historical-kpi-grid">
+        <div className="performance-kpi-grid">
 
-          <div className="historical-kpi">
+          {/* ACQUIRED CLIENT */}
+
+          <div className="performance-kpi">
 
             <span>
               Total Acquired Client
@@ -1792,7 +1779,9 @@ export default function YearPerformance() {
 
           </div>
 
-          <div className="historical-kpi">
+          {/* ENQUIRIES */}
+
+          <div className="performance-kpi">
 
             <span>
               Total Enquiries
@@ -1805,12 +1794,14 @@ export default function YearPerformance() {
             </strong>
 
             <small>
-              Total rows
+              Total enquiry rows
             </small>
 
           </div>
 
-          <div className="historical-kpi">
+          {/* PLACEMENT */}
+
+          <div className="performance-kpi">
 
             <span>
               Total Placement
@@ -1829,16 +1820,20 @@ export default function YearPerformance() {
 
           </div>
 
-          <div className="historical-kpi">
+          {/* BILLING */}
+
+          <div className="performance-kpi">
 
             <span>
               Total Billing
             </span>
 
-            <strong>
+            <strong className="amount-value">
+
               {formatCurrency(
                 overview.totalBilling
               )}
+
             </strong>
 
             <small>
@@ -1847,16 +1842,20 @@ export default function YearPerformance() {
 
           </div>
 
-          <div className="historical-kpi">
+          {/* PROFIT */}
+
+          <div className="performance-kpi">
 
             <span>
               Profit
             </span>
 
-            <strong>
+            <strong className="amount-value profit-value">
+
               {formatCurrency(
                 overview.profit
               )}
+
             </strong>
 
             <small>
@@ -1865,16 +1864,20 @@ export default function YearPerformance() {
 
           </div>
 
-          <div className="historical-kpi">
+          {/* LOSS */}
+
+          <div className="performance-kpi">
 
             <span>
               Loss
             </span>
 
-            <strong>
+            <strong className="amount-value loss-value">
+
               {formatCurrency(
                 overview.loss
               )}
+
             </strong>
 
             <small>
@@ -1889,9 +1892,11 @@ export default function YearPerformance() {
 
       {/* ===================================================
           2. YEAR-WISE ANALYSIS
+
+          GRAPH ONLY
       =================================================== */}
 
-      <section className="historical-section">
+      <section className="performance-section">
 
         <div className="section-heading">
 
@@ -1903,124 +1908,132 @@ export default function YearPerformance() {
             </h2>
 
             <p>
-              Historical comparison by
-              financial year
+              Billing, profit and loss
+              by financial year
             </p>
           </div>
 
         </div>
 
-        <div className="historical-chart-card">
+        <div className="performance-chart-card year-wise-chart-card">
 
-          <ResponsiveContainer
-            width="100%"
-            height={400}
-          >
+          {yearlyData.length > 0 ? (
 
-            <BarChart
-              data={yearlyData}
+            <ResponsiveContainer
+              width="100%"
+              height={430}
+              minWidth={0}
             >
 
-              <CartesianGrid
-                strokeDasharray="3 3"
-              />
-
-              <XAxis
-                dataKey="year"
-              />
-
-              <YAxis
-                tickFormatter={
-                  formatCurrency
-                }
-              />
-
-              <Tooltip
-                content={
-                  <HistoricalTooltip />
-                }
-              />
-
-              <Legend />
-
-              <Bar
-                dataKey="billing"
-                name="Billing"
-              />
-
-              <Bar
-                dataKey="profit"
-                name="Profit"
-              />
-
-              <Bar
-                dataKey="loss"
-                name="Loss"
-              />
-
-            </BarChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-        <div className="historical-year-cards">
-
-          {yearlyData.map(
-            (year) => (
-              <div
-                className="historical-year-card"
-                key={year.year}
+              <BarChart
+                data={yearlyData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 20
+                }}
               >
 
-                <strong>
-                  FY {year.year}
-                </strong>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={
+                    GRAPH_COLORS.grid
+                  }
+                />
 
-                <span>
-                  Clients:{" "}
-                  {formatNumber(
-                    year.clients
-                  )}
-                </span>
+                <XAxis
+                  dataKey="year"
+                  tick={{
+                    fill:
+                      GRAPH_COLORS.darkBlue,
+                    fontSize: 13,
+                    fontWeight: 600
+                  }}
+                  axisLine={{
+                    stroke:
+                      GRAPH_COLORS.golden
+                  }}
+                  tickLine={false}
+                />
 
-                <span>
-                  Placement:{" "}
-                  {formatNumber(
-                    year.placements
-                  )}
-                </span>
+                <YAxis
+                  tick={{
+                    fill:
+                      GRAPH_COLORS.darkBlue,
+                    fontSize: 12
+                  }}
+                  axisLine={{
+                    stroke:
+                      GRAPH_COLORS.golden
+                  }}
+                  tickLine={false}
+                  tickFormatter={
+                    formatCrore
+                  }
+                />
 
-                <span>
-                  Enquiries:{" "}
-                  {formatNumber(
-                    year.enquiries
-                  )}
-                </span>
+                <Tooltip
+                  content={
+                    <PerformanceTooltip />
+                  }
+                />
 
-                <span>
-                  Billing:{" "}
-                  {formatCurrency(
-                    year.billing
-                  )}
-                </span>
+                <Legend />
 
-                <span>
-                  Profit:{" "}
-                  {formatCurrency(
-                    year.profit
-                  )}
-                </span>
+                <Bar
+                  dataKey="billing"
+                  name="Billing"
+                  fill={
+                    GRAPH_COLORS.billing
+                  }
+                  radius={[
+                    5,
+                    5,
+                    0,
+                    0
+                  ]}
+                />
 
-                <span>
-                  Loss:{" "}
-                  {formatCurrency(
-                    year.loss
-                  )}
-                </span>
+                <Bar
+                  dataKey="profit"
+                  name="Profit"
+                  fill={
+                    GRAPH_COLORS.profit
+                  }
+                  radius={[
+                    5,
+                    5,
+                    0,
+                    0
+                  ]}
+                />
 
-              </div>
-            )
+                <Bar
+                  dataKey="loss"
+                  name="Loss"
+                  fill={
+                    GRAPH_COLORS.loss
+                  }
+                  radius={[
+                    5,
+                    5,
+                    0,
+                    0
+                  ]}
+                />
+
+              </BarChart>
+
+            </ResponsiveContainer>
+
+          ) : (
+
+            <div className="no-data">
+              No year-wise data
+              available.
+            </div>
+
           )}
 
         </div>
@@ -2028,10 +2041,10 @@ export default function YearPerformance() {
       </section>
 
       {/* ===================================================
-          3. HISTORICAL TRENDS
+          3. MONTHLY TREND
       =================================================== */}
 
-      <section className="historical-section">
+      <section className="performance-section">
 
         <div className="section-heading">
 
@@ -2039,70 +2052,133 @@ export default function YearPerformance() {
 
           <div>
             <h2>
-              Historical Trends
+              Monthly Trend
             </h2>
 
             <p>
-              Client acquisition,
-              placement, billing,
-              profit and loss
+              Billing, profit and loss
+              across the financial year
             </p>
           </div>
 
         </div>
 
-        <div className="historical-chart-card">
+        <div className="performance-chart-card trend-chart-card">
 
           <ResponsiveContainer
             width="100%"
-            height={420}
+            height={460}
+            minWidth={0}
           >
 
             <LineChart
               data={monthlyTrend}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 20
+              }}
             >
 
               <CartesianGrid
                 strokeDasharray="3 3"
+                stroke={
+                  GRAPH_COLORS.grid
+                }
               />
 
               <XAxis
                 dataKey="month"
+                tick={{
+                  fill:
+                    GRAPH_COLORS.darkBlue,
+                  fontSize: 12,
+                  fontWeight: 600
+                }}
+                axisLine={{
+                  stroke:
+                    GRAPH_COLORS.golden
+                }}
+                tickLine={false}
               />
 
               <YAxis
+                tick={{
+                  fill:
+                    GRAPH_COLORS.darkBlue,
+                  fontSize: 12
+                }}
+                axisLine={{
+                  stroke:
+                    GRAPH_COLORS.golden
+                }}
+                tickLine={false}
                 tickFormatter={
-                  formatCurrency
+                  formatCrore
                 }
               />
 
               <Tooltip
                 content={
-                  <HistoricalTooltip />
+                  <PerformanceTooltip />
                 }
               />
 
               <Legend />
 
+              {/* BILLING = BLUE */}
+
               <Line
                 type="monotone"
                 dataKey="billing"
                 name="Billing"
+                stroke={
+                  GRAPH_COLORS.billing
+                }
                 strokeWidth={3}
+                dot={{
+                  r: 4
+                }}
+                activeDot={{
+                  r: 7
+                }}
               />
+
+              {/* PROFIT = GREEN */}
 
               <Line
                 type="monotone"
                 dataKey="profit"
                 name="Profit"
+                stroke={
+                  GRAPH_COLORS.profit
+                }
                 strokeWidth={3}
+                dot={{
+                  r: 4
+                }}
+                activeDot={{
+                  r: 7
+                }}
               />
+
+              {/* LOSS = RED */}
 
               <Line
                 type="monotone"
                 dataKey="loss"
                 name="Loss"
+                stroke={
+                  GRAPH_COLORS.loss
+                }
                 strokeWidth={3}
+                dot={{
+                  r: 4
+                }}
+                activeDot={{
+                  r: 7
+                }}
               />
 
             </LineChart>
@@ -2111,7 +2187,7 @@ export default function YearPerformance() {
 
         </div>
 
-        <div className="historical-trend-summary">
+        <div className="performance-trend-summary">
 
           <div>
             <span>
@@ -2155,305 +2231,59 @@ export default function YearPerformance() {
 
       {/* ===================================================
           4. BD PERFORMANCE
-          5. TEAM LEADER PERFORMANCE
       =================================================== */}
 
-      <div className="historical-two-column">
+      <section className="performance-section">
 
-        <section className="historical-section">
+        <div className="section-heading">
 
-          <div className="section-heading">
+          <span>4</span>
 
-            <span>4</span>
+          <div>
+            <h2>
+              BD Performance
+            </h2>
 
-            <div>
-              <h2>
-                BD Performance
-              </h2>
-
-              <p>
-                Historical ranking
-              </p>
-            </div>
-
+            <p>
+              BD performance ranking
+            </p>
           </div>
 
-          <div className="historical-ranking">
+        </div>
 
-            {bdPerformance.map(
-              (item, index) => (
-                <div
-                  className="ranking-row"
-                  key={item.name}
-                >
+        <div className="performance-ranking">
 
-                  <span className="ranking-number">
-                    {index + 1}
-                  </span>
-
-                  <div className="ranking-name">
-
-                    <strong>
-                      {item.name}
-                    </strong>
-
-                    <small>
-                      Clients:{" "}
-                      {formatNumber(
-                        item.clients
-                      )}{" "}
-                      | Placement:{" "}
-                      {formatNumber(
-                        item.placements
-                      )}
-                    </small>
-
-                  </div>
-
-                  <div className="ranking-value">
-
-                    <strong>
-                      {formatCurrency(
-                        item.billing
-                      )}
-                    </strong>
-
-                    <small>
-                      Profit:{" "}
-                      {formatCurrency(
-                        item.profit
-                      )}
-                    </small>
-
-                  </div>
-
-                </div>
-              )
-            )}
-
-            {!bdPerformance.length && (
-              <div className="no-data">
-                No BD performance data
-                available.
-              </div>
-            )}
-
-          </div>
-
-        </section>
-
-        <section className="historical-section">
-
-          <div className="section-heading">
-
-            <span>5</span>
-
-            <div>
-              <h2>
-                Team Leader Performance
-              </h2>
-
-              <p>
-                Historical ranking
-              </p>
-            </div>
-
-          </div>
-
-          <div className="historical-ranking">
-
-            {teamLeaderPerformance.map(
-              (item, index) => (
-                <div
-                  className="ranking-row"
-                  key={item.name}
-                >
-
-                  <span className="ranking-number">
-                    {index + 1}
-                  </span>
-
-                  <div className="ranking-name">
-
-                    <strong>
-                      {item.name}
-                    </strong>
-
-                    <small>
-                      Clients:{" "}
-                      {formatNumber(
-                        item.clients
-                      )}{" "}
-                      | Placement:{" "}
-                      {formatNumber(
-                        item.placements
-                      )}
-                    </small>
-
-                  </div>
-
-                  <div className="ranking-value">
-
-                    <strong>
-                      {formatCurrency(
-                        item.billing
-                      )}
-                    </strong>
-
-                    <small>
-                      Profit:{" "}
-                      {formatCurrency(
-                        item.profit
-                      )}
-                    </small>
-
-                  </div>
-
-                </div>
-              )
-            )}
-
-            {!teamLeaderPerformance.length && (
-              <div className="no-data">
-                No Team Leader
-                performance data
-                available.
-              </div>
-            )}
-
-          </div>
-
-        </section>
-
-      </div>
-
-      {/* ===================================================
-          6. INDUSTRY ANALYSIS
-          7. CITY ANALYSIS
-      =================================================== */}
-
-      <div className="historical-two-column">
-
-        <section className="historical-section">
-
-          <div className="section-heading">
-
-            <span>6</span>
-
-            <div>
-              <h2>
-                Industry Analysis
-              </h2>
-
-              <p>
-                Industry contribution
-                and billing
-              </p>
-            </div>
-
-          </div>
-
-          <div className="historical-chart-card">
-
-            <ResponsiveContainer
-              width="100%"
-              height={400}
-            >
-
-              <BarChart
-                data={
-                  industryPerformance
-                }
-                layout="vertical"
+          {bdPerformance.map(
+            (item, index) => (
+              <div
+                className="ranking-row"
+                key={item.name}
               >
 
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                />
+                <span className="ranking-number">
+                  {index + 1}
+                </span>
 
-                <XAxis
-                  type="number"
-                  tickFormatter={
-                    formatCurrency
-                  }
-                />
+                <div className="ranking-name">
 
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={130}
-                />
+                  <strong>
+                    {item.name}
+                  </strong>
 
-                <Tooltip
-                  content={
-                    <HistoricalTooltip />
-                  }
-                />
+                  <small>
+                    Clients:{" "}
+                    {formatNumber(
+                      item.clients
+                    )}{" "}
+                    | Placement:{" "}
+                    {formatNumber(
+                      item.placements
+                    )}
+                  </small>
 
-                <Bar
-                  dataKey="billing"
-                  name="Billing"
-                />
+                </div>
 
-              </BarChart>
-
-            </ResponsiveContainer>
-
-          </div>
-
-        </section>
-
-        <section className="historical-section">
-
-          <div className="section-heading">
-
-            <span>7</span>
-
-            <div>
-              <h2>
-                City / Location
-                Analysis
-              </h2>
-
-              <p>
-                Client distribution
-                and billing
-              </p>
-            </div>
-
-          </div>
-
-          <div className="historical-ranking">
-
-            {cityPerformance.map(
-              (item, index) => (
-                <div
-                  className="ranking-row"
-                  key={item.name}
-                >
-
-                  <span className="ranking-number">
-                    {index + 1}
-                  </span>
-
-                  <div className="ranking-name">
-
-                    <strong>
-                      {item.name}
-                    </strong>
-
-                    <small>
-                      Clients:{" "}
-                      {formatNumber(
-                        item.clients
-                      )}{" "}
-                      | Placement:{" "}
-                      {formatNumber(
-                        item.placements
-                      )}
-                    </small>
-
-                  </div>
+                <div className="ranking-value">
 
                   <strong>
                     {formatCurrency(
@@ -2461,32 +2291,127 @@ export default function YearPerformance() {
                     )}
                   </strong>
 
+                  <small>
+                    Profit:{" "}
+                    {formatCurrency(
+                      item.profit
+                    )}
+                  </small>
+
                 </div>
-              )
-            )}
 
-            {!cityPerformance.length && (
-              <div className="no-data">
-                No city/location data
-                available.
               </div>
-            )}
+            )
+          )}
 
-          </div>
+          {!bdPerformance.length && (
+            <div className="no-data">
+              No BD performance
+              data available.
+            </div>
+          )}
 
-        </section>
+        </div>
 
-      </div>
+      </section>
 
       {/* ===================================================
-          8. FINANCIAL ANALYSIS
+          5. TEAM LEADER PERFORMANCE
       =================================================== */}
 
-      <section className="historical-section">
+      <section className="performance-section">
 
         <div className="section-heading">
 
-          <span>8</span>
+          <span>5</span>
+
+          <div>
+            <h2>
+              Team Leader Performance
+            </h2>
+
+            <p>
+              Team Leader performance
+              ranking
+            </p>
+          </div>
+
+        </div>
+
+        <div className="performance-ranking">
+
+          {teamLeaderPerformance.map(
+            (item, index) => (
+              <div
+                className="ranking-row"
+                key={item.name}
+              >
+
+                <span className="ranking-number">
+                  {index + 1}
+                </span>
+
+                <div className="ranking-name">
+
+                  <strong>
+                    {item.name}
+                  </strong>
+
+                  <small>
+                    Clients:{" "}
+                    {formatNumber(
+                      item.clients
+                    )}{" "}
+                    | Placement:{" "}
+                    {formatNumber(
+                      item.placements
+                    )}
+                  </small>
+
+                </div>
+
+                <div className="ranking-value">
+
+                  <strong>
+                    {formatCurrency(
+                      item.billing
+                    )}
+                  </strong>
+
+                  <small>
+                    Profit:{" "}
+                    {formatCurrency(
+                      item.profit
+                    )}
+                  </small>
+
+                </div>
+
+              </div>
+            )
+          )}
+
+          {!teamLeaderPerformance.length && (
+            <div className="no-data">
+              No Team Leader
+              performance data
+              available.
+            </div>
+          )}
+
+        </div>
+
+      </section>
+
+      {/* ===================================================
+          6. FINANCIAL ANALYSIS
+      =================================================== */}
+
+      <section className="performance-section">
+
+        <div className="section-heading">
+
+          <span>6</span>
 
           <div>
             <h2>
@@ -2500,6 +2425,8 @@ export default function YearPerformance() {
           </div>
 
         </div>
+
+        {/* FINANCIAL SUMMARY */}
 
         <div className="financial-analysis-grid">
 
@@ -2553,17 +2480,20 @@ export default function YearPerformance() {
 
         </div>
 
+        {/* FINANCIAL BAR GRAPH */}
+
         <div className="financial-chart-card">
 
           <ResponsiveContainer
             width="100%"
-            height={350}
+            height={400}
+            minWidth={0}
           >
 
             <BarChart
               data={[
                 {
-                  name: "Historical Financials",
+                  name: "Financial Performance",
                   Billing:
                     overview.totalBilling,
                   Profit:
@@ -2572,39 +2502,99 @@ export default function YearPerformance() {
                     overview.loss
                 }
               ]}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 20
+              }}
             >
 
               <CartesianGrid
                 strokeDasharray="3 3"
+                stroke={
+                  GRAPH_COLORS.grid
+                }
               />
 
               <XAxis
                 dataKey="name"
+                tick={{
+                  fill:
+                    GRAPH_COLORS.darkBlue,
+                  fontSize: 12
+                }}
+                axisLine={{
+                  stroke:
+                    GRAPH_COLORS.golden
+                }}
+                tickLine={false}
               />
 
               <YAxis
+                tick={{
+                  fill:
+                    GRAPH_COLORS.darkBlue,
+                  fontSize: 12
+                }}
+                axisLine={{
+                  stroke:
+                    GRAPH_COLORS.golden
+                }}
+                tickLine={false}
                 tickFormatter={
-                  formatCurrency
+                  formatCrore
                 }
               />
 
-              <Tooltip />
+              <Tooltip
+                formatter={(value) =>
+                  formatCurrency(value)
+                }
+              />
 
               <Legend />
 
               <Bar
                 dataKey="Billing"
                 name="Total Billing"
+                fill={
+                  GRAPH_COLORS.billing
+                }
+                radius={[
+                  5,
+                  5,
+                  0,
+                  0
+                ]}
               />
 
               <Bar
                 dataKey="Profit"
                 name="Profit"
+                fill={
+                  GRAPH_COLORS.profit
+                }
+                radius={[
+                  5,
+                  5,
+                  0,
+                  0
+                ]}
               />
 
               <Bar
                 dataKey="Loss"
                 name="Loss"
+                fill={
+                  GRAPH_COLORS.loss
+                }
+                radius={[
+                  5,
+                  5,
+                  0,
+                  0
+                ]}
               />
 
             </BarChart>
@@ -2613,11 +2603,14 @@ export default function YearPerformance() {
 
         </div>
 
-        <div className="historical-chart-card">
+        {/* FINANCIAL PIE GRAPH */}
+
+        <div className="financial-chart-card">
 
           <ResponsiveContainer
             width="100%"
-            height={350}
+            height={400}
+            minWidth={0}
           >
 
             <PieChart>
@@ -2630,14 +2623,21 @@ export default function YearPerformance() {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={120}
+                outerRadius={125}
+                innerRadius={55}
+                paddingAngle={3}
                 label
               >
 
                 {financialPieData.map(
-                  (_, index) => (
+                  (item, index) => (
                     <Cell
-                      key={`financial-${index}`}
+                      key={`financial-${item.name}`}
+                      fill={
+                        FINANCIAL_PIE_COLORS[
+                          index
+                        ]
+                      }
                     />
                   )
                 )}
@@ -2663,40 +2663,41 @@ export default function YearPerformance() {
       </section>
 
       {/* ===================================================
-          9. HISTORICAL INSIGHTS
+          7. PERFORMANCE INSIGHTS
       =================================================== */}
 
-      <section className="historical-section">
+      <section className="performance-section">
 
         <div className="section-heading">
 
-          <span>9</span>
+          <span>7</span>
 
           <div>
             <h2>
-              Historical Insights
+              Performance Insights
             </h2>
 
             <p>
-              Key historical performance
-              indicators
+              Key performance indicators
             </p>
           </div>
 
         </div>
 
-        <div className="historical-insights">
+        <div className="performance-insights">
+
+          {/* BEST BILLING YEAR */}
 
           <div className="insight-card">
 
             <span>
-              Best Historical Year
+              Best Performing Year
             </span>
 
             <strong>
               {insights
                 .bestBillingYear
-                ?.name || "—"}
+                ?.year || "—"}
             </strong>
 
             <p>
@@ -2711,17 +2712,18 @@ export default function YearPerformance() {
 
           </div>
 
+          {/* HIGHEST CLIENT ACQUISITION */}
+
           <div className="insight-card">
 
             <span>
-              Highest Client
-              Acquisition
+              Highest Client Acquisition
             </span>
 
             <strong>
               {insights
                 .bestClientYear
-                ?.name || "—"}
+                ?.year || "—"}
             </strong>
 
             <p>
@@ -2736,6 +2738,8 @@ export default function YearPerformance() {
 
           </div>
 
+          {/* HIGHEST PLACEMENT */}
+
           <div className="insight-card">
 
             <span>
@@ -2745,7 +2749,7 @@ export default function YearPerformance() {
             <strong>
               {insights
                 .bestPlacementYear
-                ?.name || "—"}
+                ?.year || "—"}
             </strong>
 
             <p>
@@ -2760,6 +2764,8 @@ export default function YearPerformance() {
             </p>
 
           </div>
+
+          {/* BEST BD */}
 
           <div className="insight-card">
 
@@ -2782,6 +2788,8 @@ export default function YearPerformance() {
             </p>
 
           </div>
+
+          {/* BEST TEAM LEADER */}
 
           <div className="insight-card">
 
@@ -2806,259 +2814,6 @@ export default function YearPerformance() {
             </p>
 
           </div>
-
-          <div className="insight-card">
-
-            <span>
-              Strongest Industry
-            </span>
-
-            <strong>
-              {insights
-                .strongestIndustry
-                ?.name || "—"}
-            </strong>
-
-            <p>
-              {insights.strongestIndustry
-                ? formatCurrency(
-                    insights
-                      .strongestIndustry
-                      .billing
-                  )
-                : "No data"}
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* ===================================================
-          10. DETAILED HISTORICAL DATA
-      =================================================== */}
-
-      <section className="historical-section">
-
-        <div className="section-heading">
-
-          <span>10</span>
-
-          <div>
-            <h2>
-              Detailed Historical Data
-            </h2>
-
-            <p>
-              Search, filter, sort and
-              export historical records
-            </p>
-          </div>
-
-        </div>
-
-        <div className="detail-toolbar">
-
-          <input
-            type="text"
-            placeholder="Search company, BD, team leader, industry, city..."
-            value={searchTerm}
-            onChange={(event) =>
-              setSearchTerm(
-                event.target.value
-              )
-            }
-          />
-
-          <span>
-            Showing{" "}
-            <strong>
-              {formatNumber(
-                detailRows.length
-              )}
-            </strong>{" "}
-            records
-          </span>
-
-          <button
-            type="button"
-            onClick={exportCSV}
-          >
-            Export CSV
-          </button>
-
-        </div>
-
-        <div className="historical-table-wrapper">
-
-          <table className="historical-table">
-
-            <thead>
-
-              <tr>
-                <th>
-                  Company
-                </th>
-
-                <th>
-                  Year
-                </th>
-
-                <th>
-                  BD
-                </th>
-
-                <th>
-                  Team Leader
-                </th>
-
-                <th>
-                  Industry
-                </th>
-
-                <th>
-                  City
-                </th>
-
-                <th>
-                  Info
-                </th>
-
-                <th>
-                  Total Bill Amount
-                </th>
-
-                <th>
-                  Placement
-                </th>
-
-                <th>
-                  Profit
-                </th>
-
-                <th>
-                  Loss
-                </th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {detailRows.map(
-                (row, index) => {
-                  const billing =
-                    getTotalBillAmount(
-                      row
-                    );
-
-                  const info =
-                    getInfoStatus(row);
-
-                  return (
-                    <tr
-                      key={
-                        row.id ||
-                        row.ID ||
-                        row._id ||
-                        index
-                      }
-                    >
-
-                      <td>
-                        <strong>
-                          {getCompanyName(
-                            row
-                          ) || "—"}
-                        </strong>
-                      </td>
-
-                      <td>
-                        {getFinancialYear(
-                          row
-                        ) || "—"}
-                      </td>
-
-                      <td>
-                        {getBDMember(
-                          row
-                        ) || "—"}
-                      </td>
-
-                      <td>
-                        {getTeamLeader(
-                          row
-                        ) || "—"}
-                      </td>
-
-                      <td>
-                        {getIndustry(
-                          row
-                        ) || "—"}
-                      </td>
-
-                      <td>
-                        {getCity(
-                          row
-                        ) || "—"}
-                      </td>
-
-                      <td>
-                        {info || "—"}
-                      </td>
-
-                      <td>
-                        {formatCurrency(
-                          billing
-                        )}
-                      </td>
-
-                      <td>
-                        {info === "R"
-                          ? "Yes"
-                          : "No"}
-                      </td>
-
-                      <td>
-                        {formatCurrency(
-                          info === "R"
-                            ? billing
-                            : 0
-                        )}
-                      </td>
-
-                      <td>
-                        {formatCurrency(
-                          info === "C"
-                            ? billing
-                            : 0
-                        )}
-                      </td>
-
-                    </tr>
-                  );
-                }
-              )}
-
-              {!detailRows.length && (
-                <tr>
-
-                  <td
-                    colSpan="11"
-                    className="no-data-cell"
-                  >
-                    No historical data
-                    available for the
-                    selected filters.
-                  </td>
-
-                </tr>
-              )}
-
-            </tbody>
-
-          </table>
 
         </div>
 
