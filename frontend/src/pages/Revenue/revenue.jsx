@@ -174,7 +174,7 @@ function checkAllRequiredFields(
   const allValues = [];
 
   /* -------------------------------------------------------
-     Existing Revenue
+     EXISTING REVENUE
   ------------------------------------------------------- */
 
   revenueRows.forEach((row) => {
@@ -186,7 +186,7 @@ function checkAllRequiredFields(
   });
 
   /* -------------------------------------------------------
-     Existing Expenditure
+     EXISTING EXPENDITURE
   ------------------------------------------------------- */
 
   expenditureRows.forEach((row) => {
@@ -198,7 +198,7 @@ function checkAllRequiredFields(
   });
 
   /* -------------------------------------------------------
-     Existing Salary
+     EXISTING SALARY
   ------------------------------------------------------- */
 
   salaryRows.forEach((row) => {
@@ -210,7 +210,7 @@ function checkAllRequiredFields(
   });
 
   /* -------------------------------------------------------
-     Existing Income Tax
+     EXISTING INCOME TAX
   ------------------------------------------------------- */
 
   allValues.push(
@@ -218,10 +218,17 @@ function checkAllRequiredFields(
   );
 
   /* -------------------------------------------------------
-     Net Income Breakdown
+     NET INCOME BREAKDOWN
      
-     Only user-entered fields are required.
+     Only these three fields are user-entered:
+     - Director
+     - Key Expenses
+     - Other expenses
+     
      TDS and Net Amount are calculated automatically.
+     
+     IMPORTANT:
+     There is NO comparison with Net Income.
   ------------------------------------------------------- */
 
   breakdownRows.forEach((row) => {
@@ -252,7 +259,7 @@ function checkAllRequiredFields(
 
 function Revenue() {
   /* -------------------------------------------------------
-     Existing state
+     EXISTING STATE
   ------------------------------------------------------- */
 
   const [revenue, setRevenue] = useState(() =>
@@ -274,7 +281,7 @@ function Revenue() {
   ] = useState("");
 
   /* -------------------------------------------------------
-     Net Income Breakdown state
+     NET INCOME BREAKDOWN STATE
   ------------------------------------------------------- */
 
   const [
@@ -285,7 +292,7 @@ function Revenue() {
   );
 
   /* -------------------------------------------------------
-     UI state
+     UI STATE
   ------------------------------------------------------- */
 
   const [isSaved, setIsSaved] = useState(false);
@@ -324,7 +331,7 @@ function Revenue() {
         }
 
         /* -------------------------------------------------
-           No saved data
+           NO SAVED DATA
         ------------------------------------------------- */
 
         if (!result.exists || !result.data) {
@@ -354,7 +361,7 @@ function Revenue() {
         }
 
         /* -------------------------------------------------
-           Existing data
+           EXISTING DATA
         ------------------------------------------------- */
 
         const savedData = result.data;
@@ -379,7 +386,7 @@ function Revenue() {
           createInitialBreakdownData();
 
         /* -------------------------------------------------
-           Determine lock state
+           DETERMINE LOCK STATE
         ------------------------------------------------- */
 
         const lockState =
@@ -703,10 +710,10 @@ function Revenue() {
 
   /* =======================================================
      TDS
-     
+
      TDS = 10% of Net Income
-     
-     This is automatically calculated.
+
+     Automatically calculated.
      User cannot edit TDS.
   ======================================================= */
 
@@ -750,17 +757,17 @@ function Revenue() {
 
   /* =======================================================
      NET AMOUNT
-     
-     Net Amount is simply calculated from:
-     
-     TDS
-     + Director
-     + Key Expenses
-     + Other expenses
-     
+
+     Net Amount =
+       TDS
+       + Director
+       + Key Expenses
+       + Other expenses
+
      IMPORTANT:
-     This value is NOT compared with Net Income.
-     It will NOT prevent saving.
+     Net Amount is NOT compared with Net Income.
+
+     There is NO reconciliation validation.
   ======================================================= */
 
   const netAmount = {};
@@ -775,9 +782,13 @@ function Revenue() {
 
   /* =======================================================
      SAVE
-     
+
      IMPORTANT:
-     No Net Amount vs Net Income validation.
+     There is NO Net Amount vs Net Income validation.
+
+     The data will save even when:
+
+       Net Amount !== Net Income
   ======================================================= */
 
   async function handleSave() {
@@ -791,10 +802,12 @@ function Revenue() {
     } = checkRevenueFields();
 
     /* -----------------------------------------------------
-       Existing required-field behavior remains.
-       
-       Net Income Breakdown user-entered fields are included
-       in this check.
+       EXISTING REQUIRED-FIELD VALIDATION
+
+       This only checks whether required input fields
+       have values.
+
+       It DOES NOT compare Net Amount with Net Income.
     ----------------------------------------------------- */
 
     if (!allFieldsFilled) {
@@ -806,17 +819,14 @@ function Revenue() {
     }
 
     /* -----------------------------------------------------
-       NO RECONCILIATION VALIDATION HERE
-       
-       Net Amount can be different from Net Income.
-       Save will continue normally.
+       DATA TO SAVE
+
+       NO RECONCILIATION VALIDATION
     ----------------------------------------------------- */
 
     const dataToSave = {
       revenue,
-
       expenditure,
-
       salary,
 
       incomeTaxPercentage:
@@ -842,7 +852,15 @@ function Revenue() {
       },
 
       /* ---------------------------------------------------
-         Calculated values sent to backend
+         CALCULATED VALUES
+
+         TDS:
+         10% of Net Income
+
+         Net Amount:
+         TDS + Director + Key Expenses + Other expenses
+
+         Neither value is compared with Net Income.
       --------------------------------------------------- */
 
       tds,
@@ -887,7 +905,7 @@ function Revenue() {
       }
 
       /* ---------------------------------------------------
-         Server response becomes source of truth
+         SERVER RESPONSE BECOMES SOURCE OF TRUTH
       --------------------------------------------------- */
 
       if (result.data) {
@@ -1106,7 +1124,6 @@ function Revenue() {
           <table className="revenue-table">
 
             <thead>
-
               <tr>
 
                 <th>
@@ -1122,7 +1139,6 @@ function Revenue() {
                 )}
 
               </tr>
-
             </thead>
 
             <tbody>
@@ -1214,7 +1230,6 @@ function Revenue() {
           <table className="revenue-table">
 
             <thead>
-
               <tr>
 
                 <th>Salary Type</th>
@@ -1228,7 +1243,6 @@ function Revenue() {
                 )}
 
               </tr>
-
             </thead>
 
             <tbody>
@@ -1320,7 +1334,6 @@ function Revenue() {
           <table className="revenue-table">
 
             <thead>
-
               <tr>
 
                 <th>Revenue Type</th>
@@ -1334,7 +1347,6 @@ function Revenue() {
                 )}
 
               </tr>
-
             </thead>
 
             <tbody>
@@ -1764,6 +1776,9 @@ function Revenue() {
 
               {/* -----------------------------------------
                   NET AMOUNT
+
+                  IMPORTANT:
+                  This is NOT required to equal Net Income.
               ----------------------------------------- */}
 
               <tr className="net-income-row">
