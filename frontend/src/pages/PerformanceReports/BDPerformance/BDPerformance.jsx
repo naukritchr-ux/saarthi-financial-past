@@ -77,6 +77,18 @@ const financialMonths = [
 
 
 /* =========================================================
+   NORMALIZE UNIQUE VALUE
+========================================================= */
+
+function normalizeKey(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+
+/* =========================================================
    NUMBER HELPER
 ========================================================= */
 
@@ -141,6 +153,7 @@ function getBDMember(row) {
   return String(
     row?.bd_member ??
     row?.["BD Member"] ??
+    row?.bdMember ??
     ""
   ).trim();
 
@@ -161,6 +174,10 @@ function getCompanyName(row) {
     row?.["Company Name"] ??
     row?.CompanyName ??
     row?.companyName ??
+    row?.company ??
+    row?.Company ??
+    row?.client_name ??
+    row?.["Client Name"] ??
     ""
   ).trim();
 
@@ -223,6 +240,8 @@ function getInfoStatus(row) {
   return String(
     row?.info ??
     row?.["Info"] ??
+    row?.info_status ??
+    row?.["Info Status"] ??
     ""
   )
     .trim()
@@ -240,6 +259,14 @@ function getBilling(row) {
   return toNumber(
     row?.total_bill_amount ??
     row?.["Total Bill Amount"] ??
+    row?.billing ??
+    row?.Billing ??
+    row?.total_billing ??
+    row?.["Total Billing"] ??
+    row?.billing_amount ??
+    row?.["Billing Amount"] ??
+    row?.TANN ??
+    row?.tann ??
     0
   );
 
@@ -255,6 +282,10 @@ function getFranchiseeShare(row) {
   return toNumber(
     row?.franchisee_share ??
     row?.["Franchisee Share"] ??
+    row?.franchise_cost ??
+    row?.["Franchise Cost"] ??
+    row?.["Franchisee Cost"] ??
+    row?.franchisee_cost_amount ??
     0
   );
 
@@ -311,8 +342,86 @@ function getClientAcquiredDate(row) {
   return (
     row?.date_client_acquired ??
     row?.["Date Client Acquired"] ??
+    row?.client_acquired_date ??
+    row?.["Client Acquired Date"] ??
     ""
   );
+
+}
+
+
+/* =========================================================
+   SAFE DATE PARSER
+
+   Handles YYYY-MM-DD without timezone shifting.
+========================================================= */
+
+function parseDate(value) {
+
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+
+    return Number.isNaN(
+      value.getTime()
+    )
+      ? null
+      : value;
+
+  }
+
+  const stringValue =
+    String(value).trim();
+
+  if (!stringValue) {
+    return null;
+  }
+
+
+  /* YYYY-MM-DD */
+
+  const isoMatch =
+    stringValue.match(
+      /^(\d{4})-(\d{1,2})-(\d{1,2})/
+    );
+
+  if (isoMatch) {
+
+    const year =
+      Number(isoMatch[1]);
+
+    const month =
+      Number(isoMatch[2]);
+
+    const day =
+      Number(isoMatch[3]);
+
+    const date =
+      new Date(
+        year,
+        month - 1,
+        day
+      );
+
+    return Number.isNaN(
+      date.getTime()
+    )
+      ? null
+      : date;
+
+  }
+
+
+  const date =
+    new Date(stringValue);
+
+  return Number.isNaN(
+    date.getTime()
+  )
+    ? null
+    : date;
 
 }
 
@@ -326,43 +435,40 @@ function getFinancialYear(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
-  if (dateValue) {
+  const date =
+    parseDate(dateValue);
 
-    const date =
-      new Date(dateValue);
 
-    if (
-      !Number.isNaN(
-        date.getTime()
-      )
-    ) {
+  if (date) {
 
-      const month =
-        date.getMonth() + 1;
+    const month =
+      date.getMonth() + 1;
 
-      const year =
-        date.getFullYear();
+    const year =
+      date.getFullYear();
 
-      if (month >= 4) {
 
-        return `${year}-${String(
-          year + 1
-        ).slice(-2)}`;
+    if (month >= 4) {
 
-      }
-
-      return `${year - 1}-${String(
-        year
+      return `${year}-${String(
+        year + 1
       ).slice(-2)}`;
 
     }
 
+
+    return `${year - 1}-${String(
+      year
+    ).slice(-2)}`;
+
   }
+
 
   const acquiredYear =
     row?.acquired_year ??
     row?.["Aquired Year"] ??
     row?.["Acquired Year"];
+
 
   if (
     acquiredYear !== undefined &&
@@ -386,6 +492,7 @@ function getFinancialYear(row) {
 
   }
 
+
   return "";
 
 }
@@ -400,22 +507,14 @@ function getMonth(row) {
   const dateValue =
     getClientAcquiredDate(row);
 
-  if (!dateValue) {
-    return "";
-  }
-
   const date =
-    new Date(dateValue);
+    parseDate(dateValue);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
 
+  if (!date) {
     return "";
-
   }
+
 
   return date.getMonth() + 1;
 
@@ -677,6 +776,7 @@ function BDTooltip({
 
   }
 
+
   return (
 
     <div className="bd-modern-tooltip">
@@ -684,6 +784,7 @@ function BDTooltip({
       <div className="bd-tooltip-label">
         {label}
       </div>
+
 
       {payload.map(
         (item, index) => (
@@ -729,14 +830,8 @@ function BDPerformance() {
 
 
   /* =======================================================
-     STATE
+     MAIN TABLE STATE
   ======================================================= */
-
-  const [
-    selectedMember,
-    setSelectedMember
-  ] = useState("");
-
 
   const [
     selectedFinancialYear,
@@ -750,15 +845,37 @@ function BDPerformance() {
   ] = useState("");
 
 
+  /* =======================================================
+     MODAL STATE
+  ======================================================= */
+
+  const [
+    selectedMember,
+    setSelectedMember
+  ] = useState("");
+
+
+  const [
+    reportFinancialYear,
+    setReportFinancialYear
+  ] = useState("");
+
+
+  const [
+    reportInfoStatus,
+    setReportInfoStatus
+  ] = useState("");
+
+
+  /* =======================================================
+     BD EXPENDITURE
+  ======================================================= */
+
   const [
     bdExpenditurePercentage,
     setBdExpenditurePercentage
   ] = useState("");
 
-
-  /* =======================================================
-     BD EXPENDITURE PERCENTAGE VALIDATION
-  ======================================================= */
 
   const hasBDExpenditurePercentage =
     bdExpenditurePercentage !== "" &&
@@ -795,6 +912,7 @@ function BDPerformance() {
 
       });
 
+
       return Array.from(years)
         .sort((a, b) => {
 
@@ -823,6 +941,9 @@ function BDPerformance() {
 
      Total Enquiries:
      EVERY FILTERED ROW
+
+     BOTH respect:
+     Financial Year + Info Status
   ======================================================= */
 
   const memberData =
@@ -860,6 +981,8 @@ function BDPerformance() {
 
         /* ================================================
            INFO STATUS FILTER
+
+           This filter affects ALL table metrics.
         ================================================= */
 
         const info =
@@ -902,17 +1025,20 @@ function BDPerformance() {
               member,
 
               /*
-               * Set stores unique Company Names.
+               * Unique Company Names
                */
               clients:
                 new Set(),
 
               /*
-               * Every filtered row is
+               * Every filtered row =
                * one enquiry.
                */
               enquiries: 0,
 
+              /*
+               * Unique Franchise Names
+               */
               franchisees:
                 new Set(),
 
@@ -941,13 +1067,14 @@ function BDPerformance() {
         const companyName =
           getCompanyName(row);
 
+        const companyKey =
+          normalizeKey(companyName);
 
-        if (companyName) {
+
+        if (companyKey) {
 
           data.clients.add(
-            companyName
-              .toLowerCase()
-              .trim()
+            companyKey
           );
 
         }
@@ -964,16 +1091,21 @@ function BDPerformance() {
 
         /* ================================================
            FRANCHISEE
+
+           UNIQUE FRANCHISE NAME
         ================================================= */
 
         const franchiseName =
           getFranchiseName(row);
 
+        const franchiseKey =
+          normalizeKey(franchiseName);
 
-        if (franchiseName) {
+
+        if (franchiseKey) {
 
           data.franchisees.add(
-            franchiseName
+            franchiseKey
           );
 
         }
@@ -1010,25 +1142,34 @@ function BDPerformance() {
 
           ...item,
 
-          /*
-           * Convert unique Company Name Set
-           * into the final count.
-           */
           clients:
             item.clients.size,
 
-          /*
-           * Convert franchise Set
-           * into the final count.
-           */
           franchisees:
             item.franchisees.size
 
         }))
 
         .sort(
-          (a, b) =>
-            b.clients - a.clients
+          (a, b) => {
+
+            if (
+              b.clients !==
+              a.clients
+            ) {
+
+              return (
+                b.clients -
+                a.clients
+              );
+
+            }
+
+            return a.member.localeCompare(
+              b.member
+            );
+
+          }
         );
 
     }, [
@@ -1040,7 +1181,10 @@ function BDPerformance() {
 
 
   /* =======================================================
-     SELECTED MEMBER ROWS
+     SELECTED MEMBER ROWS FOR MODAL
+
+     IMPORTANT:
+     Modal has its own FY + Info Status filters.
   ======================================================= */
 
   const selectedRows =
@@ -1049,6 +1193,7 @@ function BDPerformance() {
       if (!selectedMember) {
         return [];
       }
+
 
       return rows.filter(
         row => {
@@ -1064,9 +1209,21 @@ function BDPerformance() {
 
 
           if (
-            selectedFinancialYear &&
+            reportFinancialYear &&
             getFinancialYear(row) !==
-              selectedFinancialYear
+              reportFinancialYear
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            reportInfoStatus &&
+            reportInfoStatus !== "ALL" &&
+            getInfoStatus(row) !==
+              reportInfoStatus
           ) {
 
             return false;
@@ -1082,7 +1239,8 @@ function BDPerformance() {
     }, [
       rows,
       selectedMember,
-      selectedFinancialYear
+      reportFinancialYear,
+      reportInfoStatus
     ]);
 
 
@@ -1107,7 +1265,7 @@ function BDPerformance() {
         const values =
           getFinancialValues(
             row,
-            selectedInfoStatus,
+            reportInfoStatus,
             bdExpenditurePercentage
           );
 
@@ -1116,9 +1274,13 @@ function BDPerformance() {
           values.billing;
 
 
+        /*
+         * Franchisee Share is applicable
+         * only for ALL / R.
+         */
         if (
-          !selectedInfoStatus ||
-          selectedInfoStatus === "R"
+          !reportInfoStatus ||
+          reportInfoStatus === "R"
         ) {
 
           totalFranchiseeShare +=
@@ -1151,19 +1313,21 @@ function BDPerformance() {
 
     }, [
       selectedRows,
-      selectedInfoStatus,
+      reportInfoStatus,
       bdExpenditurePercentage
     ]);
 
 
   /* =======================================================
      BEST INDUSTRY
+
+     UNIQUE COMPANY COUNT
   ======================================================= */
 
   const bestIndustry =
     useMemo(() => {
 
-      const counts =
+      const industryCompanies =
         new Map();
 
 
@@ -1172,16 +1336,39 @@ function BDPerformance() {
         const industry =
           getIndustry(row);
 
+        const company =
+          normalizeKey(
+            getCompanyName(row)
+          );
 
-        if (!industry) {
+
+        if (
+          !industry ||
+          !company
+        ) {
+
           return;
+
         }
 
 
-        counts.set(
-          industry,
-          (counts.get(industry) || 0) + 1
-        );
+        if (
+          !industryCompanies.has(
+            industry
+          )
+        ) {
+
+          industryCompanies.set(
+            industry,
+            new Set()
+          );
+
+        }
+
+
+        industryCompanies
+          .get(industry)
+          .add(company);
 
       });
 
@@ -1191,14 +1378,19 @@ function BDPerformance() {
       let highest = 0;
 
 
-      counts.forEach(
-        (count, industry) => {
+      industryCompanies.forEach(
+        (companies, industry) => {
 
-          if (count > highest) {
+          if (
+            companies.size >
+            highest
+          ) {
 
-            highest = count;
+            highest =
+              companies.size;
 
-            best = industry;
+            best =
+              industry;
 
           }
 
@@ -1208,17 +1400,21 @@ function BDPerformance() {
 
       return best || "—";
 
-    }, [selectedRows]);
+    }, [
+      selectedRows
+    ]);
 
 
   /* =======================================================
      BEST CITY
+
+     UNIQUE COMPANY COUNT
   ======================================================= */
 
   const bestCity =
     useMemo(() => {
 
-      const counts =
+      const cityCompanies =
         new Map();
 
 
@@ -1227,16 +1423,37 @@ function BDPerformance() {
         const city =
           getCity(row);
 
+        const company =
+          normalizeKey(
+            getCompanyName(row)
+          );
 
-        if (!city) {
+
+        if (
+          !city ||
+          !company
+        ) {
+
           return;
+
         }
 
 
-        counts.set(
-          city,
-          (counts.get(city) || 0) + 1
-        );
+        if (
+          !cityCompanies.has(city)
+        ) {
+
+          cityCompanies.set(
+            city,
+            new Set()
+          );
+
+        }
+
+
+        cityCompanies
+          .get(city)
+          .add(company);
 
       });
 
@@ -1246,14 +1463,19 @@ function BDPerformance() {
       let highest = 0;
 
 
-      counts.forEach(
-        (count, city) => {
+      cityCompanies.forEach(
+        (companies, city) => {
 
-          if (count > highest) {
+          if (
+            companies.size >
+            highest
+          ) {
 
-            highest = count;
+            highest =
+              companies.size;
 
-            best = city;
+            best =
+              city;
 
           }
 
@@ -1263,11 +1485,16 @@ function BDPerformance() {
 
       return best || "—";
 
-    }, [selectedRows]);
+    }, [
+      selectedRows
+    ]);
 
 
   /* =======================================================
      YEARLY REPORT
+
+     CLIENT ACQUIRED =
+     UNIQUE COMPANY NAME PER FINANCIAL YEAR
   ======================================================= */
 
   const yearlyReportData =
@@ -1296,7 +1523,8 @@ function BDPerformance() {
 
               year,
 
-              clients: 0,
+              clients:
+                new Set(),
 
               billing: 0
 
@@ -1310,15 +1538,27 @@ function BDPerformance() {
           map.get(year);
 
 
-        const values =
-          getFinancialValues(
-            row,
-            selectedInfoStatus,
-            bdExpenditurePercentage
+        const company =
+          normalizeKey(
+            getCompanyName(row)
           );
 
 
-        data.clients += 1;
+        if (company) {
+
+          data.clients.add(
+            company
+          );
+
+        }
+
+
+        const values =
+          getFinancialValues(
+            row,
+            reportInfoStatus,
+            bdExpenditurePercentage
+          );
 
 
         data.billing +=
@@ -1329,37 +1569,59 @@ function BDPerformance() {
 
       return Array.from(
         map.values()
-      ).sort((a, b) => {
+      )
 
-        const yearA =
-          Number(
-            String(a.year).slice(0, 4)
-          );
+        .map(item => ({
 
-        const yearB =
-          Number(
-            String(b.year).slice(0, 4)
-          );
+          year:
+            item.year,
 
-        return yearA - yearB;
+          clients:
+            item.clients.size,
 
-      });
+          billing:
+            item.billing
+
+        }))
+
+        .sort(
+          (a, b) => {
+
+            const yearA =
+              Number(
+                String(a.year)
+                  .slice(0, 4)
+              );
+
+            const yearB =
+              Number(
+                String(b.year)
+                  .slice(0, 4)
+              );
+
+            return yearA - yearB;
+
+          }
+        );
 
     }, [
       selectedRows,
-      selectedInfoStatus,
+      reportInfoStatus,
       bdExpenditurePercentage
     ]);
 
 
   /* =======================================================
      MONTHLY REPORT
+
+     CLIENT ACQUIRED =
+     UNIQUE COMPANY NAME PER MONTH
   ======================================================= */
 
   const monthlyReportData =
     useMemo(() => {
 
-      if (!selectedFinancialYear) {
+      if (!reportFinancialYear) {
         return [];
       }
 
@@ -1368,11 +1630,33 @@ function BDPerformance() {
         new Map();
 
 
+      /*
+       * Calendar month number:
+       * 4 = April
+       * ...
+       * 12 = December
+       * 1 = January
+       * ...
+       * 3 = March
+       */
+
       financialMonths.forEach(
-        (month, index) => {
+        (month) => {
+
+          const calendarMonth =
+            financialMonths.indexOf(
+              month
+            ) < 9
+              ? financialMonths.indexOf(
+                  month
+                ) + 4
+              : financialMonths.indexOf(
+                  month
+                ) - 8;
+
 
           monthMap.set(
-            index + 1,
+            calendarMonth,
             {
 
               month:
@@ -1381,7 +1665,8 @@ function BDPerformance() {
               monthShort:
                 month.short,
 
-              clients: 0,
+              clients:
+                new Set(),
 
               billing: 0
 
@@ -1400,7 +1685,7 @@ function BDPerformance() {
 
         if (
           year !==
-          selectedFinancialYear
+          reportFinancialYear
         ) {
 
           return;
@@ -1425,15 +1710,27 @@ function BDPerformance() {
           monthMap.get(month);
 
 
-        const values =
-          getFinancialValues(
-            row,
-            selectedInfoStatus,
-            bdExpenditurePercentage
+        const company =
+          normalizeKey(
+            getCompanyName(row)
           );
 
 
-        data.clients += 1;
+        if (company) {
+
+          data.clients.add(
+            company
+          );
+
+        }
+
+
+        const values =
+          getFinancialValues(
+            row,
+            reportInfoStatus,
+            bdExpenditurePercentage
+          );
 
 
         data.billing +=
@@ -1441,6 +1738,10 @@ function BDPerformance() {
 
       });
 
+
+      /*
+       * April → March
+       */
 
       const orderedMonths = [
         4,
@@ -1459,14 +1760,35 @@ function BDPerformance() {
 
 
       return orderedMonths.map(
-        month =>
-          monthMap.get(month)
+        month => {
+
+          const data =
+            monthMap.get(month);
+
+
+          return {
+
+            month:
+              data.month,
+
+            monthShort:
+              data.monthShort,
+
+            clients:
+              data.clients.size,
+
+            billing:
+              data.billing
+
+          };
+
+        }
       );
 
     }, [
       selectedRows,
-      selectedFinancialYear,
-      selectedInfoStatus,
+      reportFinancialYear,
+      reportInfoStatus,
       bdExpenditurePercentage
     ]);
 
@@ -1476,13 +1798,16 @@ function BDPerformance() {
   ======================================================= */
 
   const reportData =
-    selectedFinancialYear
+    reportFinancialYear
       ? monthlyReportData
       : yearlyReportData;
 
 
   /* =======================================================
      OPEN PERFORMANCE
+
+     Main filters are copied into modal filters.
+     Main table filters themselves are NOT reset.
   ======================================================= */
 
   function handleViewPerformance(
@@ -1493,9 +1818,15 @@ function BDPerformance() {
       member
     );
 
-    setSelectedFinancialYear("");
 
-    setSelectedInfoStatus("");
+    setReportFinancialYear(
+      selectedFinancialYear
+    );
+
+
+    setReportInfoStatus(
+      selectedInfoStatus
+    );
 
   }
 
@@ -1508,9 +1839,9 @@ function BDPerformance() {
 
     setSelectedMember("");
 
-    setSelectedFinancialYear("");
+    setReportFinancialYear("");
 
-    setSelectedInfoStatus("");
+    setReportInfoStatus("");
 
   }
 
@@ -1693,6 +2024,7 @@ function BDPerformance() {
               id="bd-expenditure-percentage"
               type="number"
               min="0"
+              max="100"
               step="0.01"
               value={
                 bdExpenditurePercentage
@@ -1703,9 +2035,35 @@ function BDPerformance() {
                 const value =
                   event.target.value;
 
-                setBdExpenditurePercentage(
-                  value
-                );
+
+                if (
+                  value === ""
+                ) {
+
+                  setBdExpenditurePercentage(
+                    ""
+                  );
+
+                  return;
+
+                }
+
+
+                const number =
+                  Number(value);
+
+
+                if (
+                  Number.isFinite(number) &&
+                  number >= 0 &&
+                  number <= 100
+                ) {
+
+                  setBdExpenditurePercentage(
+                    value
+                  );
+
+                }
 
               }}
             />
@@ -1734,8 +2092,6 @@ function BDPerformance() {
                 <th>
                   Total Acquired Client
                 </th>
-
-                {/* NEW COLUMN */}
 
                 <th>
                   Total Enquiries
@@ -1779,8 +2135,8 @@ function BDPerformance() {
                   <td
                     colSpan={
                       hasBDExpenditurePercentage
-                        ? "8"
-                        : "7"
+                        ? 8
+                        : 7
                     }
                     className="bd-empty"
                   >
@@ -2153,10 +2509,10 @@ function BDPerformance() {
                 <select
                   id="bd-financial-year"
                   value={
-                    selectedFinancialYear
+                    reportFinancialYear
                   }
                   onChange={event =>
-                    setSelectedFinancialYear(
+                    setReportFinancialYear(
                       event.target.value
                     )
                   }
@@ -2192,10 +2548,10 @@ function BDPerformance() {
 
                 <select
                   value={
-                    selectedInfoStatus
+                    reportInfoStatus
                   }
                   onChange={event =>
-                    setSelectedInfoStatus(
+                    setReportInfoStatus(
                       event.target.value
                     )
                   }
@@ -2235,8 +2591,8 @@ function BDPerformance() {
                 <strong>
 
                   {
-                    selectedFinancialYear
-                      ? selectedFinancialYear
+                    reportFinancialYear
+                      ? reportFinancialYear
                       : "Yearly"
                   }
 
@@ -2273,7 +2629,7 @@ function BDPerformance() {
                   <span>
 
                     {
-                      selectedFinancialYear
+                      reportFinancialYear
                         ? "Monthly"
                         : "Yearly"
                     }
@@ -2315,7 +2671,7 @@ function BDPerformance() {
 
                         <XAxis
                           dataKey={
-                            selectedFinancialYear
+                            reportFinancialYear
                               ? "monthShort"
                               : "year"
                           }
@@ -2384,7 +2740,7 @@ function BDPerformance() {
                   <span>
 
                     {
-                      selectedFinancialYear
+                      reportFinancialYear
                         ? "Monthly"
                         : "Yearly"
                     }
@@ -2426,7 +2782,7 @@ function BDPerformance() {
 
                         <XAxis
                           dataKey={
-                            selectedFinancialYear
+                            reportFinancialYear
                               ? "monthShort"
                               : "year"
                           }
@@ -2443,11 +2799,54 @@ function BDPerformance() {
                           }}
                           tickLine={false}
                           axisLine={false}
-                          tickFormatter={value =>
-                            `₹${(
-                              value / 100000
-                            ).toFixed(0)}L`
-                          }
+                          tickFormatter={value => {
+
+                            const number =
+                              Number(value) || 0;
+
+
+                            if (
+                              Math.abs(number) >=
+                              10000000
+                            ) {
+
+                              return `₹${(
+                                number /
+                                10000000
+                              ).toFixed(1)}Cr`;
+
+                            }
+
+
+                            if (
+                              Math.abs(number) >=
+                              100000
+                            ) {
+
+                              return `₹${(
+                                number /
+                                100000
+                              ).toFixed(0)}L`;
+
+                            }
+
+
+                            if (
+                              Math.abs(number) >=
+                              1000
+                            ) {
+
+                              return `₹${(
+                                number /
+                                1000
+                              ).toFixed(0)}K`;
+
+                            }
+
+
+                            return `₹${number}`;
+
+                          }}
                         />
 
                         <Tooltip
@@ -2491,8 +2890,8 @@ function BDPerformance() {
               <span>
 
                 {
-                  selectedFinancialYear
-                    ? `Monthly report for ${selectedFinancialYear}`
+                  reportFinancialYear
+                    ? `Monthly report for ${reportFinancialYear}`
                     : "Yearly performance report"
                 }
 
