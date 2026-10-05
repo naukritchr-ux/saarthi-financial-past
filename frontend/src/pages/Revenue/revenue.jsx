@@ -41,7 +41,7 @@ const salaryRows = [
 const breakdownRows = [
   "Director",
   "Key Expenses",
-  "Other expenses",
+  "Lead Generation",
 ];
 
 /* =========================================================
@@ -144,9 +144,6 @@ function hasValue(value) {
 
 /* =========================================================
    INITIAL BREAKDOWN DATA
-
-   Breakdown fields are OPTIONAL.
-   Empty values are treated as 0 when calculating/saving.
 ========================================================= */
 
 function createInitialBreakdownData() {
@@ -164,16 +161,75 @@ function createInitialBreakdownData() {
 }
 
 /* =========================================================
+   INITIAL TDS DATA
+
+   TDS IS USER ENTERED.
+   NO AUTOMATIC CALCULATION.
+========================================================= */
+
+function createInitialTdsData() {
+  const data = {};
+
+  financialYears.forEach((year) => {
+    data[year] = "";
+  });
+
+  return data;
+}
+
+/* =========================================================
+   NORMALIZE SAVED BREAKDOWN
+
+   Supports old saved data:
+   "Other expenses"
+
+   Converts it to:
+   "Lead Generation"
+========================================================= */
+
+function normalizeBreakdown(savedBreakdown) {
+  const initialData = createInitialBreakdownData();
+
+  if (!savedBreakdown) {
+    return initialData;
+  }
+
+  const normalized = {
+    Director: {},
+    "Key Expenses": {},
+    "Lead Generation": {},
+  };
+
+  financialYears.forEach((year) => {
+    normalized.Director[year] =
+      savedBreakdown?.Director?.[year] ?? "";
+
+    normalized["Key Expenses"][year] =
+      savedBreakdown?.["Key Expenses"]?.[year] ?? "";
+
+    normalized["Lead Generation"][year] =
+      savedBreakdown?.["Lead Generation"]?.[year] ??
+      savedBreakdown?.["Other expenses"]?.[year] ??
+      "";
+  });
+
+  return normalized;
+}
+
+/* =========================================================
    REQUIRED FIELD CHECK
 
-   IMPORTANT:
-   Only these are required:
+   Required:
    - Revenue
    - Expenditure
    - Salary
-   - Income Tax
+   - Income Tax %
 
-   Net Income Breakdown fields are OPTIONAL.
+   Optional:
+   - TDS
+   - Director
+   - Key Expenses
+   - Lead Generation
 ========================================================= */
 
 function checkAllRequiredFields(
@@ -250,21 +306,33 @@ function checkAllRequiredFields(
 
 function Revenue() {
   /* -------------------------------------------------------
-     EXISTING STATE
+     REVENUE STATE
   ------------------------------------------------------- */
 
   const [revenue, setRevenue] = useState(() =>
     createInitialData(revenueRows)
   );
 
+  /* -------------------------------------------------------
+     EXPENDITURE STATE
+  ------------------------------------------------------- */
+
   const [expenditure, setExpenditure] =
     useState(() =>
       createInitialData(expenditureRows)
     );
 
+  /* -------------------------------------------------------
+     SALARY STATE
+  ------------------------------------------------------- */
+
   const [salary, setSalary] = useState(() =>
     createInitialData(salaryRows)
   );
+
+  /* -------------------------------------------------------
+     INCOME TAX STATE
+  ------------------------------------------------------- */
 
   const [
     incomeTaxPercentage,
@@ -272,9 +340,18 @@ function Revenue() {
   ] = useState("");
 
   /* -------------------------------------------------------
-     NET INCOME BREAKDOWN STATE
+     TDS STATE
 
-     These fields are OPTIONAL.
+     TDS IS MANUALLY ENTERED BY USER.
+     THERE IS NO AUTO CALCULATION.
+  ------------------------------------------------------- */
+
+  const [tds, setTds] = useState(() =>
+    createInitialTdsData()
+  );
+
+  /* -------------------------------------------------------
+     NET INCOME BREAKDOWN STATE
   ------------------------------------------------------- */
 
   const [
@@ -343,6 +420,10 @@ function Revenue() {
 
             setIncomeTaxPercentage("");
 
+            setTds(
+              createInitialTdsData()
+            );
+
             setNetIncomeBreakdown(
               createInitialBreakdownData()
             );
@@ -374,17 +455,29 @@ function Revenue() {
         const loadedIncomeTaxPercentage =
           savedData.incomeTaxPercentage ?? "";
 
+        const loadedTds =
+          savedData.tds ||
+          createInitialTdsData();
+
+        /* -------------------------------------------------
+           NORMALIZE BREAKDOWN
+
+           Old:
+           Other expenses
+
+           New:
+           Lead Generation
+        ------------------------------------------------- */
+
         const loadedBreakdown =
-          savedData.netIncomeBreakdown ||
-          createInitialBreakdownData();
+          normalizeBreakdown(
+            savedData.netIncomeBreakdown
+          );
 
         /* -------------------------------------------------
            DETERMINE LOCK STATE
 
-           Only Revenue, Expenditure, Salary and Income Tax
-           are required.
-
-           Breakdown fields do NOT affect lock state.
+           TDS and breakdown are optional.
         ------------------------------------------------- */
 
         const lockState =
@@ -407,6 +500,8 @@ function Revenue() {
           setIncomeTaxPercentage(
             loadedIncomeTaxPercentage
           );
+
+          setTds(loadedTds);
 
           setNetIncomeBreakdown(
             loadedBreakdown
@@ -489,6 +584,21 @@ function Revenue() {
     if (isSaved || isLoading) return;
 
     setIncomeTaxPercentage(value);
+  }
+
+  /* =======================================================
+     TDS CHANGE HANDLER
+
+     USER ENTERS TDS AMOUNT MANUALLY.
+  ======================================================= */
+
+  function handleTdsChange(year, value) {
+    if (isSaved || isLoading) return;
+
+    setTds((previous) => ({
+      ...previous,
+      [year]: value,
+    }));
   }
 
   /* =======================================================
@@ -705,28 +815,25 @@ function Revenue() {
   });
 
   /* =======================================================
-     TDS
+     USER ENTERED TDS
 
-     TDS = 10% of Net Income
+     NO AUTO CALCULATION.
   ======================================================= */
 
-  const tds = {};
+  const tdsAmount = {};
 
   financialYears.forEach((year) => {
-    tds[year] =
-      netIncome[year] * 0.1;
+    tdsAmount[year] =
+      getNumber(tds?.[year]);
   });
 
   /* =======================================================
      USER ENTERED BREAKDOWN
-
-     OPTIONAL:
-     Empty values are treated as 0.
   ======================================================= */
 
   const director = {};
   const keyExpenses = {};
-  const otherExpenses = {};
+  const leadGeneration = {};
 
   financialYears.forEach((year) => {
     director[year] =
@@ -743,10 +850,10 @@ function Revenue() {
         ]?.[year]
       );
 
-    otherExpenses[year] =
+    leadGeneration[year] =
       getNumber(
         netIncomeBreakdown[
-          "Other expenses"
+          "Lead Generation"
         ]?.[year]
       );
   });
@@ -755,41 +862,24 @@ function Revenue() {
      NET AMOUNT
 
      Net Amount =
-       TDS
+       User-entered TDS
        + Director
        + Key Expenses
-       + Other expenses
-
-     IMPORTANT:
-     Net Amount is NOT compared with Net Income.
+       + Lead Generation
   ======================================================= */
 
   const netAmount = {};
 
   financialYears.forEach((year) => {
     netAmount[year] =
-      tds[year] +
+      tdsAmount[year] +
       director[year] +
       keyExpenses[year] +
-      otherExpenses[year];
+      leadGeneration[year];
   });
 
   /* =======================================================
      SAVE
-
-     REQUIRED:
-       Revenue
-       Expenditure
-       Salary
-       Income Tax
-
-     OPTIONAL:
-       Director
-       Key Expenses
-       Other expenses
-
-     NO:
-       Net Amount vs Net Income validation
   ======================================================= */
 
   async function handleSave() {
@@ -798,14 +888,11 @@ function Revenue() {
     }
 
     const {
-      hasAnyValue,
       allFieldsFilled,
     } = checkRevenueFields();
 
     /* -----------------------------------------------------
        ONLY REQUIRED FIELDS ARE CHECKED
-
-       Breakdown fields are NOT required.
     ----------------------------------------------------- */
 
     if (!allFieldsFilled) {
@@ -817,15 +904,29 @@ function Revenue() {
     }
 
     /* -----------------------------------------------------
+       NORMALIZE TDS
+
+       Empty TDS = 0
+    ----------------------------------------------------- */
+
+    const normalizedTds = {};
+
+    financialYears.forEach((year) => {
+      normalizedTds[year] =
+        getNumber(tds?.[year]);
+    });
+
+    /* -----------------------------------------------------
        NORMALIZE OPTIONAL BREAKDOWN VALUES
 
-       Empty fields are saved as 0.
+       IMPORTANT:
+       Lead Generation is now the saved key.
     ----------------------------------------------------- */
 
     const normalizedBreakdown = {
       Director: {},
       "Key Expenses": {},
-      "Other expenses": {},
+      "Lead Generation": {},
     };
 
     financialYears.forEach((year) => {
@@ -846,11 +947,11 @@ function Revenue() {
         );
 
       normalizedBreakdown[
-        "Other expenses"
+        "Lead Generation"
       ][year] =
         getNumber(
           netIncomeBreakdown[
-            "Other expenses"
+            "Lead Generation"
           ]?.[year]
         );
     });
@@ -861,33 +962,20 @@ function Revenue() {
 
     const dataToSave = {
       revenue,
-
       expenditure,
-
       salary,
 
       incomeTaxPercentage:
-        hasAnyValue
-          ? incomeTaxPercentage
-          : "",
+        incomeTaxPercentage,
 
+      /* USER ENTERED TDS */
+      tds: normalizedTds,
+
+      /* USER ENTERED BREAKDOWN */
       netIncomeBreakdown:
         normalizedBreakdown,
 
-      /* ---------------------------------------------------
-         CALCULATED VALUES
-
-         TDS:
-         10% of Net Income
-
-         Net Amount:
-         TDS + Director + Key Expenses + Other expenses
-
-         No reconciliation with Net Income.
-      --------------------------------------------------- */
-
-      tds,
-
+      /* CALCULATED NET AMOUNT */
       netAmount,
 
       isSaved: true,
@@ -959,10 +1047,16 @@ function Revenue() {
             .incomeTaxPercentage ?? ""
         );
 
+        setTds(
+          result.data.tds ||
+            createInitialTdsData()
+        );
+
         setNetIncomeBreakdown(
-          result.data
-            .netIncomeBreakdown ||
-            createInitialBreakdownData()
+          normalizeBreakdown(
+            result.data
+              .netIncomeBreakdown
+          )
         );
       }
 
@@ -1044,7 +1138,6 @@ function Revenue() {
         </div>
 
         <div className="revenue-table-wrapper">
-
           <table className="revenue-table">
 
             <thead>
@@ -1062,7 +1155,6 @@ function Revenue() {
             </thead>
 
             <tbody>
-
               {revenueRows.map(
                 (row) => (
                   <tr key={row}>
@@ -1126,13 +1218,10 @@ function Revenue() {
                 )}
 
               </tr>
-
             </tbody>
 
           </table>
-
         </div>
-
       </div>
 
       {/* =================================================
@@ -1146,7 +1235,6 @@ function Revenue() {
         </div>
 
         <div className="revenue-table-wrapper">
-
           <table className="revenue-table">
 
             <thead>
@@ -1236,9 +1324,7 @@ function Revenue() {
             </tbody>
 
           </table>
-
         </div>
-
       </div>
 
       {/* =================================================
@@ -1342,7 +1428,6 @@ function Revenue() {
           </table>
 
         </div>
-
       </div>
 
       {/* =================================================
@@ -1465,7 +1550,6 @@ function Revenue() {
           </table>
 
         </div>
-
       </div>
 
       {/* =================================================
@@ -1603,7 +1687,6 @@ function Revenue() {
           </table>
 
         </div>
-
       </div>
 
       {/* =================================================
@@ -1613,7 +1696,9 @@ function Revenue() {
       <div className="revenue-section net-income-breakdown-section">
 
         <div className="revenue-section-header">
-          <h2>Net Income Breakdown</h2>
+          <h2>
+            Net Income Breakdown
+          </h2>
         </div>
 
         <div className="overall-revenue-table-wrapper">
@@ -1621,7 +1706,6 @@ function Revenue() {
           <table className="overall-revenue-table net-income-breakdown-table">
 
             <thead>
-
               <tr>
 
                 <th></th>
@@ -1635,13 +1719,12 @@ function Revenue() {
                 )}
 
               </tr>
-
             </thead>
 
             <tbody>
 
               {/* -----------------------------------------
-                  TDS
+                  TDS - USER INPUT
               ----------------------------------------- */}
 
               <tr>
@@ -1652,13 +1735,29 @@ function Revenue() {
 
                 {financialYears.map(
                   (year) => (
-                    <td
-                      key={year}
-                      className="calculated-breakdown-value"
-                    >
-                      {formatNumber(
-                        tds[year]
-                      )}
+                    <td key={year}>
+
+                      <AmountInput
+                        value={
+                          tds?.[year] || ""
+                        }
+
+                        disabled={
+                          isSaved ||
+                          isLoading ||
+                          isSaving
+                        }
+
+                        onChange={(
+                          value
+                        ) =>
+                          handleTdsChange(
+                            year,
+                            value
+                          )
+                        }
+                      />
+
                     </td>
                   )
                 )}
@@ -1758,13 +1857,13 @@ function Revenue() {
               </tr>
 
               {/* -----------------------------------------
-                  OTHER EXPENSES
+                  LEAD GENERATION
               ----------------------------------------- */}
 
               <tr>
 
                 <td>
-                  Other expenses
+                  Lead Generation
                 </td>
 
                 {financialYears.map(
@@ -1774,7 +1873,7 @@ function Revenue() {
                       <AmountInput
                         value={
                           netIncomeBreakdown[
-                            "Other expenses"
+                            "Lead Generation"
                           ]?.[
                             year
                           ] || ""
@@ -1790,7 +1889,7 @@ function Revenue() {
                           value
                         ) =>
                           handleBreakdownChange(
-                            "Other expenses",
+                            "Lead Generation",
                             year,
                             value
                           )
@@ -1835,7 +1934,6 @@ function Revenue() {
           </table>
 
         </div>
-
       </div>
 
       {/* =================================================
