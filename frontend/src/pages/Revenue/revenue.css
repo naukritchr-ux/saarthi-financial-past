@@ -380,3 +380,156 @@
   cursor: not-allowed;
   opacity: 1;
 }
+
+/* =========================================================
+   NET INCOME BREAKDOWN
+   ADDITION ONLY - EXISTING CSS IS NOT CHANGED
+========================================================= */
+
+.net-income-breakdown-section {
+  margin-bottom: 24px;
+}
+
+.net-income-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+/* ---------------------------------------------------------
+   TABLE CELLS
+--------------------------------------------------------- */
+
+.net-income-breakdown-table th,
+.net-income-breakdown-table td {
+  padding: 13px 16px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+/* ---------------------------------------------------------
+   HEADER
+--------------------------------------------------------- */
+
+.net-income-breakdown-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+  color: #374151;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.net-income-breakdown-table th:first-child {
+  text-align: left;
+  width: 30%;
+}
+
+/* ---------------------------------------------------------
+   FIRST COLUMN
+--------------------------------------------------------- */
+
+.net-income-breakdown-table td:first-child {
+  font-weight: 500;
+  color: #374151;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   FINANCIAL YEAR COLUMNS
+--------------------------------------------------------- */
+
+.net-income-breakdown-table td:not(:first-child) {
+  text-align: right;
+}
+
+/* ---------------------------------------------------------
+   BREAKDOWN INPUTS
+--------------------------------------------------------- */
+
+.net-income-breakdown-table .revenue-input {
+  width: 100%;
+  min-width: 130px;
+}
+
+/* ---------------------------------------------------------
+   CALCULATED VALUES
+   TDS + NET AMOUNT
+--------------------------------------------------------- */
+
+.calculated-breakdown-value {
+  font-weight: 600;
+  color: #374151;
+  background: #fafafa;
+}
+
+/* ---------------------------------------------------------
+   NET AMOUNT ROW
+--------------------------------------------------------- */
+
+.net-income-breakdown-table .net-income-row {
+  background: #f3f4f6;
+  font-weight: 700;
+}
+
+.net-income-breakdown-table .net-income-row td {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------
+   INFORMATION NOTE
+--------------------------------------------------------- */
+
+.net-income-breakdown-note {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.net-income-breakdown-note span {
+  display: block;
+}
+
+/* ---------------------------------------------------------
+   DISABLED BREAKDOWN INPUTS
+--------------------------------------------------------- */
+
+.net-income-breakdown-table
+.revenue-input:disabled {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .net-income-breakdown-section {
+    margin-bottom: 24px;
+  }
+
+  .net-income-breakdown-table {
+    width: 100%;
+    min-width: 700px;
+  }
+
+  .net-income-breakdown-table
+  .revenue-input {
+    min-width: 130px;
+  }
+
+  .net-income-breakdown-note {
+    font-size: 12px;
+  }
+}
