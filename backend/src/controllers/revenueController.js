@@ -7,6 +7,7 @@ SUPABASE CONFIGURATION
 */
 
 const supabaseUrl = process.env.SUPABASE_URL;
+
 const supabaseSecretKey =
   process.env.SUPABASE_SECRET_KEY;
 
@@ -36,6 +37,15 @@ HELPERS
 =========================================================
 */
 
+/*
+---------------------------------------------------------
+Convert a value to number.
+
+Blank / null / undefined = 0
+Invalid number = 0
+---------------------------------------------------------
+*/
+
 function getNumber(value) {
   if (
     value === "" ||
@@ -52,11 +62,23 @@ function getNumber(value) {
     : 0;
 }
 
+/*
+---------------------------------------------------------
+Get a value from frontend nested structure.
+---------------------------------------------------------
+*/
+
 function getValue(object, row, year) {
   return getNumber(
     object?.[row]?.[year]
   );
 }
+
+/*
+---------------------------------------------------------
+Round number to 2 decimal places.
+---------------------------------------------------------
+*/
 
 function roundToTwo(value) {
   return Math.round(
@@ -99,6 +121,12 @@ function createEmptyRevenueData() {
     "Job portal Salary",
   ];
 
+  /*
+  -------------------------------------------------------
+  Revenue
+  -------------------------------------------------------
+  */
+
   revenueRows.forEach((row) => {
     revenue[row] = {};
 
@@ -106,6 +134,12 @@ function createEmptyRevenueData() {
       revenue[row][year] = "";
     });
   });
+
+  /*
+  -------------------------------------------------------
+  Expenditure
+  -------------------------------------------------------
+  */
 
   expenditureRows.forEach((row) => {
     expenditure[row] = {};
@@ -115,6 +149,12 @@ function createEmptyRevenueData() {
     });
   });
 
+  /*
+  -------------------------------------------------------
+  Salary
+  -------------------------------------------------------
+  */
+
   salaryRows.forEach((row) => {
     salary[row] = {};
 
@@ -123,14 +163,22 @@ function createEmptyRevenueData() {
     });
   });
 
-  Object.keys(
-    netIncomeBreakdown
-  ).forEach((row) => {
-    financialYears.forEach((year) => {
-      netIncomeBreakdown[row][year] =
-        "";
-    });
-  });
+  /*
+  -------------------------------------------------------
+  Net Income Breakdown
+
+  These fields are OPTIONAL.
+  Blank values are represented as "" in frontend.
+  -------------------------------------------------------
+  */
+
+  Object.keys(netIncomeBreakdown).forEach(
+    (row) => {
+      financialYears.forEach((year) => {
+        netIncomeBreakdown[row][year] = "";
+      });
+    }
+  );
 
   return {
     revenue,
@@ -142,11 +190,11 @@ function createEmptyRevenueData() {
     netIncomeBreakdown,
 
     /*
-      Calculated values are included in the
-      response for completeness.
+    Calculated values
     */
 
     tds: {},
+
     netAmount: {},
 
     isSaved: false,
@@ -159,9 +207,7 @@ CONVERT SUPABASE ROWS → REACT FORMAT
 =========================================================
 */
 
-function convertDatabaseRowsToFrontend(
-  rows
-) {
+function convertDatabaseRowsToFrontend(rows) {
   const result =
     createEmptyRevenueData();
 
@@ -188,22 +234,19 @@ function convertDatabaseRowsToFrontend(
     result.revenue[
       "Recruitment Revenue"
     ][year] = String(
-      row.recruitment_revenue ??
-        ""
+      row.recruitment_revenue ?? ""
     );
 
     result.revenue[
       "Franchisee Revenue"
     ][year] = String(
-      row.franchisee_revenue ??
-        ""
+      row.franchisee_revenue ?? ""
     );
 
     result.revenue[
       "Job portal Revenue"
     ][year] = String(
-      row.job_portal_revenue ??
-        ""
+      row.job_portal_revenue ?? ""
     );
 
     /*
@@ -215,22 +258,19 @@ function convertDatabaseRowsToFrontend(
     result.expenditure[
       "Recruitment Expenditure"
     ][year] = String(
-      row.recruitment_expenditure ??
-        ""
+      row.recruitment_expenditure ?? ""
     );
 
     result.expenditure[
       "Franchisee Expenditure"
     ][year] = String(
-      row.franchisee_expenditure ??
-        ""
+      row.franchisee_expenditure ?? ""
     );
 
     result.expenditure[
       "Job portal Expenditure"
     ][year] = String(
-      row.job_portal_expenditure ??
-        ""
+      row.job_portal_expenditure ?? ""
     );
 
     /*
@@ -242,22 +282,19 @@ function convertDatabaseRowsToFrontend(
     result.salary[
       "Recruitment Salary"
     ][year] = String(
-      row.recruitment_salary ??
-        ""
+      row.recruitment_salary ?? ""
     );
 
     result.salary[
       "Franchisee Salary"
     ][year] = String(
-      row.franchisee_salary ??
-        ""
+      row.franchisee_salary ?? ""
     );
 
     result.salary[
       "Job portal Salary"
     ][year] = String(
-      row.job_portal_salary ??
-        ""
+      row.job_portal_salary ?? ""
     );
 
     /*
@@ -266,13 +303,17 @@ function convertDatabaseRowsToFrontend(
     =======================================================
     */
 
+    /*
+    There is one global income tax percentage in
+    the existing frontend structure.
+
+    Keep the first available database value.
+    */
+
     if (
-      result.incomeTaxPercentage ===
-        "" &&
-      row.income_tax_percent !==
-        null &&
-      row.income_tax_percent !==
-        undefined
+      result.incomeTaxPercentage === "" &&
+      row.income_tax_percent !== null &&
+      row.income_tax_percent !== undefined
     ) {
       result.incomeTaxPercentage =
         String(
@@ -284,6 +325,13 @@ function convertDatabaseRowsToFrontend(
     =======================================================
     NET INCOME BREAKDOWN
     =======================================================
+    */
+
+    /*
+    These are OPTIONAL.
+
+    If database value exists, return it.
+    Otherwise keep frontend value blank.
     */
 
     if (
@@ -321,7 +369,7 @@ function convertDatabaseRowsToFrontend(
 
     /*
     =======================================================
-    CALCULATED VALUES FROM DATABASE
+    CALCULATED TDS
     =======================================================
     */
 
@@ -332,6 +380,12 @@ function convertDatabaseRowsToFrontend(
       result.tds[year] =
         getNumber(row.tds);
     }
+
+    /*
+    =======================================================
+    CALCULATED NET AMOUNT
+    =======================================================
+    */
 
     if (
       row.net_amount !== null &&
@@ -348,72 +402,102 @@ function convertDatabaseRowsToFrontend(
   =======================================================
   DETERMINE LOCK STATE
   =======================================================
+
+  IMPORTANT:
+
+  Breakdown fields are NOT required.
+
+  Therefore only:
+    Revenue
+    Expenditure
+    Salary
+    Income Tax
+
+  are considered when determining whether the
+  Revenue page is saved.
+  =======================================================
   */
 
-  const allValues = [];
+  const requiredValues = [];
+
+  /*
+  -------------------------------------------------------
+  Revenue
+  -------------------------------------------------------
+  */
 
   Object.values(
     result.revenue
   ).forEach((row) => {
-    financialYears.forEach(
-      (year) => {
-        allValues.push(
-          row[year]
-        );
-      }
-    );
+    financialYears.forEach((year) => {
+      requiredValues.push(
+        row[year]
+      );
+    });
   });
+
+  /*
+  -------------------------------------------------------
+  Expenditure
+  -------------------------------------------------------
+  */
 
   Object.values(
     result.expenditure
   ).forEach((row) => {
-    financialYears.forEach(
-      (year) => {
-        allValues.push(
-          row[year]
-        );
-      }
-    );
+    financialYears.forEach((year) => {
+      requiredValues.push(
+        row[year]
+      );
+    });
   });
+
+  /*
+  -------------------------------------------------------
+  Salary
+  -------------------------------------------------------
+  */
 
   Object.values(
     result.salary
   ).forEach((row) => {
-    financialYears.forEach(
-      (year) => {
-        allValues.push(
-          row[year]
-        );
-      }
-    );
+    financialYears.forEach((year) => {
+      requiredValues.push(
+        row[year]
+      );
+    });
   });
 
-  allValues.push(
+  /*
+  -------------------------------------------------------
+  Income Tax
+  -------------------------------------------------------
+  */
+
+  requiredValues.push(
     result.incomeTaxPercentage
   );
 
   /*
-  ---------------------------------------------------------
-  New user-entered breakdown fields.
-  TDS and Net Amount are calculated, therefore
-  they are NOT required here.
-  ---------------------------------------------------------
+  -------------------------------------------------------
+  IMPORTANT
+
+  Do NOT include:
+
+    Director
+    Key Expenses
+    Other expenses
+    TDS
+    Net Amount
+
+  in requiredValues.
+
+  They are optional/calculated fields.
+  -------------------------------------------------------
   */
 
-  Object.values(
-    result.netIncomeBreakdown
-  ).forEach((row) => {
-    financialYears.forEach(
-      (year) => {
-        allValues.push(
-          row[year]
-        );
-      }
-    );
-  });
-
-  const allFieldsFilled =
-    allValues.every(
+  const allRequiredFieldsFilled =
+    requiredValues.every(
       (value) =>
         value !== "" &&
         value !== null &&
@@ -421,7 +505,7 @@ function convertDatabaseRowsToFrontend(
     );
 
   result.isSaved =
-    allFieldsFilled;
+    allRequiredFieldsFilled;
 
   return result;
 }
@@ -439,6 +523,12 @@ function calculateNetIncomeForYear(
   salary,
   incomeTaxPercentage
 ) {
+  /*
+  =======================================================
+  REVENUE
+  =======================================================
+  */
+
   const recruitmentRevenue =
     getValue(
       revenue,
@@ -460,6 +550,12 @@ function calculateNetIncomeForYear(
       year
     );
 
+  /*
+  =======================================================
+  EXPENDITURE
+  =======================================================
+  */
+
   const recruitmentExpenditure =
     getValue(
       expenditure,
@@ -480,6 +576,12 @@ function calculateNetIncomeForYear(
       "Job portal Expenditure",
       year
     );
+
+  /*
+  =======================================================
+  SALARY
+  =======================================================
+  */
 
   const recruitmentSalary =
     getValue(
@@ -503,9 +605,9 @@ function calculateNetIncomeForYear(
     );
 
   /*
-  ---------------------------------------------------------
-  Final revenue
-  ---------------------------------------------------------
+  =======================================================
+  FINAL REVENUE BY SEGMENT
+  =======================================================
   */
 
   const recruitment =
@@ -523,27 +625,35 @@ function calculateNetIncomeForYear(
     jobPortalExpenditure -
     jobPortalSalary;
 
+  /*
+  =======================================================
+  OVERALL REVENUE
+  =======================================================
+  */
+
   const overallRevenue =
     recruitment +
     franchisee +
     jobPortal;
 
   /*
-  ---------------------------------------------------------
-  Income tax
-  ---------------------------------------------------------
+  =======================================================
+  INCOME TAX
+  =======================================================
   */
 
   const incomeTax =
     overallRevenue *
-    (getNumber(
-      incomeTaxPercentage
-    ) / 100);
+    (
+      getNumber(
+        incomeTaxPercentage
+      ) / 100
+    );
 
   /*
-  ---------------------------------------------------------
-  Net income
-  ---------------------------------------------------------
+  =======================================================
+  NET INCOME
+  =======================================================
   */
 
   const netIncome =
@@ -557,10 +667,14 @@ function calculateNetIncomeForYear(
       ),
 
     incomeTax:
-      roundToTwo(incomeTax),
+      roundToTwo(
+        incomeTax
+      ),
 
     netIncome:
-      roundToTwo(netIncome),
+      roundToTwo(
+        netIncome
+      ),
   };
 }
 
@@ -603,7 +717,8 @@ async function getRevenueData(
         success: false,
         message:
           "Unable to load Revenue data",
-        error: error.message,
+        error:
+          error.message,
       });
     }
 
@@ -636,7 +751,8 @@ async function getRevenueData(
       success: false,
       message:
         "Unable to load Revenue data",
-      error: error.message,
+      error:
+        error.message,
     });
   }
 }
@@ -652,6 +768,12 @@ async function saveRevenueData(
   res
 ) {
   try {
+    /*
+    =======================================================
+    SUPABASE CHECK
+    =======================================================
+    */
+
     if (!supabase) {
       return res.status(500).json({
         success: false,
@@ -660,25 +782,28 @@ async function saveRevenueData(
       });
     }
 
+    /*
+    =======================================================
+    READ REQUEST BODY
+    =======================================================
+    */
+
     let incomingData =
       req.body;
 
     /*
     -------------------------------------------------------
-    Support:
-    
+    Support both:
+
     {
-      revenue: {...},
-      expenditure: {...},
-      ...
+      revenue: {...}
     }
 
-    OR:
+    and:
 
     {
       data: {
-        revenue: {...},
-        ...
+        revenue: {...}
       }
     }
     -------------------------------------------------------
@@ -698,6 +823,12 @@ async function saveRevenueData(
         incomingData.data;
     }
 
+    /*
+    =======================================================
+    VALIDATE REQUEST
+    =======================================================
+    */
+
     if (
       !incomingData ||
       typeof incomingData !==
@@ -712,6 +843,12 @@ async function saveRevenueData(
           "Invalid Revenue data format",
       });
     }
+
+    /*
+    =======================================================
+    EXTRACT DATA
+    =======================================================
+    */
 
     const revenue =
       incomingData.revenue ||
@@ -744,7 +881,7 @@ async function saveRevenueData(
       error: existingError,
     } = await supabase
       .from("revenue")
-      .select("id, financial_year")
+      .select("*")
       .order("id", {
         ascending: true,
       });
@@ -766,11 +903,17 @@ async function saveRevenueData(
 
     /*
     =======================================================
-    CALCULATE + VALIDATE + SAVE EACH YEAR
+    SAVE EACH FINANCIAL YEAR
     =======================================================
     */
 
     for (const year of financialYears) {
+      /*
+      -----------------------------------------------------
+      Find existing row
+      -----------------------------------------------------
+      */
+
       const existingRow =
         existingRows?.find(
           (row) =>
@@ -779,9 +922,9 @@ async function saveRevenueData(
         );
 
       /*
-      -----------------------------------------------------
-      Calculate Net Income from existing Revenue logic
-      -----------------------------------------------------
+      =====================================================
+      CALCULATE NET INCOME
+      =====================================================
       */
 
       const calculated =
@@ -794,9 +937,11 @@ async function saveRevenueData(
         );
 
       /*
-      -----------------------------------------------------
+      =====================================================
+      TDS
+      =====================================================
+
       TDS = 10% of Net Income
-      -----------------------------------------------------
       */
 
       const tds =
@@ -806,9 +951,20 @@ async function saveRevenueData(
         );
 
       /*
-      -----------------------------------------------------
-      User entered values
-      -----------------------------------------------------
+      =====================================================
+      OPTIONAL BREAKDOWN
+      =====================================================
+
+      These fields are NOT required.
+
+      Blank:
+        ""
+      null:
+        null
+      undefined:
+        undefined
+
+      are all converted to 0.
       */
 
       const director =
@@ -833,9 +989,21 @@ async function saveRevenueData(
         );
 
       /*
-      -----------------------------------------------------
-      Net Amount
-      -----------------------------------------------------
+      =====================================================
+      NET AMOUNT
+      =====================================================
+
+      IMPORTANT:
+
+      Net Amount is ONLY:
+
+      TDS
+      + Director
+      + Key Expenses
+      + Other expenses
+
+      It does NOT need to equal Net Income.
+      =====================================================
       */
 
       const netAmount =
@@ -847,42 +1015,9 @@ async function saveRevenueData(
         );
 
       /*
-      -----------------------------------------------------
-      IMPORTANT VALIDATION
-      -----------------------------------------------------
-
-      Net Amount MUST equal Net Income.
-      -----------------------------------------------------
-      */
-
-      const difference =
-        Math.abs(
-          netAmount -
-            calculated.netIncome
-        );
-
-      if (difference > 0.01) {
-        return res.status(400).json({
-          success: false,
-          message:
-            `Net Income Breakdown does not reconcile for ${year}. ` +
-            `Net Income is ${calculated.netIncome.toFixed(
-              2
-            )}, but Net Amount is ${netAmount.toFixed(
-              2
-            )}. ` +
-            `TDS + Director + Key Expenses + Other expenses must equal Net Income.`,
-        });
-      }
-
-      /*
-      -----------------------------------------------------
+      =====================================================
       DATABASE ROW
-      -----------------------------------------------------
-
-      Existing fields remain unchanged.
-      New breakdown values are simply added.
-      -----------------------------------------------------
+      =====================================================
       */
 
       const rowData = {
@@ -890,7 +1025,9 @@ async function saveRevenueData(
           year,
 
         /*
-        Existing Revenue
+        ---------------------------------------------------
+        EXISTING REVENUE
+        ---------------------------------------------------
         */
 
         recruitment_revenue:
@@ -915,7 +1052,9 @@ async function saveRevenueData(
           ),
 
         /*
-        Existing Expenditure
+        ---------------------------------------------------
+        EXISTING EXPENDITURE
+        ---------------------------------------------------
         */
 
         recruitment_expenditure:
@@ -940,7 +1079,9 @@ async function saveRevenueData(
           ),
 
         /*
-        Existing Salary
+        ---------------------------------------------------
+        EXISTING SALARY
+        ---------------------------------------------------
         */
 
         recruitment_salary:
@@ -965,7 +1106,9 @@ async function saveRevenueData(
           ),
 
         /*
-        Existing Income Tax
+        ---------------------------------------------------
+        INCOME TAX
+        ---------------------------------------------------
         */
 
         income_tax_percent:
@@ -975,11 +1118,20 @@ async function saveRevenueData(
 
         /*
         ===================================================
-        NEW NET INCOME BREAKDOWN
+        NET INCOME BREAKDOWN
         ===================================================
         */
 
+        /*
+        TDS is calculated automatically.
+        */
+
         tds,
+
+        /*
+        Optional user-entered values.
+        Blank values are stored as 0.
+        */
 
         director,
 
@@ -989,20 +1141,28 @@ async function saveRevenueData(
         other_expenses:
           otherExpenses,
 
+        /*
+        Calculated independently.
+        */
+
         net_amount:
           netAmount,
+
+        /*
+        Updated timestamp
+        */
 
         updated_at:
           new Date().toISOString(),
       };
 
-      let result;
-
       /*
-      -----------------------------------------------------
-      EXISTING YEAR → UPDATE
-      -----------------------------------------------------
+      =====================================================
+      UPDATE EXISTING ROW
+      =====================================================
       */
+
+      let result;
 
       if (existingRow) {
         result =
@@ -1018,9 +1178,9 @@ async function saveRevenueData(
       }
 
       /*
-      -----------------------------------------------------
-      NEW YEAR → INSERT
-      -----------------------------------------------------
+      =====================================================
+      INSERT NEW ROW
+      =====================================================
       */
 
       else {
@@ -1037,6 +1197,12 @@ async function saveRevenueData(
             .single();
       }
 
+      /*
+      =====================================================
+      SUPABASE SAVE ERROR
+      =====================================================
+      */
+
       if (result.error) {
         console.error(
           "SUPABASE SAVE ERROR:",
@@ -1045,8 +1211,10 @@ async function saveRevenueData(
 
         return res.status(500).json({
           success: false,
+
           message:
             `Unable to save Revenue data for ${year}`,
+
           error:
             result.error.message,
         });
@@ -1077,17 +1245,31 @@ async function saveRevenueData(
 
       return res.status(500).json({
         success: false,
+
         message:
           "Revenue was saved but could not be read back",
+
         error:
           readBackError.message,
       });
     }
 
+    /*
+    =======================================================
+    CONVERT BACK TO FRONTEND
+    =======================================================
+    */
+
     const frontendData =
       convertDatabaseRowsToFrontend(
         savedRows
       );
+
+    /*
+    =======================================================
+    SUCCESS LOG
+    =======================================================
+    */
 
     console.log(
       "=========================================="
@@ -1111,8 +1293,18 @@ async function saveRevenueData(
     );
 
     console.log(
+      "Reconciliation validation: DISABLED"
+    );
+
+    console.log(
       "=========================================="
     );
+
+    /*
+    =======================================================
+    RESPONSE
+    =======================================================
+    */
 
     return res.status(200).json({
       success: true,
@@ -1120,7 +1312,8 @@ async function saveRevenueData(
       message:
         "Revenue data saved successfully",
 
-      data: frontendData,
+      data:
+        frontendData,
 
       count:
         Array.isArray(savedRows)
@@ -1128,6 +1321,12 @@ async function saveRevenueData(
           : 0,
     });
   } catch (error) {
+    /*
+    =======================================================
+    UNEXPECTED ERROR
+    =======================================================
+    */
+
     console.error(
       "=========================================="
     );
@@ -1157,9 +1356,12 @@ async function saveRevenueData(
 
     return res.status(500).json({
       success: false,
+
       message:
         "Unable to save Revenue data",
-      error: error.message,
+
+      error:
+        error.message,
     });
   }
 }
