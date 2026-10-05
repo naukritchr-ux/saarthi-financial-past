@@ -144,6 +144,9 @@ function hasValue(value) {
 
 /* =========================================================
    INITIAL BREAKDOWN DATA
+
+   Breakdown fields are OPTIONAL.
+   Empty values are treated as 0 when calculating/saving.
 ========================================================= */
 
 function createInitialBreakdownData() {
@@ -162,94 +165,82 @@ function createInitialBreakdownData() {
 
 /* =========================================================
    REQUIRED FIELD CHECK
+
+   IMPORTANT:
+   Only these are required:
+   - Revenue
+   - Expenditure
+   - Salary
+   - Income Tax
+
+   Net Income Breakdown fields are OPTIONAL.
 ========================================================= */
 
 function checkAllRequiredFields(
   revenue,
   expenditure,
   salary,
-  incomeTaxPercentage,
-  netIncomeBreakdown
+  incomeTaxPercentage
 ) {
-  const allValues = [];
+  const requiredValues = [];
 
   /* -------------------------------------------------------
-     EXISTING REVENUE
+     REVENUE
   ------------------------------------------------------- */
 
   revenueRows.forEach((row) => {
     financialYears.forEach((year) => {
-      allValues.push(
+      requiredValues.push(
         revenue?.[row]?.[year] ?? ""
       );
     });
   });
 
   /* -------------------------------------------------------
-     EXISTING EXPENDITURE
+     EXPENDITURE
   ------------------------------------------------------- */
 
   expenditureRows.forEach((row) => {
     financialYears.forEach((year) => {
-      allValues.push(
+      requiredValues.push(
         expenditure?.[row]?.[year] ?? ""
       );
     });
   });
 
   /* -------------------------------------------------------
-     EXISTING SALARY
+     SALARY
   ------------------------------------------------------- */
 
   salaryRows.forEach((row) => {
     financialYears.forEach((year) => {
-      allValues.push(
+      requiredValues.push(
         salary?.[row]?.[year] ?? ""
       );
     });
   });
 
   /* -------------------------------------------------------
-     EXISTING INCOME TAX
+     INCOME TAX
   ------------------------------------------------------- */
 
-  allValues.push(
+  requiredValues.push(
     incomeTaxPercentage ?? ""
   );
 
-  /* -------------------------------------------------------
-     NET INCOME BREAKDOWN
-     
-     Only these three fields are user-entered:
-     - Director
-     - Key Expenses
-     - Other expenses
-     
-     TDS and Net Amount are calculated automatically.
-     
-     IMPORTANT:
-     There is NO comparison with Net Income.
-  ------------------------------------------------------- */
+  const hasAnyRequiredValue =
+    requiredValues.some((value) =>
+      hasValue(value)
+    );
 
-  breakdownRows.forEach((row) => {
-    financialYears.forEach((year) => {
-      allValues.push(
-        netIncomeBreakdown?.[row]?.[year] ?? ""
-      );
-    });
-  });
-
-  const hasAnyValue = allValues.some((value) =>
-    hasValue(value)
-  );
-
-  const allFieldsFilled = allValues.every(
-    (value) => hasValue(value)
-  );
+  const allRequiredFieldsFilled =
+    requiredValues.every((value) =>
+      hasValue(value)
+    );
 
   return {
-    hasAnyValue,
-    allFieldsFilled,
+    hasAnyValue: hasAnyRequiredValue,
+    allFieldsFilled: allRequiredFieldsFilled,
   };
 }
 
@@ -282,6 +273,8 @@ function Revenue() {
 
   /* -------------------------------------------------------
      NET INCOME BREAKDOWN STATE
+
+     These fields are OPTIONAL.
   ------------------------------------------------------- */
 
   const [
@@ -387,6 +380,11 @@ function Revenue() {
 
         /* -------------------------------------------------
            DETERMINE LOCK STATE
+
+           Only Revenue, Expenditure, Salary and Income Tax
+           are required.
+
+           Breakdown fields do NOT affect lock state.
         ------------------------------------------------- */
 
         const lockState =
@@ -394,8 +392,7 @@ function Revenue() {
             loadedRevenue,
             loadedExpenditure,
             loadedSalary,
-            loadedIncomeTaxPercentage,
-            loadedBreakdown
+            loadedIncomeTaxPercentage
           ).allFieldsFilled;
 
         if (isMounted) {
@@ -523,8 +520,7 @@ function Revenue() {
       revenue,
       expenditure,
       salary,
-      incomeTaxPercentage,
-      netIncomeBreakdown
+      incomeTaxPercentage
     );
   }
 
@@ -712,9 +708,6 @@ function Revenue() {
      TDS
 
      TDS = 10% of Net Income
-
-     Automatically calculated.
-     User cannot edit TDS.
   ======================================================= */
 
   const tds = {};
@@ -726,6 +719,9 @@ function Revenue() {
 
   /* =======================================================
      USER ENTERED BREAKDOWN
+
+     OPTIONAL:
+     Empty values are treated as 0.
   ======================================================= */
 
   const director = {};
@@ -766,8 +762,6 @@ function Revenue() {
 
      IMPORTANT:
      Net Amount is NOT compared with Net Income.
-
-     There is NO reconciliation validation.
   ======================================================= */
 
   const netAmount = {};
@@ -783,12 +777,19 @@ function Revenue() {
   /* =======================================================
      SAVE
 
-     IMPORTANT:
-     There is NO Net Amount vs Net Income validation.
+     REQUIRED:
+       Revenue
+       Expenditure
+       Salary
+       Income Tax
 
-     The data will save even when:
+     OPTIONAL:
+       Director
+       Key Expenses
+       Other expenses
 
-       Net Amount !== Net Income
+     NO:
+       Net Amount vs Net Income validation
   ======================================================= */
 
   async function handleSave() {
@@ -802,31 +803,67 @@ function Revenue() {
     } = checkRevenueFields();
 
     /* -----------------------------------------------------
-       EXISTING REQUIRED-FIELD VALIDATION
+       ONLY REQUIRED FIELDS ARE CHECKED
 
-       This only checks whether required input fields
-       have values.
-
-       It DOES NOT compare Net Amount with Net Income.
+       Breakdown fields are NOT required.
     ----------------------------------------------------- */
 
     if (!allFieldsFilled) {
       window.alert(
-        "Please fill all Revenue, Expenditure, Salary, Income Tax and Net Income Breakdown fields before saving."
+        "Please fill all Revenue, Expenditure, Salary and Income Tax fields before saving."
       );
 
       return;
     }
 
     /* -----------------------------------------------------
-       DATA TO SAVE
+       NORMALIZE OPTIONAL BREAKDOWN VALUES
 
-       NO RECONCILIATION VALIDATION
+       Empty fields are saved as 0.
+    ----------------------------------------------------- */
+
+    const normalizedBreakdown = {
+      Director: {},
+      "Key Expenses": {},
+      "Other expenses": {},
+    };
+
+    financialYears.forEach((year) => {
+      normalizedBreakdown.Director[year] =
+        getNumber(
+          netIncomeBreakdown[
+            "Director"
+          ]?.[year]
+        );
+
+      normalizedBreakdown[
+        "Key Expenses"
+      ][year] =
+        getNumber(
+          netIncomeBreakdown[
+            "Key Expenses"
+          ]?.[year]
+        );
+
+      normalizedBreakdown[
+        "Other expenses"
+      ][year] =
+        getNumber(
+          netIncomeBreakdown[
+            "Other expenses"
+          ]?.[year]
+        );
+    });
+
+    /* -----------------------------------------------------
+       DATA TO SAVE
     ----------------------------------------------------- */
 
     const dataToSave = {
       revenue,
+
       expenditure,
+
       salary,
 
       incomeTaxPercentage:
@@ -834,22 +871,8 @@ function Revenue() {
           ? incomeTaxPercentage
           : "",
 
-      netIncomeBreakdown: {
-        Director:
-          netIncomeBreakdown[
-            "Director"
-          ],
-
-        "Key Expenses":
-          netIncomeBreakdown[
-            "Key Expenses"
-          ],
-
-        "Other expenses":
-          netIncomeBreakdown[
-            "Other expenses"
-          ],
-      },
+      netIncomeBreakdown:
+        normalizedBreakdown,
 
       /* ---------------------------------------------------
          CALCULATED VALUES
@@ -860,14 +883,14 @@ function Revenue() {
          Net Amount:
          TDS + Director + Key Expenses + Other expenses
 
-         Neither value is compared with Net Income.
+         No reconciliation with Net Income.
       --------------------------------------------------- */
 
       tds,
 
       netAmount,
 
-      isSaved: allFieldsFilled,
+      isSaved: true,
     };
 
     try {
@@ -882,7 +905,8 @@ function Revenue() {
             "Content-Type":
               "application/json",
 
-            Accept: "application/json",
+            Accept:
+              "application/json",
           },
 
           body: JSON.stringify(
@@ -979,7 +1003,9 @@ function Revenue() {
   ======================================================= */
 
   function formatNumber(value) {
-    return Number(value || 0).toLocaleString(
+    return Number(
+      value || 0
+    ).toLocaleString(
       "en-IN",
       {
         maximumFractionDigits: 2,
@@ -1353,7 +1379,9 @@ function Revenue() {
 
               <tr>
 
-                <td>Recruitment</td>
+                <td>
+                  Recruitment
+                </td>
 
                 {financialYears.map(
                   (year) => (
@@ -1372,7 +1400,9 @@ function Revenue() {
 
               <tr>
 
-                <td>Franchisee</td>
+                <td>
+                  Franchisee
+                </td>
 
                 {financialYears.map(
                   (year) => (
@@ -1391,7 +1421,9 @@ function Revenue() {
 
               <tr>
 
-                <td>Job portal</td>
+                <td>
+                  Job portal
+                </td>
 
                 {financialYears.map(
                   (year) => (
@@ -1451,7 +1483,6 @@ function Revenue() {
           <table className="overall-revenue-table">
 
             <thead>
-
               <tr>
 
                 <th></th>
@@ -1465,7 +1496,6 @@ function Revenue() {
                 )}
 
               </tr>
-
             </thead>
 
             <tbody>
@@ -1578,7 +1608,6 @@ function Revenue() {
 
       {/* =================================================
           NET INCOME BREAKDOWN
-          IMMEDIATELY AFTER OVERALL REVENUE
       ================================================= */}
 
       <div className="revenue-section net-income-breakdown-section">
@@ -1776,9 +1805,6 @@ function Revenue() {
 
               {/* -----------------------------------------
                   NET AMOUNT
-
-                  IMPORTANT:
-                  This is NOT required to equal Net Income.
               ----------------------------------------- */}
 
               <tr className="net-income-row">
