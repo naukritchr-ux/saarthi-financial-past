@@ -25,10 +25,6 @@
 
   --yp-white: #ffffff;
 
-  /* =====================================================
-     GRAPH COLORS
-  ===================================================== */
-
   --yp-billing: #2563eb;
   --yp-billing-dark: #1d4ed8;
 
@@ -40,12 +36,14 @@
 
   --yp-grid: #e7dcc8;
 
-  --yp-shadow: 0 8px 24px rgba(23, 54, 93, 0.08);
-  --yp-shadow-hover: 0 12px 30px rgba(23, 54, 93, 0.14);
+  --yp-shadow:
+    0 8px 24px rgba(23, 54, 93, 0.08);
+
+  --yp-shadow-hover:
+    0 12px 30px rgba(23, 54, 93, 0.14);
 
   --yp-radius: 14px;
 }
-
 
 /* =========================================================
    MAIN PAGE
@@ -68,7 +66,6 @@
 
   box-sizing: border-box;
 }
-
 
 /* =========================================================
    HEADER
@@ -107,8 +104,6 @@
   font-size: 28px;
   font-weight: 800;
   line-height: 1.2;
-
-  letter-spacing: 0.2px;
 }
 
 .performance-header p {
@@ -123,7 +118,6 @@
 .performance-header p strong {
   color: #f0d77d;
 }
-
 
 /* =========================================================
    FILTER SECTION
@@ -150,7 +144,6 @@
 .performance-filter-section .section-heading {
   margin-bottom: 18px;
 }
-
 
 /* =========================================================
    SECTION HEADING
@@ -205,7 +198,6 @@
   font-size: 13px;
   line-height: 1.5;
 }
-
 
 /* =========================================================
    FILTERS
@@ -279,7 +271,6 @@
     0 0 0 3px rgba(201, 162, 39, 0.16);
 }
 
-
 /* =========================================================
    GENERAL SECTIONS
 ========================================================= */
@@ -301,7 +292,6 @@
 
   overflow: visible;
 }
-
 
 /* =========================================================
    KPI GRID
@@ -426,7 +416,6 @@
   color: var(--yp-loss);
 }
 
-
 /* =========================================================
    CHART CARDS
 ========================================================= */
@@ -448,22 +437,27 @@
   box-sizing: border-box;
 
   overflow: visible;
+
+  height: 430px;
 }
 
 .performance-chart-card {
-  min-height: 455px;
+  min-height: 430px;
 }
 
 .year-wise-chart-card {
-  min-height: 455px;
+  height: 430px;
+  min-height: 430px;
 }
 
 .trend-chart-card {
-  min-height: 485px;
+  height: 460px;
+  min-height: 460px;
 }
 
 .financial-chart-card {
-  min-height: 425px;
+  height: 400px;
+  min-height: 400px;
 
   margin-bottom: 18px;
 }
@@ -472,49 +466,35 @@
   margin-bottom: 0;
 }
 
-
 /* =========================================================
-   RECHARTS CONTAINER
+   RECHARTS
+   IMPORTANT:
+   Do NOT force SVG width/height/opacity/visibility.
+   Recharts controls those internally.
 ========================================================= */
 
-.performance-chart-card .recharts-responsive-container,
-.financial-chart-card .recharts-responsive-container {
+.performance-chart-card
+  .recharts-responsive-container,
+.financial-chart-card
+  .recharts-responsive-container {
   width: 100% !important;
-  min-width: 0 !important;
+  height: 100% !important;
 }
 
-.performance-chart-card .recharts-wrapper,
-.financial-chart-card .recharts-wrapper {
-  width: 100% !important;
-  max-width: 100% !important;
-
-  min-height: 380px;
-
-  overflow: visible !important;
-}
-
-.performance-chart-card .recharts-surface,
-.financial-chart-card .recharts-surface {
-  display: block !important;
-
+.performance-chart-card
+  .recharts-wrapper,
+.financial-chart-card
+  .recharts-wrapper {
   width: 100%;
-
-  overflow: visible !important;
-
-  visibility: visible !important;
-  opacity: 1 !important;
+  height: 100%;
 }
 
-.performance-chart-card svg,
-.financial-chart-card svg {
-  display: block !important;
-
-  visibility: visible !important;
-  opacity: 1 !important;
-
-  overflow: visible !important;
+.performance-chart-card
+  .recharts-surface,
+.financial-chart-card
+  .recharts-surface {
+  overflow: visible;
 }
-
 
 /* =========================================================
    RECHARTS TEXT
@@ -529,224 +509,38 @@
 }
 
 .recharts-cartesian-axis-tick-value {
-  fill: var(--yp-blue) !important;
-
+  fill: var(--yp-blue);
   font-size: 12px;
-
   font-weight: 600;
 }
 
 .recharts-legend-item-text {
-  color: var(--yp-blue) !important;
-
-  font-size: 12px !important;
-  font-weight: 700 !important;
+  color: var(--yp-blue);
+  font-size: 12px;
+  font-weight: 700;
 }
-
 
 /* =========================================================
-   CHART GRID
+   GRID
 ========================================================= */
 
-.performance-chart-card .recharts-cartesian-grid line,
-.financial-chart-card .recharts-cartesian-grid line {
-  stroke: var(--yp-grid) !important;
-
-  stroke-width: 1 !important;
-
-  opacity: 1 !important;
+.recharts-cartesian-grid line {
+  stroke: var(--yp-grid);
+  stroke-width: 1;
 }
-
-.performance-chart-card
-  .recharts-cartesian-grid-horizontal
-  line,
-.performance-chart-card
-  .recharts-cartesian-grid-vertical
-  line,
-.financial-chart-card
-  .recharts-cartesian-grid-horizontal
-  line,
-.financial-chart-card
-  .recharts-cartesian-grid-vertical
-  line {
-  stroke: var(--yp-grid) !important;
-
-  opacity: 1 !important;
-}
-
 
 /* =========================================================
-   CHART AXIS
+   AXIS
 ========================================================= */
 
-.performance-chart-card
-  .recharts-cartesian-axis-line,
-.performance-chart-card
-  .recharts-cartesian-axis-tick-line,
-.financial-chart-card
-  .recharts-cartesian-axis-line,
-.financial-chart-card
-  .recharts-cartesian-axis-tick-line {
-  stroke: var(--yp-gold) !important;
-
-  opacity: 1 !important;
+.recharts-cartesian-axis-line {
+  stroke: var(--yp-gold);
+  stroke-width: 1;
 }
 
-.performance-chart-card
-  .recharts-cartesian-axis-tick-value,
-.financial-chart-card
-  .recharts-cartesian-axis-tick-value {
-  fill: var(--yp-blue) !important;
-
-  opacity: 1 !important;
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--yp-gold);
 }
-
-
-/* =========================================================
-   BAR CHART
-   HIGH-CONTRAST COLORS
-========================================================= */
-
-/* Billing = Blue */
-.performance-chart-card
-  .recharts-bar-rectangle[fill="#2563eb"],
-.financial-chart-card
-  .recharts-bar-rectangle[fill="#2563eb"] {
-  fill: var(--yp-billing) !important;
-
-  opacity: 1 !important;
-}
-
-/* Profit = Green */
-.performance-chart-card
-  .recharts-bar-rectangle[fill="#16a34a"],
-.financial-chart-card
-  .recharts-bar-rectangle[fill="#16a34a"] {
-  fill: var(--yp-profit) !important;
-
-  opacity: 1 !important;
-}
-
-/* Loss = Red */
-.performance-chart-card
-  .recharts-bar-rectangle[fill="#dc2626"],
-.financial-chart-card
-  .recharts-bar-rectangle[fill="#dc2626"] {
-  fill: var(--yp-loss) !important;
-
-  opacity: 1 !important;
-}
-
-
-/* Generic Recharts bar visibility */
-.performance-chart-card .recharts-bar-rectangle,
-.financial-chart-card .recharts-bar-rectangle {
-  visibility: visible !important;
-
-  opacity: 1 !important;
-}
-
-/* SVG path/rect visibility */
-.performance-chart-card
-  .recharts-bar-rectangle
-  path,
-.performance-chart-card
-  .recharts-bar-rectangle
-  rect,
-.financial-chart-card
-  .recharts-bar-rectangle
-  path,
-.financial-chart-card
-  .recharts-bar-rectangle
-  rect {
-  visibility: visible !important;
-
-  opacity: 1 !important;
-}
-
-
-/* =========================================================
-   LINE CHART
-   HIGH-CONTRAST COLORS
-========================================================= */
-
-/* Billing line */
-.performance-chart-card
-  .recharts-line-curve[stroke="#2563eb"] {
-  stroke: var(--yp-billing) !important;
-
-  stroke-width: 4px !important;
-
-  opacity: 1 !important;
-}
-
-/* Profit line */
-.performance-chart-card
-  .recharts-line-curve[stroke="#16a34a"] {
-  stroke: var(--yp-profit) !important;
-
-  stroke-width: 4px !important;
-
-  opacity: 1 !important;
-}
-
-/* Loss line */
-.performance-chart-card
-  .recharts-line-curve[stroke="#dc2626"] {
-  stroke: var(--yp-loss) !important;
-
-  stroke-width: 4px !important;
-
-  opacity: 1 !important;
-}
-
-
-/* Generic line visibility */
-.performance-chart-card .recharts-line-curve {
-  visibility: visible !important;
-
-  opacity: 1 !important;
-}
-
-
-/* =========================================================
-   LINE DOTS
-========================================================= */
-
-.performance-chart-card
-  .recharts-line-dots {
-  visibility: visible !important;
-
-  opacity: 1 !important;
-}
-
-.performance-chart-card
-  .recharts-line-dot {
-  visibility: visible !important;
-
-  opacity: 1 !important;
-}
-
-
-/* =========================================================
-   LEGEND
-========================================================= */
-
-.performance-chart-card
-  .recharts-legend-wrapper,
-.financial-chart-card
-  .recharts-legend-wrapper {
-  visibility: visible !important;
-
-  opacity: 1 !important;
-}
-
-.recharts-default-legend {
-  visibility: visible !important;
-
-  opacity: 1 !important;
-}
-
 
 /* =========================================================
    TOOLTIP
@@ -826,7 +620,6 @@
   font-size: 12px;
 }
 
-
 /* =========================================================
    TREND SUMMARY
 ========================================================= */
@@ -878,7 +671,6 @@
   font-size: 20px;
   font-weight: 800;
 }
-
 
 /* =========================================================
    RANKING
@@ -1000,7 +792,6 @@
   font-weight: 600;
 }
 
-
 /* =========================================================
    FINANCIAL ANALYSIS
 ========================================================= */
@@ -1086,11 +877,6 @@
   font-size: 11px;
 }
 
-
-/* =========================================================
-   FINANCIAL VALUE COLORS
-========================================================= */
-
 .financial-analysis-grid .profit-value {
   color: var(--yp-profit);
 }
@@ -1098,7 +884,6 @@
 .financial-analysis-grid .loss-value {
   color: var(--yp-loss);
 }
-
 
 /* =========================================================
    INSIGHTS
@@ -1207,7 +992,6 @@
   overflow-wrap: anywhere;
 }
 
-
 /* =========================================================
    NO DATA
 ========================================================= */
@@ -1237,23 +1021,15 @@
   box-sizing: border-box;
 }
 
-
 /* =========================================================
-   CURSOR / PIE LABEL
+   PIE
 ========================================================= */
 
-.recharts-tooltip-cursor {
-  fill: rgba(201, 162, 39, 0.08);
-}
-
 .recharts-pie-label-text {
-  fill: var(--yp-blue) !important;
-
+  fill: var(--yp-blue);
   font-size: 12px;
-
   font-weight: 700;
 }
-
 
 /* =========================================================
    SCROLLBAR
@@ -1278,7 +1054,6 @@
   background: var(--yp-gold);
 }
 
-
 /* =========================================================
    LARGE DESKTOP
 ========================================================= */
@@ -1300,7 +1075,6 @@
       repeat(3, minmax(180px, 1fr));
   }
 }
-
 
 /* =========================================================
    TABLET
@@ -1340,10 +1114,6 @@
       repeat(2, minmax(0, 1fr));
   }
 
-  /*
-     Do NOT hide chart overflow here.
-     Recharts needs the SVG drawing area visible.
-  */
   .performance-chart-card,
   .financial-chart-card {
     overflow: visible;
@@ -1354,7 +1124,6 @@
       40px minmax(0, 1fr) auto;
   }
 }
-
 
 /* =========================================================
    MOBILE
@@ -1440,7 +1209,12 @@
     font-size: 19px;
   }
 
+  /* =====================================================
+     MOBILE CHARTS
+  ===================================================== */
+
   .performance-chart-card {
+    height: 390px;
     min-height: 390px;
 
     padding: 5px;
@@ -1449,16 +1223,22 @@
   }
 
   .year-wise-chart-card {
+    height: 400px;
     min-height: 400px;
   }
 
   .trend-chart-card {
+    height: 425px;
     min-height: 425px;
   }
 
-  .performance-chart-card .recharts-wrapper,
-  .financial-chart-card .recharts-wrapper {
-    min-height: 350px;
+  .financial-chart-card {
+    height: 380px;
+    min-height: 380px;
+
+    padding: 5px;
+
+    overflow: visible;
   }
 
   .performance-trend-summary {
@@ -1471,14 +1251,6 @@
     grid-template-columns: 1fr;
 
     gap: 10px;
-  }
-
-  .financial-chart-card {
-    min-height: 380px;
-
-    padding: 5px;
-
-    overflow: visible;
   }
 
   .performance-insights {
@@ -1534,7 +1306,6 @@
   }
 }
 
-
 /* =========================================================
    SMALL MOBILE
 ========================================================= */
@@ -1571,18 +1342,29 @@
   }
 
   .performance-chart-card {
+    height: 360px;
     min-height: 360px;
 
     padding: 4px;
   }
 
+  .year-wise-chart-card {
+    height: 370px;
+    min-height: 370px;
+  }
+
+  .trend-chart-card {
+    height: 390px;
+    min-height: 390px;
+  }
+
   .financial-chart-card {
+    height: 350px;
     min-height: 350px;
 
     padding: 4px;
   }
 }
-
 
 /* =========================================================
    ACCESSIBILITY
@@ -1598,7 +1380,6 @@
 .insight-card:focus-within {
   border-color: var(--yp-gold);
 }
-
 
 /* =========================================================
    PRINT
@@ -1637,16 +1418,5 @@
   .insight-card,
   .financial-analysis-grid > div {
     box-shadow: none;
-  }
-
-  /* Keep graph colors when printing */
-  .recharts-bar-rectangle {
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  .recharts-line-curve {
-    opacity: 1 !important;
-    visibility: visible !important;
   }
 }

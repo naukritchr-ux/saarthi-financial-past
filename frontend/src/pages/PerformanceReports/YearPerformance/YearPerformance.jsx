@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  useMemo,
+  useState
+} from "react";
 
 import {
   ResponsiveContainer,
@@ -49,7 +52,6 @@ const GRAPH_COLORS = {
   loss: "#dc2626",
   golden: "#c9a227",
   darkBlue: "#17365d",
-  cream: "#fffaf0",
   grid: "#e7dcc8"
 };
 
@@ -95,12 +97,7 @@ function cleanNumber(value) {
 }
 
 /* =========================================================
-   FULL CURRENCY FORMAT
-
-   Used for overview cards.
-
-   Example:
-   ₹12,45,67,890
+   CURRENCY FORMAT
 ========================================================= */
 
 function formatCurrency(value) {
@@ -127,17 +124,11 @@ function formatNumber(value) {
 
 /* =========================================================
    CRORE FORMAT
-
-   Used on financial graph Y axes.
-
-   Example:
-   ₹1 Cr
-   ₹2 Cr
-   ₹5 Cr
 ========================================================= */
 
 function formatCrore(value) {
-  const crore = cleanNumber(value) / 10000000;
+  const crore =
+    cleanNumber(value) / 10000000;
 
   if (crore === 0) {
     return "₹0 Cr";
@@ -151,7 +142,7 @@ function formatCrore(value) {
 }
 
 /* =========================================================
-   FIRST NON-EMPTY VALUE
+   FIRST VALUE
 ========================================================= */
 
 function firstValue(row, keys) {
@@ -186,45 +177,40 @@ function cleanText(value) {
 
 /* =========================================================
    INFO STATUS
-
-   R = Profit / Placement
-   C = Loss
 ========================================================= */
 
 function getInfoStatus(row) {
   return cleanText(
     firstValue(row, [
-      "Info",
       "info",
-      "Info Status",
+      "Info",
       "info_status",
-      "Information Status",
-      "information_status"
+      "Info Status",
+      "information_status",
+      "Information Status"
     ])
   ).toUpperCase();
 }
 
 /* =========================================================
    COMPANY NAME
-
-   UNIQUE CLIENT IDENTIFIER
 ========================================================= */
 
 function getCompanyName(row) {
   return cleanText(
     firstValue(row, [
-      "Company Name",
       "company_name",
+      "Company Name",
+      "company",
+      "Company",
+      "client_name",
+      "Client Name",
+      "client",
+      "Client",
       "CompanyName",
       "companyName",
-      "Company",
-      "company",
-      "Client Name",
-      "client_name",
-      "Client",
-      "client",
-      "TANN",
-      "tann"
+      "tann",
+      "TANN"
     ])
   );
 }
@@ -232,6 +218,7 @@ function getCompanyName(row) {
 function getCompanyKey(row) {
   return getCompanyName(row)
     .trim()
+    .replace(/\s+/g, " ")
     .toLowerCase();
 }
 
@@ -263,24 +250,21 @@ function getBDMember(row) {
 function getTeamLeader(row) {
   return cleanText(
     firstValue(row, [
-      "Team Leader",
       "team_leader",
-      "teamLeader",
+      "Team Leader",
+      "team leader",
       "TeamLeader",
+      "teamLeader",
       "TL",
       "tl",
       "TL Name",
-      "Team Leader Name",
-      "team leader"
+      "Team Leader Name"
     ])
   );
 }
 
 /* =========================================================
    INDUSTRY
-
-   Used only by the filter.
-   Industry analysis section has been removed.
 ========================================================= */
 
 function getIndustry(row) {
@@ -335,7 +319,7 @@ function parseDate(value) {
       : value;
   }
 
-  /* Excel serial date support */
+  /* Excel serial date */
   if (typeof value === "number") {
     if (
       value > 20000 &&
@@ -350,9 +334,7 @@ function parseDate(value) {
           value * 86400000
       );
 
-      return Number.isNaN(
-        date.getTime()
-      )
+      return Number.isNaN(date.getTime())
         ? null
         : date;
     }
@@ -364,58 +346,71 @@ function parseDate(value) {
     return null;
   }
 
-  /* YYYY-MM-DD */
+  /* YYYY-MM-DD / YYYY/MM/DD */
+
   let match = text.match(
     /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/
   );
 
   if (match) {
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
     const date = new Date(
-      Number(match[1]),
-      Number(match[2]) - 1,
-      Number(match[3])
+      year,
+      month - 1,
+      day
     );
 
-    return Number.isNaN(
-      date.getTime()
-    )
-      ? null
-      : date;
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
   }
 
-  /* DD/MM/YYYY or DD-MM-YYYY */
+  /* DD/MM/YYYY / DD-MM-YYYY */
+
   match = text.match(
     /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/
   );
 
   if (match) {
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
+
     const date = new Date(
-      Number(match[3]),
-      Number(match[2]) - 1,
-      Number(match[1])
+      year,
+      month - 1,
+      day
     );
 
-    return Number.isNaN(
-      date.getTime()
-    )
-      ? null
-      : date;
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
   }
 
   const date = new Date(text);
 
-  return Number.isNaN(
-    date.getTime()
-  )
+  return Number.isNaN(date.getTime())
     ? null
     : date;
 }
 
 /* =========================================================
-   FINANCIAL YEAR
-
-   Database FY is preferred.
-   Otherwise calculated from Date Client Acquired.
+   FINANCIAL YEAR NORMALIZER
 ========================================================= */
 
 function normalizeFinancialYear(value) {
@@ -461,22 +456,30 @@ function normalizeFinancialYear(value) {
   return "";
 }
 
+/* =========================================================
+   FINANCIAL YEAR
+========================================================= */
+
 function getFinancialYear(row) {
-  const databaseYear = firstValue(row, [
-    "Financial Year",
-    "FinancialYear",
-    "financial_year",
-    "financialYear",
-    "Financial_Year",
-    "FY",
-    "fy",
-    "FY Year",
-    "fy_year",
-    "acquired_year",
-    "Acquired Year",
-    "Year",
-    "year"
-  ]);
+  const databaseYear = firstValue(
+    row,
+    [
+      "Financial Year",
+      "FinancialYear",
+      "financial_year",
+      "financialYear",
+      "Financial_Year",
+      "FY",
+      "fy",
+      "FY Year",
+      "fy_year",
+      "acquired_year",
+      "Aquired Year",
+      "Acquired Year",
+      "Year",
+      "year"
+    ]
+  );
 
   if (databaseYear) {
     const normalized =
@@ -497,11 +500,8 @@ function getFinancialYear(row) {
     return "";
   }
 
-  const year =
-    date.getFullYear();
-
-  const month =
-    date.getMonth() + 1;
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
 
   if (month >= 4) {
     return `${year}-${String(
@@ -515,7 +515,7 @@ function getFinancialYear(row) {
 }
 
 /* =========================================================
-   MONTH
+   MONTH NORMALIZER
 ========================================================= */
 
 function normalizeMonth(value) {
@@ -543,37 +543,26 @@ function normalizeMonth(value) {
   const map = {
     january: "January",
     jan: "January",
-
     february: "February",
     feb: "February",
-
     march: "March",
     mar: "March",
-
     april: "April",
     apr: "April",
-
     may: "May",
-
     june: "June",
     jun: "June",
-
     july: "July",
     jul: "July",
-
     august: "August",
     aug: "August",
-
     september: "September",
     sept: "September",
     sep: "September",
-
     october: "October",
     oct: "October",
-
     november: "November",
     nov: "November",
-
     december: "December",
     dec: "December"
   };
@@ -582,8 +571,7 @@ function normalizeMonth(value) {
     return map[text];
   }
 
-  const numeric =
-    Number(text);
+  const numeric = Number(text);
 
   if (
     Number.isInteger(numeric) &&
@@ -600,6 +588,10 @@ function normalizeMonth(value) {
 
   return "";
 }
+
+/* =========================================================
+   MONTH
+========================================================= */
 
 function getMonth(row) {
   const databaseMonth =
@@ -640,29 +632,22 @@ function getMonth(row) {
 }
 
 /* =========================================================
-   TOTAL BILL AMOUNT
-
-   ONLY AMOUNT SOURCE
-
-   Used for:
-   - Total Billing
-   - Profit
-   - Loss
-   - Year-Wise Billing
-   - Monthly Billing
+   BILLING
 ========================================================= */
 
-function getTotalBillAmount(row) {
+function getBilling(row) {
   return cleanNumber(
     firstValue(row, [
-      "Total Bill Amount",
       "total_bill_amount",
+      "Total Bill Amount",
+      "Billing",
+      "Total Billing",
+      "Billing Amount",
       "TotalBillAmount",
       "totalBillAmount",
       "Total Bill",
       "total_bill",
-      "Billing",
-      "billing"
+      "TANN/TDS"
     ])
   );
 }
@@ -671,10 +656,6 @@ function getTotalBillAmount(row) {
    BUSINESS METRICS
 ========================================================= */
 
-/*
-  1. Total Acquired Client
-  = UNIQUE Company Name
-*/
 function getTotalAcquiredClients(rows) {
   return new Set(
     rows
@@ -683,18 +664,10 @@ function getTotalAcquiredClients(rows) {
   ).size;
 }
 
-/*
-  2. Total Enquiries
-  = TOTAL ROW COUNT
-*/
 function getTotalEnquiries(rows) {
   return rows.length;
 }
 
-/*
-  3. Total Placement
-  = UNIQUE Company Name WHERE Info = R
-*/
 function getTotalPlacements(rows) {
   return new Set(
     rows
@@ -707,23 +680,14 @@ function getTotalPlacements(rows) {
   ).size;
 }
 
-/*
-  4. Total Billing
-  = SUM Total Bill Amount
-*/
 function getTotalBilling(rows) {
   return rows.reduce(
     (total, row) =>
-      total +
-      getTotalBillAmount(row),
+      total + getBilling(row),
     0
   );
 }
 
-/*
-  5. Profit
-  = SUM Total Bill Amount WHERE Info = R
-*/
 function getProfit(rows) {
   return rows.reduce(
     (total, row) => {
@@ -731,8 +695,7 @@ function getProfit(rows) {
         getInfoStatus(row) === "R"
       ) {
         return (
-          total +
-          getTotalBillAmount(row)
+          total + getBilling(row)
         );
       }
 
@@ -742,10 +705,6 @@ function getProfit(rows) {
   );
 }
 
-/*
-  6. Loss
-  = SUM Total Bill Amount WHERE Info = C
-*/
 function getLoss(rows) {
   return rows.reduce(
     (total, row) => {
@@ -753,8 +712,7 @@ function getLoss(rows) {
         getInfoStatus(row) === "C"
       ) {
         return (
-          total +
-          getTotalBillAmount(row)
+          total + getBilling(row)
         );
       }
 
@@ -765,7 +723,7 @@ function getLoss(rows) {
 }
 
 /* =========================================================
-   SORT YEARS
+   SORT FINANCIAL YEARS
 ========================================================= */
 
 function sortYears(years) {
@@ -790,10 +748,6 @@ function sortYears(years) {
 
 /* =========================================================
    GROUP DATA
-
-   Used for:
-   - BD Performance
-   - Team Leader Performance
 ========================================================= */
 
 function createGroupedData(
@@ -820,36 +774,35 @@ function createGroupedData(
 
     const item = map.get(name);
 
-    const bill =
-      getTotalBillAmount(row);
+    const billing =
+      getBilling(row);
 
     const info =
       getInfoStatus(row);
 
-    item.billing += bill;
+    const companyKey =
+      getCompanyKey(row);
+
+    item.billing += billing;
 
     if (info === "R") {
-      item.profit += bill;
+      item.profit += billing;
 
-      const company =
-        getCompanyKey(row);
-
-      if (company) {
+      if (companyKey) {
         item.placements.add(
-          company
+          companyKey
         );
       }
     }
 
     if (info === "C") {
-      item.loss += bill;
+      item.loss += billing;
     }
 
-    const company =
-      getCompanyKey(row);
-
-    if (company) {
-      item.clients.add(company);
+    if (companyKey) {
+      item.clients.add(
+        companyKey
+      );
     }
 
     item.enquiries += 1;
@@ -876,9 +829,83 @@ function createGroupedData(
 }
 
 /* =========================================================
-   TOOLTIP
+   CUSTOM BAR
 
-   Currency values are shown completely.
+   Uses SVG PATH instead of the default Recharts
+   rectangle renderer.
+========================================================= */
+
+function VisibleBar(props) {
+  const {
+    x,
+    y,
+    width,
+    height,
+    fill
+  } = props;
+
+  const xValue = Number(x);
+  const yValue = Number(y);
+  const widthValue = Number(width);
+  const heightValue = Number(height);
+
+  if (
+    !Number.isFinite(xValue) ||
+    !Number.isFinite(yValue) ||
+    !Number.isFinite(widthValue) ||
+    !Number.isFinite(heightValue)
+  ) {
+    return null;
+  }
+
+  if (
+    widthValue <= 0 ||
+    heightValue <= 0
+  ) {
+    return null;
+  }
+
+  const radius = Math.min(
+    5,
+    widthValue / 2,
+    heightValue / 2
+  );
+
+  const right =
+    xValue + widthValue;
+
+  const bottom =
+    yValue + heightValue;
+
+  const path = `
+    M ${xValue + radius} ${yValue}
+    L ${right - radius} ${yValue}
+    Q ${right} ${yValue} ${right} ${
+      yValue + radius
+    }
+    L ${right} ${bottom}
+    L ${xValue} ${bottom}
+    L ${xValue} ${
+      yValue + radius
+    }
+    Q ${xValue} ${yValue} ${
+      xValue + radius
+    } ${yValue}
+    Z
+  `;
+
+  return (
+    <path
+      d={path}
+      fill={fill}
+      fillOpacity={1}
+      stroke="none"
+    />
+  );
+}
+
+/* =========================================================
+   TOOLTIP
 ========================================================= */
 
 function PerformanceTooltip({
@@ -896,6 +923,7 @@ function PerformanceTooltip({
 
   return (
     <div className="performance-tooltip">
+
       <strong>
         {label}
       </strong>
@@ -932,6 +960,7 @@ function PerformanceTooltip({
           );
         }
       )}
+
     </div>
   );
 }
@@ -942,40 +971,20 @@ function PerformanceTooltip({
 
 export default function YearPerformance() {
   const {
-    filteredRows = [],
-    rows = [],
-    data = [],
-    allRows = [],
-    allData = []
+    rows = []
   } = useData();
 
   /* =======================================================
      SOURCE DATA
   ======================================================= */
 
-  const sourceRows = useMemo(() => {
-    const candidates = [
-      allRows,
-      allData,
-      rows,
-      data,
-      filteredRows
-    ];
-
-    return (
-      candidates.find(
-        (item) =>
-          Array.isArray(item) &&
-          item.length > 0
-      ) || []
-    );
-  }, [
-    allRows,
-    allData,
-    rows,
-    data,
-    filteredRows
-  ]);
+  const sourceRows = useMemo(
+    () =>
+      Array.isArray(rows)
+        ? rows
+        : [],
+    [rows]
+  );
 
   /* =======================================================
      FILTERS
@@ -1041,35 +1050,33 @@ export default function YearPerformance() {
     [sourceRows]
   );
 
-  const teamLeaderOptions =
-    useMemo(
-      () =>
-        Array.from(
-          new Set(
-            sourceRows
-              .map(getTeamLeader)
-              .filter(Boolean)
-          )
-        ).sort((a, b) =>
-          a.localeCompare(b)
-        ),
-      [sourceRows]
-    );
+  const teamLeaderOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          sourceRows
+            .map(getTeamLeader)
+            .filter(Boolean)
+        )
+      ).sort((a, b) =>
+        a.localeCompare(b)
+      ),
+    [sourceRows]
+  );
 
-  const industryOptions =
-    useMemo(
-      () =>
-        Array.from(
-          new Set(
-            sourceRows
-              .map(getIndustry)
-              .filter(Boolean)
-          )
-        ).sort((a, b) =>
-          a.localeCompare(b)
-        ),
-      [sourceRows]
-    );
+  const industryOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          sourceRows
+            .map(getIndustry)
+            .filter(Boolean)
+        )
+      ).sort((a, b) =>
+        a.localeCompare(b)
+      ),
+    [sourceRows]
+  );
 
   const infoOptions = useMemo(
     () =>
@@ -1094,8 +1101,7 @@ export default function YearPerformance() {
       return sourceRows.filter(
         (row) => {
           if (
-            selectedYear !==
-              "All" &&
+            selectedYear !== "All" &&
             getFinancialYear(row) !==
               selectedYear
           ) {
@@ -1152,35 +1158,36 @@ export default function YearPerformance() {
      ANALYSIS PERIOD
   ======================================================= */
 
-  const analysisPeriod = useMemo(() => {
-    const years = Array.from(
-      new Set(
-        filteredPerformanceRows
-          .map(getFinancialYear)
-          .filter(Boolean)
-      )
-    );
+  const analysisPeriod =
+    useMemo(() => {
+      const years = Array.from(
+        new Set(
+          filteredPerformanceRows
+            .map(getFinancialYear)
+            .filter(Boolean)
+        )
+      );
 
-    const sorted =
-      sortYears(years);
+      const sorted =
+        sortYears(years);
 
-    if (!sorted.length) {
-      return "No data";
-    }
+      if (!sorted.length) {
+        return "No data";
+      }
 
-    return `${sorted[0]} to ${
-      sorted[sorted.length - 1]
-    }`;
-  }, [filteredPerformanceRows]);
+      return `${sorted[0]} to ${
+        sorted[sorted.length - 1]
+      }`;
+    }, [
+      filteredPerformanceRows
+    ]);
 
   /* =======================================================
      PERFORMANCE OVERVIEW
-
-     EXACT BUSINESS RULES
   ======================================================= */
 
-  const overview = useMemo(() => {
-    return {
+  const overview = useMemo(
+    () => ({
       totalAcquiredClients:
         getTotalAcquiredClients(
           filteredPerformanceRows
@@ -1210,27 +1217,12 @@ export default function YearPerformance() {
         getLoss(
           filteredPerformanceRows
         )
-    };
-  }, [filteredPerformanceRows]);
+    }),
+    [filteredPerformanceRows]
+  );
 
   /* =======================================================
      YEAR-WISE DATA
-
-     IMPORTANT:
-     This explicitly creates:
-
-     {
-       year,
-       billing,
-       profit,
-       loss,
-       clients,
-       placements,
-       enquiries
-     }
-
-     so the chart uses dataKey="year"
-     correctly.
   ======================================================= */
 
   const yearlyData = useMemo(() => {
@@ -1261,7 +1253,7 @@ export default function YearPerformance() {
           yearMap.get(year);
 
         const billing =
-          getTotalBillAmount(row);
+          getBilling(row);
 
         const info =
           getInfoStatus(row);
@@ -1269,20 +1261,16 @@ export default function YearPerformance() {
         const companyKey =
           getCompanyKey(row);
 
-        /* Total Enquiries */
         item.enquiries += 1;
 
-        /* Total Acquired Client */
         if (companyKey) {
           item.clients.add(
             companyKey
           );
         }
 
-        /* Total Billing */
         item.billing += billing;
 
-        /* Profit + Placement */
         if (info === "R") {
           item.profit += billing;
 
@@ -1293,7 +1281,6 @@ export default function YearPerformance() {
           }
         }
 
-        /* Loss */
         if (info === "C") {
           item.loss += billing;
         }
@@ -1305,9 +1292,12 @@ export default function YearPerformance() {
     )
       .map((item) => ({
         year: item.year,
-        billing: item.billing,
-        profit: item.profit,
-        loss: item.loss,
+        billing:
+          Number(item.billing) || 0,
+        profit:
+          Number(item.profit) || 0,
+        loss:
+          Number(item.loss) || 0,
         clients:
           item.clients.size,
         placements:
@@ -1336,58 +1326,56 @@ export default function YearPerformance() {
 
   /* =======================================================
      MONTHLY TREND
-
-     Billing = Total Bill Amount
-     Profit = Info R
-     Loss = Info C
   ======================================================= */
 
-  const monthlyTrend = useMemo(() => {
-    return financialMonths.map(
-      (month) => {
-        const monthRows =
-          filteredPerformanceRows.filter(
-            (row) =>
-              getMonth(row) ===
-              month.full
-          );
+  const monthlyTrend = useMemo(
+    () =>
+      financialMonths.map(
+        (month) => {
+          const monthRows =
+            filteredPerformanceRows.filter(
+              (row) =>
+                getMonth(row) ===
+                month.full
+            );
 
-        return {
-          month: month.short,
+          return {
+            month: month.short,
 
-          billing:
-            getTotalBilling(
-              monthRows
-            ),
+            billing:
+              getTotalBilling(
+                monthRows
+              ),
 
-          profit:
-            getProfit(
-              monthRows
-            ),
+            profit:
+              getProfit(
+                monthRows
+              ),
 
-          loss:
-            getLoss(
-              monthRows
-            ),
+            loss:
+              getLoss(
+                monthRows
+              ),
 
-          clients:
-            getTotalAcquiredClients(
-              monthRows
-            ),
+            clients:
+              getTotalAcquiredClients(
+                monthRows
+              ),
 
-          placements:
-            getTotalPlacements(
-              monthRows
-            ),
+            placements:
+              getTotalPlacements(
+                monthRows
+              ),
 
-          enquiries:
-            getTotalEnquiries(
-              monthRows
-            )
-        };
-      }
-    );
-  }, [filteredPerformanceRows]);
+            enquiries:
+              getTotalEnquiries(
+                monthRows
+              )
+          };
+        }
+      ),
+    [filteredPerformanceRows]
+  );
 
   /* =======================================================
      BD PERFORMANCE
@@ -1417,18 +1405,24 @@ export default function YearPerformance() {
     );
 
   /* =======================================================
-     FINANCIAL PIE DATA
+     FINANCIAL PIE
   ======================================================= */
 
   const financialPieData = useMemo(
     () => [
       {
         name: "Profit",
-        value: overview.profit
+        value:
+          Number(
+            overview.profit
+          ) || 0
       },
       {
         name: "Loss",
-        value: overview.loss
+        value:
+          Number(
+            overview.loss
+          ) || 0
       }
     ],
     [
@@ -1439,9 +1433,6 @@ export default function YearPerformance() {
 
   /* =======================================================
      INSIGHTS
-
-     Industry insight removed because
-     Industry Analysis has been removed.
   ======================================================= */
 
   const insights = useMemo(() => {
@@ -1507,12 +1498,9 @@ export default function YearPerformance() {
   return (
     <div className="year-performance">
 
-      {/* ===================================================
-          HEADER
-      =================================================== */}
+      {/* HEADER */}
 
       <div className="performance-header">
-
         <div>
           <h1>
             Year Performance
@@ -1525,39 +1513,27 @@ export default function YearPerformance() {
             </strong>
           </p>
         </div>
-
       </div>
 
-      {/* ===================================================
-          FILTERS
-      =================================================== */}
+      {/* FILTERS */}
 
       <section className="performance-filter-section">
 
         <div className="section-heading">
-
           <div>
-            <h2>
-              Filters
-            </h2>
+            <h2>Filters</h2>
 
             <p>
               Filter the performance
               analysis
             </p>
           </div>
-
         </div>
 
         <div className="performance-filters">
 
-          {/* YEAR */}
-
           <div className="performance-filter">
-
-            <label>
-              Year
-            </label>
+            <label>Year</label>
 
             <select
               value={selectedYear}
@@ -1581,18 +1557,11 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
-
             </select>
-
           </div>
 
-          {/* BD */}
-
           <div className="performance-filter">
-
-            <label>
-              BD Member
-            </label>
+            <label>BD Member</label>
 
             <select
               value={selectedBD}
@@ -1616,15 +1585,10 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
-
             </select>
-
           </div>
 
-          {/* TEAM LEADER */}
-
           <div className="performance-filter">
-
             <label>
               Team Leader
             </label>
@@ -1653,18 +1617,11 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
-
             </select>
-
           </div>
 
-          {/* INDUSTRY FILTER */}
-
           <div className="performance-filter">
-
-            <label>
-              Industry
-            </label>
+            <label>Industry</label>
 
             <select
               value={
@@ -1690,15 +1647,10 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
-
             </select>
-
           </div>
 
-          {/* INFO */}
-
           <div className="performance-filter">
-
             <label>
               Info Status
             </label>
@@ -1725,23 +1677,19 @@ export default function YearPerformance() {
                   </option>
                 )
               )}
-
             </select>
-
           </div>
 
         </div>
-
       </section>
 
-      {/* ===================================================
+      {/* =================================================
           1. PERFORMANCE OVERVIEW
-      =================================================== */}
+      ================================================= */}
 
       <section className="performance-section">
 
         <div className="section-heading">
-
           <span>1</span>
 
           <div>
@@ -1754,15 +1702,11 @@ export default function YearPerformance() {
               summary
             </p>
           </div>
-
         </div>
 
         <div className="performance-kpi-grid">
 
-          {/* ACQUIRED CLIENT */}
-
           <div className="performance-kpi">
-
             <span>
               Total Acquired Client
             </span>
@@ -1776,13 +1720,9 @@ export default function YearPerformance() {
             <small>
               Unique Company Name
             </small>
-
           </div>
 
-          {/* ENQUIRIES */}
-
           <div className="performance-kpi">
-
             <span>
               Total Enquiries
             </span>
@@ -1796,13 +1736,9 @@ export default function YearPerformance() {
             <small>
               Total enquiry rows
             </small>
-
           </div>
 
-          {/* PLACEMENT */}
-
           <div className="performance-kpi">
-
             <span>
               Total Placement
             </span>
@@ -1814,92 +1750,69 @@ export default function YearPerformance() {
             </strong>
 
             <small>
-              Unique Company Name where
-              Info = R
+              Unique Company Name
+              where Info = R
             </small>
-
           </div>
 
-          {/* BILLING */}
-
           <div className="performance-kpi">
-
             <span>
               Total Billing
             </span>
 
             <strong className="amount-value">
-
               {formatCurrency(
                 overview.totalBilling
               )}
-
             </strong>
 
             <small>
               Sum of Total Bill Amount
             </small>
-
           </div>
 
-          {/* PROFIT */}
-
           <div className="performance-kpi">
-
             <span>
               Profit
             </span>
 
             <strong className="amount-value profit-value">
-
               {formatCurrency(
                 overview.profit
               )}
-
             </strong>
 
             <small>
               Billing where Info = R
             </small>
-
           </div>
 
-          {/* LOSS */}
-
           <div className="performance-kpi">
-
             <span>
               Loss
             </span>
 
             <strong className="amount-value loss-value">
-
               {formatCurrency(
                 overview.loss
               )}
-
             </strong>
 
             <small>
               Billing where Info = C
             </small>
-
           </div>
 
         </div>
-
       </section>
 
-      {/* ===================================================
+      {/* =================================================
           2. YEAR-WISE ANALYSIS
-
-          GRAPH ONLY
-      =================================================== */}
+      ================================================= */}
 
       <section className="performance-section">
 
         <div className="section-heading">
-
           <span>2</span>
 
           <div>
@@ -1912,7 +1825,6 @@ export default function YearPerformance() {
               by financial year
             </p>
           </div>
-
         </div>
 
         <div className="performance-chart-card year-wise-chart-card">
@@ -1921,62 +1833,78 @@ export default function YearPerformance() {
 
             <ResponsiveContainer
               width="100%"
-              height={430}
-              minWidth={0}
+              height="100%"
             >
 
               <BarChart
                 data={yearlyData}
                 margin={{
-                  top: 20,
+                  top: 30,
                   right: 30,
                   left: 20,
-                  bottom: 20
+                  bottom: 30
                 }}
+                barCategoryGap="20%"
+                barGap={8}
               >
 
                 <CartesianGrid
+                  stroke="#e7dcc8"
+                  strokeWidth={1}
+                  strokeOpacity={1}
                   strokeDasharray="3 3"
-                  stroke={
-                    GRAPH_COLORS.grid
-                  }
+                  vertical={false}
                 />
 
                 <XAxis
                   dataKey="year"
+                  interval={0}
+                  tickMargin={10}
+                  axisLine={{
+                    stroke: "#c9a227",
+                    strokeWidth: 2
+                  }}
+                  tickLine={{
+                    stroke: "#c9a227",
+                    strokeWidth: 1
+                  }}
                   tick={{
-                    fill:
-                      GRAPH_COLORS.darkBlue,
+                    fill: "#17365d",
                     fontSize: 13,
                     fontWeight: 600
                   }}
-                  axisLine={{
-                    stroke:
-                      GRAPH_COLORS.golden
-                  }}
-                  tickLine={false}
                 />
 
                 <YAxis
-                  tick={{
-                    fill:
-                      GRAPH_COLORS.darkBlue,
-                    fontSize: 12
-                  }}
-                  axisLine={{
-                    stroke:
-                      GRAPH_COLORS.golden
-                  }}
-                  tickLine={false}
+                  width={90}
+                  allowDecimals={false}
+                  tickMargin={8}
                   tickFormatter={
                     formatCrore
                   }
+                  axisLine={{
+                    stroke: "#c9a227",
+                    strokeWidth: 2
+                  }}
+                  tickLine={{
+                    stroke: "#c9a227",
+                    strokeWidth: 1
+                  }}
+                  tick={{
+                    fill: "#17365d",
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}
                 />
 
                 <Tooltip
                   content={
                     <PerformanceTooltip />
                   }
+                  cursor={{
+                    fill:
+                      "rgba(201,162,39,0.08)"
+                  }}
                 />
 
                 <Legend />
@@ -1984,43 +1912,31 @@ export default function YearPerformance() {
                 <Bar
                   dataKey="billing"
                   name="Billing"
-                  fill={
-                    GRAPH_COLORS.billing
-                  }
-                  radius={[
-                    5,
-                    5,
-                    0,
-                    0
-                  ]}
-                />
-
-                <Bar
-                  dataKey="profit"
-                  name="Profit"
-                  fill={
-                    GRAPH_COLORS.profit
-                  }
-                  radius={[
-                    5,
-                    5,
-                    0,
-                    0
-                  ]}
+                  fill="#2563eb"
+                  shape={<VisibleBar />}
+                  barSize={28}
+                  maxBarSize={40}
+                  isAnimationActive={false}
                 />
 
                 <Bar
                   dataKey="loss"
                   name="Loss"
-                  fill={
-                    GRAPH_COLORS.loss
-                  }
-                  radius={[
-                    5,
-                    5,
-                    0,
-                    0
-                  ]}
+                  fill="#dc2626"
+                  shape={<VisibleBar />}
+                  barSize={28}
+                  maxBarSize={40}
+                  isAnimationActive={false}
+                />
+
+                <Bar
+                  dataKey="profit"
+                  name="Profit"
+                  fill="#16a34a"
+                  shape={<VisibleBar />}
+                  barSize={28}
+                  maxBarSize={40}
+                  isAnimationActive={false}
                 />
 
               </BarChart>
@@ -2037,17 +1953,15 @@ export default function YearPerformance() {
           )}
 
         </div>
-
       </section>
 
-      {/* ===================================================
+      {/* =================================================
           3. MONTHLY TREND
-      =================================================== */}
+      ================================================= */}
 
       <section className="performance-section">
 
         <div className="section-heading">
-
           <span>3</span>
 
           <div>
@@ -2060,63 +1974,70 @@ export default function YearPerformance() {
               across the financial year
             </p>
           </div>
-
         </div>
 
         <div className="performance-chart-card trend-chart-card">
 
           <ResponsiveContainer
             width="100%"
-            height={460}
-            minWidth={0}
+            height="100%"
           >
 
             <LineChart
               data={monthlyTrend}
               margin={{
-                top: 20,
+                top: 30,
                 right: 30,
                 left: 20,
-                bottom: 20
+                bottom: 30
               }}
             >
 
               <CartesianGrid
+                stroke="#e7dcc8"
+                strokeWidth={1}
+                strokeOpacity={1}
                 strokeDasharray="3 3"
-                stroke={
-                  GRAPH_COLORS.grid
-                }
+                vertical={false}
               />
 
               <XAxis
                 dataKey="month"
+                interval={0}
+                tickMargin={10}
+                axisLine={{
+                  stroke: "#c9a227",
+                  strokeWidth: 2
+                }}
+                tickLine={{
+                  stroke: "#c9a227"
+                }}
                 tick={{
-                  fill:
-                    GRAPH_COLORS.darkBlue,
+                  fill: "#17365d",
                   fontSize: 12,
                   fontWeight: 600
                 }}
-                axisLine={{
-                  stroke:
-                    GRAPH_COLORS.golden
-                }}
-                tickLine={false}
               />
 
               <YAxis
-                tick={{
-                  fill:
-                    GRAPH_COLORS.darkBlue,
-                  fontSize: 12
-                }}
-                axisLine={{
-                  stroke:
-                    GRAPH_COLORS.golden
-                }}
-                tickLine={false}
+                width={90}
+                allowDecimals={false}
+                tickMargin={8}
                 tickFormatter={
                   formatCrore
                 }
+                axisLine={{
+                  stroke: "#c9a227",
+                  strokeWidth: 2
+                }}
+                tickLine={{
+                  stroke: "#c9a227"
+                }}
+                tick={{
+                  fill: "#17365d",
+                  fontSize: 12,
+                  fontWeight: 600
+                }}
               />
 
               <Tooltip
@@ -2127,58 +2048,55 @@ export default function YearPerformance() {
 
               <Legend />
 
-              {/* BILLING = BLUE */}
-
               <Line
                 type="monotone"
                 dataKey="billing"
                 name="Billing"
-                stroke={
-                  GRAPH_COLORS.billing
-                }
+                stroke="#2563eb"
                 strokeWidth={3}
                 dot={{
-                  r: 4
+                  r: 4,
+                  fill: "#2563eb"
                 }}
                 activeDot={{
-                  r: 7
+                  r: 7,
+                  fill: "#2563eb"
                 }}
+                isAnimationActive={false}
               />
-
-              {/* PROFIT = GREEN */}
 
               <Line
                 type="monotone"
                 dataKey="profit"
                 name="Profit"
-                stroke={
-                  GRAPH_COLORS.profit
-                }
+                stroke="#16a34a"
                 strokeWidth={3}
                 dot={{
-                  r: 4
+                  r: 4,
+                  fill: "#16a34a"
                 }}
                 activeDot={{
-                  r: 7
+                  r: 7,
+                  fill: "#16a34a"
                 }}
+                isAnimationActive={false}
               />
-
-              {/* LOSS = RED */}
 
               <Line
                 type="monotone"
                 dataKey="loss"
                 name="Loss"
-                stroke={
-                  GRAPH_COLORS.loss
-                }
+                stroke="#dc2626"
                 strokeWidth={3}
                 dot={{
-                  r: 4
+                  r: 4,
+                  fill: "#dc2626"
                 }}
                 activeDot={{
-                  r: 7
+                  r: 7,
+                  fill: "#dc2626"
                 }}
+                isAnimationActive={false}
               />
 
             </LineChart>
@@ -2226,17 +2144,15 @@ export default function YearPerformance() {
           </div>
 
         </div>
-
       </section>
 
-      {/* ===================================================
+      {/* =================================================
           4. BD PERFORMANCE
-      =================================================== */}
+      ================================================= */}
 
       <section className="performance-section">
 
         <div className="section-heading">
-
           <span>4</span>
 
           <div>
@@ -2248,7 +2164,6 @@ export default function YearPerformance() {
               BD performance ranking
             </p>
           </div>
-
         </div>
 
         <div className="performance-ranking">
@@ -2312,17 +2227,15 @@ export default function YearPerformance() {
           )}
 
         </div>
-
       </section>
 
-      {/* ===================================================
+      {/* =================================================
           5. TEAM LEADER PERFORMANCE
-      =================================================== */}
+      ================================================= */}
 
       <section className="performance-section">
 
         <div className="section-heading">
-
           <span>5</span>
 
           <div>
@@ -2335,7 +2248,6 @@ export default function YearPerformance() {
               ranking
             </p>
           </div>
-
         </div>
 
         <div className="performance-ranking">
@@ -2400,17 +2312,15 @@ export default function YearPerformance() {
           )}
 
         </div>
-
       </section>
 
-      {/* ===================================================
+      {/* =================================================
           6. FINANCIAL ANALYSIS
-      =================================================== */}
+      ================================================= */}
 
       <section className="performance-section">
 
         <div className="section-heading">
-
           <span>6</span>
 
           <div>
@@ -2423,10 +2333,7 @@ export default function YearPerformance() {
               based on Info status
             </p>
           </div>
-
         </div>
-
-        {/* FINANCIAL SUMMARY */}
 
         <div className="financial-analysis-grid">
 
@@ -2451,7 +2358,7 @@ export default function YearPerformance() {
               Profit
             </span>
 
-            <strong>
+            <strong className="profit-value">
               {formatCurrency(
                 overview.profit
               )}
@@ -2467,7 +2374,7 @@ export default function YearPerformance() {
               Loss
             </span>
 
-            <strong>
+            <strong className="loss-value">
               {formatCurrency(
                 overview.loss
               )}
@@ -2480,76 +2387,98 @@ export default function YearPerformance() {
 
         </div>
 
-        {/* FINANCIAL BAR GRAPH */}
+        {/* FINANCIAL BAR */}
 
         <div className="financial-chart-card">
 
           <ResponsiveContainer
             width="100%"
-            height={400}
-            minWidth={0}
+            height="100%"
           >
 
             <BarChart
               data={[
                 {
-                  name: "Financial Performance",
+                  name:
+                    "Financial Performance",
+
                   Billing:
-                    overview.totalBilling,
+                    Number(
+                      overview.totalBilling
+                    ) || 0,
+
                   Profit:
-                    overview.profit,
+                    Number(
+                      overview.profit
+                    ) || 0,
+
                   Loss:
-                    overview.loss
+                    Number(
+                      overview.loss
+                    ) || 0
                 }
               ]}
               margin={{
-                top: 20,
+                top: 30,
                 right: 30,
                 left: 20,
-                bottom: 20
+                bottom: 30
               }}
+              barCategoryGap="20%"
+              barGap={8}
             >
 
               <CartesianGrid
+                stroke="#e7dcc8"
+                strokeWidth={1}
+                strokeOpacity={1}
                 strokeDasharray="3 3"
-                stroke={
-                  GRAPH_COLORS.grid
-                }
+                vertical={false}
               />
 
               <XAxis
                 dataKey="name"
-                tick={{
-                  fill:
-                    GRAPH_COLORS.darkBlue,
-                  fontSize: 12
-                }}
+                tickMargin={10}
                 axisLine={{
-                  stroke:
-                    GRAPH_COLORS.golden
+                  stroke: "#c9a227",
+                  strokeWidth: 2
                 }}
-                tickLine={false}
+                tickLine={{
+                  stroke: "#c9a227"
+                }}
+                tick={{
+                  fill: "#17365d",
+                  fontSize: 12,
+                  fontWeight: 600
+                }}
               />
 
               <YAxis
-                tick={{
-                  fill:
-                    GRAPH_COLORS.darkBlue,
-                  fontSize: 12
-                }}
-                axisLine={{
-                  stroke:
-                    GRAPH_COLORS.golden
-                }}
-                tickLine={false}
+                width={90}
+                allowDecimals={false}
+                tickMargin={8}
                 tickFormatter={
                   formatCrore
                 }
+                axisLine={{
+                  stroke: "#c9a227",
+                  strokeWidth: 2
+                }}
+                tickLine={{
+                  stroke: "#c9a227"
+                }}
+                tick={{
+                  fill: "#17365d",
+                  fontSize: 12,
+                  fontWeight: 600
+                }}
               />
 
               <Tooltip
                 formatter={(value) =>
-                  formatCurrency(value)
+                  formatCurrency(
+                    value
+                  )
                 }
               />
 
@@ -2558,43 +2487,31 @@ export default function YearPerformance() {
               <Bar
                 dataKey="Billing"
                 name="Total Billing"
-                fill={
-                  GRAPH_COLORS.billing
-                }
-                radius={[
-                  5,
-                  5,
-                  0,
-                  0
-                ]}
+                fill="#2563eb"
+                shape={<VisibleBar />}
+                barSize={35}
+                maxBarSize={45}
+                isAnimationActive={false}
               />
 
               <Bar
                 dataKey="Profit"
                 name="Profit"
-                fill={
-                  GRAPH_COLORS.profit
-                }
-                radius={[
-                  5,
-                  5,
-                  0,
-                  0
-                ]}
+                fill="#16a34a"
+                shape={<VisibleBar />}
+                barSize={35}
+                maxBarSize={45}
+                isAnimationActive={false}
               />
 
               <Bar
                 dataKey="Loss"
                 name="Loss"
-                fill={
-                  GRAPH_COLORS.loss
-                }
-                radius={[
-                  5,
-                  5,
-                  0,
-                  0
-                ]}
+                fill="#dc2626"
+                shape={<VisibleBar />}
+                barSize={35}
+                maxBarSize={45}
+                isAnimationActive={false}
               />
 
             </BarChart>
@@ -2603,22 +2520,19 @@ export default function YearPerformance() {
 
         </div>
 
-        {/* FINANCIAL PIE GRAPH */}
+        {/* FINANCIAL PIE */}
 
         <div className="financial-chart-card">
 
           <ResponsiveContainer
             width="100%"
-            height={400}
-            minWidth={0}
+            height="100%"
           >
 
             <PieChart>
 
               <Pie
-                data={
-                  financialPieData
-                }
+                data={financialPieData}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -2627,6 +2541,7 @@ export default function YearPerformance() {
                 innerRadius={55}
                 paddingAngle={3}
                 label
+                isAnimationActive={false}
               >
 
                 {financialPieData.map(
@@ -2662,14 +2577,13 @@ export default function YearPerformance() {
 
       </section>
 
-      {/* ===================================================
+      {/* =================================================
           7. PERFORMANCE INSIGHTS
-      =================================================== */}
+      ================================================= */}
 
       <section className="performance-section">
 
         <div className="section-heading">
-
           <span>7</span>
 
           <div>
@@ -2681,15 +2595,11 @@ export default function YearPerformance() {
               Key performance indicators
             </p>
           </div>
-
         </div>
 
         <div className="performance-insights">
 
-          {/* BEST BILLING YEAR */}
-
           <div className="insight-card">
-
             <span>
               Best Performing Year
             </span>
@@ -2709,13 +2619,9 @@ export default function YearPerformance() {
                   )
                 : "No data"}
             </p>
-
           </div>
 
-          {/* HIGHEST CLIENT ACQUISITION */}
-
           <div className="insight-card">
-
             <span>
               Highest Client Acquisition
             </span>
@@ -2735,13 +2641,9 @@ export default function YearPerformance() {
                   )} unique clients`
                 : "No data"}
             </p>
-
           </div>
 
-          {/* HIGHEST PLACEMENT */}
-
           <div className="insight-card">
-
             <span>
               Highest Placement
             </span>
@@ -2753,8 +2655,7 @@ export default function YearPerformance() {
             </strong>
 
             <p>
-              {insights
-                .bestPlacementYear
+              {insights.bestPlacementYear
                 ? `${formatNumber(
                     insights
                       .bestPlacementYear
@@ -2762,13 +2663,9 @@ export default function YearPerformance() {
                   )} placements`
                 : "No data"}
             </p>
-
           </div>
 
-          {/* BEST BD */}
-
           <div className="insight-card">
-
             <span>
               Best-Performing BD
             </span>
@@ -2786,13 +2683,9 @@ export default function YearPerformance() {
                   )
                 : "No data"}
             </p>
-
           </div>
 
-          {/* BEST TEAM LEADER */}
-
           <div className="insight-card">
-
             <span>
               Best Team Leader
             </span>
@@ -2812,11 +2705,9 @@ export default function YearPerformance() {
                   )
                 : "No data"}
             </p>
-
           </div>
 
         </div>
-
       </section>
 
     </div>
