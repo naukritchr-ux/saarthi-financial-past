@@ -411,6 +411,22 @@ function parseDate(value) {
 
 /* =========================================================
    FINANCIAL YEAR NORMALIZER
+
+   SUPPORTED:
+   21-22
+   21/22
+   2021-22
+   2021/22
+   2021-2022
+   2021/2022
+   FY 21-22
+   FY 2021-22
+   FY 2021-2022
+   2021
+   21
+
+   NORMALIZED OUTPUT:
+   2021-22
 ========================================================= */
 
 function normalizeFinancialYear(value) {
@@ -425,31 +441,127 @@ function normalizeFinancialYear(value) {
   const text = String(value)
     .trim()
     .replace(/–/g, "-")
-    .replace(/—/g, "-");
+    .replace(/—/g, "-")
+    .replace(/\s+/g, " ");
+
+  /*
+   * 2021-2022
+   * 2021/2022
+   * FY 2021-2022
+   */
 
   let match = text.match(
-    /(20\d{2})\D+(20\d{2})/
+    /(?:FY\s*)?(20\d{2})\D+(20\d{2})/i
   );
 
   if (match) {
-    return `${match[1]}-${match[2].slice(-2)}`;
+    const startYear =
+      Number(match[1]);
+
+    const endYear =
+      Number(match[2]);
+
+    if (
+      endYear === startYear + 1
+    ) {
+      return `${startYear}-${String(
+        endYear
+      ).slice(-2)}`;
+    }
   }
+
+  /*
+   * 2021-22
+   * 2021/22
+   * FY 2021-22
+   */
 
   match = text.match(
-    /(20\d{2})\D+(\d{2})/
+    /(?:FY\s*)?(20\d{2})\D+(\d{2})/i
   );
 
   if (match) {
-    return `${match[1]}-${match[2]}`;
+    const startYear =
+      Number(match[1]);
+
+    const endYearShort =
+      Number(match[2]);
+
+    const expectedEnd =
+      (startYear + 1) % 100;
+
+    if (
+      endYearShort === expectedEnd
+    ) {
+      return `${startYear}-${String(
+        endYearShort
+      ).padStart(2, "0")}`;
+    }
   }
 
-  match = text.match(/20\d{2}/);
+  /*
+   * 21-22
+   * 21/22
+   * FY 21-22
+   */
+
+  match = text.match(
+    /(?:FY\s*)?(\d{2})\D+(\d{2})/i
+  );
 
   if (match) {
-    const year = Number(match[0]);
+    const startShort =
+      Number(match[1]);
 
-    return `${year}-${String(
-      year + 1
+    const endShort =
+      Number(match[2]);
+
+    const startYear =
+      2000 + startShort;
+
+    const expectedEnd =
+      (startYear + 1) % 100;
+
+    if (
+      endShort === expectedEnd
+    ) {
+      return `${startYear}-${String(
+        endShort
+      ).padStart(2, "0")}`;
+    }
+  }
+
+  /*
+   * Standalone 2021
+   */
+
+  match = text.match(
+    /20\d{2}/
+  );
+
+  if (match) {
+    const startYear =
+      Number(match[0]);
+
+    return `${startYear}-${String(
+      startYear + 1
+    ).slice(-2)}`;
+  }
+
+  /*
+   * Standalone 21
+   */
+
+  match = text.match(
+    /\b(\d{2})\b/
+  );
+
+  if (match) {
+    const startYear =
+      2000 + Number(match[1]);
+
+    return `${startYear}-${String(
+      startYear + 1
     ).slice(-2)}`;
   }
 
@@ -458,9 +570,81 @@ function normalizeFinancialYear(value) {
 
 /* =========================================================
    FINANCIAL YEAR
+
+   IMPORTANT:
+   DATE CLIENT ACQUIRED IS THE PRIMARY SOURCE.
+
+   April 2021 - March 2022 = 2021-22
+   April 2022 - March 2023 = 2022-23
+   April 2023 - March 2024 = 2023-24
+
+   Therefore:
+
+   March 2022 -> 2021-22
+   April 2022 -> 2022-23
+   March 2023 -> 2022-23
+   April 2023 -> 2023-24
+   March 2024 -> 2023-24
+
+   DATABASE FINANCIAL YEAR IS ONLY USED
+   WHEN DATE CLIENT ACQUIRED IS MISSING.
 ========================================================= */
 
 function getFinancialYear(row) {
+  /*
+   * -------------------------------------------------------
+   * FIRST: USE DATE CLIENT ACQUIRED
+   * -------------------------------------------------------
+   */
+
+  const date = parseDate(
+    getAcquiredDate(row)
+  );
+
+  if (date) {
+    const year =
+      date.getFullYear();
+
+    const month =
+      date.getMonth() + 1;
+
+    /*
+     * April through December
+     *
+     * Example:
+     * April 2021 -> 2021-22
+     * December 2021 -> 2021-22
+     */
+
+    if (month >= 4) {
+      return `${year}-${String(
+        year + 1
+      ).slice(-2)}`;
+    }
+
+    /*
+     * January through March
+     *
+     * Example:
+     * January 2022 -> 2021-22
+     * March 2022 -> 2021-22
+     */
+
+    return `${year - 1}-${String(
+      year
+    ).slice(-2)}`;
+  }
+
+  /*
+   * -------------------------------------------------------
+   * FALLBACK:
+   * USE DATABASE FINANCIAL YEAR
+   *
+   * Only used when Date Client Acquired
+   * is missing or invalid.
+   * -------------------------------------------------------
+   */
+
   const databaseYear = firstValue(
     row,
     [
@@ -482,36 +666,12 @@ function getFinancialYear(row) {
   );
 
   if (databaseYear) {
-    const normalized =
-      normalizeFinancialYear(
-        databaseYear
-      );
-
-    if (normalized) {
-      return normalized;
-    }
+    return normalizeFinancialYear(
+      databaseYear
+    );
   }
 
-  const date = parseDate(
-    getAcquiredDate(row)
-  );
-
-  if (!date) {
-    return "";
-  }
-
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-
-  if (month >= 4) {
-    return `${year}-${String(
-      year + 1
-    ).slice(-2)}`;
-  }
-
-  return `${year - 1}-${String(
-    year
-  ).slice(-2)}`;
+  return "";
 }
 
 /* =========================================================
@@ -729,19 +889,28 @@ function getLoss(rows) {
 function sortYears(years) {
   return [...years].sort(
     (a, b) => {
-      const yearA = Number(
-        String(a).match(
-          /20\d{2}/
-        )?.[0] || 0
-      );
+      const getStartYear = (
+        value
+      ) => {
+        const normalized =
+          normalizeFinancialYear(
+            value
+          );
 
-      const yearB = Number(
-        String(b).match(
-          /20\d{2}/
-        )?.[0] || 0
-      );
+        const match =
+          normalized.match(
+            /^(\d{4})-/
+          );
 
-      return yearA - yearB;
+        return match
+          ? Number(match[1])
+          : 0;
+      };
+
+      return (
+        getStartYear(a) -
+        getStartYear(b)
+      );
     }
   );
 }
@@ -830,9 +999,6 @@ function createGroupedData(
 
 /* =========================================================
    CUSTOM BAR
-
-   Uses SVG PATH instead of the default Recharts
-   rectangle renderer.
 ========================================================= */
 
 function VisibleBar(props) {
@@ -923,7 +1089,6 @@ function PerformanceTooltip({
 
   return (
     <div className="performance-tooltip">
-
       <strong>
         {label}
       </strong>
@@ -960,7 +1125,6 @@ function PerformanceTooltip({
           );
         }
       )}
-
     </div>
   );
 }
@@ -1306,21 +1470,28 @@ export default function YearPerformance() {
           item.enquiries
       }))
       .sort((a, b) => {
-        const yearA =
-          Number(
-            String(a.year).match(
-              /20\d{2}/
-            )?.[0] || 0
-          );
+        const getStartYear = (
+          value
+        ) => {
+          const normalized =
+            normalizeFinancialYear(
+              value
+            );
 
-        const yearB =
-          Number(
-            String(b.year).match(
-              /20\d{2}/
-            )?.[0] || 0
-          );
+          const match =
+            normalized.match(
+              /^(\d{4})-/
+            );
 
-        return yearA - yearB;
+          return match
+            ? Number(match[1])
+            : 0;
+        };
+
+        return (
+          getStartYear(a.year) -
+          getStartYear(b.year)
+        );
       });
   }, [filteredPerformanceRows]);
 
@@ -1807,45 +1978,196 @@ export default function YearPerformance() {
       </section>
 
       {/* =================================================
-          2. YEAR-WISE ANALYSIS
+          2 + 3. YEAR-WISE + MONTHLY TREND
       ================================================= */}
 
-      <section className="performance-section">
+      <div className="performance-charts-row">
 
-        <div className="section-heading">
-          <span>2</span>
+        {/* =================================================
+            2. YEAR-WISE ANALYSIS
+        ================================================= */}
 
-          <div>
-            <h2>
-              Year-Wise Analysis
-            </h2>
+        <section className="performance-section performance-chart-section">
 
-            <p>
-              Billing, profit and loss
-              by financial year
-            </p>
+          <div className="section-heading">
+            <span>2</span>
+
+            <div>
+              <h2>
+                Year-Wise Analysis
+              </h2>
+
+              <p>
+                Billing, profit and loss
+                by financial year
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="performance-chart-card year-wise-chart-card">
+          <div className="performance-chart-card year-wise-chart-card">
 
-          {yearlyData.length > 0 ? (
+            {yearlyData.length > 0 ? (
+
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+              >
+
+                <BarChart
+                  data={yearlyData}
+                  margin={{
+                    top: 30,
+                    right: 30,
+                    left: 20,
+                    bottom: 30
+                  }}
+                  barCategoryGap="20%"
+                  barGap={8}
+                >
+
+                  <CartesianGrid
+                    stroke="#e7dcc8"
+                    strokeWidth={1}
+                    strokeOpacity={1}
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
+
+                  <XAxis
+                    dataKey="year"
+                    interval={0}
+                    tickMargin={10}
+                    axisLine={{
+                      stroke: "#c9a227",
+                      strokeWidth: 2
+                    }}
+                    tickLine={{
+                      stroke: "#c9a227",
+                      strokeWidth: 1
+                    }}
+                    tick={{
+                      fill: "#17365d",
+                      fontSize: 13,
+                      fontWeight: 600
+                    }}
+                  />
+
+                  <YAxis
+                    width={90}
+                    allowDecimals={false}
+                    tickMargin={8}
+                    tickFormatter={
+                      formatCrore
+                    }
+                    axisLine={{
+                      stroke: "#c9a227",
+                      strokeWidth: 2
+                    }}
+                    tickLine={{
+                      stroke: "#c9a227",
+                      strokeWidth: 1
+                    }}
+                    tick={{
+                      fill: "#17365d",
+                      fontSize: 12,
+                      fontWeight: 600
+                    }}
+                  />
+
+                  <Tooltip
+                    content={
+                      <PerformanceTooltip />
+                    }
+                    cursor={{
+                      fill:
+                        "rgba(201,162,39,0.08)"
+                    }}
+                  />
+
+                  <Legend />
+
+                  <Bar
+                    dataKey="billing"
+                    name="Billing"
+                    fill="#2563eb"
+                    shape={<VisibleBar />}
+                    barSize={28}
+                    maxBarSize={40}
+                    isAnimationActive={false}
+                  />
+
+                  <Bar
+                    dataKey="loss"
+                    name="Loss"
+                    fill="#dc2626"
+                    shape={<VisibleBar />}
+                    barSize={28}
+                    maxBarSize={40}
+                    isAnimationActive={false}
+                  />
+
+                  <Bar
+                    dataKey="profit"
+                    name="Profit"
+                    fill="#16a34a"
+                    shape={<VisibleBar />}
+                    barSize={28}
+                    maxBarSize={40}
+                    isAnimationActive={false}
+                  />
+
+                </BarChart>
+
+              </ResponsiveContainer>
+
+            ) : (
+
+              <div className="no-data">
+                No year-wise data
+                available.
+              </div>
+
+            )}
+
+          </div>
+        </section>
+
+        {/* =================================================
+            3. MONTHLY TREND
+        ================================================= */}
+
+        <section className="performance-section performance-chart-section">
+
+          <div className="section-heading">
+            <span>3</span>
+
+            <div>
+              <h2>
+                Monthly Trend
+              </h2>
+
+              <p>
+                Billing, profit and loss
+                across the financial year
+              </p>
+            </div>
+          </div>
+
+          <div className="performance-chart-card trend-chart-card">
 
             <ResponsiveContainer
               width="100%"
               height="100%"
             >
 
-              <BarChart
-                data={yearlyData}
+              <LineChart
+                data={monthlyTrend}
                 margin={{
                   top: 30,
                   right: 30,
                   left: 20,
                   bottom: 30
                 }}
-                barCategoryGap="20%"
-                barGap={8}
               >
 
                 <CartesianGrid
@@ -1857,7 +2179,7 @@ export default function YearPerformance() {
                 />
 
                 <XAxis
-                  dataKey="year"
+                  dataKey="month"
                   interval={0}
                   tickMargin={10}
                   axisLine={{
@@ -1865,12 +2187,11 @@ export default function YearPerformance() {
                     strokeWidth: 2
                   }}
                   tickLine={{
-                    stroke: "#c9a227",
-                    strokeWidth: 1
+                    stroke: "#c9a227"
                   }}
                   tick={{
                     fill: "#17365d",
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: 600
                   }}
                 />
@@ -1887,8 +2208,7 @@ export default function YearPerformance() {
                     strokeWidth: 2
                   }}
                   tickLine={{
-                    stroke: "#c9a227",
-                    strokeWidth: 1
+                    stroke: "#c9a227"
                   }}
                   tick={{
                     fill: "#17365d",
@@ -1901,250 +2221,109 @@ export default function YearPerformance() {
                   content={
                     <PerformanceTooltip />
                   }
-                  cursor={{
-                    fill:
-                      "rgba(201,162,39,0.08)"
-                  }}
                 />
 
                 <Legend />
 
-                <Bar
+                <Line
+                  type="monotone"
                   dataKey="billing"
                   name="Billing"
-                  fill="#2563eb"
-                  shape={<VisibleBar />}
-                  barSize={28}
-                  maxBarSize={40}
+                  stroke="#2563eb"
+                  strokeWidth={3}
+                  dot={{
+                    r: 4,
+                    fill: "#2563eb"
+                  }}
+                  activeDot={{
+                    r: 7,
+                    fill: "#2563eb"
+                  }}
                   isAnimationActive={false}
                 />
 
-                <Bar
-                  dataKey="loss"
-                  name="Loss"
-                  fill="#dc2626"
-                  shape={<VisibleBar />}
-                  barSize={28}
-                  maxBarSize={40}
-                  isAnimationActive={false}
-                />
-
-                <Bar
+                <Line
+                  type="monotone"
                   dataKey="profit"
                   name="Profit"
-                  fill="#16a34a"
-                  shape={<VisibleBar />}
-                  barSize={28}
-                  maxBarSize={40}
+                  stroke="#16a34a"
+                  strokeWidth={3}
+                  dot={{
+                    r: 4,
+                    fill: "#16a34a"
+                  }}
+                  activeDot={{
+                    r: 7,
+                    fill: "#16a34a"
+                  }}
                   isAnimationActive={false}
                 />
 
-              </BarChart>
+                <Line
+                  type="monotone"
+                  dataKey="loss"
+                  name="Loss"
+                  stroke="#dc2626"
+                  strokeWidth={3}
+                  dot={{
+                    r: 4,
+                    fill: "#dc2626"
+                  }}
+                  activeDot={{
+                    r: 7,
+                    fill: "#dc2626"
+                  }}
+                  isAnimationActive={false}
+                />
+
+              </LineChart>
 
             </ResponsiveContainer>
 
-          ) : (
+          </div>
 
-            <div className="no-data">
-              No year-wise data
-              available.
+          <div className="performance-trend-summary">
+
+            <div>
+              <span>
+                Acquired Clients
+              </span>
+
+              <strong>
+                {formatNumber(
+                  overview.totalAcquiredClients
+                )}
+              </strong>
             </div>
 
-          )}
+            <div>
+              <span>
+                Placements
+              </span>
 
-        </div>
-      </section>
+              <strong>
+                {formatNumber(
+                  overview.totalPlacements
+                )}
+              </strong>
+            </div>
 
-      {/* =================================================
-          3. MONTHLY TREND
-      ================================================= */}
+            <div>
+              <span>
+                Enquiries
+              </span>
 
-      <section className="performance-section">
+              <strong>
+                {formatNumber(
+                  overview.totalEnquiries
+                )}
+              </strong>
+            </div>
 
-        <div className="section-heading">
-          <span>3</span>
-
-          <div>
-            <h2>
-              Monthly Trend
-            </h2>
-
-            <p>
-              Billing, profit and loss
-              across the financial year
-            </p>
           </div>
-        </div>
+        </section>
 
-        <div className="performance-chart-card trend-chart-card">
-
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-          >
-
-            <LineChart
-              data={monthlyTrend}
-              margin={{
-                top: 30,
-                right: 30,
-                left: 20,
-                bottom: 30
-              }}
-            >
-
-              <CartesianGrid
-                stroke="#e7dcc8"
-                strokeWidth={1}
-                strokeOpacity={1}
-                strokeDasharray="3 3"
-                vertical={false}
-              />
-
-              <XAxis
-                dataKey="month"
-                interval={0}
-                tickMargin={10}
-                axisLine={{
-                  stroke: "#c9a227",
-                  strokeWidth: 2
-                }}
-                tickLine={{
-                  stroke: "#c9a227"
-                }}
-                tick={{
-                  fill: "#17365d",
-                  fontSize: 12,
-                  fontWeight: 600
-                }}
-              />
-
-              <YAxis
-                width={90}
-                allowDecimals={false}
-                tickMargin={8}
-                tickFormatter={
-                  formatCrore
-                }
-                axisLine={{
-                  stroke: "#c9a227",
-                  strokeWidth: 2
-                }}
-                tickLine={{
-                  stroke: "#c9a227"
-                }}
-                tick={{
-                  fill: "#17365d",
-                  fontSize: 12,
-                  fontWeight: 600
-                }}
-              />
-
-              <Tooltip
-                content={
-                  <PerformanceTooltip />
-                }
-              />
-
-              <Legend />
-
-              <Line
-                type="monotone"
-                dataKey="billing"
-                name="Billing"
-                stroke="#2563eb"
-                strokeWidth={3}
-                dot={{
-                  r: 4,
-                  fill: "#2563eb"
-                }}
-                activeDot={{
-                  r: 7,
-                  fill: "#2563eb"
-                }}
-                isAnimationActive={false}
-              />
-
-              <Line
-                type="monotone"
-                dataKey="profit"
-                name="Profit"
-                stroke="#16a34a"
-                strokeWidth={3}
-                dot={{
-                  r: 4,
-                  fill: "#16a34a"
-                }}
-                activeDot={{
-                  r: 7,
-                  fill: "#16a34a"
-                }}
-                isAnimationActive={false}
-              />
-
-              <Line
-                type="monotone"
-                dataKey="loss"
-                name="Loss"
-                stroke="#dc2626"
-                strokeWidth={3}
-                dot={{
-                  r: 4,
-                  fill: "#dc2626"
-                }}
-                activeDot={{
-                  r: 7,
-                  fill: "#dc2626"
-                }}
-                isAnimationActive={false}
-              />
-
-            </LineChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-        <div className="performance-trend-summary">
-
-          <div>
-            <span>
-              Acquired Clients
-            </span>
-
-            <strong>
-              {formatNumber(
-                overview.totalAcquiredClients
-              )}
-            </strong>
-          </div>
-
-          <div>
-            <span>
-              Placements
-            </span>
-
-            <strong>
-              {formatNumber(
-                overview.totalPlacements
-              )}
-            </strong>
-          </div>
-
-          <div>
-            <span>
-              Enquiries
-            </span>
-
-            <strong>
-              {formatNumber(
-                overview.totalEnquiries
-              )}
-            </strong>
-          </div>
-
-        </div>
-      </section>
+      </div>
 
       {/* =================================================
           4. BD PERFORMANCE
@@ -2387,191 +2566,199 @@ export default function YearPerformance() {
 
         </div>
 
-        {/* FINANCIAL BAR */}
+        {/* =================================================
+            FINANCIAL CHARTS - SAME ROW
+        ================================================= */}
 
-        <div className="financial-chart-card">
+        <div className="financial-charts-row">
 
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-          >
+          {/* FINANCIAL BAR */}
 
-            <BarChart
-              data={[
-                {
-                  name:
-                    "Financial Performance",
+          <div className="financial-chart-card">
 
-                  Billing:
-                    Number(
-                      overview.totalBilling
-                    ) || 0,
-
-                  Profit:
-                    Number(
-                      overview.profit
-                    ) || 0,
-
-                  Loss:
-                    Number(
-                      overview.loss
-                    ) || 0
-                }
-              ]}
-              margin={{
-                top: 30,
-                right: 30,
-                left: 20,
-                bottom: 30
-              }}
-              barCategoryGap="20%"
-              barGap={8}
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
             >
 
-              <CartesianGrid
-                stroke="#e7dcc8"
-                strokeWidth={1}
-                strokeOpacity={1}
-                strokeDasharray="3 3"
-                vertical={false}
-              />
+              <BarChart
+                data={[
+                  {
+                    name:
+                      "Financial Performance",
 
-              <XAxis
-                dataKey="name"
-                tickMargin={10}
-                axisLine={{
-                  stroke: "#c9a227",
-                  strokeWidth: 2
+                    Billing:
+                      Number(
+                        overview.totalBilling
+                      ) || 0,
+
+                    Profit:
+                      Number(
+                        overview.profit
+                      ) || 0,
+
+                    Loss:
+                      Number(
+                        overview.loss
+                      ) || 0
+                  }
+                ]}
+                margin={{
+                  top: 30,
+                  right: 30,
+                  left: 20,
+                  bottom: 30
                 }}
-                tickLine={{
-                  stroke: "#c9a227"
-                }}
-                tick={{
-                  fill: "#17365d",
-                  fontSize: 12,
-                  fontWeight: 600
-                }}
-              />
-
-              <YAxis
-                width={90}
-                allowDecimals={false}
-                tickMargin={8}
-                tickFormatter={
-                  formatCrore
-                }
-                axisLine={{
-                  stroke: "#c9a227",
-                  strokeWidth: 2
-                }}
-                tickLine={{
-                  stroke: "#c9a227"
-                }}
-                tick={{
-                  fill: "#17365d",
-                  fontSize: 12,
-                  fontWeight: 600
-                }}
-              />
-
-              <Tooltip
-                formatter={(value) =>
-                  formatCurrency(
-                    value
-                  )
-                }
-              />
-
-              <Legend />
-
-              <Bar
-                dataKey="Billing"
-                name="Total Billing"
-                fill="#2563eb"
-                shape={<VisibleBar />}
-                barSize={35}
-                maxBarSize={45}
-                isAnimationActive={false}
-              />
-
-              <Bar
-                dataKey="Profit"
-                name="Profit"
-                fill="#16a34a"
-                shape={<VisibleBar />}
-                barSize={35}
-                maxBarSize={45}
-                isAnimationActive={false}
-              />
-
-              <Bar
-                dataKey="Loss"
-                name="Loss"
-                fill="#dc2626"
-                shape={<VisibleBar />}
-                barSize={35}
-                maxBarSize={45}
-                isAnimationActive={false}
-              />
-
-            </BarChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-        {/* FINANCIAL PIE */}
-
-        <div className="financial-chart-card">
-
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-          >
-
-            <PieChart>
-
-              <Pie
-                data={financialPieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={125}
-                innerRadius={55}
-                paddingAngle={3}
-                label
-                isAnimationActive={false}
+                barCategoryGap="20%"
+                barGap={8}
               >
 
-                {financialPieData.map(
-                  (item, index) => (
-                    <Cell
-                      key={`financial-${item.name}`}
-                      fill={
-                        FINANCIAL_PIE_COLORS[
-                          index
-                        ]
-                      }
-                    />
-                  )
-                )}
+                <CartesianGrid
+                  stroke="#e7dcc8"
+                  strokeWidth={1}
+                  strokeOpacity={1}
+                  strokeDasharray="3 3"
+                  vertical={false}
+                />
 
-              </Pie>
+                <XAxis
+                  dataKey="name"
+                  tickMargin={10}
+                  axisLine={{
+                    stroke: "#c9a227",
+                    strokeWidth: 2
+                  }}
+                  tickLine={{
+                    stroke: "#c9a227"
+                  }}
+                  tick={{
+                    fill: "#17365d",
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}
+                />
 
-              <Tooltip
-                formatter={(value) =>
-                  formatCurrency(
-                    value
-                  )
-                }
-              />
+                <YAxis
+                  width={90}
+                  allowDecimals={false}
+                  tickMargin={8}
+                  tickFormatter={
+                    formatCrore
+                  }
+                  axisLine={{
+                    stroke: "#c9a227",
+                    strokeWidth: 2
+                  }}
+                  tickLine={{
+                    stroke: "#c9a227"
+                  }}
+                  tick={{
+                    fill: "#17365d",
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}
+                />
 
-              <Legend />
+                <Tooltip
+                  formatter={(value) =>
+                    formatCurrency(
+                      value
+                    )
+                  }
+                />
 
-            </PieChart>
+                <Legend />
 
-          </ResponsiveContainer>
+                <Bar
+                  dataKey="Billing"
+                  name="Total Billing"
+                  fill="#2563eb"
+                  shape={<VisibleBar />}
+                  barSize={35}
+                  maxBarSize={45}
+                  isAnimationActive={false}
+                />
+
+                <Bar
+                  dataKey="Profit"
+                  name="Profit"
+                  fill="#16a34a"
+                  shape={<VisibleBar />}
+                  barSize={35}
+                  maxBarSize={45}
+                  isAnimationActive={false}
+                />
+
+                <Bar
+                  dataKey="Loss"
+                  name="Loss"
+                  fill="#dc2626"
+                  shape={<VisibleBar />}
+                  barSize={35}
+                  maxBarSize={45}
+                  isAnimationActive={false}
+                />
+
+              </BarChart>
+
+            </ResponsiveContainer>
+
+          </div>
+
+          {/* FINANCIAL PIE */}
+
+          <div className="financial-chart-card">
+
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
+
+              <PieChart>
+
+                <Pie
+                  data={financialPieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={125}
+                  innerRadius={55}
+                  paddingAngle={3}
+                  label
+                  isAnimationActive={false}
+                >
+
+                  {financialPieData.map(
+                    (item, index) => (
+                      <Cell
+                        key={`financial-${item.name}`}
+                        fill={
+                          FINANCIAL_PIE_COLORS[
+                            index
+                          ]
+                        }
+                      />
+                    )
+                  )}
+
+                </Pie>
+
+                <Tooltip
+                  formatter={(value) =>
+                    formatCurrency(
+                      value
+                    )
+                  }
+                />
+
+                <Legend />
+
+              </PieChart>
+
+            </ResponsiveContainer>
+
+          </div>
 
         </div>
 
