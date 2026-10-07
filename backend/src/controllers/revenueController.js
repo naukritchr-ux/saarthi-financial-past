@@ -37,15 +37,6 @@ HELPERS
 =========================================================
 */
 
-/*
----------------------------------------------------------
-Convert a value to number.
-
-Blank / null / undefined = 0
-Invalid number = 0
----------------------------------------------------------
-*/
-
 function getNumber(value) {
   if (
     value === "" ||
@@ -64,7 +55,7 @@ function getNumber(value) {
 
 /*
 ---------------------------------------------------------
-Get a value from frontend nested structure.
+Get value from frontend nested structure
 ---------------------------------------------------------
 */
 
@@ -76,7 +67,7 @@ function getValue(object, row, year) {
 
 /*
 ---------------------------------------------------------
-Round number to 2 decimal places.
+Round number to 2 decimal places
 ---------------------------------------------------------
 */
 
@@ -100,7 +91,7 @@ function createEmptyRevenueData() {
   const netIncomeBreakdown = {
     Director: {},
     "Key Expenses": {},
-    "Other expenses": {},
+    "Lead Generation": {},
   };
 
   const revenueRows = [
@@ -166,9 +157,6 @@ function createEmptyRevenueData() {
   /*
   -------------------------------------------------------
   Net Income Breakdown
-
-  These fields are OPTIONAL.
-  Blank values are represented as "" in frontend.
   -------------------------------------------------------
   */
 
@@ -188,10 +176,6 @@ function createEmptyRevenueData() {
     incomeTaxPercentage: "",
 
     netIncomeBreakdown,
-
-    /*
-    Calculated values
-    */
 
     tds: {},
 
@@ -227,7 +211,7 @@ function convertDatabaseRowsToFrontend(rows) {
 
     /*
     =======================================================
-    EXISTING REVENUE
+    REVENUE
     =======================================================
     */
 
@@ -251,7 +235,7 @@ function convertDatabaseRowsToFrontend(rows) {
 
     /*
     =======================================================
-    EXISTING EXPENDITURE
+    EXPENDITURE
     =======================================================
     */
 
@@ -275,7 +259,7 @@ function convertDatabaseRowsToFrontend(rows) {
 
     /*
     =======================================================
-    EXISTING SALARY
+    SALARY
     =======================================================
     */
 
@@ -299,15 +283,8 @@ function convertDatabaseRowsToFrontend(rows) {
 
     /*
     =======================================================
-    INCOME TAX PERCENTAGE
+    INCOME TAX
     =======================================================
-    */
-
-    /*
-    There is one global income tax percentage in
-    the existing frontend structure.
-
-    Keep the first available database value.
     */
 
     if (
@@ -328,10 +305,9 @@ function convertDatabaseRowsToFrontend(rows) {
     */
 
     /*
-    These are OPTIONAL.
-
-    If database value exists, return it.
-    Otherwise keep frontend value blank.
+    -------------------------------------------------------
+    Director
+    -------------------------------------------------------
     */
 
     if (
@@ -345,6 +321,12 @@ function convertDatabaseRowsToFrontend(rows) {
       );
     }
 
+    /*
+    -------------------------------------------------------
+    Key Expenses
+    -------------------------------------------------------
+    */
+
     if (
       row.key_expenses !== null &&
       row.key_expenses !== undefined
@@ -356,20 +338,26 @@ function convertDatabaseRowsToFrontend(rows) {
       );
     }
 
+    /*
+    -------------------------------------------------------
+    Lead Generation
+    -------------------------------------------------------
+    */
+
     if (
-      row.other_expenses !== null &&
-      row.other_expenses !== undefined
+      row.lead_generation !== null &&
+      row.lead_generation !== undefined
     ) {
       result.netIncomeBreakdown[
-        "Other expenses"
+        "Lead Generation"
       ][year] = String(
-        row.other_expenses
+        row.lead_generation
       );
     }
 
     /*
     =======================================================
-    CALCULATED TDS
+    TDS
     =======================================================
     */
 
@@ -383,7 +371,7 @@ function convertDatabaseRowsToFrontend(rows) {
 
     /*
     =======================================================
-    CALCULATED NET AMOUNT
+    NET AMOUNT
     =======================================================
     */
 
@@ -401,20 +389,6 @@ function convertDatabaseRowsToFrontend(rows) {
   /*
   =======================================================
   DETERMINE LOCK STATE
-  =======================================================
-
-  IMPORTANT:
-
-  Breakdown fields are NOT required.
-
-  Therefore only:
-    Revenue
-    Expenditure
-    Salary
-    Income Tax
-
-  are considered when determining whether the
-  Revenue page is saved.
   =======================================================
   */
 
@@ -480,19 +454,7 @@ function convertDatabaseRowsToFrontend(rows) {
 
   /*
   -------------------------------------------------------
-  IMPORTANT
-
-  Do NOT include:
-
-    Director
-    Key Expenses
-    Other expenses
-    TDS
-    Net Amount
-
-  in requiredValues.
-
-  They are optional/calculated fields.
+  Breakdown, TDS and Net Amount are optional.
   -------------------------------------------------------
   */
 
@@ -792,8 +754,7 @@ async function saveRevenueData(
       req.body;
 
     /*
-    -------------------------------------------------------
-    Support both:
+    Support:
 
     {
       revenue: {...}
@@ -806,7 +767,6 @@ async function saveRevenueData(
         revenue: {...}
       }
     }
-    -------------------------------------------------------
     */
 
     if (
@@ -868,6 +828,26 @@ async function saveRevenueData(
 
     const netIncomeBreakdown =
       incomingData.netIncomeBreakdown ||
+      {};
+
+    /*
+    =======================================================
+    TDS FROM FRONTEND
+    =======================================================
+
+    IMPORTANT:
+
+    TDS is editable in the frontend.
+
+    Therefore DO NOT recalculate it as
+    10% of Net Income.
+
+    Use the value entered by the user.
+    =======================================================
+    */
+
+    const incomingTds =
+      incomingData.tds ||
       {};
 
     /*
@@ -941,30 +921,21 @@ async function saveRevenueData(
       TDS
       =====================================================
 
-      TDS = 10% of Net Income
+      Use the actual TDS entered in the frontend.
+      =====================================================
       */
 
       const tds =
         roundToTwo(
-          calculated.netIncome *
-            0.10
+          getNumber(
+            incomingTds?.[year]
+          )
         );
 
       /*
       =====================================================
-      OPTIONAL BREAKDOWN
+      DIRECTOR
       =====================================================
-
-      These fields are NOT required.
-
-      Blank:
-        ""
-      null:
-        null
-      undefined:
-        undefined
-
-      are all converted to 0.
       */
 
       const director =
@@ -974,6 +945,12 @@ async function saveRevenueData(
           year
         );
 
+      /*
+      =====================================================
+      KEY EXPENSES
+      =====================================================
+      */
+
       const keyExpenses =
         getValue(
           netIncomeBreakdown,
@@ -981,10 +958,16 @@ async function saveRevenueData(
           year
         );
 
-      const otherExpenses =
+      /*
+      =====================================================
+      LEAD GENERATION
+      =====================================================
+      */
+
+      const leadGeneration =
         getValue(
           netIncomeBreakdown,
-          "Other expenses",
+          "Lead Generation",
           year
         );
 
@@ -993,16 +976,10 @@ async function saveRevenueData(
       NET AMOUNT
       =====================================================
 
-      IMPORTANT:
-
-      Net Amount is ONLY:
-
       TDS
       + Director
       + Key Expenses
-      + Other expenses
-
-      It does NOT need to equal Net Income.
+      + Lead Generation
       =====================================================
       */
 
@@ -1011,7 +988,7 @@ async function saveRevenueData(
           tds +
           director +
           keyExpenses +
-          otherExpenses
+          leadGeneration
         );
 
       /*
@@ -1026,7 +1003,7 @@ async function saveRevenueData(
 
         /*
         ---------------------------------------------------
-        EXISTING REVENUE
+        REVENUE
         ---------------------------------------------------
         */
 
@@ -1053,7 +1030,7 @@ async function saveRevenueData(
 
         /*
         ---------------------------------------------------
-        EXISTING EXPENDITURE
+        EXPENDITURE
         ---------------------------------------------------
         */
 
@@ -1080,7 +1057,7 @@ async function saveRevenueData(
 
         /*
         ---------------------------------------------------
-        EXISTING SALARY
+        SALARY
         ---------------------------------------------------
         */
 
@@ -1123,26 +1100,33 @@ async function saveRevenueData(
         */
 
         /*
-        TDS is calculated automatically.
+        TDS
         */
 
         tds,
 
         /*
-        Optional user-entered values.
-        Blank values are stored as 0.
+        Director
         */
 
         director,
 
+        /*
+        Key Expenses
+        */
+
         key_expenses:
           keyExpenses,
 
-        other_expenses:
-          otherExpenses,
+        /*
+        Lead Generation
+        */
+
+        lead_generation:
+          leadGeneration,
 
         /*
-        Calculated independently.
+        Calculated Net Amount
         */
 
         net_amount:
@@ -1289,11 +1273,23 @@ async function saveRevenueData(
     );
 
     console.log(
-      "Net Income Breakdown: saved"
+      "TDS: saved from frontend"
     );
 
     console.log(
-      "Reconciliation validation: DISABLED"
+      "Director: saved"
+    );
+
+    console.log(
+      "Key Expenses: saved"
+    );
+
+    console.log(
+      "Lead Generation: saved"
+    );
+
+    console.log(
+      "Net Amount: calculated and saved"
     );
 
     console.log(
