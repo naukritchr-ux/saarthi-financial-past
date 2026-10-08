@@ -12,6 +12,7 @@ import Reports from "../pages/Reports/Reports";
 import DownloadCenter from "../pages/DownloadCenter/DownloadCenter";
 import EnquirySheet from "../pages/EnquirySheet/EnquirySheet";
 import Revenue from "../pages/Revenue/revenue";
+import TaxReturnSummary from "../pages/TaxReturnSummary/TaxReturnSummary";
 
 
 // Performance Reports
@@ -46,9 +47,7 @@ from "../pages/PerformanceReports/ClientStatusPerformance/ClientStatusPerformanc
 
 function AppRoutes() {
 
-
   return (
-
 
     <Routes>
 
@@ -101,6 +100,19 @@ function AppRoutes() {
 
           element={
             <Revenue />
+          }
+
+        />
+
+
+        {/* Tax Return Summary */}
+
+        <Route
+
+          path="/tax-return-summary"
+
+          element={
+            <TaxReturnSummary />
           }
 
         />
@@ -254,9 +266,7 @@ function AppRoutes() {
 
     </Routes>
 
-
   );
-
 
 }
 
