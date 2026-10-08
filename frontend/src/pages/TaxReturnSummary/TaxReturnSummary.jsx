@@ -76,6 +76,7 @@ const TaxReturnSummary = () => {
     incomeAssessment: "",
     incomeTax: "",
     tdsCredit: "",
+    refundAmount: "",
     interest: ""
   });
 
@@ -104,7 +105,7 @@ const TaxReturnSummary = () => {
 
     /*
      * Assessment Year can still be manually changed
-     * by the user after automatic selection.
+     * by the user after the automatic selection.
      */
     if (name === "assessmentYear") {
       setForm((prev) => ({
@@ -155,25 +156,6 @@ const TaxReturnSummary = () => {
   const refundDue = Math.max(
     0,
     tdsClaim - taxPayable
-  );
-
-  /*
-   * ==========================================================
-   * REFUND AMOUNT CALCULATION
-   *
-   * Refund Amount =
-   * TDS Credit - Income Tax As Per AY
-   *
-   * If the result is negative, show 0.
-   * ==========================================================
-   */
-
-  const incomeTax = Number(form.incomeTax) || 0;
-  const tdsCredit = Number(form.tdsCredit) || 0;
-
-  const refundAmount = Math.max(
-    0,
-    tdsCredit - incomeTax
   );
 
   /*
@@ -481,18 +463,20 @@ const TaxReturnSummary = () => {
 
       <div className="tax-row two-columns">
 
-        {/* Refund Amount - CALCULATED */}
+        {/* Refund Amount */}
 
         <div className="tax-field">
           <label>Refund Amount</label>
 
-          <div className="amount-input calculated-input">
+          <div className="amount-input">
             <span>₹</span>
 
             <input
-              type="text"
-              value={refundAmount.toFixed(2)}
-              readOnly
+              type="number"
+              name="refundAmount"
+              value={form.refundAmount}
+              onChange={handleChange}
+              min="0"
             />
           </div>
         </div>

@@ -1,20 +1,32 @@
 .tax-summary-page {
   padding: 24px;
-  background: #f8fafc;
+  background: #f7f3e8;
   min-height: 100%;
   box-sizing: border-box;
 }
 
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
 .tax-summary-header {
   margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #c9a227;
 }
 
 .tax-summary-header h2 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 30px;
+  font-weight: 800;
+  color: #102a43;
+  letter-spacing: 0.4px;
+  font-family: 'Courier New', Courier, monospace;
 }
+
+/* =========================================================
+   ROWS
+   ========================================================= */
 
 .tax-row {
   display: grid;
@@ -34,13 +46,28 @@
   grid-template-columns: 1fr;
 }
 
+/* =========================================================
+   FIELD CARDS
+   ========================================================= */
+
 .tax-field {
-  background: #ffffff;
-  border: 1px solid #dbe2ea;
+  background: #fffdf7;
+  border: 1px solid #d9cfb5;
   border-radius: 8px;
   padding: 16px;
   box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
+.tax-field:hover {
+  border-color: #c9a227;
+}
+
+/* =========================================================
+   LABELS
+   ========================================================= */
 
 .tax-field label,
 .difference-box label {
@@ -48,46 +75,76 @@
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #475569;
+  color: #304b63;
 }
+
+/* =========================================================
+   INPUTS / SELECTS
+   ========================================================= */
 
 .tax-field input,
 .tax-field select {
   width: 100%;
   height: 40px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #cfc5aa;
   border-radius: 6px;
   padding: 0 12px;
   font-size: 14px;
   box-sizing: border-box;
-  background: #ffffff;
-  color: #1e293b;
+  background: #fffef9;
+  color: #102a43;
   outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .tax-field input:focus,
 .tax-field select:focus {
-  border-color: #2563eb;
+  border-color: #c9a227;
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.12);
 }
 
-.tax-field input:disabled {
-  background: #f1f5f9;
+/* Disabled fields */
+
+.tax-field input:disabled,
+.tax-field select:disabled {
+  background: #eee9dc;
+  color: #7b8490;
   cursor: not-allowed;
 }
+
+/* =========================================================
+   AMOUNT INPUT
+   ========================================================= */
 
 .amount-input {
   display: flex;
   align-items: center;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #cfc5aa;
   border-radius: 6px;
   height: 40px;
   overflow: hidden;
+  background: #fffef9;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.amount-input:focus-within {
+  border-color: #c9a227;
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.12);
 }
 
 .amount-input span {
   padding: 0 12px;
-  color: #64748b;
-  font-weight: 600;
+  color: #a27c00;
+  font-weight: 700;
+  border-right: 1px solid #e1d8c2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  background: #faf6e9;
 }
 
 .amount-input input {
@@ -95,34 +152,63 @@
   border-radius: 0;
   height: 100%;
   flex: 1;
+  background: transparent;
+  color: #102a43;
 }
 
 .amount-input input:focus {
   outline: none;
   border: 0;
+  box-shadow: none;
 }
 
+/* =========================================================
+   CALCULATED / READ-ONLY FIELDS
+   ========================================================= */
+
+.calculated-input {
+  background: #f7f1dc;
+  border-color: #c9a227;
+}
+
+.calculated-input input {
+  background: transparent;
+  color: #102a43;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   CALCULATED REFUND BOX
+   ========================================================= */
+
 .calculated-box {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: #102a43;
+  border: 1px solid #c9a227;
   border-radius: 8px;
   padding: 22px;
   text-align: center;
   margin-top: 8px;
+  box-shadow: 0 3px 8px rgba(16, 42, 67, 0.12);
 }
 
 .calculated-title {
   font-size: 14px;
   font-weight: 700;
-  color: #475569;
+  color: #f0d36b;
+  letter-spacing: 0.6px;
 }
 
 .calculated-value {
   margin-top: 8px;
   font-size: 24px;
   font-weight: 700;
-  color: #0f172a;
+  color: #fffdf7;
 }
+
+/* =========================================================
+   DIFFERENCE SECTION
+   ========================================================= */
 
 .difference-section {
   margin-top: 28px;
@@ -132,20 +218,38 @@
   text-align: center;
   font-size: 16px;
   margin-bottom: 16px;
-  color: #334155;
+  color: #102a43;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
+/* =========================================================
+   DIFFERENCE BOXES
+   ========================================================= */
+
 .difference-box {
-  background: #ffffff;
-  border: 1px solid #dbe2ea;
+  background: #fffdf7;
+  border: 1px solid #d9cfb5;
   border-radius: 8px;
   padding: 16px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.difference-box:hover {
+  border-color: #c9a227;
+  box-shadow: 0 2px 6px rgba(16, 42, 67, 0.08);
 }
 
 .difference-box strong {
   font-size: 18px;
-  color: #0f172a;
+  color: #102a43;
 }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 768px) {
   .two-columns,
@@ -155,5 +259,9 @@
 
   .tax-summary-page {
     padding: 16px;
+  }
+
+  .tax-summary-header h2 {
+    font-size: 20px;
   }
 }
