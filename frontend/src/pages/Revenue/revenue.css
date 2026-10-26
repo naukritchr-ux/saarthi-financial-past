@@ -533,3 +533,38 @@
     font-size: 12px;
   }
 }
+
+
+.revenue-save-message {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.revenue-save-message.success {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.revenue-save-message.error {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.revenue-save-message.info {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.revenue-action-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
