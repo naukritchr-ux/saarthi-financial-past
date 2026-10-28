@@ -44,7 +44,7 @@ const SALARY_ROWS = [
   "Job portal Salary",
 ];
 
-const INCOME_ROWS = ["Income Received"];
+const INCOME_ROWS = ["Interest Received"];
 
 /* =========================================================
    HELPERS
@@ -101,7 +101,7 @@ function createEmptyRevenueData() {
     revenue: createInitialRowData(REVENUE_ROWS),
     expenditure: createInitialRowData(EXPENDITURE_ROWS),
     salary: createInitialRowData(SALARY_ROWS),
-    incomeReceived: createInitialRowData(INCOME_ROWS),
+    interestReceived: createInitialRowData(INCOME_ROWS),
 
     incomeTaxPercentage: "",
 
@@ -127,7 +127,7 @@ function calculateNetIncomeForYear(
   expenditure,
   salary,
   incomeTaxPercentage,
-  incomeReceived
+  interestReceived
 ) {
   const recruitment =
     getValue(revenue, "Recruitment Revenue", year) -
@@ -145,8 +145,8 @@ function calculateNetIncomeForYear(
     getValue(salary, "Job portal Salary", year);
 
   const additionalIncome = getValue(
-    incomeReceived,
-    "Income Received",
+    interestReceived,
+    "Interest Received",
     year
   );
 
@@ -230,8 +230,10 @@ function convertDatabaseRowsToFrontend(rows) {
     result.salary["Job portal Salary"][year] =
       String(row.job_portal_salary ?? "");
 
-    result.incomeReceived["Income Received"][year] =
-      String(row.income_received ?? "");
+    // Frontend label: Interest Received
+    // Database column: interest_received
+    result.interestReceived["Interest Received"][year] =
+      String(row.interest_received ?? "");
 
     result.netIncomeBreakdown.Director[year] =
       row.director == null ? "" : String(row.director);
@@ -377,7 +379,7 @@ async function saveRevenueData(req, res) {
     const revenue = incomingData.revenue || {};
     const expenditure = incomingData.expenditure || {};
     const salary = incomingData.salary || {};
-    const incomeReceived = incomingData.incomeReceived || {};
+    const interestReceived = incomingData.interestReceived || {};
 
     const incomeTaxPercentage = getNumber(
       incomingData.incomeTaxPercentage
@@ -423,7 +425,7 @@ async function saveRevenueData(req, res) {
         expenditure,
         salary,
         incomeTaxPercentage,
-        incomeReceived
+        interestReceived
       );
 
       const tds = roundToTwo(getNumber(incomingTds[year]));
@@ -496,8 +498,8 @@ async function saveRevenueData(req, res) {
           year
         ),
 
-        // Income Received database column.
-        income_received: calculated.additionalIncome,
+        // Interest Received database column.
+        interest_received: calculated.additionalIncome,
 
         income_tax_percent: incomeTaxPercentage,
 
