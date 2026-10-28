@@ -41,7 +41,8 @@ const EXPENDITURE_ROWS = [
 const SALARY_ROWS = [
   "Recruitment Salary",
   "Franchisee Salary",
-  "Job portal Salary",
+  "Director Salary",
+  "Key Executive Salary",
 ];
 
 const INCOME_ROWS = ["Interest Received"];
@@ -56,7 +57,6 @@ function getNumber(value) {
   }
 
   const number = Number(value);
-
   return Number.isFinite(number) ? number : 0;
 }
 
@@ -82,37 +82,30 @@ function createInitialRowData(rows) {
   return result;
 }
 
-function createEmptyRevenueData() {
-  const director = {};
-  const keyExpenses = {};
-  const leadGeneration = {};
-  const tds = {};
-  const netAmount = {};
+function createYearValues() {
+  const result = {};
 
   FINANCIAL_YEARS.forEach((year) => {
-    director[year] = "";
-    keyExpenses[year] = "";
-    leadGeneration[year] = "";
-    tds[year] = "";
-    netAmount[year] = "";
+    result[year] = "";
   });
 
+  return result;
+}
+
+function createEmptyRevenueData() {
   return {
     revenue: createInitialRowData(REVENUE_ROWS),
     expenditure: createInitialRowData(EXPENDITURE_ROWS),
     salary: createInitialRowData(SALARY_ROWS),
     interestReceived: createInitialRowData(INCOME_ROWS),
-
     incomeTaxPercentage: "",
-
     netIncomeBreakdown: {
-      Director: director,
-      "Key Expenses": keyExpenses,
-      "Lead Generation": leadGeneration,
+      Director: createYearValues(),
+      "Key Expenses": createYearValues(),
+      "Lead Generation": createYearValues(),
     },
-
-    tds,
-    netAmount,
+    tds: createYearValues(),
+    netAmount: createYearValues(),
     isSaved: false,
   };
 }
@@ -139,10 +132,10 @@ function calculateNetIncomeForYear(
     getValue(expenditure, "Franchisee Expenditure", year) -
     getValue(salary, "Franchisee Salary", year);
 
+  // Job Portal Salary is no longer deducted from Job Portal Revenue.
   const jobPortal =
     getValue(revenue, "Job portal Revenue", year) -
-    getValue(expenditure, "Job portal Expenditure", year) -
-    getValue(salary, "Job portal Salary", year);
+    getValue(expenditure, "Job portal Expenditure", year);
 
   const additionalIncome = getValue(
     interestReceived,
@@ -156,13 +149,29 @@ function calculateNetIncomeForYear(
     year
   );
 
+  const directorSalary = getValue(
+    salary,
+    "Director Salary",
+    year
+  );
+
+  const keyExecutiveSalary = getValue(
+    salary,
+    "Key Executive Salary",
+    year
+  );
+
+  // Total revenue after expenses and both additional salaries.
   const overallRevenue =
     recruitment +
     franchisee +
     jobPortal +
     additionalIncome -
-    otherExpenditure;
+    otherExpenditure -
+    directorSalary -
+    keyExecutiveSalary;
 
+  // Existing percentage-based income tax calculation.
   const incomeTax =
     overallRevenue * (getNumber(incomeTaxPercentage) / 100);
 
@@ -174,6 +183,8 @@ function calculateNetIncomeForYear(
     jobPortal: roundToTwo(jobPortal),
     additionalIncome: roundToTwo(additionalIncome),
     otherExpenditure: roundToTwo(otherExpenditure),
+    directorSalary: roundToTwo(directorSalary),
+    keyExecutiveSalary: roundToTwo(keyExecutiveSalary),
     overallRevenue: roundToTwo(overallRevenue),
     incomeTax: roundToTwo(incomeTax),
     netIncome: roundToTwo(netIncome),
@@ -216,8 +227,8 @@ function convertDatabaseRowsToFrontend(rows) {
     result.expenditure["Job portal Expenditure"][year] =
       String(row.job_portal_expenditure ?? "");
 
-    // Frontend label: Other Expenditure
-    // Database column: other_expenses
+    // Frontend: Other Expenditure
+    // Database: other_expenses
     result.expenditure["Other Expenditure"][year] =
       String(row.other_expenses ?? "");
 
@@ -227,11 +238,13 @@ function convertDatabaseRowsToFrontend(rows) {
     result.salary["Franchisee Salary"][year] =
       String(row.franchisee_salary ?? "");
 
-    result.salary["Job portal Salary"][year] =
-      String(row.job_portal_salary ?? "");
+    // Database column renamed from job_portal_salary.
+    result.salary["Director Salary"][year] =
+      String(row.director_salary ?? "");
 
-    // Frontend label: Interest Received
-    // Database column: interest_received
+    result.salary["Key Executive Salary"][year] =
+      String(row.key_executive_salary ?? "");
+
     result.interestReceived["Interest Received"][year] =
       String(row.interest_received ?? "");
 
@@ -260,21 +273,15 @@ function convertDatabaseRowsToFrontend(rows) {
 
   const allRequiredValues = [];
 
-  Object.values(result.revenue).forEach((row) => {
-    FINANCIAL_YEARS.forEach((year) => {
-      allRequiredValues.push(row[year]);
-    });
-  });
-
-  Object.values(result.expenditure).forEach((row) => {
-    FINANCIAL_YEARS.forEach((year) => {
-      allRequiredValues.push(row[year]);
-    });
-  });
-
-  Object.values(result.salary).forEach((row) => {
-    FINANCIAL_YEARS.forEach((year) => {
-      allRequiredValues.push(row[year]);
+  [
+    result.revenue,
+    result.expenditure,
+    result.salary,
+  ].forEach((section) => {
+    Object.values(section).forEach((row) => {
+      FINANCIAL_YEARS.forEach((year) => {
+        allRequiredValues.push(row[year]);
+      });
     });
   });
 
@@ -388,7 +395,7 @@ async function saveRevenueData(req, res) {
     const breakdown = incomingData.netIncomeBreakdown || {};
     const incomingTds = incomingData.tds || {};
 
-    // Read existing records to determine whether to insert or update.
+    // Read existing records to determine insert versus update.
     const {
       data: existingRows,
       error: existingError,
@@ -417,7 +424,6 @@ async function saveRevenueData(req, res) {
       }
     });
 
-    // Process each financial year and report the exact year on failure.
     for (const year of FINANCIAL_YEARS) {
       const calculated = calculateNetIncomeForYear(
         year,
@@ -429,7 +435,6 @@ async function saveRevenueData(req, res) {
       );
 
       const tds = roundToTwo(getNumber(incomingTds[year]));
-
       const director = getValue(breakdown, "Director", year);
       const keyExpenses = getValue(breakdown, "Key Expenses", year);
       const leadGeneration = getValue(
@@ -479,7 +484,7 @@ async function saveRevenueData(req, res) {
           year
         ),
 
-        // Maps "Other Expenditure" to other_expenses.
+        // Other Expenditure maps to other_expenses.
         other_expenses: calculated.otherExpenditure,
 
         recruitment_salary: getValue(
@@ -492,15 +497,12 @@ async function saveRevenueData(req, res) {
           "Franchisee Salary",
           year
         ),
-        job_portal_salary: getValue(
-          salary,
-          "Job portal Salary",
-          year
-        ),
 
-        // Interest Received database column.
+        // Existing job_portal_salary column is now director_salary.
+        director_salary: calculated.directorSalary,
+        key_executive_salary: calculated.keyExecutiveSalary,
+
         interest_received: calculated.additionalIncome,
-
         income_tax_percent: incomeTaxPercentage,
 
         tds,
@@ -553,7 +555,7 @@ async function saveRevenueData(req, res) {
       }
     }
 
-    // Fetch saved records so the frontend receives the persisted values.
+    // Return persisted values to the frontend.
     const { data: savedRows, error: readBackError } = await supabase
       .from(TABLE_NAME)
       .select("*")
