@@ -145,7 +145,6 @@ function normalizeBreakdown(savedBreakdown) {
 
 /* =========================================================
    NORMALIZE ROW DATA
-   Preserves saved values and initializes new years.
 ========================================================= */
 
 function normalizeRowData(savedData, rows) {
@@ -172,18 +171,6 @@ function normalizeTds(savedTds) {
 
 /* =========================================================
    REQUIRED FIELD CHECK
-
-   Required:
-   - All Revenue fields
-   - All Expenditure fields
-   - All Salary fields
-
-   Optional:
-   - Interest Received
-   - TDS
-   - Director
-   - Key Expenses
-   - Lead Generation
 ========================================================= */
 
 function checkAllRequiredFields(revenue, expenditure, salary) {
@@ -233,6 +220,30 @@ function Revenue() {
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Popup state for validation, success, and save errors.
+  const [savePopup, setSavePopup] = useState({
+    visible: false,
+    success: false,
+    title: "",
+    message: "",
+  });
+
+  function showSavePopup({ success, title, message }) {
+    setSavePopup({
+      visible: true,
+      success,
+      title,
+      message,
+    });
+  }
+
+  function closeSavePopup() {
+    setSavePopup((previous) => ({
+      ...previous,
+      visible: false,
+    }));
+  }
 
   /* =======================================================
      LOAD DATA
@@ -292,8 +303,7 @@ function Revenue() {
           salaryRows
         );
 
-        // Legacy compatibility: migrate an old frontend row value
-        // to Director Salary only when Director Salary is empty.
+        // Preserve legacy Job portal Salary data when applicable.
         financialYears.forEach((year) => {
           if (
             !hasValue(loadedSalary["Director Salary"][year]) &&
@@ -439,7 +449,6 @@ function Revenue() {
 
   /* =======================================================
      EXPENDITURE TOTALS
-     Includes fixed Income Tax and Depreciation.
   ======================================================= */
 
   const expenditureTotals = {};
@@ -524,7 +533,6 @@ function Revenue() {
 
   /* =======================================================
      OVERALL REVENUE AND NET INCOME
-     Income Tax is already deducted in Final Revenue.
   ======================================================= */
 
   const overallRevenue = { ...finalRevenue.Total };
@@ -572,9 +580,12 @@ function Revenue() {
     const { allFieldsFilled } = checkRevenueFields();
 
     if (!allFieldsFilled) {
-      window.alert(
-        "Please fill all Revenue, Expenditure and Salary fields for all five financial years before saving."
-      );
+      showSavePopup({
+        success: false,
+        title: "Required Fields Missing",
+        message:
+          "Please fill all Revenue, Expenditure and Salary fields for all five financial years before saving.",
+      });
       return;
     }
 
@@ -628,7 +639,16 @@ function Revenue() {
         body: JSON.stringify(dataToSave),
       });
 
-      const result = await response.json();
+      // Handle invalid or non-JSON server responses as save failures.
+      let result;
+
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error(
+          `The server returned an invalid response (HTTP ${response.status}).`
+        );
+      }
 
       if (!response.ok || !result.success) {
         throw new Error(
@@ -650,7 +670,10 @@ function Revenue() {
         );
 
         setInterestReceived(
-          normalizeRowData(result.data.interestReceived, interestRows)
+          normalizeRowData(
+            result.data.interestReceived,
+            interestRows
+          )
         );
 
         setTds(normalizeTds(result.data.tds));
@@ -661,13 +684,22 @@ function Revenue() {
       }
 
       setIsSaved(true);
-      window.alert("Revenue data saved successfully.");
+
+      showSavePopup({
+        success: true,
+        title: "Saved Successfully",
+        message: "Your revenue data has been saved successfully.",
+      });
     } catch (error) {
       console.error("Failed to save shared Revenue data:", error);
 
-      window.alert(
-        error.message || "Unable to save Revenue data."
-      );
+      showSavePopup({
+        success: false,
+        title: "Save Failed",
+        message:
+          error.message ||
+          "Unable to save Revenue data. Please try again.",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -731,7 +763,7 @@ function Revenue() {
 
   function renderCalculatedRow(label, values) {
     return (
-      <tr>
+      <tr key={label}>
         <td>{label}</td>
 
         {financialYears.map((year) => (
@@ -1026,6 +1058,54 @@ function Revenue() {
           Edit
         </button>
       </div>
+
+      {/* SAVE RESULT POPUP */}
+      {savePopup.visible && (
+        <div
+          className="revenue-popup-overlay"
+          onClick={closeSavePopup}
+        >
+          <div
+            className="revenue-popup"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="revenue-popup-title"
+            aria-describedby="revenue-popup-message"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div
+              className={`revenue-popup-icon ${
+                savePopup.success ? "success" : "error"
+              }`}
+              aria-hidden="true"
+            >
+              {savePopup.success ? "✓" : "!"}
+            </div>
+
+            <h3
+              id="revenue-popup-title"
+              className={savePopup.success ? "success" : "error"}
+            >
+              {savePopup.title}
+            </h3>
+
+            <p id="revenue-popup-message">
+              {savePopup.message}
+            </p>
+
+            <button
+              type="button"
+              className={`revenue-popup-button ${
+                savePopup.success ? "success" : "error"
+              }`}
+              autoFocus
+              onClick={closeSavePopup}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
