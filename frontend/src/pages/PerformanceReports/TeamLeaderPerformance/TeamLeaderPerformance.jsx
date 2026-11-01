@@ -126,10 +126,7 @@ const getCompanyName = (row) => {
 ========================================================= */
 const getIndustry = (row) => {
   return String(
-    firstValue(row, [
-      "industry",
-      "Industry"
-    ])
+    firstValue(row, ["industry", "Industry"])
   ).trim();
 };
 
@@ -138,10 +135,7 @@ const getIndustry = (row) => {
 ========================================================= */
 const getCity = (row) => {
   return String(
-    firstValue(row, [
-      "city",
-      "City"
-    ])
+    firstValue(row, ["city", "City"])
   ).trim();
 };
 
@@ -241,11 +235,6 @@ const getClientAcquiredDate = (row) => {
 
 /* =========================================================
    SAFE DATE PARSER
-   Handles:
-   YYYY-MM-DD
-   DD/MM/YYYY
-   DD-MM-YYYY
-   Date objects
 ========================================================= */
 const parseDate = (value) => {
   if (value === null || value === undefined || value === "") {
@@ -262,46 +251,39 @@ const parseDate = (value) => {
     return null;
   }
 
-  /* YYYY-MM-DD */
   const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
 
   if (isoMatch) {
     const year = Number(isoMatch[1]);
     const month = Number(isoMatch[2]);
     const day = Number(isoMatch[3]);
-
     const date = new Date(year, month - 1, day);
 
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
-  /* DD/MM/YYYY */
   const slashMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
 
   if (slashMatch) {
     const day = Number(slashMatch[1]);
     const month = Number(slashMatch[2]);
     const year = Number(slashMatch[3]);
-
     const date = new Date(year, month - 1, day);
 
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
-  /* DD-MM-YYYY */
   const dashMatch = text.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
 
   if (dashMatch) {
     const day = Number(dashMatch[1]);
     const month = Number(dashMatch[2]);
     const year = Number(dashMatch[3]);
-
     const date = new Date(year, month - 1, day);
 
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
-  /* Normal Date parsing */
   const date = new Date(text);
 
   return Number.isNaN(date.getTime()) ? null : date;
@@ -374,7 +356,6 @@ const getFinancialValues = (row, infoFilter = "", percentage = "") => {
   const franchiseeShare = getFranchiseeShare(row);
   const tlExpenditure = getTLExpenditure(row, percentage);
 
-  /* ALL */
   if (!infoFilter || infoFilter === "ALL") {
     return {
       billing,
@@ -384,7 +365,6 @@ const getFinancialValues = (row, infoFilter = "", percentage = "") => {
     };
   }
 
-  /* R */
   if (infoFilter === "R") {
     if (info !== "R") {
       return {
@@ -403,7 +383,6 @@ const getFinancialValues = (row, infoFilter = "", percentage = "") => {
     };
   }
 
-  /* RV / C / CN */
   if (infoFilter === "RV" || infoFilter === "C" || infoFilter === "CN") {
     if (info !== infoFilter) {
       return {
@@ -474,9 +453,7 @@ const TLTooltip = ({ active, payload, label }) => {
             className="tl-tooltip-row"
             key={`${item.dataKey}-${index}`}
           >
-            <span>
-              {item.name}
-            </span>
+            <span>{item.name}</span>
 
             <strong>
               {isBilling
@@ -511,6 +488,18 @@ const TeamLeaderPerformance = () => {
   ======================================================= */
   const [reportFinancialYear, setReportFinancialYear] = useState("");
   const [reportInfoStatus, setReportInfoStatus] = useState("");
+
+  /* =======================================================
+     RESET MAIN PAGE FILTERS
+     Does not affect modal report filters.
+  ======================================================= */
+  const handleResetFilters = () => {
+    setSelectedLeaderFilter("");
+    setSelectedFinancialYear("");
+    setSelectedMonth("");
+    setSelectedInfoStatus("");
+    setTlExpenditurePercentage("");
+  };
 
   /* =======================================================
      TL EXPENDITURE VALIDATION
@@ -568,12 +557,10 @@ const TeamLeaderPerformance = () => {
         return;
       }
 
-      /* Team Leader filter */
       if (selectedLeaderFilter && leader !== selectedLeaderFilter) {
         return;
       }
 
-      /* Financial Year filter */
       if (
         selectedFinancialYear &&
         getFinancialYear(row) !== selectedFinancialYear
@@ -581,12 +568,10 @@ const TeamLeaderPerformance = () => {
         return;
       }
 
-      /* Month filter */
       if (selectedMonth && getMonth(row) !== Number(selectedMonth)) {
         return;
       }
 
-      /* Info Status filter */
       if (!matchesInfoFilter(row, selectedInfoStatus)) {
         return;
       }
@@ -605,24 +590,20 @@ const TeamLeaderPerformance = () => {
 
       const data = map.get(leader);
 
-      /* Total enquiries */
       data.enquiries += 1;
 
-      /* Unique acquired client */
       const companyName = getCompanyName(row);
 
       if (companyName) {
         data.clients.add(companyName);
       }
 
-      /* Unique franchisee */
       const franchiseName = getFranchiseName(row);
 
       if (franchiseName) {
         data.franchisees.add(franchiseName);
       }
 
-      /* Financial values */
       const financial = getFinancialValues(
         row,
         selectedInfoStatus,
@@ -724,7 +705,6 @@ const TeamLeaderPerformance = () => {
         ? (grossProfit / totalNetAmount) * 100
         : 0;
 
-    /* BEST INDUSTRY */
     const industryMap = new Map();
 
     selectedRows.forEach(row => {
@@ -752,7 +732,6 @@ const TeamLeaderPerformance = () => {
       }
     });
 
-    /* BEST CITY */
     const cityMap = new Map();
 
     selectedRows.forEach(row => {
@@ -780,7 +759,6 @@ const TeamLeaderPerformance = () => {
       }
     });
 
-    /* UNIQUE ACQUIRED CLIENT COUNT */
     const uniqueClients = new Set();
 
     selectedRows.forEach(row => {
@@ -813,7 +791,6 @@ const TeamLeaderPerformance = () => {
 
   /* =======================================================
      YEARLY REPORT
-     UNIQUE COMPANY COUNT
   ======================================================= */
   const yearlyReportData = useMemo(() => {
     const map = new Map();
@@ -866,7 +843,6 @@ const TeamLeaderPerformance = () => {
 
   /* =======================================================
      MONTHLY REPORT
-     UNIQUE COMPANY COUNT PER MONTH
   ======================================================= */
   const monthlyReportData = useMemo(() => {
     const map = new Map();
@@ -952,8 +928,6 @@ const TeamLeaderPerformance = () => {
   ======================================================= */
   const handleViewPerformance = (leader) => {
     setSelectedLeader(leader);
-
-    /* Modal starts with the same filters currently selected on the main page. */
     setReportFinancialYear(selectedFinancialYear);
     setReportInfoStatus(selectedInfoStatus);
   };
@@ -1125,6 +1099,17 @@ const TeamLeaderPerformance = () => {
               placeholder="e.g. 10"
             />
           </div>
+
+          {/* RESET FILTERS BUTTON */}
+          <div className="tl-reset-filter-group">
+            <button
+              type="button"
+              className="tl-reset-filters-btn"
+              onClick={handleResetFilters}
+            >
+              Reset Filters
+            </button>
+          </div>
         </div>
 
         <div className="tl-table-wrapper">
@@ -1157,7 +1142,6 @@ const TeamLeaderPerformance = () => {
               ) : (
                 leaderData.map(leader => (
                   <tr key={leader.leader}>
-                    {/* Team Leader */}
                     <td>
                       <div className="tl-name">
                         <span className="tl-avatar">
@@ -1169,38 +1153,32 @@ const TeamLeaderPerformance = () => {
                       </div>
                     </td>
 
-                    {/* Acquired Clients */}
                     <td>
                       <span className="tl-client-count">
                         {leader.clients.toLocaleString("en-IN")}
                       </span>
                     </td>
 
-                    {/* Enquiries */}
                     <td>
                       {leader.enquiries.toLocaleString("en-IN")}
                     </td>
 
-                    {/* Franchisees */}
                     <td>
                       {leader.franchisees.toLocaleString("en-IN")}
                     </td>
 
-                    {/* Billing */}
                     <td>
                       <span className="tl-billing-value">
                         {formatCurrency(leader.billing)}
                       </span>
                     </td>
 
-                    {/* Net Amount */}
                     <td>
                       <span className="tl-net-value">
                         {formatCurrency(leader.netAmount)}
                       </span>
                     </td>
 
-                    {/* TL Expenditure */}
                     {hasTLExpenditurePercentage && (
                       <td>
                         <span className="tl-expenditure-value">
@@ -1209,7 +1187,6 @@ const TeamLeaderPerformance = () => {
                       </td>
                     )}
 
-                    {/* Performance */}
                     <td>
                       <button
                         type="button"
@@ -1272,7 +1249,6 @@ const TeamLeaderPerformance = () => {
 
             {/* SUMMARY */}
             <div className="tl-summary-grid">
-              {/* Best Industry */}
               <div className="tl-summary-card">
                 <span className="tl-summary-label">
                   Best Industry
@@ -1286,7 +1262,6 @@ const TeamLeaderPerformance = () => {
                 </small>
               </div>
 
-              {/* Best City */}
               <div className="tl-summary-card">
                 <span className="tl-summary-label">
                   Best City
@@ -1300,7 +1275,6 @@ const TeamLeaderPerformance = () => {
                 </small>
               </div>
 
-              {/* Billing */}
               <div className="tl-summary-card">
                 <span className="tl-summary-label">
                   Total Billing
@@ -1313,7 +1287,6 @@ const TeamLeaderPerformance = () => {
                 </small>
               </div>
 
-              {/* TL Expenditure */}
               {hasTLExpenditurePercentage && (
                 <div className="tl-summary-card">
                   <span className="tl-summary-label">
@@ -1328,7 +1301,6 @@ const TeamLeaderPerformance = () => {
                 </div>
               )}
 
-              {/* Net Amount */}
               <div className="tl-summary-card tl-summary-net">
                 <span className="tl-summary-label">
                   Net Amount
@@ -1345,7 +1317,6 @@ const TeamLeaderPerformance = () => {
             {/* REPORT CONTROLS */}
             <div className="tl-report-controls">
               <div className="tl-report-filter-row">
-                {/* Report Financial Year */}
                 <div className="tl-filter-group">
                   <label>
                     Financial Year
@@ -1365,7 +1336,6 @@ const TeamLeaderPerformance = () => {
                   </select>
                 </div>
 
-                {/* Report Info Status */}
                 <div className="tl-filter-group">
                   <label>
                     Info Status
