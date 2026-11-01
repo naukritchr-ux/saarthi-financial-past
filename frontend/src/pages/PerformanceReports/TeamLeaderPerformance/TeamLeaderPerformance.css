@@ -1,7 +1,7 @@
+
 /* =========================================================
    MAIN PAGE
 ========================================================= */
-
 .tl-performance-page {
   width: 100%;
   min-height: 100%;
@@ -10,11 +10,9 @@
   background: #F7F4EC;
 }
 
-
 /* =========================================================
    PAGE HEADER
 ========================================================= */
-
 .tl-page-header {
   display: flex;
   justify-content: space-between;
@@ -44,11 +42,9 @@
   color: #6B7280;
 }
 
-
 /* =========================================================
    TABLE CARD
 ========================================================= */
-
 .tl-table-card {
   background: #FFFFFF;
   border: 1px solid #E2DCCB;
@@ -97,15 +93,14 @@
   color: #7B8491;
 }
 
-
 /* =========================================================
    MAIN FILTERS
 ========================================================= */
-
 .tl-performance-filters {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
-  gap: 20px;
+  gap: 16px;
   margin: 0 25px 20px;
   padding: 17px 19px;
   background: #FFFFFF;
@@ -115,6 +110,8 @@
 
 .tl-filter-group {
   display: flex;
+  flex: 1 1 180px;
+  min-width: 160px;
   flex-direction: column;
   gap: 7px;
 }
@@ -126,7 +123,8 @@
 }
 
 .tl-filter-group select {
-  min-width: 210px;
+  width: 100%;
+  min-width: 0;
   height: 39px;
   padding: 0 35px 0 12px;
   border: 1px solid #D7D0C0;
@@ -148,11 +146,9 @@
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
 }
 
-
 /* =========================================================
    TABLE
 ========================================================= */
-
 .tl-table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -200,11 +196,9 @@
   border-bottom: none;
 }
 
-
 /* =========================================================
    TEAM LEADER NAME
 ========================================================= */
-
 .tl-name {
   display: flex;
   align-items: center;
@@ -227,11 +221,9 @@
   font-weight: 800;
 }
 
-
 /* =========================================================
    VALUES
 ========================================================= */
-
 .tl-client-count {
   display: inline-flex;
   min-width: 32px;
@@ -260,11 +252,9 @@
   font-weight: 700;
 }
 
-
 /* =========================================================
    VIEW BUTTON
 ========================================================= */
-
 .tl-view-performance-btn {
   display: inline-flex;
   align-items: center;
@@ -298,22 +288,18 @@
   line-height: 1;
 }
 
-
 /* =========================================================
    EMPTY
 ========================================================= */
-
 .tl-empty {
   text-align: center !important;
   padding: 45px 20px !important;
   color: #7B8491 !important;
 }
 
-
 /* =========================================================
    MODAL OVERLAY
 ========================================================= */
-
 .tl-performance-overlay {
   position: fixed;
   inset: 0;
@@ -327,11 +313,9 @@
   backdrop-filter: blur(5px);
 }
 
-
 /* =========================================================
    MODAL
 ========================================================= */
-
 .tl-performance-modal {
   width: min(1180px, 100%);
   max-height: 92vh;
@@ -354,11 +338,9 @@
   }
 }
 
-
 /* =========================================================
    MODAL HEADER
 ========================================================= */
-
 .tl-modal-header {
   display: flex;
   justify-content: space-between;
@@ -420,11 +402,9 @@
   outline-offset: 2px;
 }
 
-
 /* =========================================================
    SUMMARY GRID
 ========================================================= */
-
 .tl-summary-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -480,11 +460,9 @@
   border-top: 3px solid #26734D;
 }
 
-
 /* =========================================================
    REPORT CONTROLS
 ========================================================= */
-
 .tl-report-controls {
   display: flex;
   align-items: flex-end;
@@ -555,11 +533,9 @@
   font-size: 14px;
 }
 
-
 /* =========================================================
    GRAPHS
 ========================================================= */
-
 .tl-report-graphs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -637,11 +613,9 @@
   font-size: 13px;
 }
 
-
 /* =========================================================
    TOOLTIP
 ========================================================= */
-
 .tl-modern-tooltip {
   min-width: 150px;
   padding: 11px 13px;
@@ -672,11 +646,9 @@
   color: #FFFFFF;
 }
 
-
 /* =========================================================
    MODAL FOOTER
 ========================================================= */
-
 .tl-modal-footer {
   display: flex;
   align-items: center;
@@ -716,11 +688,9 @@
   outline-offset: 2px;
 }
 
-
 /* =========================================================
    SCROLLBAR
 ========================================================= */
-
 .tl-performance-modal::-webkit-scrollbar {
   width: 7px;
 }
@@ -738,11 +708,9 @@
   background: #B78A34;
 }
 
-
 /* =========================================================
    TL EXPENDITURE PERCENTAGE INPUT
 ========================================================= */
-
 .tl-filter-group input[type="number"] {
   min-width: 210px;
   width: 210px;
@@ -779,34 +747,25 @@
   border-color: #C9C0AD;
 }
 
-
 /* Remove number input arrows */
-
 .tl-filter-group input[type="number"]::-webkit-inner-spin-button,
 .tl-filter-group input[type="number"]::-webkit-outer-spin-button {
   opacity: 0.7;
 }
 
-
 /* =========================================================
    RESPONSIVE
 ========================================================= */
-
 @media (max-width: 1100px) {
-
   .tl-summary-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-
 }
 
-
 @media (max-width: 850px) {
-
   .tl-performance-page {
     padding: 20px;
   }
-
 
   .tl-page-header {
     flex-direction: column;
@@ -814,28 +773,23 @@
     gap: 10px;
   }
 
-
   .tl-summary-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-
   .tl-report-graphs {
     grid-template-columns: 1fr;
   }
-
 
   .tl-performance-filters {
     align-items: flex-start;
     flex-direction: column;
   }
 
-
   .tl-report-controls {
     align-items: flex-start;
     flex-direction: column;
   }
-
 
   .tl-report-filter-row {
     width: 100%;
@@ -843,45 +797,35 @@
     flex-direction: column;
   }
 
-
   .tl-report-period {
     text-align: left;
   }
-
 }
 
-
 @media (max-width: 600px) {
-
   .tl-performance-page {
     padding: 14px;
   }
-
 
   .tl-page-header h1 {
     font-size: 24px;
   }
 
-
   .tl-page-header p {
     font-size: 13px;
   }
-
 
   .tl-table-header {
     padding: 18px;
   }
 
-
   .tl-table-header h2 {
     font-size: 16px;
   }
 
-
   .tl-table-header p {
     font-size: 12px;
   }
-
 
   .tl-member-count {
     min-width: 60px;
@@ -889,48 +833,39 @@
     font-size: 15px;
   }
 
-
   .tl-modal-header {
     padding: 21px 18px;
   }
-
 
   .tl-modal-header h2 {
     font-size: 22px;
   }
 
-
   .tl-modal-header p {
     font-size: 12px;
   }
 
-
   .tl-performance-overlay {
     padding: 10px;
   }
-
 
   .tl-performance-modal {
     max-height: 95vh;
     border-radius: 14px;
   }
 
-
   .tl-summary-grid {
     grid-template-columns: 1fr;
     padding: 15px;
   }
 
-
   .tl-performance-filters {
     margin: 0 15px 15px;
   }
 
-
   .tl-filter-group {
     width: 100%;
   }
-
 
   .tl-filter-group select,
   .tl-filter-group input[type="number"] {
@@ -938,47 +873,38 @@
     min-width: 0;
   }
 
-
   .tl-report-controls {
     margin: 0 15px 15px;
   }
-
 
   .tl-report-filter-row {
     width: 100%;
   }
 
-
   .tl-report-filter-row .tl-filter-group {
     width: 100%;
   }
-
 
   .tl-report-controls select {
     width: 100%;
     min-width: 0;
   }
 
-
   .tl-report-period {
     width: 100%;
   }
-
 
   .tl-report-graphs {
     padding: 0 15px 15px;
   }
 
-
   .tl-chart-container {
     height: 250px;
   }
 
-
   .tl-chart-heading {
     padding: 14px;
   }
-
 
   .tl-modal-footer {
     align-items: flex-start;
@@ -986,9 +912,7 @@
     padding: 13px 15px;
   }
 
-
   .tl-footer-close {
     width: 100%;
   }
-
 }
