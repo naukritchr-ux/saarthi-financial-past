@@ -1,3 +1,4 @@
+
 /* =========================================================
    INDUSTRY PERFORMANCE PAGE
 ========================================================= */
@@ -541,20 +542,22 @@
 ========================================================= */
 
 .industry-performance-filters {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 18px;
-  padding: 16px 20px;
-  background: #FFFFFF;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+  padding: 18px 20px;
+  background: #FAF9F5;
   border-top: 1px solid #E5E7EB;
   border-bottom: 1px solid #E5E7EB;
+  box-sizing: border-box;
 }
 
 .industry-filter-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .industry-filter-group label {
@@ -565,15 +568,17 @@
 }
 
 .industry-filter-group select {
-  width: 220px;
-  height: 40px;
-  padding: 0 36px 0 12px;
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  padding: 0 30px 0 12px;
+  box-sizing: border-box;
   border: 1px solid #D1D5DB;
   border-radius: 7px;
   background: #FFFFFF;
   color: #111827;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   outline: none;
   cursor: pointer;
@@ -605,8 +610,8 @@
 .industry-performance-filters
 .industry-filter-group
 input[type="number"] {
-  width: 210px;
-  min-width: 210px;
+  width: 100%;
+  min-width: 0;
   height: 39px;
   padding: 0 12px;
   box-sizing: border-box;
@@ -615,7 +620,7 @@ input[type="number"] {
   background: #FFFFFF;
   color: #1B2A4A;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   outline: none;
   cursor: text;
@@ -642,6 +647,52 @@ input[type="number"]:focus {
 input[type="number"]::placeholder {
   color: #89919D;
   font-weight: 500;
+}
+
+/* =========================================================
+   RESET FILTER BUTTON
+========================================================= */
+
+.industry-reset-filter-group {
+  min-width: 0;
+}
+
+.industry-reset-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid #D1C7B4;
+  border-radius: 7px;
+  background: #F1EDE3;
+  color: #5A513F;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.industry-reset-filters-btn:hover {
+  background: #E8E1D2;
+  border-color: #BCB09A;
+}
+
+.industry-reset-filters-btn:active {
+  transform: translateY(1px);
+}
+
+.industry-reset-filters-btn:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
 }
 
 /* =========================================================
@@ -994,6 +1045,11 @@ input[type="number"]::placeholder {
     padding-left: 22px;
     padding-right: 22px;
   }
+
+  .industry-performance-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
 }
 
 /* =========================================================
@@ -1032,7 +1088,9 @@ input[type="number"]::placeholder {
   }
 
   .industry-performance-filters {
-    flex-wrap: wrap;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 16px 18px;
   }
 
   .industry-modal-header {
@@ -1142,8 +1200,7 @@ input[type="number"]::placeholder {
   /* FILTERS */
 
   .industry-performance-filters {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
     gap: 14px;
     padding: 14px 16px;
   }
@@ -1161,6 +1218,14 @@ input[type="number"]::placeholder {
   input[type="number"] {
     width: 100%;
     min-width: 0;
+  }
+
+  .industry-reset-filter-group {
+    width: 100%;
+  }
+
+  .industry-reset-filters-btn {
+    width: 100%;
   }
 
   /* CONTROLS */

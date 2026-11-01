@@ -652,13 +652,23 @@ const IndustryPerformance = () => {
   ======================================================= */
 
   const [
-    selectedIndustry,
-    setSelectedIndustry
+    selectedIndustryFilter,
+    setSelectedIndustryFilter
+  ] = useState("ALL");
+
+  const [
+    modalIndustry,
+    setModalIndustry
   ] = useState("");
 
   const [
     selectedFinancialYear,
     setSelectedFinancialYear
+  ] = useState("ALL");
+
+  const [
+    selectedMonth,
+    setSelectedMonth
   ] = useState("ALL");
 
   const [
@@ -801,9 +811,8 @@ const IndustryPerformance = () => {
       /* Industry filter */
 
       if (
-        selectedIndustry &&
-        selectedIndustry !== "ALL" &&
-        industry !== selectedIndustry
+        selectedIndustryFilter !== "ALL" &&
+        industry !== selectedIndustryFilter
       ) {
         return;
       }
@@ -816,6 +825,16 @@ const IndustryPerformance = () => {
         selectedFinancialYear !== "ALL" &&
         getFinancialYear(row) !==
           selectedFinancialYear
+      ) {
+        return;
+      }
+
+
+      /* Month filter */
+
+      if (
+        selectedMonth !== "ALL" &&
+        String(getMonth(row)) !== selectedMonth
       ) {
         return;
       }
@@ -919,8 +938,9 @@ const IndustryPerformance = () => {
 
   }, [
     rows,
-    selectedIndustry,
+    selectedIndustryFilter,
     selectedFinancialYear,
+    selectedMonth,
     selectedInfoStatus,
     industryExpenditurePercentage
   ]);
@@ -933,10 +953,7 @@ const IndustryPerformance = () => {
   const selectedIndustryRows =
     useMemo(() => {
 
-      if (
-        !selectedIndustry ||
-        selectedIndustry === "ALL"
-      ) {
+      if (!modalIndustry) {
         return [];
       }
 
@@ -944,7 +961,7 @@ const IndustryPerformance = () => {
 
         if (
           getIndustry(row) !==
-          selectedIndustry
+          modalIndustry
         ) {
           return false;
         }
@@ -954,6 +971,13 @@ const IndustryPerformance = () => {
           reportFinancialYear !== "ALL" &&
           getFinancialYear(row) !==
             reportFinancialYear
+        ) {
+          return false;
+        }
+
+        if (
+          selectedMonth !== "ALL" &&
+          String(getMonth(row)) !== selectedMonth
         ) {
           return false;
         }
@@ -973,9 +997,10 @@ const IndustryPerformance = () => {
 
     }, [
       rows,
-      selectedIndustry,
+      modalIndustry,
       reportFinancialYear,
-      reportInfoStatus
+      reportInfoStatus,
+      selectedMonth
     ]);
 
 
@@ -1435,7 +1460,7 @@ const IndustryPerformance = () => {
     industry
   ) => {
 
-    setSelectedIndustry(industry);
+    setModalIndustry(industry);
 
     setReportFinancialYear(
       selectedFinancialYear ||
@@ -1457,7 +1482,7 @@ const IndustryPerformance = () => {
 
   const handleClosePerformance = () => {
     setShowModal(false);
-    setSelectedIndustry("");
+    setModalIndustry("");
   };
 
 
@@ -1598,177 +1623,134 @@ const IndustryPerformance = () => {
 
         <div className="industry-performance-filters">
 
+          {/* INDUSTRY */}
+
+          <div className="industry-filter-group">
+            <label>Industry</label>
+            <select
+              value={selectedIndustryFilter}
+              onChange={(event) =>
+                setSelectedIndustryFilter(event.target.value)
+              }
+            >
+              <option value="ALL">All Industries</option>
+              {industries.map((industry) => (
+                <option key={industry} value={industry}>
+                  {industry}
+                </option>
+              ))}
+            </select>
+          </div>
+
 
           {/* FINANCIAL YEAR */}
 
           <div className="industry-filter-group">
-
-            <label>
-              Financial Year
-            </label>
-
+            <label>Financial Year</label>
             <select
-              value={
-                selectedFinancialYear
-              }
+              value={selectedFinancialYear}
               onChange={(event) =>
-                setSelectedFinancialYear(
-                  event.target.value
-                )
+                setSelectedFinancialYear(event.target.value)
               }
             >
-
-              <option value="ALL">
-                All Financial Years
-              </option>
-
-              {financialYears.map(
-                (year) => (
-                  <option
-                    key={year}
-                    value={year}
-                  >
-                    FY {year}
-                  </option>
-                )
-              )}
-
+              <option value="ALL">All Financial Years</option>
+              {financialYears.map((year) => (
+                <option key={year} value={year}>
+                  FY {year}
+                </option>
+              ))}
             </select>
+          </div>
 
+
+          {/* MONTH */}
+
+          <div className="industry-filter-group">
+            <label>Month</label>
+            <select
+              value={selectedMonth}
+              onChange={(event) =>
+                setSelectedMonth(event.target.value)
+              }
+            >
+              <option value="ALL">All Months</option>
+              {financialMonths.map((month) => (
+                <option
+                  key={month.month}
+                  value={String(month.month)}
+                >
+                  {month.full}
+                </option>
+              ))}
+            </select>
           </div>
 
 
           {/* INFO STATUS */}
 
           <div className="industry-filter-group">
-
-            <label>
-              Info Status
-            </label>
-
+            <label>Info Status</label>
             <select
-              value={
-                selectedInfoStatus
-              }
+              value={selectedInfoStatus}
               onChange={(event) =>
-                setSelectedInfoStatus(
-                  event.target.value
-                )
+                setSelectedInfoStatus(event.target.value)
               }
             >
-
-              <option value="ALL">
-                All
-              </option>
-
-              <option value="R">
-                R
-              </option>
-
-              <option value="RV">
-                RV
-              </option>
-
-              <option value="C">
-                C
-              </option>
-
-              <option value="CN">
-                CN
-              </option>
-
+              <option value="ALL">All</option>
+              <option value="R">R</option>
+              <option value="RV">RV</option>
+              <option value="C">C</option>
+              <option value="CN">CN</option>
             </select>
-
           </div>
 
 
-          {/* INDUSTRY */}
+          {/* INDUSTRY EXPENDITURE */}
 
           <div className="industry-filter-group">
-
-            <label>
-              Industry
-            </label>
-
-            <select
-              value={
-                selectedIndustry || "ALL"
-              }
-              onChange={(event) =>
-                setSelectedIndustry(
-                  event.target.value === "ALL"
-                    ? ""
-                    : event.target.value
-                )
-              }
-            >
-
-              <option value="ALL">
-                All Industries
-              </option>
-
-              {industries.map(
-                (industry) => (
-                  <option
-                    key={industry}
-                    value={industry}
-                  >
-                    {industry}
-                  </option>
-                )
-              )}
-
-            </select>
-
-          </div>
-
-
-          {/* EXPENDITURE */}
-
-          <div className="industry-filter-group">
-
-            <label>
-              Industry Expenditure %
-            </label>
-
+            <label>Industry Expenditure %</label>
             <input
               type="number"
               min="0"
               max="100"
               step="0.01"
-              value={
-                industryExpenditurePercentage
-              }
+              value={industryExpenditurePercentage}
               placeholder="0 - 100"
               onChange={(event) => {
-
-                const value =
-                  event.target.value;
+                const value = event.target.value;
 
                 if (value === "") {
-                  setIndustryExpenditurePercentage(
-                    ""
-                  );
+                  setIndustryExpenditurePercentage("");
                   return;
                 }
 
-                const number =
-                  Number(value);
+                const number = Number(value);
 
-                if (
-                  number >= 0 &&
-                  number <= 100
-                ) {
-                  setIndustryExpenditurePercentage(
-                    value
-                  );
+                if (Number.isFinite(number) && number >= 0 && number <= 100) {
+                  setIndustryExpenditurePercentage(value);
                 }
-
               }}
             />
-
           </div>
 
+
+          {/* RESET FILTERS */}
+
+          <div className="industry-filter-group industry-reset-filter-group">
+            <button
+              type="button"
+              className="industry-reset-filters-btn"
+              onClick={() => {
+                setSelectedIndustryFilter("ALL");
+                setSelectedFinancialYear("ALL");
+                setSelectedMonth("ALL");
+                setSelectedInfoStatus("ALL");
+                setIndustryExpenditurePercentage("");
+              }}
+            >
+              Reset Filters
+            </button>
+          </div>
 
         </div>
 
@@ -1999,7 +1981,7 @@ const IndustryPerformance = () => {
       =================================================== */}
 
       {showModal &&
-        selectedIndustry && (
+        modalIndustry && (
 
           <div
             className="industry-performance-overlay"
@@ -2034,7 +2016,7 @@ const IndustryPerformance = () => {
                   </div>
 
                   <h2 id="industry-performance-title">
-                    {selectedIndustry}
+                    {modalIndustry}
                   </h2>
 
                   <p>
@@ -2594,12 +2576,18 @@ const IndustryPerformance = () => {
               <div className="industry-modal-footer">
 
                 <span>
-                  {selectedIndustry}
+                  {modalIndustry}
                   {" · "}
                   {reportFinancialYear ===
                   "ALL"
                     ? "All Financial Years"
                     : `FY ${reportFinancialYear}`}
+                  {" · "}
+                  {selectedMonth === "ALL"
+                    ? "All Months"
+                    : financialMonths.find(
+                        (month) => String(month.month) === selectedMonth
+                      )?.full || "Selected Month"}
                   {" · "}
                   {reportInfoStatus ===
                   "ALL"
