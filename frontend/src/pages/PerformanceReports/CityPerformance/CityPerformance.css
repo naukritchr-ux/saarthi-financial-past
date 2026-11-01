@@ -1,3 +1,4 @@
+
 /* =========================================================
    CITY PERFORMANCE PAGE
 ========================================================= */
@@ -10,7 +11,6 @@
   background: #F7F4EC;
   color: #1B2A4A;
 }
-
 
 /* =========================================================
    PAGE HEADER
@@ -43,7 +43,6 @@
   font-size: 14px;
   line-height: 1.5;
 }
-
 
 /* =========================================================
    TABLE CARD
@@ -98,16 +97,18 @@
   font-weight: 600;
 }
 
-
 /* =========================================================
-   FILTERS
+   MAIN FILTERS
+   Order:
+   City → Financial Year → Month → Info Status
+   → City Expenditure % → Reset Filters
 ========================================================= */
 
 .city-performance-filters {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
   padding: 16px 20px;
   border-bottom: 1px solid #E5E7EB;
 }
@@ -115,6 +116,7 @@
 .city-filter-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 6px;
 }
 
@@ -126,7 +128,8 @@
 
 .city-filter-group select,
 .city-filter-group input {
-  width: 220px;
+  width: 100%;
+  min-width: 0;
   height: 40px;
   padding: 0 12px;
   background: #FFFFFF;
@@ -145,6 +148,47 @@
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.1);
 }
 
+/* Reset filter button */
+
+.city-reset-filter-group {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.city-reset-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  background: #1B2A4A;
+  border: 1px solid #1B2A4A;
+  border-radius: 7px;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.city-reset-filters-btn:hover {
+  background: #263A60;
+  transform: translateY(-1px);
+}
+
+.city-reset-filters-btn:active {
+  transform: translateY(0);
+}
+
+.city-reset-filters-btn:focus-visible {
+  outline: 2px solid #B78A34;
+  outline-offset: 2px;
+}
 
 /* =========================================================
    TABLE
@@ -194,7 +238,6 @@
   background: #FCFBF7;
 }
 
-
 /* =========================================================
    CITY NAME CELL
 ========================================================= */
@@ -222,7 +265,6 @@
   font-weight: 800;
 }
 
-
 /* =========================================================
    TABLE VALUES
 ========================================================= */
@@ -247,7 +289,6 @@
   font-weight: 750;
 }
 
-
 /* =========================================================
    VIEW PERFORMANCE BUTTON
 ========================================================= */
@@ -267,10 +308,7 @@
   font-family: inherit;
   font-size: 12px;
   font-weight: 750;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
 .city-view-performance-btn:hover {
@@ -294,7 +332,6 @@
   font-weight: 800;
 }
 
-
 /* =========================================================
    NO DATA
 ========================================================= */
@@ -308,7 +345,6 @@
   font-size: 13px !important;
   font-weight: 600;
 }
-
 
 /* =========================================================
    MODAL OVERLAY
@@ -327,7 +363,6 @@
   backdrop-filter: blur(5px);
 }
 
-
 /* =========================================================
    MODAL
 ========================================================= */
@@ -341,9 +376,6 @@
   border-radius: 16px;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
 }
-
-
-/* Custom scrollbar */
 
 .city-performance-modal::-webkit-scrollbar {
   width: 8px;
@@ -361,7 +393,6 @@
 .city-performance-modal::-webkit-scrollbar-thumb:hover {
   background: #B9AF9B;
 }
-
 
 /* =========================================================
    MODAL HEADER
@@ -417,10 +448,7 @@
   cursor: pointer;
   font-size: 24px;
   line-height: 1;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
 .city-modal-close:hover {
@@ -433,7 +461,6 @@
   outline: 2px solid #B78A34;
   outline-offset: 2px;
 }
-
 
 /* =========================================================
    SUMMARY
@@ -480,7 +507,6 @@
   font-size: 10px;
   font-weight: 600;
 }
-
 
 /* =========================================================
    REPORT CONTROLS
@@ -541,7 +567,6 @@
   font-weight: 600;
 }
 
-
 /* =========================================================
    REPORT PERIOD
 ========================================================= */
@@ -570,7 +595,6 @@
   font-size: 11px;
   font-weight: 800;
 }
-
 
 /* =========================================================
    GRAPHS
@@ -619,7 +643,6 @@
   margin-left: auto;
 }
 
-
 /* =========================================================
    CHART INDICATORS
 ========================================================= */
@@ -661,7 +684,6 @@
   background: #26734D;
 }
 
-
 /* =========================================================
    CHART CONTAINER
 ========================================================= */
@@ -695,26 +717,19 @@
   stroke: #D9D4C9;
 }
 
-.city-chart-container
-.recharts-xAxis
-.recharts-cartesian-axis-tick-value,
-.city-chart-container
-.recharts-yAxis
-.recharts-cartesian-axis-tick-value {
+.city-chart-container .recharts-xAxis .recharts-cartesian-axis-tick-value,
+.city-chart-container .recharts-yAxis .recharts-cartesian-axis-tick-value {
   fill: #858A92;
   font-size: 10px;
 }
 
-.city-chart-container
-.recharts-bar-rectangle {
+.city-chart-container .recharts-bar-rectangle {
   transition: opacity 0.15s ease;
 }
 
-.city-chart-container
-.recharts-bar-rectangle:hover {
+.city-chart-container .recharts-bar-rectangle:hover {
   opacity: 0.82;
 }
-
 
 /* =========================================================
    NO CHART DATA
@@ -729,7 +744,6 @@
   font-size: 13px;
   font-weight: 600;
 }
-
 
 /* =========================================================
    TOOLTIP
@@ -765,7 +779,6 @@
   color: #1B2A4A;
   font-weight: 800;
 }
-
 
 /* =========================================================
    MODAL FOOTER
@@ -810,9 +823,7 @@
   font-family: inherit;
   font-size: 12px;
   font-weight: 750;
-  transition:
-    background 0.18s ease,
-    transform 0.18s ease;
+  transition: background 0.18s ease, transform 0.18s ease;
 }
 
 .city-footer-close:hover {
@@ -829,13 +840,17 @@
   outline-offset: 2px;
 }
 
-
 /* =========================================================
    RESPONSIVE — TABLET
 ========================================================= */
 
-@media (max-width: 1000px) {
+@media (max-width: 1200px) {
+  .city-performance-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 
+@media (max-width: 1000px) {
   .city-performance-page {
     padding: 22px;
   }
@@ -860,18 +875,19 @@
   .city-report-filter-row .city-filter-group {
     flex: 1;
   }
-
 }
-
 
 /* =========================================================
    RESPONSIVE — MOBILE / SMALL TABLET
 ========================================================= */
 
 @media (max-width: 850px) {
-
   .city-performance-page {
     padding: 20px;
+  }
+
+  .city-performance-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .city-summary-grid {
@@ -900,22 +916,16 @@
     flex: 1;
     min-width: 0;
   }
-
 }
-
 
 /* =========================================================
    RESPONSIVE — MOBILE
 ========================================================= */
 
 @media (max-width: 600px) {
-
   .city-performance-page {
     padding: 14px;
   }
-
-
-  /* Header */
 
   .city-page-header {
     margin-bottom: 18px;
@@ -928,7 +938,6 @@
   .city-page-header p {
     font-size: 13px;
   }
-
 
   /* Table */
 
@@ -945,25 +954,24 @@
     flex-shrink: 0;
   }
 
-
   /* Filters */
 
   .city-performance-filters {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
     gap: 12px;
     padding: 14px 16px;
   }
 
-  .city-filter-group {
+  .city-filter-group,
+  .city-reset-filter-group {
     width: 100%;
   }
 
   .city-filter-group select,
-  .city-filter-group input {
+  .city-filter-group input,
+  .city-reset-filters-btn {
     width: 100%;
   }
-
 
   /* Modal */
 
@@ -978,7 +986,6 @@
     border-radius: 13px;
   }
 
-
   /* Modal header */
 
   .city-modal-header {
@@ -988,7 +995,6 @@
   .city-modal-header h2 {
     font-size: 21px;
   }
-
 
   /* Summary */
 
@@ -1000,7 +1006,6 @@
   .city-summary-card {
     min-height: 82px;
   }
-
 
   /* Report controls */
 
@@ -1019,7 +1024,6 @@
     width: 100%;
   }
 
-
   /* Report period */
 
   .city-report-period {
@@ -1027,7 +1031,6 @@
     align-items: flex-start;
     margin: 14px 16px 0;
   }
-
 
   /* Graphs */
 
@@ -1041,7 +1044,6 @@
   .city-chart-container {
     height: 290px;
   }
-
 
   /* Footer */
 
@@ -1059,16 +1061,13 @@
   .city-footer-close {
     width: 100%;
   }
-
 }
-
 
 /* =========================================================
    RESPONSIVE — VERY SMALL SCREENS
 ========================================================= */
 
 @media (max-width: 420px) {
-
   .city-performance-page {
     padding: 10px;
   }
@@ -1097,5 +1096,4 @@
     font-size: 8px;
     padding: 0 7px;
   }
-
 }
