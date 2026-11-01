@@ -1,3 +1,4 @@
+
 /* =========================================================
    BD PERFORMANCE PAGE
 ========================================================= */
@@ -110,16 +111,23 @@
 
 
 /* =========================================================
-   FILTERS
+   MAIN FILTERS
+   Order:
+   1. BD Member
+   2. Financial Year
+   3. Month
+   4. Info Status
+   5. BD Expenditure %
+   6. Reset Filters
 ========================================================= */
 
 .bd-performance-filters {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
   margin: 0 25px 20px;
-  padding: 17px 19px;
+  padding: 18px;
   background: #faf9f5;
   border: 1px solid #ece7da;
   border-radius: 10px;
@@ -130,35 +138,44 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-  min-width: 210px;
+  min-width: 0;
 }
 
 .bd-filter-group label {
   color: #55514a;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .bd-filter-group select,
 .bd-filter-group input {
+  display: block;
   width: 100%;
-  min-width: 210px;
+  min-width: 0;
   height: 39px;
-  padding: 0 12px;
+  padding: 0 11px;
   outline: none;
   border: 1px solid #d8d2c3;
   border-radius: 7px;
   background: #ffffff;
   color: #333333;
+  font-family: inherit;
   font-size: 13px;
   box-sizing: border-box;
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .bd-filter-group select {
   cursor: pointer;
+}
+
+.bd-filter-group select:hover,
+.bd-filter-group input:hover {
+  border-color: #b9ad96;
 }
 
 .bd-filter-group select:focus,
@@ -172,11 +189,58 @@
 }
 
 
-/* Remove number arrows */
+/* Remove number input arrows */
 
 .bd-filter-group input::-webkit-outer-spin-button,
 .bd-filter-group input::-webkit-inner-spin-button {
   margin: 0;
+  -webkit-appearance: none;
+}
+
+.bd-filter-group input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+
+/* =========================================================
+   RESET FILTER BUTTON
+========================================================= */
+
+.bd-reset-filter-group {
+  min-width: 0;
+}
+
+.bd-reset-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  padding: 0 12px;
+  border: 1px solid #d1c7b4;
+  border-radius: 7px;
+  background: #f1ede3;
+  color: #5a513f;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.bd-reset-filters-btn:hover {
+  background: #e8e1d2;
+  border-color: #bcb09a;
+}
+
+.bd-reset-filters-btn:active {
+  transform: translateY(1px);
 }
 
 
@@ -846,6 +910,7 @@
 .bd-view-performance-btn:focus-visible,
 .bd-modal-close:focus-visible,
 .bd-footer-close:focus-visible,
+.bd-reset-filters-btn:focus-visible,
 .bd-filter-group select:focus-visible,
 .bd-filter-group input:focus-visible,
 .bd-report-controls select:focus-visible {
@@ -855,18 +920,17 @@
 
 
 /* =========================================================
-   RESPONSIVE — 1100px
+   RESPONSIVE — 1200px
 ========================================================= */
 
-@media (max-width: 1100px) {
-
-  .bd-summary-grid {
-    grid-template-columns: repeat(
-      3,
-      minmax(0, 1fr)
-    );
+@media (max-width: 1200px) {
+  .bd-performance-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .bd-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 
@@ -875,69 +939,49 @@
 ========================================================= */
 
 @media (max-width: 850px) {
-
   .bd-performance-page {
     padding: 20px;
   }
-
 
   .bd-page-header h1 {
     font-size: 25px;
   }
 
-
   .bd-performance-filters {
-    align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
   }
-
 
   .bd-filter-group {
     width: 100%;
     min-width: 0;
   }
 
-
-  .bd-filter-group select,
-  .bd-filter-group input {
-    min-width: 0;
-  }
-
-
   .bd-summary-grid {
-    grid-template-columns: repeat(
-      2,
-      minmax(0, 1fr)
-    );
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
 
   .bd-report-controls {
     align-items: stretch;
     flex-direction: column;
   }
 
-
   .bd-report-controls > div:not(.bd-report-period) {
     width: 100%;
     min-width: 0;
   }
 
-
   .bd-report-controls select {
     min-width: 0;
   }
-
 
   .bd-report-period {
     margin-left: 0;
   }
 
-
   .bd-report-graphs {
     grid-template-columns: 1fr;
   }
-
 }
 
 
@@ -946,103 +990,85 @@
 ========================================================= */
 
 @media (max-width: 600px) {
-
   .bd-performance-page {
     padding: 14px;
   }
-
 
   .bd-page-header {
     margin-bottom: 18px;
   }
 
-
   .bd-page-header h1 {
     font-size: 23px;
   }
 
-
   .bd-page-header p {
     font-size: 13px;
   }
-
 
   .bd-table-header {
     align-items: flex-start;
     padding: 18px;
   }
 
-
   .bd-member-count {
     font-size: 19px;
   }
 
-
   .bd-performance-filters {
+    grid-template-columns: 1fr;
     margin: 0 15px 16px;
     padding: 14px;
   }
-
 
   .bd-performance-table thead th,
   .bd-performance-table tbody td {
     padding: 12px;
   }
 
-
   .bd-performance-overlay {
     align-items: flex-start;
     padding: 10px;
   }
-
 
   .bd-performance-modal {
     max-height: calc(100vh - 20px);
     border-radius: 13px;
   }
 
-
   .bd-modal-header {
     padding: 17px;
   }
 
-
   .bd-modal-header h2 {
     font-size: 19px;
   }
-
 
   .bd-summary-grid {
     grid-template-columns: 1fr;
     padding: 15px;
   }
 
-
   .bd-summary-card {
     padding: 14px;
   }
-
 
   .bd-report-controls {
     margin: 0 15px 15px;
     padding: 14px;
   }
 
-
   .bd-report-graphs {
     padding: 0 15px 15px;
   }
-
 
   .bd-chart-card {
     padding: 14px;
   }
 
-
   .bd-chart-container {
     height: 250px;
   }
-
 
   .bd-modal-footer {
     align-items: flex-start;
@@ -1050,11 +1076,9 @@
     padding: 14px 15px 18px;
   }
 
-
   .bd-footer-close {
     width: 100%;
   }
-
 }
 
 
@@ -1063,15 +1087,14 @@
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-
   .bd-performance-table tbody tr,
   .bd-view-performance-btn,
   .bd-view-arrow,
   .bd-modal-close,
   .bd-footer-close,
+  .bd-reset-filters-btn,
   .bd-filter-group select,
   .bd-filter-group input {
     transition: none;
   }
-
 }
