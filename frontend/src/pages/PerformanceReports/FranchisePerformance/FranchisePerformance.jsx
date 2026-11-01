@@ -1222,7 +1222,7 @@ function FranchisePerformance() {
                 franchiseExpenditurePercentage === ""
               }
             >
-              Remove Filter
+              Reset Filter
             </button>
           </div>
 
