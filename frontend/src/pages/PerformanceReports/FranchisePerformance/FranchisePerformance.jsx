@@ -1,8 +1,4 @@
-import {
-  useMemo,
-  useState,
-  useEffect
-} from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import {
   BarChart,
@@ -14,12 +10,9 @@ import {
   CartesianGrid
 } from "recharts";
 
-import {
-  useData
-} from "../../../context/DataContext";
+import { useData } from "../../../context/DataContext";
 
 import "./FranchisePerformance.css";
-
 
 /* =========================================================
    FINANCIAL YEAR MONTHS
@@ -40,17 +33,12 @@ const financialMonths = [
   { full: "March", short: "Mar", month: 3 }
 ];
 
-
 /* =========================================================
    NUMBER HELPER
 ========================================================= */
 
 function toNumber(value) {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
+  if (value === null || value === undefined || value === "") {
     return 0;
   }
 
@@ -69,22 +57,17 @@ function toNumber(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
-
 /* =========================================================
    CURRENCY FORMAT
 ========================================================= */
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat(
-    "en-IN",
-    {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0
-    }
-  ).format(toNumber(value));
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0
+  }).format(toNumber(value));
 }
-
 
 /* =========================================================
    NORMALIZE COMPANY NAME
@@ -96,7 +79,6 @@ function normalizeCompanyKey(value) {
     .replace(/\s+/g, " ")
     .toUpperCase();
 }
-
 
 /* =========================================================
    GET FRANCHISE
@@ -113,7 +95,6 @@ function getFranchise(row) {
   ).trim();
 }
 
-
 /* =========================================================
    GET COMPANY NAME
 ========================================================= */
@@ -128,7 +109,6 @@ function getCompanyName(row) {
   ).trim();
 }
 
-
 /* =========================================================
    GET INDUSTRY
 ========================================================= */
@@ -142,7 +122,6 @@ function getIndustry(row) {
   ).trim();
 }
 
-
 /* =========================================================
    GET CITY
 ========================================================= */
@@ -154,7 +133,6 @@ function getCity(row) {
     ""
   ).trim();
 }
-
 
 /* =========================================================
    GET INFO STATUS
@@ -174,7 +152,6 @@ function getInfoStatus(row) {
     .toUpperCase();
 }
 
-
 /* =========================================================
    GET BILLING
 ========================================================= */
@@ -190,7 +167,6 @@ function getBilling(row) {
     0
   );
 }
-
 
 /* =========================================================
    GET FRANCHISE SHARE
@@ -208,15 +184,11 @@ function getFranchiseeShare(row) {
   );
 }
 
-
 /* =========================================================
    GET FRANCHISE EXPENDITURE
 ========================================================= */
 
-function getFranchiseExpenditure(
-  row,
-  percentage
-) {
+function getFranchiseExpenditure(row, percentage) {
   const billing = getBilling(row);
 
   if (
@@ -240,7 +212,6 @@ function getFranchiseExpenditure(
   return billing * (rate / 100);
 }
 
-
 /* =========================================================
    GET FINANCIAL VALUES
 ========================================================= */
@@ -254,20 +225,17 @@ function getFinancialValues(
   const billing = getBilling(row);
   const franchiseeShare = getFranchiseeShare(row);
 
-  if (
-    !infoFilter ||
-    infoFilter === "ALL"
-  ) {
+  const expenditure = getFranchiseExpenditure(
+    row,
+    percentage
+  );
+
+  if (!infoFilter || infoFilter === "ALL") {
     return {
       billing,
       franchiseeShare,
-      netAmount:
-        billing - franchiseeShare,
-      franchiseExpenditure:
-        getFranchiseExpenditure(
-          row,
-          percentage
-        )
+      netAmount: billing - franchiseeShare,
+      franchiseExpenditure: expenditure
     };
   }
 
@@ -284,13 +252,8 @@ function getFinancialValues(
     return {
       billing,
       franchiseeShare,
-      netAmount:
-        billing - franchiseeShare,
-      franchiseExpenditure:
-        getFranchiseExpenditure(
-          row,
-          percentage
-        )
+      netAmount: billing - franchiseeShare,
+      franchiseExpenditure: expenditure
     };
   }
 
@@ -324,7 +287,6 @@ function getFinancialValues(
   };
 }
 
-
 /* =========================================================
    GET CLIENT ACQUIRED DATE
 ========================================================= */
@@ -341,7 +303,6 @@ function getClientAcquiredDate(row) {
   );
 }
 
-
 /* =========================================================
    PARSE DATE
 ========================================================= */
@@ -352,9 +313,7 @@ function parseDate(value) {
   }
 
   if (value instanceof Date) {
-    return Number.isNaN(value.getTime())
-      ? null
-      : value;
+    return Number.isNaN(value.getTime()) ? null : value;
   }
 
   const stringValue = String(value).trim();
@@ -363,21 +322,17 @@ function parseDate(value) {
     return null;
   }
 
-  const ddmmyyyy =
-    stringValue.match(
-      /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/
-    );
+  // DD/MM/YYYY or DD-MM-YYYY
+  const ddmmyyyy = stringValue.match(
+    /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/
+  );
 
   if (ddmmyyyy) {
     const day = Number(ddmmyyyy[1]);
     const month = Number(ddmmyyyy[2]);
     const year = Number(ddmmyyyy[3]);
 
-    const date = new Date(
-      year,
-      month - 1,
-      day
-    );
+    const date = new Date(year, month - 1, day);
 
     if (
       date.getFullYear() === year &&
@@ -386,23 +341,21 @@ function parseDate(value) {
     ) {
       return date;
     }
+
+    return null;
   }
 
-  const isoDate =
-    stringValue.match(
-      /^(\d{4})-(\d{1,2})-(\d{1,2})/
-    );
+  // YYYY-MM-DD
+  const isoDate = stringValue.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})/
+  );
 
   if (isoDate) {
     const year = Number(isoDate[1]);
     const month = Number(isoDate[2]);
     const day = Number(isoDate[3]);
 
-    const date = new Date(
-      year,
-      month - 1,
-      day
-    );
+    const date = new Date(year, month - 1, day);
 
     if (
       date.getFullYear() === year &&
@@ -411,43 +364,32 @@ function parseDate(value) {
     ) {
       return date;
     }
+
+    return null;
   }
 
   const date = new Date(stringValue);
 
-  return Number.isNaN(date.getTime())
-    ? null
-    : date;
+  return Number.isNaN(date.getTime()) ? null : date;
 }
-
 
 /* =========================================================
    GET FINANCIAL YEAR
 ========================================================= */
 
 function getFinancialYear(row) {
-  const dateValue =
-    getClientAcquiredDate(row);
-
-  const date =
-    parseDate(dateValue);
+  const dateValue = getClientAcquiredDate(row);
+  const date = parseDate(dateValue);
 
   if (date) {
-    const month =
-      date.getMonth() + 1;
-
-    const year =
-      date.getFullYear();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
 
     if (month >= 4) {
-      return `${year}-${String(
-        year + 1
-      ).slice(-2)}`;
+      return `${year}-${String(year + 1).slice(-2)}`;
     }
 
-    return `${year - 1}-${String(
-      year
-    ).slice(-2)}`;
+    return `${year - 1}-${String(year).slice(-2)}`;
   }
 
   const acquiredYear =
@@ -462,33 +404,23 @@ function getFinancialYear(row) {
     acquiredYear !== null &&
     acquiredYear !== ""
   ) {
-    const year =
-      Number(acquiredYear);
+    const year = Number(acquiredYear);
 
-    if (
-      Number.isFinite(year) &&
-      year > 1900
-    ) {
-      return `${year}-${String(
-        year + 1
-      ).slice(-2)}`;
+    if (Number.isFinite(year) && year > 1900) {
+      return `${year}-${String(year + 1).slice(-2)}`;
     }
   }
 
   return "";
 }
 
-
 /* =========================================================
    GET MONTH
 ========================================================= */
 
 function getMonth(row) {
-  const dateValue =
-    getClientAcquiredDate(row);
-
-  const date =
-    parseDate(dateValue);
+  const dateValue = getClientAcquiredDate(row);
+  const date = parseDate(dateValue);
 
   if (!date) {
     return "";
@@ -497,122 +429,96 @@ function getMonth(row) {
   return date.getMonth() + 1;
 }
 
-
 /* =========================================================
    CUSTOM TOOLTIP
 ========================================================= */
 
-function FranchiseTooltip({
-  active,
-  payload,
-  label
-}) {
-  if (
-    !active ||
-    !payload ||
-    !payload.length
-  ) {
+function FranchiseTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) {
     return null;
   }
 
   return (
     <div className="franchise-modern-tooltip">
-
       <div className="franchise-tooltip-label">
         {label}
       </div>
 
-      {payload.map(
-        (item, index) => (
-          <div
-            className="franchise-tooltip-row"
-            key={index}
-          >
-            <span>
-              {item.name}
-            </span>
+      {payload.map((item, index) => (
+        <div
+          className="franchise-tooltip-row"
+          key={index}
+        >
+          <span>{item.name}</span>
 
-            <strong>
-              {item.name === "Total Billing"
-                ? formatCurrency(item.value)
-                : item.value}
-            </strong>
-          </div>
-        )
-      )}
-
+          <strong>
+            {item.name === "Total Billing"
+              ? formatCurrency(item.value)
+              : item.value}
+          </strong>
+        </div>
+      ))}
     </div>
   );
 }
-
 
 /* =========================================================
    MAIN COMPONENT
 ========================================================= */
 
 function FranchisePerformance() {
-
-  const {
-    rows = []
-  } = useData();
-
+  const { rows = [] } = useData();
 
   /* =======================================================
      MAIN PAGE FILTERS
   ======================================================= */
 
-  const [
-    selectedFinancialYear,
-    setSelectedFinancialYear
-  ] = useState("");
+  const [selectedFranchisee, setSelectedFranchisee] =
+    useState("");
 
-  const [
-    selectedInfoStatus,
-    setSelectedInfoStatus
-  ] = useState("");
+  const [selectedFinancialYear, setSelectedFinancialYear] =
+    useState("");
 
-  /*
-   * MAIN PAGE EXPENDITURE %
-   *
-   * This state belongs ONLY to the main table.
-   */
+  const [selectedMonth, setSelectedMonth] =
+    useState("");
+
+  const [selectedInfoStatus, setSelectedInfoStatus] =
+    useState("");
+
   const [
     franchiseExpenditurePercentage,
     setFranchiseExpenditurePercentage
   ] = useState("");
 
-
   /* =======================================================
      MODAL / REPORT FILTERS
   ======================================================= */
 
-  const [
-    selectedFranchise,
-    setSelectedFranchise
-  ] = useState("");
+  const [selectedFranchise, setSelectedFranchise] =
+    useState("");
 
-  const [
-    reportFinancialYear,
-    setReportFinancialYear
-  ] = useState("");
+  const [reportFinancialYear, setReportFinancialYear] =
+    useState("");
 
-  const [
-    reportInfoStatus,
-    setReportInfoStatus
-  ] = useState("");
+  const [reportInfoStatus, setReportInfoStatus] =
+    useState("");
 
-  /*
-   * MODAL EXPENDITURE %
-   *
-   * IMPORTANT:
-   * This is completely independent from the
-   * main-page expenditure percentage.
-   */
   const [
     reportFranchiseExpenditurePercentage,
     setReportFranchiseExpenditurePercentage
   ] = useState("");
 
+  /* =======================================================
+     REMOVE MAIN FILTERS
+  ======================================================= */
+
+  function handleRemoveFilters() {
+    setSelectedFranchisee("");
+    setSelectedFinancialYear("");
+    setSelectedMonth("");
+    setSelectedInfoStatus("");
+    setFranchiseExpenditurePercentage("");
+  }
 
   /* =======================================================
      MAIN EXPENDITURE VALIDITY
@@ -622,18 +528,9 @@ function FranchisePerformance() {
     franchiseExpenditurePercentage !== "" &&
     franchiseExpenditurePercentage !== null &&
     franchiseExpenditurePercentage !== undefined &&
-    Number.isFinite(
-      Number(
-        franchiseExpenditurePercentage
-      )
-    ) &&
-    Number(
-      franchiseExpenditurePercentage
-    ) >= 0 &&
-    Number(
-      franchiseExpenditurePercentage
-    ) <= 100;
-
+    Number.isFinite(Number(franchiseExpenditurePercentage)) &&
+    Number(franchiseExpenditurePercentage) >= 0 &&
+    Number(franchiseExpenditurePercentage) <= 100;
 
   /* =======================================================
      REPORT EXPENDITURE VALIDITY
@@ -643,759 +540,467 @@ function FranchisePerformance() {
     reportFranchiseExpenditurePercentage !== "" &&
     reportFranchiseExpenditurePercentage !== null &&
     reportFranchiseExpenditurePercentage !== undefined &&
-    Number.isFinite(
-      Number(
-        reportFranchiseExpenditurePercentage
-      )
-    ) &&
-    Number(
-      reportFranchiseExpenditurePercentage
-    ) >= 0 &&
-    Number(
-      reportFranchiseExpenditurePercentage
-    ) <= 100;
+    Number.isFinite(Number(reportFranchiseExpenditurePercentage)) &&
+    Number(reportFranchiseExpenditurePercentage) >= 0 &&
+    Number(reportFranchiseExpenditurePercentage) <= 100;
 
+  /* =======================================================
+     FRANCHISEE OPTIONS
+     Derived from all rows so options remain available
+     when other filters are selected.
+  ======================================================= */
+
+  const franchiseeOptions = useMemo(() => {
+    const names = new Set();
+
+    rows.forEach(row => {
+      const franchise = getFranchise(row);
+
+      if (franchise) {
+        names.add(franchise);
+      }
+    });
+
+    return Array.from(names).sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [rows]);
 
   /* =======================================================
      FINANCIAL YEARS
   ======================================================= */
 
-  const financialYears =
-    useMemo(() => {
+  const financialYears = useMemo(() => {
+    const years = new Set();
 
-      const years = new Set();
+    rows.forEach(row => {
+      const year = getFinancialYear(row);
 
-      rows.forEach(row => {
-        const year =
-          getFinancialYear(row);
+      if (year) {
+        years.add(year);
+      }
+    });
 
-        if (year) {
-          years.add(year);
-        }
-      });
+    return Array.from(years).sort((a, b) => {
+      const yearA = Number(String(a).slice(0, 4));
+      const yearB = Number(String(b).slice(0, 4));
 
-      return Array.from(years)
-        .sort((a, b) => {
-
-          const yearA =
-            Number(
-              String(a).slice(0, 4)
-            );
-
-          const yearB =
-            Number(
-              String(b).slice(0, 4)
-            );
-
-          return yearA - yearB;
-        });
-
-    }, [rows]);
-
+      return yearA - yearB;
+    });
+  }, [rows]);
 
   /* =======================================================
      MAIN FRANCHISE SUMMARY TABLE
   ======================================================= */
 
-  const franchiseData =
-    useMemo(() => {
+  const franchiseData = useMemo(() => {
+    const map = new Map();
 
-      const map = new Map();
+    rows.forEach(row => {
+      const franchise = getFranchise(row);
 
-      rows.forEach(row => {
+      if (!franchise) {
+        return;
+      }
 
-        const franchise =
-          getFranchise(row);
+      // 1. Franchisee filter
+      if (
+        selectedFranchisee &&
+        franchise !== selectedFranchisee
+      ) {
+        return;
+      }
 
-        if (!franchise) {
-          return;
-        }
+      // 2. Financial Year filter
+      if (
+        selectedFinancialYear &&
+        getFinancialYear(row) !== selectedFinancialYear
+      ) {
+        return;
+      }
 
-        if (!map.has(franchise)) {
-          map.set(
-            franchise,
-            {
-              franchise,
-              enquiries: 0,
-              companyNames: new Set(),
-              billing: 0,
-              franchiseShare: 0,
-              franchiseExpenditure: 0,
-              netAmount: 0
-            }
-          );
-        }
+      // 3. Month filter
+      if (
+        selectedMonth &&
+        Number(getMonth(row)) !== Number(selectedMonth)
+      ) {
+        return;
+      }
 
-        const data =
-          map.get(franchise);
+      // 4. Info Status filter
+      if (
+        selectedInfoStatus &&
+        selectedInfoStatus !== "ALL" &&
+        getInfoStatus(row) !== selectedInfoStatus
+      ) {
+        return;
+      }
 
+      // Create franchise entry only after filters pass
+      if (!map.has(franchise)) {
+        map.set(franchise, {
+          franchise,
+          enquiries: 0,
+          companyNames: new Set(),
+          billing: 0,
+          franchiseShare: 0,
+          franchiseExpenditure: 0,
+          netAmount: 0
+        });
+      }
 
-        /* Financial Year */
+      const data = map.get(franchise);
 
-        if (
-          selectedFinancialYear &&
-          getFinancialYear(row) !==
-            selectedFinancialYear
-        ) {
-          return;
-        }
+      // Total enquiries = matching row count
+      data.enquiries += 1;
 
+      // Total acquired clients = unique company names
+      const companyName = getCompanyName(row);
+      const companyKey = normalizeCompanyKey(companyName);
 
-        /* Info Status */
+      if (companyKey) {
+        data.companyNames.add(companyKey);
+      }
 
-        if (
-          selectedInfoStatus &&
-          selectedInfoStatus !== "ALL" &&
-          getInfoStatus(row) !==
-            selectedInfoStatus
-        ) {
-          return;
-        }
+      // Financial calculations
+      const values = getFinancialValues(
+        row,
+        selectedInfoStatus,
+        franchiseExpenditurePercentage
+      );
 
+      data.billing += values.billing;
+      data.franchiseShare += values.franchiseeShare;
+      data.franchiseExpenditure += values.franchiseExpenditure;
+      data.netAmount += values.netAmount;
+    });
 
-        /* Total Enquiries */
-
-        data.enquiries += 1;
-
-
-        /* Unique Company */
-
-        const companyName =
-          getCompanyName(row);
-
-        const companyKey =
-          normalizeCompanyKey(
-            companyName
-          );
-
-        if (companyKey) {
-          data.companyNames.add(
-            companyKey
-          );
-        }
-
-
-        /* Financial Values */
-
-        const values =
-          getFinancialValues(
-            row,
-            selectedInfoStatus,
-            franchiseExpenditurePercentage
-          );
-
-        data.billing +=
-          values.billing;
-
-        data.franchiseShare +=
-          values.franchiseeShare;
-
-        data.franchiseExpenditure +=
-          values.franchiseExpenditure;
-
-        data.netAmount +=
-          values.netAmount;
-
-      });
-
-
-      return Array.from(
-        map.values()
-      )
-        .map(item => ({
-          franchise:
-            item.franchise,
-
-          clients:
-            item.companyNames.size,
-
-          enquiries:
-            item.enquiries,
-
-          billing:
-            item.billing,
-
-          franchiseShare:
-            item.franchiseShare,
-
-          franchiseExpenditure:
-            item.franchiseExpenditure,
-
-          netAmount:
-            item.netAmount
-        }))
-        .filter(
-          item =>
-            item.enquiries > 0
-        )
-        .sort(
-          (a, b) =>
-            b.clients - a.clients
-        );
-
-    }, [
-      rows,
-      selectedFinancialYear,
-      selectedInfoStatus,
-      franchiseExpenditurePercentage
-    ]);
-
+    return Array.from(map.values())
+      .map(item => ({
+        franchise: item.franchise,
+        clients: item.companyNames.size,
+        enquiries: item.enquiries,
+        billing: item.billing,
+        franchiseShare: item.franchiseShare,
+        franchiseExpenditure: item.franchiseExpenditure,
+        netAmount: item.netAmount
+      }))
+      .filter(item => item.enquiries > 0)
+      .sort((a, b) => b.clients - a.clients);
+  }, [
+    rows,
+    selectedFranchisee,
+    selectedFinancialYear,
+    selectedMonth,
+    selectedInfoStatus,
+    franchiseExpenditurePercentage
+  ]);
 
   /* =======================================================
      SELECTED FRANCHISE ROWS
+     Modal filters remain independent of main filters.
   ======================================================= */
 
-  const selectedRows =
-    useMemo(() => {
+  const selectedRows = useMemo(() => {
+    if (!selectedFranchise) {
+      return [];
+    }
 
-      if (!selectedFranchise) {
-        return [];
+    return rows.filter(row => {
+      if (getFranchise(row) !== selectedFranchise) {
+        return false;
       }
 
-      return rows.filter(row => {
+      if (
+        reportFinancialYear &&
+        getFinancialYear(row) !== reportFinancialYear
+      ) {
+        return false;
+      }
 
-        if (
-          getFranchise(row) !==
-          selectedFranchise
-        ) {
-          return false;
-        }
+      if (
+        reportInfoStatus &&
+        reportInfoStatus !== "ALL" &&
+        getInfoStatus(row) !== reportInfoStatus
+      ) {
+        return false;
+      }
 
-        if (
-          reportFinancialYear &&
-          getFinancialYear(row) !==
-            reportFinancialYear
-        ) {
-          return false;
-        }
-
-        if (
-          reportInfoStatus &&
-          reportInfoStatus !== "ALL" &&
-          getInfoStatus(row) !==
-            reportInfoStatus
-        ) {
-          return false;
-        }
-
-        return true;
-
-      });
-
-    }, [
-      rows,
-      selectedFranchise,
-      reportFinancialYear,
-      reportInfoStatus
-    ]);
-
+      return true;
+    });
+  }, [
+    rows,
+    selectedFranchise,
+    reportFinancialYear,
+    reportInfoStatus
+  ]);
 
   /* =======================================================
      PERFORMANCE SUMMARY
   ======================================================= */
 
-  const performanceSummary =
-    useMemo(() => {
+  const performanceSummary = useMemo(() => {
+    let totalBilling = 0;
+    let totalFranchiseShare = 0;
+    let totalFranchiseExpenditure = 0;
+    let netAmount = 0;
+    let totalEnquiries = 0;
 
-      let totalBilling = 0;
+    const companyNames = new Set();
 
-      let totalFranchiseShare = 0;
+    selectedRows.forEach(row => {
+      totalEnquiries += 1;
 
-      let totalFranchiseExpenditure = 0;
+      const companyName = getCompanyName(row);
+      const companyKey = normalizeCompanyKey(companyName);
 
-      let netAmount = 0;
+      if (companyKey) {
+        companyNames.add(companyKey);
+      }
 
-      const companyNames =
-        new Set();
+      const values = getFinancialValues(
+        row,
+        reportInfoStatus,
+        reportFranchiseExpenditurePercentage
+      );
 
-      let totalEnquiries = 0;
+      totalBilling += values.billing;
+      totalFranchiseShare += values.franchiseeShare;
+      totalFranchiseExpenditure += values.franchiseExpenditure;
+      netAmount += values.netAmount;
+    });
 
-
-      selectedRows.forEach(row => {
-
-        totalEnquiries += 1;
-
-
-        const companyName =
-          getCompanyName(row);
-
-        const companyKey =
-          normalizeCompanyKey(
-            companyName
-          );
-
-        if (companyKey) {
-          companyNames.add(
-            companyKey
-          );
-        }
-
-
-        /*
-         * IMPORTANT:
-         * Modal uses reportFranchiseExpenditurePercentage,
-         * NOT the main-page percentage.
-         */
-        const values =
-          getFinancialValues(
-            row,
-            reportInfoStatus,
-            reportFranchiseExpenditurePercentage
-          );
-
-
-        totalBilling +=
-          values.billing;
-
-        totalFranchiseShare +=
-          values.franchiseeShare;
-
-        totalFranchiseExpenditure +=
-          values.franchiseExpenditure;
-
-        netAmount +=
-          values.netAmount;
-
-      });
-
-
-      return {
-        totalBilling,
-        totalFranchiseShare,
-        totalFranchiseExpenditure,
-        netAmount,
-        totalEnquiries,
-        totalClients:
-          companyNames.size
-      };
-
-    }, [
-      selectedRows,
-      reportInfoStatus,
-      reportFranchiseExpenditurePercentage
-    ]);
-
+    return {
+      totalBilling,
+      totalFranchiseShare,
+      totalFranchiseExpenditure,
+      netAmount,
+      totalEnquiries,
+      totalClients: companyNames.size
+    };
+  }, [
+    selectedRows,
+    reportInfoStatus,
+    reportFranchiseExpenditurePercentage
+  ]);
 
   /* =======================================================
      BEST INDUSTRY
   ======================================================= */
 
-  const bestIndustry =
-    useMemo(() => {
+  const bestIndustry = useMemo(() => {
+    const industryCompanies = new Map();
 
-      const industryCompanies =
-        new Map();
+    selectedRows.forEach(row => {
+      const industry = getIndustry(row);
+      const company = normalizeCompanyKey(getCompanyName(row));
 
-      selectedRows.forEach(row => {
+      if (!industry || !company) {
+        return;
+      }
 
-        const industry =
-          getIndustry(row);
+      if (!industryCompanies.has(industry)) {
+        industryCompanies.set(industry, new Set());
+      }
 
-        const company =
-          normalizeCompanyKey(
-            getCompanyName(row)
-          );
+      industryCompanies.get(industry).add(company);
+    });
 
-        if (
-          !industry ||
-          !company
-        ) {
-          return;
-        }
+    let best = "";
+    let highest = 0;
 
-        if (
-          !industryCompanies.has(
-            industry
-          )
-        ) {
-          industryCompanies.set(
-            industry,
-            new Set()
-          );
-        }
+    industryCompanies.forEach((companies, industry) => {
+      if (companies.size > highest) {
+        highest = companies.size;
+        best = industry;
+      }
+    });
 
-        industryCompanies
-          .get(industry)
-          .add(company);
-
-      });
-
-
-      let best = "";
-      let highest = 0;
-
-
-      industryCompanies.forEach(
-        (companies, industry) => {
-
-          if (
-            companies.size >
-            highest
-          ) {
-            highest =
-              companies.size;
-
-            best =
-              industry;
-          }
-
-        }
-      );
-
-
-      return best || "—";
-
-    }, [selectedRows]);
-
+    return best || "—";
+  }, [selectedRows]);
 
   /* =======================================================
      BEST CITY
   ======================================================= */
 
-  const bestCity =
-    useMemo(() => {
+  const bestCity = useMemo(() => {
+    const cityCompanies = new Map();
 
-      const cityCompanies =
-        new Map();
+    selectedRows.forEach(row => {
+      const city = getCity(row);
+      const company = normalizeCompanyKey(getCompanyName(row));
 
-      selectedRows.forEach(row => {
+      if (!city || !company) {
+        return;
+      }
 
-        const city =
-          getCity(row);
+      if (!cityCompanies.has(city)) {
+        cityCompanies.set(city, new Set());
+      }
 
-        const company =
-          normalizeCompanyKey(
-            getCompanyName(row)
-          );
+      cityCompanies.get(city).add(company);
+    });
 
-        if (
-          !city ||
-          !company
-        ) {
-          return;
-        }
+    let best = "";
+    let highest = 0;
 
-        if (
-          !cityCompanies.has(city)
-        ) {
-          cityCompanies.set(
-            city,
-            new Set()
-          );
-        }
+    cityCompanies.forEach((companies, city) => {
+      if (companies.size > highest) {
+        highest = companies.size;
+        best = city;
+      }
+    });
 
-        cityCompanies
-          .get(city)
-          .add(company);
-
-      });
-
-
-      let best = "";
-      let highest = 0;
-
-
-      cityCompanies.forEach(
-        (companies, city) => {
-
-          if (
-            companies.size >
-            highest
-          ) {
-            highest =
-              companies.size;
-
-            best =
-              city;
-          }
-
-        }
-      );
-
-
-      return best || "—";
-
-    }, [selectedRows]);
-
+    return best || "—";
+  }, [selectedRows]);
 
   /* =======================================================
      YEARLY REPORT
   ======================================================= */
 
-  const yearlyReportData =
-    useMemo(() => {
+  const yearlyReportData = useMemo(() => {
+    const map = new Map();
 
-      const map = new Map();
+    selectedRows.forEach(row => {
+      const year = getFinancialYear(row);
 
-      selectedRows.forEach(row => {
+      if (!year) {
+        return;
+      }
 
-        const year =
-          getFinancialYear(row);
-
-        if (!year) {
-          return;
-        }
-
-        if (!map.has(year)) {
-          map.set(
-            year,
-            {
-              year,
-              companyNames:
-                new Set(),
-              billing: 0
-            }
-          );
-        }
-
-        const data =
-          map.get(year);
-
-
-        const company =
-          normalizeCompanyKey(
-            getCompanyName(row)
-          );
-
-        if (company) {
-          data.companyNames.add(
-            company
-          );
-        }
-
-
-        /*
-         * Modal report uses its own
-         * expenditure percentage.
-         */
-        const values =
-          getFinancialValues(
-            row,
-            reportInfoStatus,
-            reportFranchiseExpenditurePercentage
-          );
-
-
-        data.billing +=
-          values.billing;
-
-      });
-
-
-      return Array.from(
-        map.values()
-      )
-        .map(item => ({
-          year:
-            item.year,
-
-          clients:
-            item.companyNames.size,
-
-          billing:
-            item.billing
-        }))
-        .sort((a, b) => {
-
-          const yearA =
-            Number(
-              String(a.year).slice(0, 4)
-            );
-
-          const yearB =
-            Number(
-              String(b.year).slice(0, 4)
-            );
-
-          return yearA - yearB;
-
+      if (!map.has(year)) {
+        map.set(year, {
+          year,
+          companyNames: new Set(),
+          billing: 0
         });
+      }
 
-    }, [
-      selectedRows,
-      reportInfoStatus,
-      reportFranchiseExpenditurePercentage
-    ]);
+      const data = map.get(year);
 
+      const company = normalizeCompanyKey(getCompanyName(row));
+
+      if (company) {
+        data.companyNames.add(company);
+      }
+
+      const values = getFinancialValues(
+        row,
+        reportInfoStatus,
+        reportFranchiseExpenditurePercentage
+      );
+
+      data.billing += values.billing;
+    });
+
+    return Array.from(map.values())
+      .map(item => ({
+        year: item.year,
+        clients: item.companyNames.size,
+        billing: item.billing
+      }))
+      .sort((a, b) => {
+        const yearA = Number(String(a.year).slice(0, 4));
+        const yearB = Number(String(b.year).slice(0, 4));
+
+        return yearA - yearB;
+      });
+  }, [
+    selectedRows,
+    reportInfoStatus,
+    reportFranchiseExpenditurePercentage
+  ]);
 
   /* =======================================================
      MONTHLY REPORT
   ======================================================= */
 
-  const monthlyReportData =
-    useMemo(() => {
+  const monthlyReportData = useMemo(() => {
+    if (!reportFinancialYear) {
+      return [];
+    }
 
-      if (!reportFinancialYear) {
-        return [];
+    const monthMap = new Map();
+
+    financialMonths.forEach(month => {
+      monthMap.set(month.month, {
+        month: month.full,
+        monthShort: month.short,
+        companyNames: new Set(),
+        billing: 0
+      });
+    });
+
+    selectedRows.forEach(row => {
+      const year = getFinancialYear(row);
+
+      if (year !== reportFinancialYear) {
+        return;
       }
 
-      const monthMap =
-        new Map();
+      const month = getMonth(row);
 
+      if (!monthMap.has(month)) {
+        return;
+      }
 
-      financialMonths.forEach(
-        month => {
+      const data = monthMap.get(month);
 
-          monthMap.set(
-            month.month,
-            {
-              month:
-                month.full,
+      const company = normalizeCompanyKey(getCompanyName(row));
 
-              monthShort:
-                month.short,
+      if (company) {
+        data.companyNames.add(company);
+      }
 
-              companyNames:
-                new Set(),
-
-              billing:
-                0
-            }
-          );
-
-        }
+      const values = getFinancialValues(
+        row,
+        reportInfoStatus,
+        reportFranchiseExpenditurePercentage
       );
 
+      data.billing += values.billing;
+    });
 
-      selectedRows.forEach(row => {
+    return financialMonths.map(month => {
+      const data = monthMap.get(month.month);
 
-        const year =
-          getFinancialYear(row);
-
-        if (
-          year !==
-          reportFinancialYear
-        ) {
-          return;
-        }
-
-
-        const month =
-          getMonth(row);
-
-
-        if (
-          !monthMap.has(month)
-        ) {
-          return;
-        }
-
-
-        const data =
-          monthMap.get(month);
-
-
-        const company =
-          normalizeCompanyKey(
-            getCompanyName(row)
-          );
-
-        if (company) {
-          data.companyNames.add(
-            company
-          );
-        }
-
-
-        /*
-         * Modal report uses its own
-         * expenditure percentage.
-         */
-        const values =
-          getFinancialValues(
-            row,
-            reportInfoStatus,
-            reportFranchiseExpenditurePercentage
-          );
-
-
-        data.billing +=
-          values.billing;
-
-      });
-
-
-      return financialMonths.map(
-        month => {
-
-          const data =
-            monthMap.get(
-              month.month
-            );
-
-          return {
-            month:
-              data.month,
-
-            monthShort:
-              data.monthShort,
-
-            clients:
-              data.companyNames.size,
-
-            billing:
-              data.billing
-          };
-
-        }
-      );
-
-    }, [
-      selectedRows,
-      reportFinancialYear,
-      reportInfoStatus,
-      reportFranchiseExpenditurePercentage
-    ]);
-
+      return {
+        month: data.month,
+        monthShort: data.monthShort,
+        clients: data.companyNames.size,
+        billing: data.billing
+      };
+    });
+  }, [
+    selectedRows,
+    reportFinancialYear,
+    reportInfoStatus,
+    reportFranchiseExpenditurePercentage
+  ]);
 
   /* =======================================================
      REPORT DATA
   ======================================================= */
 
-  const reportData =
-    reportFinancialYear
-      ? monthlyReportData
-      : yearlyReportData;
-
+  const reportData = reportFinancialYear
+    ? monthlyReportData
+    : yearlyReportData;
 
   /* =======================================================
      OPEN PERFORMANCE MODAL
   ======================================================= */
 
-  function handleViewPerformance(
-    franchise
-  ) {
+  function handleViewPerformance(franchise) {
+    setSelectedFranchise(franchise);
 
-    setSelectedFranchise(
-      franchise
-    );
-
-    /*
-     * Copy current main filters only when
-     * opening the modal.
-     *
-     * After opening, modal filters are independent.
-     */
-    setReportFinancialYear(
-      selectedFinancialYear
-    );
-
-    setReportInfoStatus(
-      selectedInfoStatus
-    );
-
-    /*
-     * Initial modal expenditure %
-     * is copied from the main filter.
-     *
-     * After this, both states are independent.
-     */
+    // Copy main filters only when opening the modal.
+    // Modal filter changes remain independent afterwards.
+    setReportFinancialYear(selectedFinancialYear);
+    setReportInfoStatus(selectedInfoStatus);
     setReportFranchiseExpenditurePercentage(
       franchiseExpenditurePercentage
     );
-
   }
-
 
   /* =======================================================
      CLOSE MODAL
@@ -1405,220 +1010,176 @@ function FranchisePerformance() {
     setSelectedFranchise("");
   }
 
-
   /* =======================================================
      ESCAPE KEY
   ======================================================= */
 
   useEffect(() => {
-
     if (!selectedFranchise) {
       return undefined;
     }
 
-
-    const handleKeyDown =
-      event => {
-
-        if (
-          event.key === "Escape"
-        ) {
-          handleCloseModal();
-        }
-
-      };
-
-
-    document.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
-
-
-    return () => {
-
-      document.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
-
+    const handleKeyDown = event => {
+      if (event.key === "Escape") {
+        handleCloseModal();
+      }
     };
 
-  }, [selectedFranchise]);
+    document.addEventListener("keydown", handleKeyDown);
 
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedFranchise]);
 
   /* =======================================================
      RENDER
   ======================================================= */
 
   return (
-
     <div className="franchise-performance-page">
 
-      {/* ===================================================
-          PAGE HEADER
-      =================================================== */}
+      {/* PAGE HEADER */}
 
       <div className="franchise-page-header">
-
         <div>
-
           <div className="franchise-page-eyebrow">
             PERFORMANCE ANALYTICS
           </div>
 
-          <h1>
-            Franchise Performance
-          </h1>
+          <h1>Franchise Performance</h1>
 
           <p>
-            Monitor franchise acquisition,
-            billing and financial performance.
+            Monitor franchise acquisition, billing and financial
+            performance.
           </p>
-
         </div>
-
       </div>
 
-
-      {/* ===================================================
-          MAIN TABLE
-      =================================================== */}
+      {/* MAIN TABLE CARD */}
 
       <div className="franchise-table-card">
 
         <div className="franchise-table-header">
-
           <div>
-
-            <h2>
-              Franchise Performance
-            </h2>
+            <h2>Franchise Performance</h2>
 
             <p>
-              Complete franchise-wise
-              performance overview
+              Complete franchise-wise performance overview
             </p>
-
           </div>
-
 
           <div className="franchise-member-count">
-
             {franchiseData.length}
-
-            <span>
-              Franchises
-            </span>
-
+            <span>Franchises</span>
           </div>
-
         </div>
 
+        {/* MAIN FILTERS */}
 
-        {/* =================================================
-            MAIN FILTERS
-        ================================================= */}
+        <div className="franchise-main-filters">
 
-        <div
-          className="franchise-report-controls"
-          style={{
-            marginBottom: "20px"
-          }}
-        >
-
-          {/* FINANCIAL YEAR */}
+          {/* 1. FRANCHISEE */}
 
           <div>
+            <label htmlFor="main-franchisee">
+              Franchisee
+            </label>
 
-            <label>
+            <select
+              id="main-franchisee"
+              value={selectedFranchisee}
+              onChange={event =>
+                setSelectedFranchisee(event.target.value)
+              }
+            >
+              <option value="">All Franchisees</option>
+
+              {franchiseeOptions.map(franchise => (
+                <option key={franchise} value={franchise}>
+                  {franchise}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 2. FINANCIAL YEAR */}
+
+          <div>
+            <label htmlFor="main-financial-year">
               Financial Year
             </label>
 
             <select
-              value={
-                selectedFinancialYear
-              }
+              id="main-financial-year"
+              value={selectedFinancialYear}
               onChange={event =>
-                setSelectedFinancialYear(
-                  event.target.value
-                )
+                setSelectedFinancialYear(event.target.value)
               }
             >
+              <option value="">All Financial Years</option>
 
-              <option value="">
-                All Financial Years
-              </option>
-
-              {financialYears.map(
-                year => (
-
-                  <option
-                    key={year}
-                    value={year}
-                  >
-                    {year}
-                  </option>
-
-                )
-              )}
-
+              {financialYears.map(year => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
             </select>
-
           </div>
 
-
-          {/* INFO STATUS */}
+          {/* 3. MONTH */}
 
           <div>
+            <label htmlFor="main-month">
+              Month
+            </label>
 
-            <label>
+            <select
+              id="main-month"
+              value={selectedMonth}
+              onChange={event =>
+                setSelectedMonth(event.target.value)
+              }
+            >
+              <option value="">All Months</option>
+
+              {financialMonths.map(month => (
+                <option
+                  key={month.month}
+                  value={month.month}
+                >
+                  {month.full}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 4. INFO STATUS */}
+
+          <div>
+            <label htmlFor="main-info-status">
               Info Status
             </label>
 
             <select
-              value={
-                selectedInfoStatus
-              }
+              id="main-info-status"
+              value={selectedInfoStatus}
               onChange={event =>
-                setSelectedInfoStatus(
-                  event.target.value
-                )
+                setSelectedInfoStatus(event.target.value)
               }
             >
-
-              <option value="">
-                All
-              </option>
-
-              <option value="R">
-                R
-              </option>
-
-              <option value="RV">
-                RV
-              </option>
-
-              <option value="C">
-                C
-              </option>
-
-              <option value="CN">
-                CN
-              </option>
-
+              <option value="">All</option>
+              <option value="R">R</option>
+              <option value="RV">RV</option>
+              <option value="C">C</option>
+              <option value="CN">CN</option>
             </select>
-
           </div>
 
-
-          {/* MAIN FRANCHISE EXPENDITURE % */}
+          {/* 5. FRANCHISE EXPENDITURE */}
 
           <div>
-
-            <label
-              htmlFor="franchise-expenditure-percentage"
-            >
+            <label htmlFor="franchise-expenditure-percentage">
               Franchise Expenditure %
             </label>
 
@@ -1628,14 +1189,10 @@ function FranchisePerformance() {
               min="0"
               max="100"
               step="0.01"
-              value={
-                franchiseExpenditurePercentage
-              }
+              value={franchiseExpenditurePercentage}
               placeholder="Enter %"
               onChange={event => {
-
-                const value =
-                  event.target.value;
+                const value = event.target.value;
 
                 if (
                   value === "" ||
@@ -1644,285 +1201,176 @@ function FranchisePerformance() {
                     Number(value) <= 100
                   )
                 ) {
-                  setFranchiseExpenditurePercentage(
-                    value
-                  );
+                  setFranchiseExpenditurePercentage(value);
                 }
-
               }}
             />
+          </div>
 
+          {/* REMOVE FILTER BUTTON */}
+
+          <div className="franchise-filter-action">
+            <button
+              type="button"
+              className="franchise-remove-filter-btn"
+              onClick={handleRemoveFilters}
+              disabled={
+                !selectedFranchisee &&
+                !selectedFinancialYear &&
+                !selectedMonth &&
+                !selectedInfoStatus &&
+                franchiseExpenditurePercentage === ""
+              }
+            >
+              Remove Filter
+            </button>
           </div>
 
         </div>
 
+        {/* MAIN TABLE */}
 
         <div className="franchise-table-wrapper">
-
           <table className="franchise-table">
 
             <thead>
-
               <tr>
-
-                <th>
-                  Franchise Name
-                </th>
-
-                <th>
-                  Total Acquired Client
-                </th>
-
-                <th>
-                  Total Enquiries
-                </th>
-
-                <th>
-                  Total Billing
-                </th>
-
-                <th>
-                  Net Amount
-                </th>
+                <th>Franchise Name</th>
+                <th>Total Acquired Client</th>
+                <th>Total Enquiries</th>
+                <th>Total Billing</th>
+                <th>Net Amount</th>
 
                 {hasFranchiseExpenditurePercentage && (
-
-                  <th>
-                    Franchise Expenditure
-                  </th>
-
+                  <th>Franchise Expenditure</th>
                 )}
 
-                <th>
-                  Performance
-                </th>
-
+                <th>Performance</th>
               </tr>
-
             </thead>
 
-
             <tbody>
-
               {franchiseData.length === 0 ? (
-
                 <tr>
-
                   <td
                     colSpan={
-                      hasFranchiseExpenditurePercentage
-                        ? 7
-                        : 6
+                      hasFranchiseExpenditurePercentage ? 7 : 6
                     }
                     className="franchise-empty"
                   >
                     No franchise data available.
                   </td>
-
                 </tr>
-
               ) : (
+                franchiseData.map(franchise => (
+                  <tr key={franchise.franchise}>
 
-                franchiseData.map(
-                  franchise => (
-
-                    <tr
-                      key={
-                        franchise.franchise
-                      }
-                    >
-
-                      <td>
-
-                        <div className="franchise-name">
-
-                          <div className="franchise-avatar">
-
-                            {
-                              franchise.franchise
-                                .charAt(0)
-                                .toUpperCase()
-                            }
-
-                          </div>
-
-                          <span>
-                            {
-                              franchise.franchise
-                            }
-                          </span>
-
+                    <td>
+                      <div className="franchise-name">
+                        <div className="franchise-avatar">
+                          {franchise.franchise.charAt(0).toUpperCase()}
                         </div>
 
-                      </td>
+                        <span>{franchise.franchise}</span>
+                      </div>
+                    </td>
 
+                    {/* UNIQUE CLIENTS */}
 
-                      {/* UNIQUE CLIENTS */}
+                    <td>
+                      <span className="franchise-client-count">
+                        {franchise.clients}
+                      </span>
+                    </td>
 
+                    {/* TOTAL ENQUIRIES */}
+
+                    <td>
+                      <span className="franchise-client-count">
+                        {franchise.enquiries}
+                      </span>
+                    </td>
+
+                    {/* BILLING */}
+
+                    <td>
+                      <span className="franchise-billing-value">
+                        {formatCurrency(franchise.billing)}
+                      </span>
+                    </td>
+
+                    {/* NET */}
+
+                    <td>
+                      <span className="franchise-net-value">
+                        {formatCurrency(franchise.netAmount)}
+                      </span>
+                    </td>
+
+                    {/* EXPENDITURE */}
+
+                    {hasFranchiseExpenditurePercentage && (
                       <td>
-
-                        <span className="franchise-client-count">
-
-                          {
-                            franchise.clients
-                          }
-
+                        <span className="franchise-expenditure-value">
+                          {formatCurrency(
+                            franchise.franchiseExpenditure
+                          )}
                         </span>
-
                       </td>
+                    )}
 
+                    {/* PERFORMANCE */}
 
-                      {/* TOTAL ENQUIRIES */}
-
-                      <td>
-
-                        <span className="franchise-client-count">
-
-                          {
-                            franchise.enquiries
-                          }
-
+                    <td>
+                      <button
+                        type="button"
+                        className="franchise-view-performance-btn"
+                        onClick={() =>
+                          handleViewPerformance(franchise.franchise)
+                        }
+                      >
+                        View
+                        <span className="franchise-view-arrow">
+                          →
                         </span>
+                      </button>
+                    </td>
 
-                      </td>
-
-
-                      {/* BILLING */}
-
-                      <td>
-
-                        <span className="franchise-billing-value">
-
-                          {
-                            formatCurrency(
-                              franchise.billing
-                            )
-                          }
-
-                        </span>
-
-                      </td>
-
-
-                      {/* NET */}
-
-                      <td>
-
-                        <span className="franchise-net-value">
-
-                          {
-                            formatCurrency(
-                              franchise.netAmount
-                            )
-                          }
-
-                        </span>
-
-                      </td>
-
-
-                      {/* EXPENDITURE */}
-
-                      {hasFranchiseExpenditurePercentage && (
-
-                        <td>
-
-                          <span className="franchise-expenditure-value">
-
-                            {
-                              formatCurrency(
-                                franchise.franchiseExpenditure
-                              )
-                            }
-
-                          </span>
-
-                        </td>
-
-                      )}
-
-
-                      {/* PERFORMANCE */}
-
-                      <td>
-
-                        <button
-                          type="button"
-                          className="franchise-view-performance-btn"
-                          onClick={() =>
-                            handleViewPerformance(
-                              franchise.franchise
-                            )
-                          }
-                        >
-
-                          View
-
-                          <span className="franchise-view-arrow">
-                            →
-                          </span>
-
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  )
-                )
-
+                  </tr>
+                ))
               )}
-
             </tbody>
 
           </table>
-
         </div>
-
       </div>
 
-
-      {/* ===================================================
-          PERFORMANCE MODAL
-      =================================================== */}
+      {/* PERFORMANCE MODAL */}
 
       {selectedFranchise && (
-
         <div
           className="franchise-performance-overlay"
           onClick={handleCloseModal}
         >
-
           <div
             className="franchise-performance-modal"
-            onClick={event =>
-              event.stopPropagation()
-            }
+            onClick={event => event.stopPropagation()}
           >
 
-            {/* =============================================
-                MODAL HEADER
-            ============================================= */}
+            {/* MODAL HEADER */}
 
             <div className="franchise-modal-header">
-
               <div>
-
                 <div className="franchise-modal-eyebrow">
                   PERFORMANCE REPORT
                 </div>
 
-                <h2>
-                  {selectedFranchise}
-                </h2>
+                <h2>{selectedFranchise}</h2>
 
                 <p>
-                  Franchise performance
-                  analysis and financial trends
+                  Franchise performance analysis and financial trends
                 </p>
-
               </div>
-
 
               <button
                 type="button"
@@ -1932,20 +1380,15 @@ function FranchisePerformance() {
               >
                 ×
               </button>
-
             </div>
 
-
-            {/* =============================================
-                SUMMARY CARDS
-            ============================================= */}
+            {/* SUMMARY CARDS */}
 
             <div className="franchise-summary-grid">
 
               {/* BEST INDUSTRY */}
 
               <div className="franchise-summary-card">
-
                 <span className="franchise-summary-label">
                   Best Industry
                 </span>
@@ -1953,14 +1396,11 @@ function FranchisePerformance() {
                 <strong className="franchise-summary-text">
                   {bestIndustry}
                 </strong>
-
               </div>
-
 
               {/* BEST CITY */}
 
               <div className="franchise-summary-card">
-
                 <span className="franchise-summary-label">
                   Best City
                 </span>
@@ -1968,227 +1408,130 @@ function FranchisePerformance() {
                 <strong className="franchise-summary-text">
                   {bestCity}
                 </strong>
-
               </div>
-
 
               {/* TOTAL BILLING */}
 
               <div className="franchise-summary-card">
-
                 <span className="franchise-summary-label">
                   Total Billing
                 </span>
 
                 <strong className="franchise-summary-value">
-
-                  {
-                    formatCurrency(
-                      performanceSummary.totalBilling
-                    )
-                  }
-
+                  {formatCurrency(performanceSummary.totalBilling)}
                 </strong>
-
               </div>
-
 
               {/* TOTAL ACQUIRED CLIENT */}
 
               <div className="franchise-summary-card">
-
                 <span className="franchise-summary-label">
                   Total Acquired Client
                 </span>
 
                 <strong className="franchise-summary-value">
-
-                  {
-                    performanceSummary.totalClients
-                  }
-
+                  {performanceSummary.totalClients}
                 </strong>
 
-                <small>
-                  Unique Company Name
-                </small>
-
+                <small>Unique Company Name</small>
               </div>
-
 
               {/* TOTAL ENQUIRIES */}
 
               <div className="franchise-summary-card franchise-summary-share">
-
                 <span className="franchise-summary-label">
                   Total Enquiries
                 </span>
 
                 <strong className="franchise-summary-value">
-
-                  {
-                    performanceSummary.totalEnquiries
-                  }
-
+                  {performanceSummary.totalEnquiries}
                 </strong>
 
-                <small>
-                  Matching enquiry rows
-                </small>
-
+                <small>Matching enquiry rows</small>
               </div>
-
 
               {/* FRANCHISE SHARE */}
 
               <div className="franchise-summary-card franchise-summary-share">
-
                 <span className="franchise-summary-label">
                   Franchise Share Claimed
                 </span>
 
                 <strong className="franchise-summary-value">
-
-                  {
-                    formatCurrency(
-                      performanceSummary.totalFranchiseShare
-                    )
-                  }
-
+                  {formatCurrency(
+                    performanceSummary.totalFranchiseShare
+                  )}
                 </strong>
-
               </div>
-
-
-              {/* =================================================
-                  FRANCHISE EXPENDITURE CARD REMOVED
-              ================================================= */}
-
 
               {/* NET AMOUNT */}
 
               <div className="franchise-summary-card franchise-summary-net">
-
                 <span className="franchise-summary-label">
                   Net Amount
                 </span>
 
                 <strong className="franchise-summary-value">
-
-                  {
-                    formatCurrency(
-                      performanceSummary.netAmount
-                    )
-                  }
-
+                  {formatCurrency(performanceSummary.netAmount)}
                 </strong>
-
               </div>
 
             </div>
 
-
-            {/* =============================================
-                REPORT CONTROLS
-            ============================================= */}
+            {/* REPORT CONTROLS */}
 
             <div className="franchise-report-controls">
 
               {/* FINANCIAL YEAR */}
 
               <div>
-
-                <label
-                  htmlFor="franchise-financial-year"
-                >
+                <label htmlFor="franchise-financial-year">
                   Financial Year
                 </label>
 
                 <select
                   id="franchise-financial-year"
-                  value={
-                    reportFinancialYear
-                  }
+                  value={reportFinancialYear}
                   onChange={event =>
-                    setReportFinancialYear(
-                      event.target.value
-                    )
+                    setReportFinancialYear(event.target.value)
                   }
                 >
+                  <option value="">All Financial Years</option>
 
-                  <option value="">
-                    All Financial Years
-                  </option>
-
-                  {financialYears.map(
-                    year => (
-
-                      <option
-                        key={year}
-                        value={year}
-                      >
-                        {year}
-                      </option>
-
-                    )
-                  )}
-
+                  {financialYears.map(year => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
                 </select>
-
               </div>
-
 
               {/* INFO STATUS */}
 
               <div>
-
-                <label>
+                <label htmlFor="report-info-status">
                   Info Status
                 </label>
 
                 <select
-                  value={
-                    reportInfoStatus
-                  }
+                  id="report-info-status"
+                  value={reportInfoStatus}
                   onChange={event =>
-                    setReportInfoStatus(
-                      event.target.value
-                    )
+                    setReportInfoStatus(event.target.value)
                   }
                 >
-
-                  <option value="">
-                    All
-                  </option>
-
-                  <option value="R">
-                    R
-                  </option>
-
-                  <option value="RV">
-                    RV
-                  </option>
-
-                  <option value="C">
-                    C
-                  </option>
-
-                  <option value="CN">
-                    CN
-                  </option>
-
+                  <option value="">All</option>
+                  <option value="R">R</option>
+                  <option value="RV">RV</option>
+                  <option value="C">C</option>
+                  <option value="CN">CN</option>
                 </select>
-
               </div>
 
-
-              {/* MODAL FRANCHISE EXPENDITURE % */}
+              {/* MODAL FRANCHISE EXPENDITURE */}
 
               <div>
-
-                <label
-                  htmlFor="report-franchise-expenditure-percentage"
-                >
+                <label htmlFor="report-franchise-expenditure-percentage">
                   Franchise Expenditure %
                 </label>
 
@@ -2198,14 +1541,10 @@ function FranchisePerformance() {
                   min="0"
                   max="100"
                   step="0.01"
-                  value={
-                    reportFranchiseExpenditurePercentage
-                  }
+                  value={reportFranchiseExpenditurePercentage}
                   placeholder="Enter %"
                   onChange={event => {
-
-                    const value =
-                      event.target.value;
+                    const value = event.target.value;
 
                     if (
                       value === "" ||
@@ -2214,88 +1553,50 @@ function FranchisePerformance() {
                         Number(value) <= 100
                       )
                     ) {
-                      setReportFranchiseExpenditurePercentage(
-                        value
-                      );
+                      setReportFranchiseExpenditurePercentage(value);
                     }
-
                   }}
                 />
-
               </div>
-
 
               {/* REPORT PERIOD */}
 
               <div className="franchise-report-period">
-
-                <span>
-                  Report Period
-                </span>
+                <span>Report Period</span>
 
                 <strong>
-
-                  {
-                    reportFinancialYear
-                      ? reportFinancialYear
-                      : "Yearly"
-                  }
-
+                  {reportFinancialYear || "Yearly"}
                 </strong>
-
               </div>
 
             </div>
 
-
-            {/* =============================================
-                GRAPHS
-            ============================================= */}
+            {/* GRAPHS */}
 
             <div className="franchise-report-graphs">
 
               {/* CLIENT ACQUIRED */}
 
               <div className="franchise-chart-card">
-
                 <div className="franchise-chart-heading">
-
                   <div>
-
                     <span className="franchise-chart-indicator franchise-client-indicator"></span>
 
-                    <h3>
-                      Client Acquired
-                    </h3>
-
+                    <h3>Client Acquired</h3>
                   </div>
 
                   <span>
-                    {
-                      reportFinancialYear
-                        ? "Monthly"
-                        : "Yearly"
-                    }
+                    {reportFinancialYear ? "Monthly" : "Yearly"}
                   </span>
-
                 </div>
 
-
                 <div className="franchise-chart-container">
-
                   {reportData.length === 0 ? (
-
                     <div className="franchise-no-chart-data">
                       No report data available.
                     </div>
-
                   ) : (
-
-                    <ResponsiveContainer
-                      width="100%"
-                      height="100%"
-                    >
-
+                    <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={reportData}
                         margin={{
@@ -2305,7 +1606,6 @@ function FranchisePerformance() {
                           bottom: 5
                         }}
                       >
-
                         <CartesianGrid
                           strokeDasharray="3 3"
                           vertical={false}
@@ -2313,98 +1613,57 @@ function FranchisePerformance() {
 
                         <XAxis
                           dataKey={
-                            reportFinancialYear
-                              ? "monthShort"
-                              : "year"
+                            reportFinancialYear ? "monthShort" : "year"
                           }
-                          tick={{
-                            fontSize: 12
-                          }}
+                          tick={{ fontSize: 12 }}
                           tickLine={false}
                           axisLine={false}
                         />
 
                         <YAxis
                           allowDecimals={false}
-                          tick={{
-                            fontSize: 12
-                          }}
+                          tick={{ fontSize: 12 }}
                           tickLine={false}
                           axisLine={false}
                         />
 
-                        <Tooltip
-                          content={
-                            <FranchiseTooltip />
-                          }
-                        />
+                        <Tooltip content={<FranchiseTooltip />} />
 
                         <Bar
                           dataKey="clients"
                           name="Client Acquired"
                           fill="#B78A34"
-                          radius={[
-                            6,
-                            6,
-                            0,
-                            0
-                          ]}
+                          radius={[6, 6, 0, 0]}
                           maxBarSize={42}
                         />
-
                       </BarChart>
-
                     </ResponsiveContainer>
-
                   )}
-
                 </div>
-
               </div>
-
 
               {/* TOTAL BILLING */}
 
               <div className="franchise-chart-card">
-
                 <div className="franchise-chart-heading">
-
                   <div>
-
                     <span className="franchise-chart-indicator franchise-billing-indicator"></span>
 
-                    <h3>
-                      Total Billing
-                    </h3>
-
+                    <h3>Total Billing</h3>
                   </div>
 
                   <span>
-                    {
-                      reportFinancialYear
-                        ? "Monthly"
-                        : "Yearly"
-                    }
+                    {reportFinancialYear ? "Monthly" : "Yearly"}
                   </span>
-
                 </div>
 
-
                 <div className="franchise-chart-container">
-
                   {reportData.length === 0 ? (
-
                     <div className="franchise-no-chart-data">
                       No report data available.
                     </div>
-
                   ) : (
-
-                    <ResponsiveContainer
-                      width="100%"
-                      height="100%"
-                    >
-
+                    <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={reportData}
                         margin={{
@@ -2414,7 +1673,6 @@ function FranchisePerformance() {
                           bottom: 5
                         }}
                       >
-
                         <CartesianGrid
                           strokeDasharray="3 3"
                           vertical={false}
@@ -2422,78 +1680,47 @@ function FranchisePerformance() {
 
                         <XAxis
                           dataKey={
-                            reportFinancialYear
-                              ? "monthShort"
-                              : "year"
+                            reportFinancialYear ? "monthShort" : "year"
                           }
-                          tick={{
-                            fontSize: 12
-                          }}
+                          tick={{ fontSize: 12 }}
                           tickLine={false}
                           axisLine={false}
                         />
 
                         <YAxis
-                          tick={{
-                            fontSize: 12
-                          }}
+                          tick={{ fontSize: 12 }}
                           tickLine={false}
                           axisLine={false}
                           tickFormatter={value =>
-                            `₹${(
-                              value / 100000
-                            ).toFixed(0)}L`
+                            `₹${(value / 100000).toFixed(0)}L`
                           }
                         />
 
-                        <Tooltip
-                          content={
-                            <FranchiseTooltip />
-                          }
-                        />
+                        <Tooltip content={<FranchiseTooltip />} />
 
                         <Bar
                           dataKey="billing"
                           name="Total Billing"
                           fill="#26734D"
-                          radius={[
-                            6,
-                            6,
-                            0,
-                            0
-                          ]}
+                          radius={[6, 6, 0, 0]}
                           maxBarSize={42}
                         />
-
                       </BarChart>
-
                     </ResponsiveContainer>
-
                   )}
-
                 </div>
-
               </div>
 
             </div>
 
-
-            {/* =============================================
-                MODAL FOOTER
-            ============================================= */}
+            {/* MODAL FOOTER */}
 
             <div className="franchise-modal-footer">
-
               <span>
-
-                {
-                  reportFinancialYear
-                    ? `Monthly report for ${reportFinancialYear}`
-                    : "Yearly performance report"
-                }
-
+                {reportFinancialYear
+                  ? `Monthly report for ${reportFinancialYear}`
+                  : "Yearly performance report"}
               </span>
-
 
               <button
                 type="button"
@@ -2502,19 +1729,14 @@ function FranchisePerformance() {
               >
                 Close
               </button>
-
             </div>
 
           </div>
-
         </div>
-
       )}
 
     </div>
-
   );
 }
-
 
 export default FranchisePerformance;
