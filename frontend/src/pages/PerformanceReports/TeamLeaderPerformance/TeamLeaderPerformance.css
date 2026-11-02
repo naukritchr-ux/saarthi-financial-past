@@ -136,9 +136,7 @@
   font-weight: 600;
   outline: none;
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tl-filter-group select:focus {
@@ -174,12 +172,7 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tl-reset-filters-btn:hover {
@@ -321,10 +314,7 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tl-view-performance-btn:hover {
@@ -385,7 +375,6 @@
     opacity: 0;
     transform: translateY(18px) scale(0.98);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -441,9 +430,7 @@
   font-size: 25px;
   line-height: 1;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .tl-modal-close:hover {
@@ -557,9 +544,7 @@
   font-weight: 600;
   outline: none;
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tl-report-controls select:focus {
@@ -728,9 +713,7 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .tl-footer-close:hover {
@@ -780,16 +763,12 @@
   font-weight: 600;
   outline: none;
   cursor: text;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tl-filter-group input[type="number"]:focus {
   border-color: #B78A34;
-  box-shadow:
-    0 0 0 3px
-    rgba(183, 138, 52, 0.10);
+  box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
 }
 
 .tl-filter-group input[type="number"]::placeholder {
@@ -801,10 +780,61 @@
   border-color: #C9C0AD;
 }
 
-/* Remove number input arrows */
 .tl-filter-group input[type="number"]::-webkit-inner-spin-button,
 .tl-filter-group input[type="number"]::-webkit-outer-spin-button {
   opacity: 0.7;
+}
+
+/* =========================================================
+   SELECTED TEAM LEADER REPORT HEADING
+========================================================= */
+.tl-selected-leader-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 25px 18px;
+  padding: 18px 22px;
+  background: #FFFFFF;
+  border: 1px solid #E2DCCB;
+  border-left: 4px solid #B78A34;
+  border-radius: 10px;
+}
+
+.tl-selected-leader-heading span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #B78A34;
+}
+
+.tl-selected-leader-heading h2 {
+  margin: 0;
+  color: #1B2A4A;
+  font-family: "Fraunces", serif;
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.tl-selected-leader-heading p {
+  margin: 2px 0 0;
+  color: #7B8491;
+  font-size: 12px;
+}
+
+/* =========================================================
+   PERIOD LABELS
+========================================================= */
+.tl-period-label {
+  color: #1B2A4A;
+  font-weight: 700;
+}
+
+.tl-period-subtitle {
+  display: block;
+  margin-top: 4px;
+  color: #89919D;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 /* =========================================================
@@ -977,5 +1007,14 @@
 
   .tl-footer-close {
     width: 100%;
+  }
+
+  .tl-selected-leader-heading {
+    margin: 0 15px 15px;
+    padding: 15px 17px;
+  }
+
+  .tl-selected-leader-heading h2 {
+    font-size: 20px;
   }
 }
