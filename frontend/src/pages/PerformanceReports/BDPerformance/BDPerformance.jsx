@@ -970,6 +970,17 @@ function BDPerformance() {
 
 
   /* =======================================================
+     SELECTED MEMBER HEADING SUBTITLE
+  ======================================================= */
+
+  const memberReportSubtitle = {
+    YEARLY: "Yearly Performance Report",
+    MONTHLY: "Monthly Performance Report",
+    QUARTERLY: "Quarterly Performance Report"
+  }[selectedReportView] || "Performance Report";
+
+
+  /* =======================================================
      SELECTED MEMBER ROWS FOR MODAL
   ======================================================= */
 
@@ -1424,8 +1435,7 @@ function BDPerformance() {
           </div>
 
 
-          {/* 2. VIEW REPORT AS
-              ONLY VISIBLE FOR INDIVIDUAL BD MEMBER */}
+          {/* 2. VIEW REPORT AS */}
 
           {selectedBDMember && (
             <div className="bd-filter-group">
@@ -1616,21 +1626,24 @@ function BDPerformance() {
         </div>
 
 
-        {/* SELECTED MEMBER HEADING */}
+        {/* SELECTED MEMBER HEADING
+            VISIBLE ONLY FOR YEARLY, MONTHLY AND QUARTERLY */}
 
-        {isPeriodView && (
+        {selectedBDMember && selectedReportView !== "ALL_TIME" && (
           <div className="bd-selected-member-heading">
+
+            <span className="bd-member-label">
+              BD MEMBER
+            </span>
+
             <h3>
               {selectedBDMember}
             </h3>
 
             <p>
-              {selectedReportView === "YEARLY" && "Yearly Performance"}
-
-              {selectedReportView === "MONTHLY" && "Monthly Performance"}
-
-              {selectedReportView === "QUARTERLY" && "Quarterly Performance"}
+              {memberReportSubtitle}
             </p>
+
           </div>
         )}
 
@@ -1686,8 +1699,6 @@ function BDPerformance() {
                     key={`${member.member}-${member.period || "all-time"}-${index}`}
                   >
 
-                    {/* FIRST COLUMN */}
-
                     <td>
                       {isPeriodView ? (
                         <strong>
@@ -1707,16 +1718,12 @@ function BDPerformance() {
                     </td>
 
 
-                    {/* UNIQUE ACQUIRED CLIENT */}
-
                     <td>
                       <span className="bd-client-count">
                         {member.clients}
                       </span>
                     </td>
 
-
-                    {/* TOTAL ENQUIRIES */}
 
                     <td>
                       <span className="bd-client-count">
@@ -1725,16 +1732,12 @@ function BDPerformance() {
                     </td>
 
 
-                    {/* FRANCHISEE */}
-
                     <td>
                       <span className="bd-client-count">
                         {member.franchisees}
                       </span>
                     </td>
 
-
-                    {/* BILLING */}
 
                     <td>
                       <span className="bd-billing-value">
@@ -1743,16 +1746,12 @@ function BDPerformance() {
                     </td>
 
 
-                    {/* NET AMOUNT */}
-
                     <td>
                       <span className="bd-net-value">
                         {formatCurrency(member.netAmount)}
                       </span>
                     </td>
 
-
-                    {/* BD EXPENDITURE */}
 
                     {hasBDExpenditurePercentage && (
                       <td>
@@ -1762,8 +1761,6 @@ function BDPerformance() {
                       </td>
                     )}
 
-
-                    {/* PERFORMANCE */}
 
                     <td>
                       <button
