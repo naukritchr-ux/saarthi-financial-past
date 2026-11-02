@@ -353,7 +353,6 @@ function getFinancialYear(row) {
 
 /* =========================================================
    GET MONTH
-   Returns calendar month number: 1–12
 ========================================================= */
 
 function getMonth(row) {
@@ -539,6 +538,12 @@ function BDPerformance() {
     setSelectedInfoStatus
   ] = useState("");
 
+  // ALL_TIME | YEARLY | MONTHLY | QUARTERLY
+  const [
+    selectedReportView,
+    setSelectedReportView
+  ] = useState("ALL_TIME");
+
 
   /* =======================================================
      MODAL STATE
@@ -569,7 +574,6 @@ function BDPerformance() {
     setBdExpenditurePercentage
   ] = useState("");
 
-
   const hasBDExpenditurePercentage =
     bdExpenditurePercentage !== "" &&
     bdExpenditurePercentage !== null &&
@@ -580,7 +584,6 @@ function BDPerformance() {
 
   /* =======================================================
      BD MEMBER OPTIONS
-     Derived from all available rows.
   ======================================================= */
 
   const bdMembers = useMemo(() => {
@@ -631,8 +634,6 @@ function BDPerformance() {
 
   /* =======================================================
      MAIN TABLE MONTH OPTIONS
-     Only months present in the selected FY are displayed.
-     If no FY is selected, all available months are displayed.
   ======================================================= */
 
   const availableMonths = useMemo(() => {
@@ -670,16 +671,7 @@ function BDPerformance() {
 
 
   /* =======================================================
-     BD MEMBER SUMMARY TABLE
-
-     Filters:
-     BD Member + Financial Year + Month + Info Status
-
-     Total Acquired Client:
-     UNIQUE Company Name
-
-     Total Enquiries:
-     EVERY FILTERED ROW
+     MAIN TABLE MEMBER SUMMARY
   ======================================================= */
 
   const memberData = useMemo(() => {
@@ -692,22 +684,12 @@ function BDPerformance() {
         return;
       }
 
-
-      /* ================================================
-         BD MEMBER FILTER
-      ================================================= */
-
       if (
         selectedBDMember &&
         normalizeKey(member) !== normalizeKey(selectedBDMember)
       ) {
         return;
       }
-
-
-      /* ================================================
-         FINANCIAL YEAR FILTER
-      ================================================= */
 
       if (
         selectedFinancialYear &&
@@ -716,22 +698,12 @@ function BDPerformance() {
         return;
       }
 
-
-      /* ================================================
-         MONTH FILTER
-      ================================================= */
-
       if (
         selectedMonth &&
         String(getMonth(row)) !== selectedMonth
       ) {
         return;
       }
-
-
-      /* ================================================
-         INFO STATUS FILTER
-      ================================================= */
 
       const info = getInfoStatus(row);
 
@@ -743,21 +715,11 @@ function BDPerformance() {
         return;
       }
 
-
-      /* ================================================
-         FINANCIAL VALUES
-      ================================================= */
-
       const financialValues = getFinancialValues(
         row,
         selectedInfoStatus,
         bdExpenditurePercentage
       );
-
-
-      /* ================================================
-         CREATE MEMBER RECORD
-      ================================================= */
 
       if (!map.has(member)) {
         map.set(member, {
@@ -773,11 +735,6 @@ function BDPerformance() {
 
       const data = map.get(member);
 
-
-      /* ================================================
-         UNIQUE ACQUIRED CLIENT
-      ================================================= */
-
       const companyName = getCompanyName(row);
       const companyKey = normalizeKey(companyName);
 
@@ -785,17 +742,7 @@ function BDPerformance() {
         data.clients.add(companyKey);
       }
 
-
-      /* ================================================
-         TOTAL ENQUIRIES
-      ================================================= */
-
       data.enquiries += 1;
-
-
-      /* ================================================
-         UNIQUE FRANCHISE NAME
-      ================================================= */
 
       const franchiseName = getFranchiseName(row);
       const franchiseKey = normalizeKey(franchiseName);
@@ -804,16 +751,10 @@ function BDPerformance() {
         data.franchisees.add(franchiseKey);
       }
 
-
-      /* ================================================
-         FINANCIAL TOTALS
-      ================================================= */
-
       data.billing += financialValues.billing;
       data.netAmount += financialValues.netAmount;
       data.bdExpenditure += financialValues.bdExpenditure;
     });
-
 
     return Array.from(map.values())
       .filter(item => item.enquiries > 0)
@@ -841,11 +782,195 @@ function BDPerformance() {
 
 
   /* =======================================================
-     SELECTED MEMBER ROWS FOR MODAL
+     SELECTED BD MEMBER PERIOD DATA
+  ======================================================= */
 
-     Modal uses its own FY + Info Status filters.
-     Main Month and BD Member filters do not alter
-     the modal's report data.
+  const periodMemberData = useMemo(() => {
+    if (
+      !selectedBDMember ||
+      selectedReportView === "ALL_TIME"
+    ) {
+      return [];
+    }
+
+    if (
+      (selectedReportView === "MONTHLY" ||
+        selectedReportView === "QUARTERLY") &&
+      !selectedFinancialYear
+    ) {
+      return [];
+    }
+
+    const map = new Map();
+
+    rows.forEach(row => {
+      const member = getBDMember(row);
+
+      if (
+        normalizeKey(member) !== normalizeKey(selectedBDMember)
+      ) {
+        return;
+      }
+
+      const financialYear = getFinancialYear(row);
+
+      if (!financialYear) {
+        return;
+      }
+
+      if (
+        selectedReportView === "MONTHLY" ||
+        selectedReportView === "QUARTERLY"
+      ) {
+        if (financialYear !== selectedFinancialYear) {
+          return;
+        }
+      }
+
+      const info = getInfoStatus(row);
+
+      if (
+        selectedInfoStatus &&
+        selectedInfoStatus !== "ALL" &&
+        info !== selectedInfoStatus
+      ) {
+        return;
+      }
+
+      const month = getMonth(row);
+
+      let period = "";
+      let periodOrder = 0;
+
+      if (selectedReportView === "YEARLY") {
+        period = financialYear;
+        periodOrder = Number(financialYear.slice(0, 4));
+      }
+
+      if (selectedReportView === "MONTHLY") {
+        if (month === "") {
+          return;
+        }
+
+        const monthIndex = financialMonthNumbers.indexOf(month);
+
+        if (monthIndex === -1) {
+          return;
+        }
+
+        period = financialMonths[monthIndex].full;
+        periodOrder = monthIndex;
+      }
+
+      if (selectedReportView === "QUARTERLY") {
+        if (month === "") {
+          return;
+        }
+
+        const monthIndex = financialMonthNumbers.indexOf(month);
+
+        if (monthIndex === -1) {
+          return;
+        }
+
+        const quarterNumber = Math.floor(monthIndex / 3) + 1;
+
+        const quarterLabels = [
+          "Q1 (Apr-Jun)",
+          "Q2 (Jul-Sep)",
+          "Q3 (Oct-Dec)",
+          "Q4 (Jan-Mar)"
+        ];
+
+        period = quarterLabels[quarterNumber - 1];
+        periodOrder = quarterNumber - 1;
+      }
+
+      if (!period) {
+        return;
+      }
+
+      const financialValues = getFinancialValues(
+        row,
+        selectedInfoStatus,
+        bdExpenditurePercentage
+      );
+
+      if (!map.has(period)) {
+        map.set(period, {
+          member,
+          period,
+          periodOrder,
+          clients: new Set(),
+          enquiries: 0,
+          franchisees: new Set(),
+          billing: 0,
+          netAmount: 0,
+          bdExpenditure: 0
+        });
+      }
+
+      const data = map.get(period);
+
+      const companyKey = normalizeKey(getCompanyName(row));
+
+      if (companyKey) {
+        data.clients.add(companyKey);
+      }
+
+      data.enquiries += 1;
+
+      const franchiseKey = normalizeKey(getFranchiseName(row));
+
+      if (franchiseKey) {
+        data.franchisees.add(franchiseKey);
+      }
+
+      data.billing += financialValues.billing;
+      data.netAmount += financialValues.netAmount;
+      data.bdExpenditure += financialValues.bdExpenditure;
+    });
+
+    return Array.from(map.values())
+      .map(item => ({
+        ...item,
+        clients: item.clients.size,
+        franchisees: item.franchisees.size
+      }))
+      .sort((a, b) => a.periodOrder - b.periodOrder);
+
+  }, [
+    rows,
+    selectedBDMember,
+    selectedReportView,
+    selectedFinancialYear,
+    selectedInfoStatus,
+    bdExpenditurePercentage
+  ]);
+
+
+  /* =======================================================
+     DETERMINE TABLE VIEW
+  ======================================================= */
+
+  const isPeriodView =
+    Boolean(selectedBDMember) &&
+    selectedReportView !== "ALL_TIME";
+
+  const needsFinancialYear =
+    isPeriodView &&
+    (
+      selectedReportView === "MONTHLY" ||
+      selectedReportView === "QUARTERLY"
+    );
+
+  const displayedMemberData = isPeriodView
+    ? periodMemberData
+    : memberData;
+
+
+  /* =======================================================
+     SELECTED MEMBER ROWS FOR MODAL
   ======================================================= */
 
   const selectedRows = useMemo(() => {
@@ -1177,8 +1302,38 @@ function BDPerformance() {
     setSelectedFinancialYear("");
     setSelectedMonth("");
     setSelectedInfoStatus("");
+    setSelectedReportView("ALL_TIME");
     setBdExpenditurePercentage("");
   }
+
+
+  /* =======================================================
+     GET TABLE DESCRIPTION
+  ======================================================= */
+
+  const tableDescription = (() => {
+    if (!selectedBDMember) {
+      return "Complete BD member-wise performance overview";
+    }
+
+    if (selectedReportView === "ALL_TIME") {
+      return `All-time performance overview for ${selectedBDMember}`;
+    }
+
+    if (selectedReportView === "YEARLY") {
+      return `Financial-year-wise performance for ${selectedBDMember}`;
+    }
+
+    if (selectedReportView === "MONTHLY") {
+      return `Monthly performance for ${selectedBDMember}`;
+    }
+
+    if (selectedReportView === "QUARTERLY") {
+      return `Quarterly performance for ${selectedBDMember}`;
+    }
+
+    return "BD member performance overview";
+  })();
 
 
   /* =======================================================
@@ -1221,16 +1376,15 @@ function BDPerformance() {
             </h2>
 
             <p>
-              Complete BD member-wise
-              performance overview
+              {tableDescription}
             </p>
           </div>
 
           <div className="bd-member-count">
-            {memberData.length}
+            {displayedMemberData.length}
 
             <span>
-              BD Members
+              {isPeriodView ? "Periods" : "BD Members"}
             </span>
           </div>
         </div>
@@ -1270,7 +1424,44 @@ function BDPerformance() {
           </div>
 
 
-          {/* 2. FINANCIAL YEAR */}
+          {/* 2. VIEW REPORT AS
+              ONLY VISIBLE FOR INDIVIDUAL BD MEMBER */}
+
+          {selectedBDMember && (
+            <div className="bd-filter-group">
+              <label htmlFor="bd-report-view">
+                View Report As
+              </label>
+
+              <select
+                id="bd-report-view"
+                value={selectedReportView}
+                onChange={event => {
+                  setSelectedReportView(event.target.value);
+                  setSelectedMonth("");
+                }}
+              >
+                <option value="ALL_TIME">
+                  All Time
+                </option>
+
+                <option value="YEARLY">
+                  Yearly
+                </option>
+
+                <option value="MONTHLY">
+                  Monthly
+                </option>
+
+                <option value="QUARTERLY">
+                  Quarterly
+                </option>
+              </select>
+            </div>
+          )}
+
+
+          {/* 3. FINANCIAL YEAR */}
 
           <div className="bd-filter-group">
             <label htmlFor="bd-main-financial-year">
@@ -1301,7 +1492,7 @@ function BDPerformance() {
           </div>
 
 
-          {/* 3. MONTH */}
+          {/* 4. MONTH */}
 
           <div className="bd-filter-group">
             <label htmlFor="bd-main-month">
@@ -1311,6 +1502,7 @@ function BDPerformance() {
             <select
               id="bd-main-month"
               value={selectedMonth}
+              disabled={isPeriodView}
               onChange={event => {
                 setSelectedMonth(event.target.value);
               }}
@@ -1331,7 +1523,7 @@ function BDPerformance() {
           </div>
 
 
-          {/* 4. INFO STATUS */}
+          {/* 5. INFO STATUS */}
 
           <div className="bd-filter-group">
             <label htmlFor="bd-main-info-status">
@@ -1368,7 +1560,7 @@ function BDPerformance() {
           </div>
 
 
-          {/* 5. BD EXPENDITURE */}
+          {/* 6. BD EXPENDITURE */}
 
           <div className="bd-filter-group">
             <label htmlFor="bd-expenditure-percentage">
@@ -1424,6 +1616,25 @@ function BDPerformance() {
         </div>
 
 
+        {/* SELECTED MEMBER HEADING */}
+
+        {isPeriodView && (
+          <div className="bd-selected-member-heading">
+            <h3>
+              {selectedBDMember}
+            </h3>
+
+            <p>
+              {selectedReportView === "YEARLY" && "Yearly Performance"}
+
+              {selectedReportView === "MONTHLY" && "Monthly Performance"}
+
+              {selectedReportView === "QUARTERLY" && "Quarterly Performance"}
+            </p>
+          </div>
+        )}
+
+
         {/* TABLE */}
 
         <div className="bd-table-wrapper">
@@ -1431,7 +1642,10 @@ function BDPerformance() {
 
             <thead>
               <tr>
-                <th>BD Member</th>
+                <th>
+                  {isPeriodView ? "Period" : "BD Member"}
+                </th>
+
                 <th>Total Acquired Client</th>
                 <th>Total Enquiries</th>
                 <th>No. of Franchisee</th>
@@ -1448,31 +1662,48 @@ function BDPerformance() {
 
 
             <tbody>
-              {memberData.length === 0 ? (
+              {needsFinancialYear && !selectedFinancialYear ? (
                 <tr>
                   <td
                     colSpan={hasBDExpenditurePercentage ? 8 : 7}
                     className="bd-empty"
                   >
-                    No BD member data available.
+                    Please select a Financial Year to view monthly or quarterly performance.
+                  </td>
+                </tr>
+              ) : displayedMemberData.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={hasBDExpenditurePercentage ? 8 : 7}
+                    className="bd-empty"
+                  >
+                    No BD member data available for the selected filters.
                   </td>
                 </tr>
               ) : (
-                memberData.map(member => (
-                  <tr key={member.member}>
+                displayedMemberData.map((member, index) => (
+                  <tr
+                    key={`${member.member}-${member.period || "all-time"}-${index}`}
+                  >
 
-                    {/* BD MEMBER */}
+                    {/* FIRST COLUMN */}
 
                     <td>
-                      <div className="bd-name">
-                        <div className="bd-avatar">
-                          {member.member.charAt(0).toUpperCase()}
-                        </div>
+                      {isPeriodView ? (
+                        <strong>
+                          {member.period}
+                        </strong>
+                      ) : (
+                        <div className="bd-name">
+                          <div className="bd-avatar">
+                            {member.member.charAt(0).toUpperCase()}
+                          </div>
 
-                        <span>
-                          {member.member}
-                        </span>
-                      </div>
+                          <span>
+                            {member.member}
+                          </span>
+                        </div>
+                      )}
                     </td>
 
 

@@ -112,18 +112,14 @@
 
 /* =========================================================
    MAIN FILTERS
-   Order:
-   1. BD Member
-   2. Financial Year
-   3. Month
-   4. Info Status
-   5. BD Expenditure %
-   6. Reset Filters
+
+   Desktop: 4 columns
+   Individual member: View Report As appears dynamically
 ========================================================= */
 
 .bd-performance-filters {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: end;
   gap: 14px;
   margin: 0 25px 20px;
@@ -241,6 +237,32 @@
 
 .bd-reset-filters-btn:active {
   transform: translateY(1px);
+}
+
+
+/* =========================================================
+   SELECTED MEMBER HEADING
+========================================================= */
+
+.bd-selected-member-heading {
+  margin: 0 25px 18px;
+  padding: 15px 18px;
+  background: #faf9f5;
+  border: 1px solid #ece7da;
+  border-radius: 9px;
+}
+
+.bd-selected-member-heading h3 {
+  margin: 0;
+  color: #34312b;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.bd-selected-member-heading p {
+  margin: 5px 0 0;
+  color: #89857d;
+  font-size: 12px;
 }
 
 
@@ -1019,6 +1041,10 @@
     grid-template-columns: 1fr;
     margin: 0 15px 16px;
     padding: 14px;
+  }
+
+  .bd-selected-member-heading {
+    margin: 0 15px 15px;
   }
 
   .bd-performance-table thead th,
