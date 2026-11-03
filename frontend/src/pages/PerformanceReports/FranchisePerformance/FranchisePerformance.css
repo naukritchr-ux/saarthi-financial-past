@@ -110,18 +110,20 @@
 
 /* =========================================================
    MAIN FILTERS
+
    Order:
    1. Franchisee
    2. Financial Year
    3. Month
    4. Info Status
    5. Franchise Expenditure %
-   6. Remove Filter button
+   6. View Report As (conditional)
+   7. Remove Filter button
 ========================================================= */
 
 .franchise-main-filters {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   align-items: end;
   gap: 16px;
   padding: 22px 24px;
@@ -181,7 +183,6 @@
 
 /* =========================================================
    REMOVE FILTER BUTTON
-   Matches BD Performance Reset Filters button
 ========================================================= */
 
 .franchise-filter-action {
@@ -370,6 +371,96 @@
 .franchise-view-arrow {
   font-size: 15px;
   line-height: 1;
+}
+
+/* =========================================================
+   SELECTED FRANCHISE REPORT HEADING
+========================================================= */
+
+.franchise-selected-report-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  margin: 20px 24px 16px;
+  background: #f8f9fb;
+  border: 1px solid #e8ebf1;
+  border-radius: 10px;
+}
+
+.franchise-selected-report-heading span {
+  display: block;
+  margin-bottom: 5px;
+  color: #a4772c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.franchise-selected-report-heading h3 {
+  margin: 0;
+  color: #202b3d;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.franchise-selected-report-heading p {
+  margin: 0;
+  padding: 7px 12px;
+  color: #8a6525;
+  background: #fbf6eb;
+  border: 1px solid #f0e5cd;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   FINANCIAL YEAR SELECTION PROMPT
+========================================================= */
+
+.franchise-financial-year-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  margin: 20px 24px;
+  padding: 35px 24px;
+  text-align: center;
+  background: #fcfcfd;
+  border: 1px dashed #d7dce5;
+  border-radius: 12px;
+}
+
+.franchise-financial-year-prompt-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 15px;
+  background: #fbf6eb;
+  border: 1px solid #f0e5cd;
+  border-radius: 14px;
+  font-size: 25px;
+}
+
+.franchise-financial-year-prompt h3 {
+  margin: 0 0 9px;
+  color: #202b3d;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.franchise-financial-year-prompt p {
+  max-width: 480px;
+  margin: 0;
+  color: #8791a2;
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 /* =========================================================
@@ -824,6 +915,17 @@
   .franchise-chart-container {
     height: 260px;
   }
+
+  .franchise-selected-report-heading {
+    margin: 16px 18px;
+    padding: 16px;
+  }
+
+  .franchise-financial-year-prompt {
+    min-height: 230px;
+    margin: 16px 18px;
+    padding: 28px 18px;
+  }
 }
 
 /* =========================================================
@@ -952,6 +1054,36 @@
     max-width: 65%;
     line-height: 1.5;
   }
+
+  .franchise-selected-report-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    margin: 14px 12px;
+    padding: 14px;
+  }
+
+  .franchise-selected-report-heading h3 {
+    font-size: 16px;
+  }
+
+  .franchise-selected-report-heading p {
+    font-size: 11px;
+  }
+
+  .franchise-financial-year-prompt {
+    min-height: 210px;
+    margin: 14px 12px;
+    padding: 24px 14px;
+  }
+
+  .franchise-financial-year-prompt h3 {
+    font-size: 16px;
+  }
+
+  .franchise-financial-year-prompt p {
+    font-size: 12px;
+  }
 }
 
 /* =========================================================
@@ -964,8 +1096,6 @@
   outline: 2px solid #b58a3b;
   outline-offset: 2px;
 }
-
-/* Exact gold focus outline for Remove Filter button */
 
 .franchise-remove-filter-btn:focus-visible {
   outline: 2px solid #9b7a38;
@@ -986,3 +1116,7 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* =========================================================
+   FRANCHISEE NAME DISPLAY
+========================================================= */

@@ -1,4 +1,3 @@
-
 import { useMemo, useState, useEffect } from "react";
 
 import {
@@ -12,11 +11,10 @@ import {
 } from "recharts";
 
 import { useData } from "../../../context/DataContext";
-
 import "./FranchisePerformance.css";
 
 /* =========================================================
-   FINANCIAL YEAR MONTHS
+   FINANCIAL YEAR CONFIGURATION
 ========================================================= */
 
 const financialMonths = [
@@ -42,7 +40,7 @@ const quarters = [
 ];
 
 /* =========================================================
-   HELPERS
+   HELPER FUNCTIONS
 ========================================================= */
 
 function toNumber(value) {
@@ -357,7 +355,7 @@ function getFinancialYearStart(year) {
 }
 
 /* =========================================================
-   CUSTOM TOOLTIP
+   TOOLTIP
 ========================================================= */
 
 function FranchiseTooltip({ active, payload, label }) {
@@ -389,7 +387,7 @@ function FranchiseTooltip({ active, payload, label }) {
 function FranchisePerformance() {
   const { rows = [] } = useData();
 
-  /* MAIN PAGE FILTERS */
+  /* MAIN FILTERS */
 
   const [selectedFranchisee, setSelectedFranchisee] = useState("");
   const [selectedFinancialYear, setSelectedFinancialYear] = useState("");
@@ -412,11 +410,19 @@ function FranchisePerformance() {
     setReportFranchiseExpenditurePercentage
   ] = useState("");
 
-  /* CHANGE FRANCHISEE */
+  // Additional modal period filters.
+  const [reportMonth, setReportMonth] = useState("");
+  const [reportQuarter, setReportQuarter] = useState("");
+
+  /* FRANCHISE CHANGE */
 
   function handleFranchiseeChange(value) {
     setSelectedFranchisee(value);
-    setViewReportAs("all-time");
+
+    if (!value) {
+      setViewReportAs("all-time");
+    }
+
     setSelectedFinancialYear("");
     setSelectedMonth("");
   }
@@ -432,20 +438,16 @@ function FranchisePerformance() {
     setViewReportAs("all-time");
   }
 
-  /* EXPENDITURE VALIDITY */
+  /* EXPENDITURE VALIDATION */
 
   const hasFranchiseExpenditurePercentage =
     franchiseExpenditurePercentage !== "" &&
-    franchiseExpenditurePercentage !== null &&
-    franchiseExpenditurePercentage !== undefined &&
     Number.isFinite(Number(franchiseExpenditurePercentage)) &&
     Number(franchiseExpenditurePercentage) >= 0 &&
     Number(franchiseExpenditurePercentage) <= 100;
 
   const hasReportFranchiseExpenditurePercentage =
     reportFranchiseExpenditurePercentage !== "" &&
-    reportFranchiseExpenditurePercentage !== null &&
-    reportFranchiseExpenditurePercentage !== undefined &&
     Number.isFinite(Number(reportFranchiseExpenditurePercentage)) &&
     Number(reportFranchiseExpenditurePercentage) >= 0 &&
     Number(reportFranchiseExpenditurePercentage) <= 100;
@@ -465,7 +467,7 @@ function FranchisePerformance() {
     );
   }, [rows]);
 
-  /* FINANCIAL YEARS */
+  /* FINANCIAL YEAR OPTIONS */
 
   const financialYears = useMemo(() => {
     const years = new Set();
@@ -532,7 +534,6 @@ function FranchisePerformance() {
   const franchiseData = useMemo(() => {
     const map = new Map();
 
-    // Monthly and quarterly views require a financial year.
     if (
       ["monthly", "quarterly"].includes(viewReportAs) &&
       !selectedFinancialYear
@@ -570,7 +571,7 @@ function FranchisePerformance() {
         if (!monthData) return;
 
         groupKey = `${financialYear}-${month}`;
-        rowName = `${monthData.full} ${financialYear}`;
+        rowName = monthData.full;
       }
 
       if (viewReportAs === "quarterly") {
@@ -581,7 +582,7 @@ function FranchisePerformance() {
         if (!quarter) return;
 
         groupKey = `${financialYear}-Q${quarter.quarter}`;
-        rowName = `${quarter.label} ${financialYear}`;
+        rowName = quarter.label;
       }
 
       if (!groupKey) return;
@@ -677,7 +678,7 @@ function FranchisePerformance() {
     franchiseExpenditurePercentage
   ]);
 
-  /* SELECTED FRANCHISE ROWS - MODAL */
+  /* MODAL ROWS */
 
   const selectedRows = useMemo(() => {
     if (!selectedFranchise) return [];
@@ -690,6 +691,24 @@ function FranchisePerformance() {
         getFinancialYear(row) !== reportFinancialYear
       ) {
         return false;
+      }
+
+      if (
+        reportMonth &&
+        Number(getMonth(row)) !== Number(reportMonth)
+      ) {
+        return false;
+      }
+
+      if (reportQuarter) {
+        const quarter = getQuarter(row);
+
+        if (
+          !quarter ||
+          Number(quarter.quarter) !== Number(reportQuarter)
+        ) {
+          return false;
+        }
       }
 
       if (
@@ -706,6 +725,8 @@ function FranchisePerformance() {
     rows,
     selectedFranchise,
     reportFinancialYear,
+    reportMonth,
+    reportQuarter,
     reportInfoStatus
   ]);
 
@@ -884,6 +905,7 @@ function FranchisePerformance() {
       if (getFinancialYear(row) !== reportFinancialYear) return;
 
       const month = Number(getMonth(row));
+
       if (!monthMap.has(month)) return;
 
       const data = monthMap.get(month);
@@ -921,22 +943,56 @@ function FranchisePerformance() {
     ? monthlyReportData
     : yearlyReportData;
 
-  /* OPEN PERFORMANCE MODAL */
+  /* OPEN AND CLOSE MODAL */
 
-  function handleViewPerformance(franchise) {
+  function handleViewPerformance(item) {
+    if (!item) return;
+
+    // All Time: the row itself identifies the franchise.
+    // Period reports: all rows belong to the selected franchise.
+    const franchise =
+      viewReportAs === "all-time"
+        ? item.franchise
+        : selectedFranchisee;
+
+    if (!franchise) return;
+
     setSelectedFranchise(franchise);
-    setReportFinancialYear(selectedFinancialYear);
+
     setReportInfoStatus(selectedInfoStatus);
+
     setReportFranchiseExpenditurePercentage(
       franchiseExpenditurePercentage
     );
+
+    setReportFinancialYear("");
+    setReportMonth("");
+    setReportQuarter("");
+
+    if (viewReportAs === "yearly") {
+      setReportFinancialYear(item.key);
+    }
+
+    if (viewReportAs === "monthly") {
+      const [year, month] = item.key.split("-");
+
+      setReportFinancialYear(year);
+      setReportMonth(month);
+    }
+
+    if (viewReportAs === "quarterly") {
+      const [year, quarter] = item.key.split("-Q");
+
+      setReportFinancialYear(year);
+      setReportQuarter(quarter);
+    }
   }
 
   function handleCloseModal() {
     setSelectedFranchise("");
+    setReportMonth("");
+    setReportQuarter("");
   }
-
-  /* ESCAPE KEY */
 
   useEffect(() => {
     if (!selectedFranchise) return undefined;
@@ -977,6 +1033,16 @@ function FranchisePerformance() {
 
   const showReportHeading =
     selectedFranchisee && viewReportAs !== "all-time";
+
+  const reportPeriodLabel = reportMonth
+    ? `${financialMonths.find(
+        month => Number(month.month) === Number(reportMonth)
+      )?.full || ""} ${reportFinancialYear}`
+    : reportQuarter
+      ? `${quarters.find(
+          quarter => quarter.quarter === Number(reportQuarter)
+        )?.label || ""} ${reportFinancialYear}`
+      : reportFinancialYear || "All Financial Years";
 
   /* =========================================================
      RENDER
@@ -1020,11 +1086,9 @@ function FranchisePerformance() {
           </div>
         </div>
 
-        {/* MAIN FILTERS */}
+        {/* FILTERS */}
 
         <div className="franchise-main-filters">
-
-          {/* FRANCHISEE */}
 
           <div>
             <label htmlFor="main-franchisee">Franchisee</label>
@@ -1046,7 +1110,7 @@ function FranchisePerformance() {
             </select>
           </div>
 
-          {/* VIEW REPORT AS - INDIVIDUAL FRANCHISEE ONLY */}
+          {/* VIEW REPORT AS */}
 
           {selectedFranchisee && (
             <div>
@@ -1057,9 +1121,11 @@ function FranchisePerformance() {
               <select
                 id="view-report-as"
                 value={viewReportAs}
-                onChange={event =>
-                  setViewReportAs(event.target.value)
-                }
+                onChange={event => {
+                  setViewReportAs(event.target.value);
+                  setSelectedFinancialYear("");
+                  setSelectedMonth("");
+                }}
               >
                 <option value="all-time">All Time</option>
                 <option value="yearly">Yearly</option>
@@ -1079,20 +1145,15 @@ function FranchisePerformance() {
             <select
               id="main-financial-year"
               value={selectedFinancialYear}
-              onChange={event => {
-                const value = event.target.value;
-
-                setSelectedFinancialYear(value);
-
-                if (
-                  !value &&
-                  ["monthly", "quarterly"].includes(viewReportAs)
-                ) {
-                  setViewReportAs("all-time");
-                }
-              }}
+              onChange={event =>
+                setSelectedFinancialYear(event.target.value)
+              }
             >
-              <option value="">All Financial Years</option>
+              <option value="">
+                {needsFinancialYear
+                  ? "Select Financial Year"
+                  : "All Financial Years"}
+              </option>
 
               {financialYears.map(year => (
                 <option key={year} value={year}>
@@ -1172,7 +1233,7 @@ function FranchisePerformance() {
             />
           </div>
 
-          {/* RESET FILTER */}
+          {/* RESET */}
 
           <div className="franchise-filter-action">
             <button
@@ -1198,7 +1259,7 @@ function FranchisePerformance() {
 
         <div className="franchise-table-wrapper">
 
-          {/* SELECTED FRANCHISE NAME */}
+          {/* SELECTED FRANCHISE HEADING */}
 
           {showReportHeading && (
             <div className="franchise-selected-report-heading">
@@ -1209,19 +1270,28 @@ function FranchisePerformance() {
 
               <p>
                 {viewReportAs === "yearly" && "Yearly Performance"}
-
                 {viewReportAs === "monthly" && "Monthly Performance"}
-
                 {viewReportAs === "quarterly" && "Quarterly Performance"}
               </p>
             </div>
           )}
 
-          {/* FINANCIAL YEAR REQUIRED MESSAGE */}
+          {/* FINANCIAL YEAR PROMPT */}
 
           {needsFinancialYear && !selectedFinancialYear ? (
-            <div className="franchise-empty">
-              Please select a Financial Year to view the records.
+            <div className="franchise-financial-year-prompt">
+              <div className="franchise-financial-year-prompt-icon">
+                📅
+              </div>
+
+              <h3>Select Financial Year</h3>
+
+              <p>
+                Please select a Financial Year from the filter above
+                to view the{" "}
+                {viewReportAs === "monthly" ? "monthly" : "quarterly"}
+                {" "}performance report for {selectedFranchisee}.
+              </p>
             </div>
           ) : (
             <table className="franchise-table">
@@ -1238,9 +1308,9 @@ function FranchisePerformance() {
                     <th>Franchise Expenditure</th>
                   )}
 
-                  {viewReportAs === "all-time" && (
-                    <th>Performance</th>
-                  )}
+                  {/* PERFORMANCE COLUMN ALWAYS VISIBLE */}
+
+                  <th>Performance</th>
                 </tr>
               </thead>
 
@@ -1249,9 +1319,8 @@ function FranchisePerformance() {
                   <tr>
                     <td
                       colSpan={
-                        5 +
-                        (hasFranchiseExpenditurePercentage ? 1 : 0) +
-                        (viewReportAs === "all-time" ? 1 : 0)
+                        6 +
+                        (hasFranchiseExpenditurePercentage ? 1 : 0)
                       }
                       className="franchise-empty"
                     >
@@ -1261,8 +1330,6 @@ function FranchisePerformance() {
                 ) : (
                   franchiseData.map(item => (
                     <tr key={item.key}>
-
-                      {/* ROW NAME */}
 
                       <td>
                         <div className="franchise-name">
@@ -1274,15 +1341,11 @@ function FranchisePerformance() {
                         </div>
                       </td>
 
-                      {/* UNIQUE CLIENTS */}
-
                       <td>
                         <span className="franchise-client-count">
                           {item.clients}
                         </span>
                       </td>
-
-                      {/* TOTAL ENQUIRIES */}
 
                       <td>
                         <span className="franchise-client-count">
@@ -1290,23 +1353,17 @@ function FranchisePerformance() {
                         </span>
                       </td>
 
-                      {/* BILLING */}
-
                       <td>
                         <span className="franchise-billing-value">
                           {formatCurrency(item.billing)}
                         </span>
                       </td>
 
-                      {/* NET */}
-
                       <td>
                         <span className="franchise-net-value">
                           {formatCurrency(item.netAmount)}
                         </span>
                       </td>
-
-                      {/* EXPENDITURE */}
 
                       {hasFranchiseExpenditurePercentage && (
                         <td>
@@ -1316,24 +1373,20 @@ function FranchisePerformance() {
                         </td>
                       )}
 
-                      {/* PERFORMANCE - ALL TIME ONLY */}
+                      {/* VIEW BUTTON IN ALL REPORT TYPES */}
 
-                      {viewReportAs === "all-time" && (
-                        <td>
-                          <button
-                            type="button"
-                            className="franchise-view-performance-btn"
-                            onClick={() =>
-                              handleViewPerformance(item.franchise)
-                            }
-                          >
-                            View
-                            <span className="franchise-view-arrow">
-                              →
-                            </span>
-                          </button>
-                        </td>
-                      )}
+                      <td>
+                        <button
+                          type="button"
+                          className="franchise-view-performance-btn"
+                          onClick={() => handleViewPerformance(item)}
+                        >
+                          View
+                          <span className="franchise-view-arrow">
+                            →
+                          </span>
+                        </button>
+                      </td>
 
                     </tr>
                   ))
@@ -1358,8 +1411,6 @@ function FranchisePerformance() {
             className="franchise-performance-modal"
             onClick={event => event.stopPropagation()}
           >
-
-            {/* MODAL HEADER */}
 
             <div className="franchise-modal-header">
               <div>
@@ -1466,7 +1517,7 @@ function FranchisePerformance() {
 
             </div>
 
-            {/* REPORT CONTROLS */}
+            {/* MODAL FILTERS */}
 
             <div className="franchise-report-controls">
 
@@ -1478,9 +1529,11 @@ function FranchisePerformance() {
                 <select
                   id="franchise-financial-year"
                   value={reportFinancialYear}
-                  onChange={event =>
-                    setReportFinancialYear(event.target.value)
-                  }
+                  onChange={event => {
+                    setReportFinancialYear(event.target.value);
+                    setReportMonth("");
+                    setReportQuarter("");
+                  }}
                 >
                   <option value="">All Financial Years</option>
 
@@ -1541,18 +1594,16 @@ function FranchisePerformance() {
               <div className="franchise-report-period">
                 <span>Report Period</span>
 
-                <strong>
-                  {reportFinancialYear || "Yearly"}
-                </strong>
+                <strong>{reportPeriodLabel}</strong>
               </div>
 
             </div>
 
-            {/* GRAPHS */}
+            {/* CHARTS */}
 
             <div className="franchise-report-graphs">
 
-              {/* CLIENT ACQUIRED */}
+              {/* CLIENT ACQUIRED CHART */}
 
               <div className="franchise-chart-card">
                 <div className="franchise-chart-heading">
@@ -1618,7 +1669,7 @@ function FranchisePerformance() {
                 </div>
               </div>
 
-              {/* TOTAL BILLING */}
+              {/* TOTAL BILLING CHART */}
 
               <div className="franchise-chart-card">
                 <div className="franchise-chart-heading">
@@ -1692,9 +1743,13 @@ function FranchisePerformance() {
 
             <div className="franchise-modal-footer">
               <span>
-                {reportFinancialYear
-                  ? `Monthly report for ${reportFinancialYear}`
-                  : "Yearly performance report"}
+                {reportMonth
+                  ? `Monthly report for ${reportPeriodLabel}`
+                  : reportQuarter
+                    ? `Quarterly report for ${reportPeriodLabel}`
+                    : reportFinancialYear
+                      ? `Monthly report for ${reportFinancialYear}`
+                      : "Yearly performance report"}
               </span>
 
               <button
