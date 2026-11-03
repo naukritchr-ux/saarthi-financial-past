@@ -1,1338 +1,2508 @@
-
 /* =========================================================
-   INDUSTRY PERFORMANCE PAGE
+   SELECTED INDUSTRY HEADING
 ========================================================= */
 
-.industry-performance-page {
-  min-height: 100vh;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 28px;
-  background: #F7F4EC;
-  color: #1B2A4A;
-}
-
-/* =========================================================
-   PAGE HEADER
-========================================================= */
-
-.industry-page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.industry-page-eyebrow {
-  margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #B78A34;
-}
-
-.industry-page-header h1 {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.25;
-  font-weight: 700;
-  color: #1B2A4A;
-}
-
-.industry-page-header p {
-  margin: 7px 0 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #7A7F87;
-}
-
-/* =========================================================
-   TABLE CARD
-========================================================= */
-
-.industry-table-card {
-  width: 100%;
-  background: #FFFFFF;
-  border: 1px solid #DCD5C2;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 5px 18px rgba(27, 42, 74, 0.05);
-}
-
-/* =========================================================
-   TABLE HEADER
-========================================================= */
-
-.industry-table-header {
+.industry-selected-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 20px 22px;
+  gap: 12px;
+  padding: 18px 22px;
   border-bottom: 1px solid #E8E3D7;
   background: #FFFFFF;
 }
 
-.industry-table-header h2 {
+.industry-selected-heading h2 {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
   color: #1B2A4A;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
 }
 
-.industry-count {
-  display: inline-block;
-  margin-top: 5px;
-  font-size: 12px;
-  font-weight: 500;
+.industry-selected-heading span {
   color: #7A7F87;
-}
-
-/* =========================================================
-   TABLE WRAPPER
-========================================================= */
-
-.industry-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.industry-table {
-  width: 100%;
-  min-width: 760px;
-  border-collapse: collapse;
-  table-layout: auto;
-}
-
-/* =========================================================
-   TABLE HEADER
-========================================================= */
-
-.industry-table thead th {
-  padding: 14px 20px;
-  background: #FBF9F3;
-  border-bottom: 1px solid #E4DFD2;
-  text-align: left;
-  white-space: nowrap;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: #6E737C;
-}
-
-/* =========================================================
-   TABLE BODY
-========================================================= */
-
-.industry-table tbody tr {
-  background: #FFFFFF;
-  transition: background 0.2s ease;
-}
-
-.industry-table tbody tr:hover {
-  background: #FCFBF7;
-}
-
-.industry-table tbody td {
-  padding: 16px 20px;
-  border-bottom: 1px solid #EEEAE1;
-  vertical-align: middle;
-  font-size: 14px;
-  color: #1B2A4A;
-}
-
-.industry-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* =========================================================
-   INDUSTRY NAME
-========================================================= */
-
-.industry-name {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 180px;
-}
-
-.industry-avatar {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9px;
-  background: #F2E8D0;
-  color: #B78A34;
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.industry-name span {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1B2A4A;
-}
-
-/* =========================================================
-   TABLE VALUES
-========================================================= */
-
-.industry-client-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 34px;
-  padding: 5px 9px;
-  border-radius: 7px;
-  background: #F4F1E8;
-  color: #1B2A4A;
   font-size: 13px;
-  font-weight: 700;
-}
-
-.industry-billing-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: #26734D;
-}
-
-.industry-net-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1B2A4A;
+  font-weight: 600;
+  text-align: right;
 }
 
 /* =========================================================
-   VIEW PERFORMANCE BUTTON
+   FINANCIAL YEAR MESSAGE INSIDE TABLE
 ========================================================= */
 
-.industry-view-performance-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 8px 13px;
-  border: 1px solid #D8C79F;
-  border-radius: 7px;
-  background: #FFFDF8;
-  color: #B78A34;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.industry-view-performance-btn:hover {
-  background: #B78A34;
-  border-color: #B78A34;
-  color: #FFFFFF;
-  transform: translateY(-1px);
-}
-
-.industry-view-arrow {
-  font-size: 14px;
-  line-height: 1;
-  transition: transform 0.2s ease;
-}
-
-.industry-view-performance-btn:hover .industry-view-arrow {
-  transform: translateX(2px);
-}
-
-/* =========================================================
-   EMPTY TABLE
-========================================================= */
-
-.industry-empty {
+.industry-financial-year-table-message {
   padding: 45px 20px !important;
   text-align: center !important;
+  color: #946200 !important;
+  background: #FFFBF1 !important;
   font-size: 14px !important;
-  color: #8A8F96 !important;
+  font-weight: 700 !important;
+  border-bottom: none !important;
 }
 
+
 /* =========================================================
+
+   INDUSTRY PERFORMANCE PAGE
+
+\========================================================= */
+
+
+.industry-performance-page {
+
+  min-height: 100vh;
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 28px;
+
+  background: #F7F4EC;
+
+  color: #1B2A4A;
+
+}
+
+
+/* =========================================================
+
+   PAGE HEADER
+
+\========================================================= */
+
+
+.industry-page-header {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 24px;
+
+}
+
+
+.industry-page-eyebrow {
+
+  margin-bottom: 6px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+
+  color: #B78A34;
+
+}
+
+
+.industry-page-header h1 {
+
+  margin: 0;
+
+  font-size: 28px;
+
+  line-height: 1.25;
+
+  font-weight: 700;
+
+  color: #1B2A4A;
+
+}
+
+
+.industry-page-header p {
+
+  margin: 7px 0 0;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  color: #7A7F87;
+
+}
+
+
+/* =========================================================
+
+   TABLE CARD
+
+\========================================================= */
+
+
+.industry-table-card {
+
+  width: 100%;
+
+  background: #FFFFFF;
+
+  border: 1px solid #DCD5C2;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  box-shadow: 0 5px 18px rgba(27, 42, 74, 0.05);
+
+}
+
+
+/* =========================================================
+
+   TABLE HEADER
+
+\========================================================= */
+
+
+.industry-table-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 20px 22px;
+
+  border-bottom: 1px solid #E8E3D7;
+
+  background: #FFFFFF;
+
+}
+
+
+.industry-table-header h2 {
+
+  margin: 0;
+
+  font-size: 17px;
+
+  font-weight: 700;
+
+  color: #1B2A4A;
+
+}
+
+
+.industry-count {
+
+  display: inline-block;
+
+  margin-top: 5px;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  color: #7A7F87;
+
+}
+
+
+/* =========================================================
+
+   TABLE WRAPPER
+
+\========================================================= */
+
+
+.industry-table-wrapper {
+
+  width: 100%;
+
+  overflow-x: auto;
+
+  -webkit-overflow-scrolling: touch;
+
+}
+
+
+.industry-table {
+
+  width: 100%;
+
+  min-width: 760px;
+
+  border-collapse: collapse;
+
+  table-layout: auto;
+
+}
+
+
+/* =========================================================
+
+   TABLE HEADER
+
+\========================================================= */
+
+
+.industry-table thead th {
+
+  padding: 14px 20px;
+
+  background: #FBF9F3;
+
+  border-bottom: 1px solid #E4DFD2;
+
+  text-align: left;
+
+  white-space: nowrap;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.4px;
+
+  text-transform: uppercase;
+
+  color: #6E737C;
+
+}
+
+
+/* =========================================================
+
+   TABLE BODY
+
+\========================================================= */
+
+
+.industry-table tbody tr {
+
+  background: #FFFFFF;
+
+  transition: background 0.2s ease;
+
+}
+
+
+.industry-table tbody tr:hover {
+
+  background: #FCFBF7;
+
+}
+
+
+.industry-table tbody td {
+
+  padding: 16px 20px;
+
+  border-bottom: 1px solid #EEEAE1;
+
+  vertical-align: middle;
+
+  font-size: 14px;
+
+  color: #1B2A4A;
+
+}
+
+
+.industry-table tbody tr:last-child td {
+
+  border-bottom: none;
+
+}
+
+
+/* =========================================================
+
+   INDUSTRY NAME
+
+\========================================================= */
+
+
+.industry-name {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  min-width: 180px;
+
+}
+
+
+.industry-avatar {
+
+  width: 36px;
+
+  height: 36px;
+
+  flex: 0 0 36px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #F2E8D0;
+
+  color: #B78A34;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+}
+
+
+.industry-name span {
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #1B2A4A;
+
+}
+
+
+/* =========================================================
+
+   TABLE VALUES
+
+\========================================================= */
+
+
+.industry-client-count {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 34px;
+
+  padding: 5px 9px;
+
+  border-radius: 7px;
+
+  background: #F4F1E8;
+
+  color: #1B2A4A;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+}
+
+
+.industry-billing-value {
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  color: #26734D;
+
+}
+
+
+.industry-net-value {
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  color: #1B2A4A;
+
+}
+
+
+/* =========================================================
+
+   VIEW PERFORMANCE BUTTON
+
+\========================================================= */
+
+
+.industry-view-performance-btn {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 8px 13px;
+
+  border: 1px solid #D8C79F;
+
+  border-radius: 7px;
+
+  background: #FFFDF8;
+
+  color: #B78A34;
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+
+    background 0.2s ease,
+
+    color 0.2s ease,
+
+    border-color 0.2s ease,
+
+    transform 0.2s ease;
+
+}
+
+
+.industry-view-performance-btn:hover {
+
+  background: #B78A34;
+
+  border-color: #B78A34;
+
+  color: #FFFFFF;
+
+  transform: translateY(-1px);
+
+}
+
+
+.industry-view-arrow {
+
+  font-size: 14px;
+
+  line-height: 1;
+
+  transition: transform 0.2s ease;
+
+}
+
+
+.industry-view-performance-btn:hover .industry-view-arrow {
+
+  transform: translateX(2px);
+
+}
+
+
+/* =========================================================
+
+   EMPTY TABLE
+
+\========================================================= */
+
+
+.industry-empty {
+
+  padding: 45px 20px !important;
+
+  text-align: center !important;
+
+  font-size: 14px !important;
+
+  color: #8A8F96 !important;
+
+}
+
+
+/* =========================================================
+
    MODAL OVERLAY
-========================================================= */
+
+\========================================================= */
+
 
 .industry-performance-overlay {
+
   position: fixed;
+
   inset: 0;
+
   z-index: 1000;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   padding: 24px;
+
   background: rgba(15, 25, 43, 0.62);
+
   backdrop-filter: blur(4px);
+
   -webkit-backdrop-filter: blur(4px);
+
   animation: industryOverlayIn 0.2s ease;
+
 }
+
 
 @keyframes industryOverlayIn {
+
   from {
+
     opacity: 0;
+
   }
+
 
   to {
+
     opacity: 1;
+
   }
+
 }
 
+
 /* =========================================================
+
    MODAL
-========================================================= */
+
+\========================================================= */
+
 
 .industry-performance-modal {
+
   width: min(1120px, 100%);
+
   max-height: calc(100vh - 48px);
+
   overflow-x: hidden;
+
   overflow-y: auto;
+
   background: #FFFFFF;
+
   border: 1px solid #DCD5C2;
+
   border-radius: 18px;
+
   box-shadow: 0 25px 70px rgba(10, 20, 35, 0.25);
+
   animation: industryModalIn 0.25s ease;
+
 }
+
 
 @keyframes industryModalIn {
+
   from {
+
     opacity: 0;
+
     transform: translateY(15px) scale(0.985);
+
   }
+
 
   to {
+
     opacity: 1;
+
     transform: translateY(0) scale(1);
+
   }
+
 }
 
+
 /* =========================================================
+
    MODAL HEADER
-========================================================= */
+
+\========================================================= */
+
 
 .industry-modal-header {
+
   display: flex;
+
   align-items: flex-start;
+
   justify-content: space-between;
+
   gap: 20px;
+
   padding: 24px 28px 20px;
+
   border-bottom: 1px solid #E8E3D7;
+
   background: #FFFFFF;
+
 }
+
 
 .industry-modal-eyebrow {
+
   margin-bottom: 5px;
+
   font-size: 10px;
+
   font-weight: 800;
+
   letter-spacing: 1.5px;
+
   color: #B78A34;
+
 }
+
 
 .industry-modal-header h2 {
+
   margin: 0;
+
   font-size: 24px;
+
   line-height: 1.3;
+
   font-weight: 700;
+
   color: #1B2A4A;
+
 }
+
 
 .industry-modal-header p {
+
   margin: 5px 0 0;
+
   font-size: 13px;
+
   line-height: 1.4;
+
   color: #7A7F87;
+
 }
 
+
 /* =========================================================
+
    CLOSE BUTTON
-========================================================= */
+
+\========================================================= */
+
 
 .industry-modal-close {
+
   width: 36px;
+
   height: 36px;
+
   flex: 0 0 36px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   margin-left: 20px;
+
   border: 1px solid #DED8CB;
+
   border-radius: 9px;
+
   background: #FAF8F3;
+
   color: #1B2A4A;
+
   font-family: inherit;
+
   font-size: 23px;
+
   line-height: 1;
+
   cursor: pointer;
+
   transition:
+
     background 0.2s ease,
+
     color 0.2s ease,
+
     border-color 0.2s ease;
+
 }
+
 
 .industry-modal-close:hover {
+
   background: #1B2A4A;
+
   border-color: #1B2A4A;
+
   color: #FFFFFF;
+
 }
 
+
 /* =========================================================
+
    SUMMARY GRID
-========================================================= */
+
+\========================================================= */
+
 
 .industry-summary-grid {
+
   display: grid;
+
   grid-template-columns: repeat(2, minmax(0, 1fr));
+
   gap: 12px;
+
   padding: 18px 28px 0;
+
   box-sizing: border-box;
+
 }
 
+
 /* =========================================================
+
    SUMMARY CARD
-========================================================= */
+
+\========================================================= */
+
 
 .industry-summary-card {
+
   min-height: 88px;
+
   padding: 14px 16px;
+
   box-sizing: border-box;
+
   display: flex;
+
   flex-direction: column;
+
   justify-content: center;
+
   background: #FFFFFF;
+
   border: 1px solid #DCD5C2;
+
   border-radius: 10px;
+
   box-shadow: 0 3px 10px rgba(27, 42, 74, 0.04);
+
 }
+
 
 .industry-summary-label {
+
   display: block;
+
   margin-bottom: 6px;
+
   font-size: 10px;
+
   line-height: 1.3;
+
   font-weight: 700;
+
   letter-spacing: 0.8px;
+
   text-transform: uppercase;
+
   color: #7A7F87;
+
 }
+
 
 .industry-summary-value {
+
   display: block;
+
   font-size: 18px;
+
   line-height: 1.25;
+
   font-weight: 800;
+
   color: #1B2A4A;
+
 }
+
 
 .industry-summary-text {
+
   display: block;
+
   font-size: 14px;
+
   line-height: 1.35;
+
   font-weight: 700;
+
   color: #1B2A4A;
+
   overflow-wrap: anywhere;
+
 }
+
 
 .industry-summary-count {
+
   display: block;
+
   margin-top: 4px;
+
   font-size: 10px;
+
   line-height: 1.3;
+
   color: #8A8F96;
+
 }
 
+
 /* =========================================================
+
    TOP INDUSTRY CARD
-========================================================= */
+
+\========================================================= */
+
 
 .industry-top-industry-card {
+
   justify-content: flex-start;
+
   min-height: 88px;
+
   padding-top: 14px;
+
 }
 
+
 /* =========================================================
+
    SUB INDUSTRY LIST
-========================================================= */
+
+\========================================================= */
+
 
 .industry-sub-industry-list {
+
   display: flex;
+
   flex-wrap: wrap;
+
   gap: 6px;
+
   margin-top: 10px;
+
 }
+
 
 .industry-sub-industry-tag {
+
   display: inline-flex;
+
   align-items: center;
+
   gap: 5px;
+
   padding: 5px 8px;
+
   border: 1px solid #E1D8C5;
+
   border-radius: 6px;
+
   background: #FBF8F0;
+
   color: #5D6470;
+
   font-size: 10px;
+
   line-height: 1.2;
+
   font-weight: 600;
+
 }
+
 
 .industry-sub-industry-tag small {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   min-width: 17px;
+
   height: 17px;
+
   padding: 0 4px;
+
   border-radius: 5px;
+
   background: #EDE3CB;
+
   color: #8A6827;
+
   font-size: 9px;
+
   font-weight: 800;
+
 }
 
+
 /* =========================================================
+
    ENQUIRY CARD
-========================================================= */
+
+\========================================================= */
+
 
 .industry-enquiry-card {
+
   border-left: 4px solid #B78A34;
+
 }
+
 
 .industry-enquiry-card .industry-summary-value {
+
   color: #1B2A4A;
+
 }
 
+
 /* =========================================================
+
    FRANCHISE SHARE CARD
-========================================================= */
+
+\========================================================= */
+
 
 .industry-share-card {
+
   border-left: 4px solid #26734D;
+
 }
+
 
 .industry-share-card .industry-summary-value {
+
   color: #26734D;
+
 }
 
+
 /* =========================================================
+
    NET AMOUNT CARD
-========================================================= */
+
+\========================================================= */
+
 
 .industry-net-card {
+
   border-left: 4px solid #1B2A4A;
+
 }
+
 
 .industry-net-card .industry-summary-value {
+
   color: #1B2A4A;
+
 }
 
+
 /* =========================================================
+
    PERFORMANCE FILTERS
-========================================================= */
+
+\========================================================= */
+
 
 .industry-performance-filters {
+
   display: grid;
+
   grid-template-columns: repeat(6, minmax(0, 1fr));
+
   align-items: end;
+
   gap: 14px;
+
   padding: 18px 20px;
+
   background: #FAF9F5;
+
   border-top: 1px solid #E5E7EB;
+
   border-bottom: 1px solid #E5E7EB;
+
   box-sizing: border-box;
+
 }
+
 
 .industry-filter-group {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 6px;
+
   min-width: 0;
+
 }
+
 
 .industry-filter-group label {
+
   font-size: 12px;
+
   font-weight: 600;
+
   color: #4B5563;
+
   letter-spacing: 0.2px;
+
 }
+
 
 .industry-filter-group select {
+
   width: 100%;
+
   min-width: 0;
+
   height: 39px;
+
   padding: 0 30px 0 12px;
+
   box-sizing: border-box;
+
   border: 1px solid #D1D5DB;
+
   border-radius: 7px;
+
   background: #FFFFFF;
+
   color: #111827;
+
   font-family: inherit;
+
   font-size: 12px;
+
   font-weight: 500;
+
   outline: none;
+
   cursor: pointer;
+
   transition:
+
     border-color 0.2s ease,
+
     box-shadow 0.2s ease,
+
     background-color 0.2s ease;
+
 }
+
 
 .industry-filter-group select:hover {
+
   border-color: #9CA3AF;
+
   background-color: #FAFAFA;
+
 }
+
 
 .industry-filter-group select:focus {
+
   border-color: #B78A34;
+
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
+
 }
+
 
 .industry-expenditure-value {
+
   font-weight: 600;
+
   white-space: nowrap;
+
 }
 
+
 /* =========================================================
+
    EXPENDITURE INPUT
-========================================================= */
+
+\========================================================= */
+
 
 .industry-performance-filters
+
 .industry-filter-group
+
 input[type="number"] {
+
   width: 100%;
+
   min-width: 0;
+
   height: 39px;
+
   padding: 0 12px;
+
   box-sizing: border-box;
+
   border: 1px solid #D7D0C0;
+
   border-radius: 7px;
+
   background: #FFFFFF;
+
   color: #1B2A4A;
+
   font-family: inherit;
+
   font-size: 12px;
+
   font-weight: 600;
+
   outline: none;
+
   cursor: text;
+
   transition:
+
     border-color 0.2s ease,
+
     box-shadow 0.2s ease;
+
 }
 
+
 .industry-performance-filters
+
 .industry-filter-group
+
 input[type="number"]:hover {
+
   border-color: #C9C0AD;
+
 }
 
+
 .industry-performance-filters
+
 .industry-filter-group
+
 input[type="number"]:focus {
+
   border-color: #B78A34;
+
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.10);
+
 }
 
+
 .industry-performance-filters
+
 .industry-filter-group
+
 input[type="number"]::placeholder {
+
   color: #89919D;
+
   font-weight: 500;
+
 }
+
 
 /* =========================================================
+
    RESET FILTER BUTTON
-========================================================= */
+
+\========================================================= */
+
 
 .industry-reset-filter-group {
+
   min-width: 0;
+
 }
+
 
 .industry-reset-filters-btn {
+
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
+
   width: 100%;
+
   min-width: 0;
+
   height: 39px;
+
   padding: 0 12px;
+
   box-sizing: border-box;
+
   border: 1px solid #D1C7B4;
+
   border-radius: 7px;
+
   background: #F1EDE3;
+
   color: #5A513F;
+
   font-family: inherit;
+
   font-size: 12px;
+
   font-weight: 800;
+
   white-space: nowrap;
+
   cursor: pointer;
+
   transition:
+
     background 0.2s ease,
+
     border-color 0.2s ease,
+
     transform 0.15s ease;
+
 }
+
 
 .industry-reset-filters-btn:hover {
+
   background: #E8E1D2;
+
   border-color: #BCB09A;
+
 }
+
 
 .industry-reset-filters-btn:active {
+
   transform: translateY(1px);
+
 }
+
 
 .industry-reset-filters-btn:focus-visible {
+
   outline: 2px solid #B78A34;
+
   outline-offset: 2px;
+
 }
 
+
 /* =========================================================
+
    REPORT CONTROLS
-========================================================= */
+
+\========================================================= */
+
 
 .industry-report-controls {
+
   display: flex;
+
   align-items: flex-end;
+
   justify-content: space-between;
+
   gap: 18px;
+
   margin: 22px 28px 0;
+
   padding: 16px;
+
   background: #FAF8F2;
+
   border: 1px solid #E2DCCF;
+
   border-radius: 10px;
+
 }
+
 
 .industry-report-period {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 6px;
+
 }
+
 
 .industry-report-period label,
+
 .industry-report-period > span {
+
   font-size: 10px;
+
   font-weight: 800;
+
   letter-spacing: 0.7px;
+
   text-transform: uppercase;
+
   color: #7A7F87;
+
 }
+
 
 .industry-report-period select {
+
   min-width: 150px;
+
   padding: 9px 34px 9px 11px;
+
   border: 1px solid #D6CEBD;
+
   border-radius: 7px;
+
   background: #FFFFFF;
+
   color: #1B2A4A;
+
   font-family: inherit;
+
   font-size: 13px;
+
   font-weight: 600;
+
   outline: none;
+
   cursor: pointer;
+
   transition:
+
     border-color 0.2s ease,
+
     box-shadow 0.2s ease;
+
 }
+
 
 .industry-report-period select:hover {
+
   border-color: #C9C0AD;
+
 }
+
 
 .industry-report-period select:focus {
+
   border-color: #B78A34;
+
   box-shadow: 0 0 0 3px rgba(183, 138, 52, 0.12);
+
 }
+
 
 .industry-report-period strong {
+
   min-height: 35px;
+
   display: flex;
+
   align-items: center;
+
   font-size: 14px;
+
   font-weight: 700;
+
   color: #1B2A4A;
+
 }
 
+
 /* =========================================================
+
    CHART SECTION
-========================================================= */
+
+\========================================================= */
+
 
 .industry-report-graphs {
+
   display: grid;
+
   grid-template-columns: repeat(2, minmax(0, 1fr));
+
   gap: 14px;
+
   padding: 18px 28px 24px;
+
 }
 
+
 /* =========================================================
+
    CHART CARD
-========================================================= */
+
+\========================================================= */
+
 
 .industry-chart-card {
+
   min-width: 0;
+
   padding: 16px;
+
   background: #FFFFFF;
+
   border: 1px solid #DCD5C2;
+
   border-radius: 12px;
+
   box-shadow: 0 3px 12px rgba(27, 42, 74, 0.035);
+
   overflow: hidden;
+
 }
 
+
 /* =========================================================
+
    CHART HEADING
-========================================================= */
+
+\========================================================= */
+
 
 .industry-chart-heading {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: 12px;
+
   margin-bottom: 12px;
+
 }
+
 
 .industry-chart-heading > div {
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
+
 }
+
 
 .industry-chart-heading h3 {
+
   margin: 0;
+
   font-size: 14px;
+
   font-weight: 700;
+
   color: #1B2A4A;
+
 }
+
 
 .industry-chart-heading > span {
+
   font-size: 10px;
+
   font-weight: 600;
+
   color: #8A8F96;
+
 }
 
+
 /* =========================================================
+
    CHART INDICATORS
-========================================================= */
+
+\========================================================= */
+
 
 .industry-chart-indicator {
+
   width: 8px;
+
   height: 8px;
+
   display: inline-block;
+
   flex: 0 0 8px;
+
   border-radius: 50%;
+
 }
+
 
 .industry-client-indicator {
+
   background: #B78A34;
+
 }
+
 
 .industry-billing-indicator {
+
   background: #26734D;
+
 }
 
+
 /* =========================================================
+
    CHART CONTAINER
-========================================================= */
+
+\========================================================= */
+
 
 .industry-chart-container {
+
   position: relative;
+
   width: 100%;
+
   height: 275px;
+
   min-height: 275px;
+
   min-width: 0;
+
   box-sizing: border-box;
+
 }
+
 
 .industry-chart-container .recharts-responsive-container {
+
   width: 100%;
+
   height: 100%;
+
 }
 
+
 /* =========================================================
+
    RECHARTS BASE STYLING
-========================================================= */
+
+\========================================================= */
+
 
 .industry-chart-container .recharts-wrapper {
+
   outline: none;
+
 }
+
 
 .industry-chart-container .recharts-surface {
+
   overflow: visible;
+
 }
+
 
 .industry-chart-container .recharts-cartesian-grid-horizontal line {
+
   stroke: #E9E5DC;
+
 }
+
 
 .industry-chart-container .recharts-cartesian-grid-vertical line {
+
   stroke: transparent;
+
 }
+
 
 .industry-chart-container .recharts-xAxis line,
+
 .industry-chart-container .recharts-yAxis line {
+
   stroke: #DCD7CC;
+
 }
+
 
 .industry-chart-container .recharts-xAxis .recharts-cartesian-axis-tick text,
+
 .industry-chart-container .recharts-yAxis .recharts-cartesian-axis-tick text {
+
   fill: #7A7F87;
+
   font-size: 10px;
+
 }
+
 
 .industry-chart-container .recharts-label {
+
   fill: #1B2A4A;
+
 }
+
 
 .industry-chart-container .recharts-tooltip-wrapper {
+
   outline: none;
+
 }
 
+
 /* =========================================================
+
    NO CHART DATA
-========================================================= */
+
+\========================================================= */
+
 
 .industry-no-chart-data {
+
   width: 100%;
+
   height: 100%;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   font-size: 13px;
+
   color: #8A8F96;
+
 }
 
+
 /* =========================================================
+
    CUSTOM TOOLTIP
-========================================================= */
+
+\========================================================= */
+
 
 .industry-modern-tooltip {
+
   min-width: 170px;
+
   padding: 11px 13px;
+
   background: #FFFFFF;
+
   border: 1px solid #DCD5C2;
+
   border-radius: 9px;
+
   box-shadow: 0 8px 25px rgba(27, 42, 74, 0.12);
+
 }
+
 
 .industry-tooltip-label {
+
   margin-bottom: 5px;
+
   font-size: 10px;
+
   font-weight: 700;
+
   letter-spacing: 0.5px;
+
   color: #8A8F96;
+
 }
+
 
 .industry-tooltip-industry {
+
   margin-bottom: 8px;
+
   font-size: 12px;
+
   line-height: 1.3;
+
   font-weight: 800;
+
   color: #1B2A4A;
+
 }
+
 
 .industry-tooltip-row {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: 16px;
+
   padding-top: 5px;
+
   font-size: 11px;
+
   color: #6E737C;
+
 }
+
 
 .industry-tooltip-row strong {
+
   color: #1B2A4A;
+
   font-weight: 800;
+
 }
 
+
 /* =========================================================
+
    MODAL FOOTER
-========================================================= */
+
+\========================================================= */
+
 
 .industry-modal-footer {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: 15px;
+
   padding: 14px 28px;
+
   border-top: 1px solid #E8E3D7;
+
   background: #FBF9F3;
+
 }
+
 
 .industry-modal-footer > span {
+
   font-size: 11px;
+
   color: #7A7F87;
+
 }
+
 
 .industry-footer-close {
+
   padding: 8px 16px;
+
   border: none;
+
   border-radius: 7px;
+
   background: #1B2A4A;
+
   color: #FFFFFF;
+
   font-family: inherit;
+
   font-size: 12px;
+
   font-weight: 700;
+
   cursor: pointer;
+
   transition:
+
     background 0.2s ease,
+
     transform 0.2s ease;
+
 }
+
 
 .industry-footer-close:hover {
+
   background: #263B62;
+
   transform: translateY(-1px);
+
 }
 
+
 /* =========================================================
+
    SCROLLBAR
-========================================================= */
+
+\========================================================= */
+
 
 .industry-performance-modal::-webkit-scrollbar {
+
   width: 7px;
+
 }
+
 
 .industry-performance-modal::-webkit-scrollbar-track {
+
   background: #F6F3EC;
+
 }
+
 
 .industry-performance-modal::-webkit-scrollbar-thumb {
+
   background: #D2C8B4;
+
   border-radius: 10px;
+
 }
+
 
 .industry-performance-modal::-webkit-scrollbar-thumb:hover {
+
   background: #B78A34;
+
 }
 
+
 /* =========================================================
+
    RESPONSIVE - 1100px
-========================================================= */
+
+\========================================================= */
+
 
 @media (max-width: 1100px) {
+
   .industry-performance-page {
+
     padding: 22px;
+
   }
+
 
   .industry-summary-grid {
+
     padding-left: 22px;
+
     padding-right: 22px;
+
   }
+
 
   .industry-report-controls {
+
     margin-left: 22px;
+
     margin-right: 22px;
+
   }
+
 
   .industry-report-graphs {
+
     padding-left: 22px;
+
     padding-right: 22px;
+
   }
+
 
   .industry-modal-header {
+
     padding-left: 22px;
+
     padding-right: 22px;
+
   }
+
 
   .industry-modal-footer {
+
     padding-left: 22px;
+
     padding-right: 22px;
+
   }
+
 
   .industry-performance-filters {
+
     grid-template-columns: repeat(3, minmax(0, 1fr));
+
     gap: 14px;
+
   }
+
 }
 
+
 /* =========================================================
+
    RESPONSIVE - 850px
-========================================================= */
+
+\========================================================= */
+
 
 @media (max-width: 850px) {
+
   .industry-performance-page {
+
     padding: 18px;
+
   }
+
 
   .industry-page-header h1 {
+
     font-size: 24px;
+
   }
+
 
   .industry-summary-grid {
+
     grid-template-columns: 1fr 1fr;
+
     padding-left: 18px;
+
     padding-right: 18px;
+
   }
+
 
   .industry-report-controls {
+
     margin-left: 18px;
+
     margin-right: 18px;
+
   }
+
 
   .industry-report-graphs {
+
     grid-template-columns: 1fr;
+
     padding-left: 18px;
+
     padding-right: 18px;
+
   }
+
 
   .industry-chart-container {
+
     height: 260px;
+
     min-height: 260px;
+
   }
+
 
   .industry-performance-filters {
+
     grid-template-columns: repeat(2, minmax(0, 1fr));
+
     gap: 14px;
+
     padding: 16px 18px;
+
   }
+
 
   .industry-modal-header {
+
     padding-left: 18px;
+
     padding-right: 18px;
+
   }
+
 
   .industry-modal-footer {
+
     padding-left: 18px;
+
     padding-right: 18px;
+
   }
+
 }
 
+
 /* =========================================================
+
    RESPONSIVE - 600px
-========================================================= */
+
+\========================================================= */
+
 
 @media (max-width: 600px) {
-  .industry-performance-page {
-    padding: 14px;
+  .industry-selected-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 15px 16px;
   }
+
+  .industry-selected-heading span {
+    text-align: left;
+  }
+
+
+  .industry-performance-page {
+
+    padding: 14px;
+
+  }
+
 
   /* PAGE HEADER */
 
+
   .industry-page-header {
+
     margin-bottom: 18px;
+
   }
+
 
   .industry-page-eyebrow {
+
     font-size: 9px;
+
   }
+
 
   .industry-page-header h1 {
+
     font-size: 21px;
+
   }
 
+
   .industry-page-header p {
+
     font-size: 12px;
+
   }
+
 
   /* TABLE */
 
+
   .industry-table-header {
+
     padding: 16px;
+
   }
+
 
   .industry-table-header h2 {
+
     font-size: 15px;
+
   }
+
 
   .industry-table {
+
     min-width: 700px;
+
   }
+
 
   .industry-table thead th {
+
     padding: 12px 14px;
+
     font-size: 10px;
+
   }
 
+
   .industry-table tbody td {
+
     padding: 13px 14px;
+
   }
+
 
   /* MODAL */
 
+
   .industry-performance-overlay {
+
     align-items: flex-start;
+
     padding: 10px;
+
   }
+
 
   .industry-performance-modal {
+
     max-height: calc(100vh - 20px);
+
     border-radius: 14px;
+
   }
+
 
   .industry-modal-header {
+
     padding: 17px;
+
   }
+
 
   .industry-modal-header h2 {
+
     font-size: 20px;
+
   }
+
 
   .industry-modal-header p {
+
     font-size: 11px;
+
   }
 
+
   .industry-modal-close {
+
     width: 32px;
+
     height: 32px;
+
     flex-basis: 32px;
+
     font-size: 20px;
+
   }
+
 
   /* SUMMARY */
 
+
   .industry-summary-grid {
+
     grid-template-columns: 1fr;
+
     padding: 15px 17px 0;
+
     gap: 10px;
+
   }
 
+
   .industry-summary-card {
+
     min-height: 82px;
+
   }
+
 
   /* FILTERS */
 
+
   .industry-performance-filters {
+
     grid-template-columns: 1fr;
+
     gap: 14px;
+
     padding: 14px 16px;
+
   }
+
 
   .industry-filter-group {
+
     width: 100%;
+
   }
+
 
   .industry-filter-group select {
+
     width: 100%;
+
   }
+
 
   .industry-performance-filters
+
   .industry-filter-group
+
   input[type="number"] {
+
     width: 100%;
+
     min-width: 0;
+
   }
+
 
   .industry-reset-filter-group {
+
     width: 100%;
+
   }
 
+
   .industry-reset-filters-btn {
+
     width: 100%;
+
   }
+
 
   /* CONTROLS */
 
+
   .industry-report-controls {
+
     flex-direction: column;
+
     align-items: stretch;
+
     margin: 18px 17px 0;
+
     padding: 13px;
+
   }
 
+
   .industry-report-period select {
+
     width: 100%;
+
   }
+
 
   /* GRAPHS */
 
+
   .industry-report-graphs {
+
     grid-template-columns: 1fr;
+
     padding: 15px 17px 18px;
+
   }
+
 
   .industry-chart-card {
+
     padding: 13px;
+
   }
 
+
   .industry-chart-container {
+
     height: 245px;
+
     min-height: 245px;
+
   }
+
 
   /* FOOTER */
 
+
   .industry-modal-footer {
+
     flex-direction: column;
+
     align-items: stretch;
+
     padding: 13px 17px;
+
   }
+
 
   .industry-modal-footer > span {
+
     text-align: center;
+
   }
+
 
   .industry-footer-close {
+
     width: 100%;
+
   }
+
 }
 
+
 /* =========================================================
+
    RESPONSIVE - 400px
-========================================================= */
+
+\========================================================= */
+
 
 @media (max-width: 400px) {
+
   .industry-performance-page {
+
     padding: 10px;
+
   }
+
 
   .industry-page-header h1 {
+
     font-size: 19px;
+
   }
+
 
   .industry-page-header p {
+
     font-size: 11px;
+
   }
+
 
   .industry-table-header {
+
     padding: 14px;
+
   }
+
 
   .industry-table {
+
     min-width: 680px;
+
   }
+
 
   .industry-performance-overlay {
+
     padding: 6px;
+
   }
+
 
   .industry-performance-modal {
+
     max-height: calc(100vh - 12px);
+
     border-radius: 12px;
+
   }
+
 
   .industry-modal-header {
+
     padding: 14px;
+
   }
+
 
   .industry-modal-header h2 {
+
     font-size: 18px;
+
   }
+
 
   .industry-summary-grid {
+
     padding-left: 12px;
+
     padding-right: 12px;
+
   }
+
 
   .industry-report-controls {
+
     margin-left: 12px;
+
     margin-right: 12px;
+
   }
+
 
   .industry-report-graphs {
+
     padding-left: 12px;
+
     padding-right: 12px;
+
   }
 
+
   .industry-chart-container {
+
     height: 220px;
+
     min-height: 220px;
+
   }
+
 }
