@@ -1,3 +1,4 @@
+
 import {
   useMemo,
   useState,
@@ -101,13 +102,30 @@ const firstValue = (row, keys = []) => {
 
 
 /* =========================================================
-   CITY
+   CITY NORMALIZATION
 ========================================================= */
 
+const normalizeCityName = (value) => {
+  if (!value) return "";
+
+  return String(value)
+    .normalize("NFKC")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+
 const getCity = (row) => {
-  return String(
+  return normalizeCityName(
     firstValue(row, ["city", "City"])
-  ).trim();
+  );
+};
+
+
+const getCityKey = (city) => {
+  return normalizeCityName(city).toLowerCase();
 };
 
 
@@ -523,7 +541,7 @@ const getFinancialValues = (
     return {
       billing,
       netAmount: 0,
-      franchiseeShare: 0,
+      franchiseeShare,
       cityExpenditure: 0
     };
   }
@@ -744,12 +762,6 @@ const CityPerformance = () => {
 
   /* =======================================================
      TABLE COLUMN COUNT
-
-     6 base columns:
-     First column + 5 data columns
-
-     + 1 expenditure column when enabled
-     + 1 performance column always
   ======================================================= */
 
   const tableColumnCount =
@@ -757,21 +769,25 @@ const CityPerformance = () => {
 
 
   /* =======================================================
-     CITY OPTIONS
+     CITY OPTIONS - NORMALIZED UNIQUE CITIES
   ======================================================= */
 
   const cities = useMemo(() => {
-    const citySet = new Set();
+    const cityMap = new Map();
 
     rows.forEach(row => {
       const city = getCity(row);
 
-      if (city) {
-        citySet.add(city);
+      if (!city) return;
+
+      const key = getCityKey(city);
+
+      if (!cityMap.has(key)) {
+        cityMap.set(key, city);
       }
     });
 
-    return Array.from(citySet).sort(
+    return Array.from(cityMap.values()).sort(
       (a, b) => a.localeCompare(b)
     );
   }, [rows]);
@@ -822,9 +838,11 @@ const CityPerformance = () => {
         return;
       }
 
+      const cityKey = getCityKey(city);
+
       if (
         selectedCityFilter !== "ALL" &&
-        city !== selectedCityFilter
+        cityKey !== getCityKey(selectedCityFilter)
       ) {
         return;
       }
@@ -849,8 +867,8 @@ const CityPerformance = () => {
         return;
       }
 
-      if (!map.has(city)) {
-        map.set(city, {
+      if (!map.has(cityKey)) {
+        map.set(cityKey, {
           city,
           clients: new Set(),
           enquiries: 0,
@@ -861,7 +879,7 @@ const CityPerformance = () => {
         });
       }
 
-      const item = map.get(city);
+      const item = map.get(cityKey);
 
       item.enquiries += 1;
 
@@ -991,7 +1009,10 @@ const CityPerformance = () => {
     }
 
     rows.forEach(row => {
-      if (getCity(row) !== selectedCityFilter) {
+      if (
+        getCityKey(getCity(row)) !==
+        getCityKey(selectedCityFilter)
+      ) {
         return;
       }
 
@@ -1098,7 +1119,10 @@ const CityPerformance = () => {
     }
 
     return rows.filter(row => {
-      if (getCity(row) !== modalCity) {
+      if (
+        getCityKey(getCity(row)) !==
+        getCityKey(modalCity)
+      ) {
         return false;
       }
 
@@ -1168,13 +1192,17 @@ const CityPerformance = () => {
       }
 
       const city = getCity(row);
+      const cityKey = getCityKey(city);
 
       if (city && company) {
-        if (!cityMap.has(city)) {
-          cityMap.set(city, new Set());
+        if (!cityMap.has(cityKey)) {
+          cityMap.set(cityKey, {
+            name: city,
+            clients: new Set()
+          });
         }
 
-        cityMap.get(city).add(company);
+        cityMap.get(cityKey).clients.add(company);
       }
     });
 
@@ -1197,11 +1225,11 @@ const CityPerformance = () => {
       clients: 0
     };
 
-    cityMap.forEach((clients, city) => {
-      if (clients.size > bestCity.clients) {
+    cityMap.forEach(item => {
+      if (item.clients.size > bestCity.clients) {
         bestCity = {
-          name: city,
-          clients: clients.size
+          name: item.name,
+          clients: item.clients.size
         };
       }
     });
@@ -1512,7 +1540,7 @@ const CityPerformance = () => {
 
               {cities.map(city => (
                 <option
-                  key={city}
+                  key={getCityKey(city)}
                   value={city}
                 >
                   {capitalizeWords(city)}
@@ -1736,8 +1764,6 @@ const CityPerformance = () => {
                   <th>City Expenditure</th>
                 )}
 
-                {/* PERFORMANCE ALWAYS VISIBLE */}
-
                 <th>Performance</th>
 
               </tr>
@@ -1784,7 +1810,7 @@ const CityPerformance = () => {
                       key={
                         isPeriodReport
                           ? item.period
-                          : item.city
+                          : getCityKey(item.city)
                       }
                     >
 
@@ -1853,7 +1879,7 @@ const CityPerformance = () => {
                       )}
 
 
-                      {/* PERFORMANCE ALWAYS VISIBLE */}
+                      {/* PERFORMANCE */}
 
                       <td>
                         <button
