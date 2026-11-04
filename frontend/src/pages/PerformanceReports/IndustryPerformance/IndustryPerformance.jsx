@@ -1328,17 +1328,23 @@ const IndustryPerformance = () => {
 
         </div>
 
-        {/* SELECTED INDUSTRY HEADING - AFTER FILTERS */}
+        {/* SELECTED INDUSTRY HEADING */}
 
         {isIndividualIndustry && (
           <div className="industry-selected-heading">
-            <h2>{selectedIndustryFilter}</h2>
+            <div className="industry-selected-heading-content">
+              <span className="industry-member-label">
+                INDUSTRY
+              </span>
 
-            <span>
-              {viewReportAs === "all-time"
-                ? "All Time Performance"
-                : `${viewReportAs.charAt(0).toUpperCase()}${viewReportAs.slice(1)} Performance`}
-            </span>
+              <h2>{selectedIndustryFilter}</h2>
+
+              <p>
+                {viewReportAs === "all-time"
+                  ? "All Time Performance Report"
+                  : `${viewReportAs.charAt(0).toUpperCase()}${viewReportAs.slice(1)} Performance Report`}
+              </p>
+            </div>
           </div>
         )}
 
