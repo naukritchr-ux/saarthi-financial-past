@@ -1,4 +1,3 @@
-
 import {
   useMemo,
   useState,
@@ -295,8 +294,6 @@ const parseDate = (value) => {
     return null;
   }
 
-  /* DD/MM/YYYY */
-
   let match = text.match(
     /^(\d{1,2})\/(\d{1,2})\/(\d{4})/
   );
@@ -319,8 +316,6 @@ const parseDate = (value) => {
     return date;
   }
 
-  /* DD-MM-YYYY */
-
   match = text.match(
     /^(\d{1,2})-(\d{1,2})-(\d{4})/
   );
@@ -342,8 +337,6 @@ const parseDate = (value) => {
 
     return date;
   }
-
-  /* YYYY-MM-DD */
 
   match = text.match(
     /^(\d{4})-(\d{1,2})-(\d{1,2})/
@@ -430,6 +423,20 @@ const getMonth = (row) => {
   }
 
   return acquiredDate.getMonth() + 1;
+};
+
+
+/* =========================================================
+   QUARTER
+========================================================= */
+
+const getQuarter = (month) => {
+  if (month >= 4 && month <= 6) return "Q1";
+  if (month >= 7 && month <= 9) return "Q2";
+  if (month >= 10 && month <= 12) return "Q3";
+  if (month >= 1 && month <= 3) return "Q4";
+
+  return null;
 };
 
 
@@ -638,6 +645,11 @@ const CityPerformance = () => {
   ] = useState("ALL");
 
   const [
+    viewReportAs,
+    setViewReportAs
+  ] = useState("all-time");
+
+  const [
     selectedInfoStatus,
     setSelectedInfoStatus
   ] = useState("ALL");
@@ -669,6 +681,31 @@ const CityPerformance = () => {
 
 
   /* =======================================================
+     DERIVED FILTER STATE
+  ======================================================= */
+
+  const isIndividualCity =
+    selectedCityFilter !== "ALL";
+
+  const needsFinancialYear =
+    isIndividualCity &&
+    ["monthly", "quarterly"].includes(viewReportAs);
+
+  const isPeriodReport =
+    isIndividualCity &&
+    viewReportAs !== "all-time";
+
+  const firstColumnHeading =
+    !isIndividualCity || viewReportAs === "all-time"
+      ? "City"
+      : viewReportAs === "yearly"
+        ? "Financial Year"
+        : viewReportAs === "monthly"
+          ? "Month"
+          : "Quarter";
+
+
+  /* =======================================================
      RESET FILTERS
   ======================================================= */
 
@@ -676,6 +713,7 @@ const CityPerformance = () => {
     setSelectedCityFilter("ALL");
     setSelectedFinancialYear("ALL");
     setSelectedMonth("ALL");
+    setViewReportAs("all-time");
     setSelectedInfoStatus("ALL");
     setCityExpenditurePercentage("");
   };
@@ -702,6 +740,20 @@ const CityPerformance = () => {
       value <= 100
     );
   }, [cityExpenditurePercentage]);
+
+
+  /* =======================================================
+     TABLE COLUMN COUNT
+
+     6 base columns:
+     First column + 5 data columns
+
+     + 1 expenditure column when enabled
+     + 1 performance column always
+  ======================================================= */
+
+  const tableColumnCount =
+    7 + (hasCityExpenditurePercentage ? 1 : 0);
 
 
   /* =======================================================
@@ -770,16 +822,12 @@ const CityPerformance = () => {
         return;
       }
 
-      /* City filter */
-
       if (
         selectedCityFilter !== "ALL" &&
         city !== selectedCityFilter
       ) {
         return;
       }
-
-      /* Financial Year filter */
 
       if (
         selectedFinancialYear !== "ALL" &&
@@ -788,16 +836,12 @@ const CityPerformance = () => {
         return;
       }
 
-      /* Month filter */
-
       if (
         selectedMonth !== "ALL" &&
         getMonth(row) !== Number(selectedMonth)
       ) {
         return;
       }
-
-      /* Info Status filter */
 
       if (
         !matchesInfoFilter(row, selectedInfoStatus)
@@ -819,11 +863,7 @@ const CityPerformance = () => {
 
       const item = map.get(city);
 
-      /* Every matching row = enquiry */
-
       item.enquiries += 1;
-
-      /* Unique company */
 
       const company = getCompanyName(row);
 
@@ -831,15 +871,11 @@ const CityPerformance = () => {
         item.clients.add(company);
       }
 
-      /* Unique franchisee */
-
       const franchisee = getFranchiseName(row);
 
       if (franchisee) {
         item.franchisees.add(franchisee);
       }
-
-      /* Financial values */
 
       const financial = getFinancialValues(
         row,
@@ -885,8 +921,175 @@ const CityPerformance = () => {
 
 
   /* =======================================================
+     INDIVIDUAL CITY PERIOD REPORT DATA
+  ======================================================= */
+
+  const periodReportData = useMemo(() => {
+    if (!isPeriodReport) {
+      return [];
+    }
+
+    if (
+      needsFinancialYear &&
+      selectedFinancialYear === "ALL"
+    ) {
+      return [];
+    }
+
+    const periodMap = new Map();
+
+    if (viewReportAs === "yearly") {
+      financialYears.forEach(year => {
+        if (
+          selectedFinancialYear !== "ALL" &&
+          year !== selectedFinancialYear
+        ) {
+          return;
+        }
+
+        periodMap.set(year, {
+          period: `FY ${year}`,
+          sortOrder: Number(year.split("-")[0]),
+          clients: new Set(),
+          franchisees: new Set(),
+          enquiries: 0,
+          billing: 0,
+          netAmount: 0,
+          cityExpenditure: 0
+        });
+      });
+    }
+
+    if (viewReportAs === "monthly") {
+      financialMonths.forEach((month, index) => {
+        periodMap.set(String(month.month), {
+          period: month.full,
+          sortOrder: index,
+          clients: new Set(),
+          franchisees: new Set(),
+          enquiries: 0,
+          billing: 0,
+          netAmount: 0,
+          cityExpenditure: 0
+        });
+      });
+    }
+
+    if (viewReportAs === "quarterly") {
+      ["Q1", "Q2", "Q3", "Q4"].forEach((quarter, index) => {
+        periodMap.set(quarter, {
+          period: quarter,
+          sortOrder: index,
+          clients: new Set(),
+          franchisees: new Set(),
+          enquiries: 0,
+          billing: 0,
+          netAmount: 0,
+          cityExpenditure: 0
+        });
+      });
+    }
+
+    rows.forEach(row => {
+      if (getCity(row) !== selectedCityFilter) {
+        return;
+      }
+
+      const financialYear = getFinancialYear(row);
+
+      if (
+        selectedFinancialYear !== "ALL" &&
+        financialYear !== selectedFinancialYear
+      ) {
+        return;
+      }
+
+      if (
+        selectedMonth !== "ALL" &&
+        getMonth(row) !== Number(selectedMonth)
+      ) {
+        return;
+      }
+
+      if (!matchesInfoFilter(row, selectedInfoStatus)) {
+        return;
+      }
+
+      const month = getMonth(row);
+
+      let key = null;
+
+      if (viewReportAs === "yearly") {
+        key = financialYear;
+      }
+
+      if (viewReportAs === "monthly") {
+        key = month ? String(month) : null;
+      }
+
+      if (viewReportAs === "quarterly") {
+        key = month ? getQuarter(month) : null;
+      }
+
+      if (!key || !periodMap.has(key)) {
+        return;
+      }
+
+      const item = periodMap.get(key);
+
+      item.enquiries += 1;
+
+      const company = getCompanyName(row);
+
+      if (company) {
+        item.clients.add(company);
+      }
+
+      const franchisee = getFranchiseName(row);
+
+      if (franchisee) {
+        item.franchisees.add(franchisee);
+      }
+
+      const financial = getFinancialValues(
+        row,
+        selectedInfoStatus,
+        cityExpenditurePercentage
+      );
+
+      item.billing += financial.billing;
+      item.netAmount += financial.netAmount;
+      item.cityExpenditure += financial.cityExpenditure;
+    });
+
+    return Array.from(periodMap.values())
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .filter(item => item.enquiries > 0)
+      .map(item => ({
+        period: item.period,
+        clients: item.clients.size,
+        enquiries: item.enquiries,
+        franchisees: item.franchisees.size,
+        billing: item.billing,
+        netAmount: item.netAmount,
+        cityExpenditure: item.cityExpenditure
+      }));
+  }, [
+    rows,
+    isPeriodReport,
+    viewReportAs,
+    needsFinancialYear,
+    selectedCityFilter,
+    selectedFinancialYear,
+    selectedMonth,
+    selectedInfoStatus,
+    cityExpenditurePercentage,
+    financialYears
+  ]);
+
+
+  /* =======================================================
      SELECTED MODAL ROWS
-     Modal report filters remain independent.
   ======================================================= */
 
   const selectedRows = useMemo(() => {
@@ -1175,6 +1378,10 @@ const CityPerformance = () => {
   ======================================================= */
 
   const handleViewPerformance = (city) => {
+    if (!city) {
+      return;
+    }
+
     setModalCity(city);
 
     setReportFinancialYear(
@@ -1264,23 +1471,28 @@ const CityPerformance = () => {
 
           <div className="city-member-count">
             <strong>
-              {cityData.length}
+              {isPeriodReport
+                ? (
+                    needsFinancialYear &&
+                    selectedFinancialYear === "ALL"
+                  )
+                  ? 0
+                  : periodReportData.length
+                : cityData.length}
             </strong>
 
             <span>
-              Cities
+              {isPeriodReport ? "Periods" : "Cities"}
             </span>
           </div>
         </div>
 
 
-        {/* =================================================
-            MAIN FILTERS - REQUIRED ORDER
-        ================================================= */}
+        {/* MAIN FILTERS */}
 
         <div className="city-performance-filters">
 
-          {/* 1. CITY */}
+          {/* CITY */}
 
           <div className="city-filter-group">
             <label>
@@ -1289,9 +1501,10 @@ const CityPerformance = () => {
 
             <select
               value={selectedCityFilter}
-              onChange={event =>
-                setSelectedCityFilter(event.target.value)
-              }
+              onChange={event => {
+                setSelectedCityFilter(event.target.value);
+                setViewReportAs("all-time");
+              }}
             >
               <option value="ALL">
                 All Cities
@@ -1309,7 +1522,30 @@ const CityPerformance = () => {
           </div>
 
 
-          {/* 2. FINANCIAL YEAR */}
+          {/* VIEW REPORT AS */}
+
+          {isIndividualCity && (
+            <div className="city-filter-group">
+              <label>
+                View Report As
+              </label>
+
+              <select
+                value={viewReportAs}
+                onChange={event => {
+                  setViewReportAs(event.target.value);
+                }}
+              >
+                <option value="all-time">All Time</option>
+                <option value="yearly">Yearly</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+              </select>
+            </div>
+          )}
+
+
+          {/* FINANCIAL YEAR */}
 
           <div className="city-filter-group">
             <label>
@@ -1338,7 +1574,7 @@ const CityPerformance = () => {
           </div>
 
 
-          {/* 3. MONTH */}
+          {/* MONTH */}
 
           <div className="city-filter-group">
             <label>
@@ -1367,7 +1603,7 @@ const CityPerformance = () => {
           </div>
 
 
-          {/* 4. INFO STATUS */}
+          {/* INFO STATUS */}
 
           <div className="city-filter-group">
             <label>
@@ -1396,7 +1632,7 @@ const CityPerformance = () => {
           </div>
 
 
-          {/* 5. CITY EXPENDITURE */}
+          {/* CITY EXPENDITURE */}
 
           <div className="city-filter-group">
             <label>
@@ -1427,7 +1663,7 @@ const CityPerformance = () => {
           </div>
 
 
-          {/* 6. RESET FILTERS */}
+          {/* RESET FILTERS */}
 
           <div className="city-filter-group city-reset-filter-group">
             <label>
@@ -1446,14 +1682,50 @@ const CityPerformance = () => {
         </div>
 
 
-        {/* TABLE */}
+        {/* SELECTED CITY HEADING */}
+
+        {isIndividualCity && (
+          <div className="city-selected-heading">
+            <span className="city-selected-label">
+              CITY
+            </span>
+
+            <h2>
+              {capitalizeWords(selectedCityFilter)}
+            </h2>
+
+            <p>
+              {viewReportAs === "all-time"
+                ? "All Time Performance Report"
+                : `${viewReportAs.charAt(0).toUpperCase()}${viewReportAs.slice(1)} Performance Report`}
+            </p>
+          </div>
+        )}
+
+
+        {/* FINANCIAL YEAR VALIDATION */}
+
+        {needsFinancialYear &&
+          selectedFinancialYear === "ALL" && (
+            <div className="city-period-filter-notice">
+              Please select a Financial Year to view the {viewReportAs} report.
+            </div>
+          )}
+
+
+        {/* MAIN TABLE */}
 
         <div className="city-table-wrapper">
+
           <table className="city-performance-table">
 
             <thead>
               <tr>
-                <th>City</th>
+
+                <th>
+                  {firstColumnHeading}
+                </th>
+
                 <th>Total Acquired Client</th>
                 <th>Total Enquiries</th>
                 <th>No. of Franchisee</th>
@@ -1464,89 +1736,157 @@ const CityPerformance = () => {
                   <th>City Expenditure</th>
                 )}
 
+                {/* PERFORMANCE ALWAYS VISIBLE */}
+
                 <th>Performance</th>
+
               </tr>
             </thead>
 
+
             <tbody>
-              {cityData.length === 0 ? (
+
+              {needsFinancialYear &&
+              selectedFinancialYear === "ALL" ? (
+
                 <tr>
                   <td
-                    colSpan={
-                      hasCityExpenditurePercentage ? 8 : 7
-                    }
+                    colSpan={tableColumnCount}
                     className="city-no-data"
                   >
-                    No city performance data available
-                    for the selected filters.
+                    Select a financial year to display the report.
                   </td>
                 </tr>
+
               ) : (
-                cityData.map(item => (
-                  <tr key={item.city}>
 
-                    <td>
-                      <div className="city-name-cell">
-                        <div className="city-avatar">
-                          {item.city.charAt(0).toUpperCase()}
-                        </div>
+                (() => {
+                  const displayData = isPeriodReport
+                    ? periodReportData
+                    : cityData;
 
-                        <span>
-                          {capitalizeWords(item.city)}
-                        </span>
-                      </div>
-                    </td>
+                  if (displayData.length === 0) {
+                    return (
+                      <tr>
+                        <td
+                          colSpan={tableColumnCount}
+                          className="city-no-data"
+                        >
+                          No performance data available
+                          for the selected filters.
+                        </td>
+                      </tr>
+                    );
+                  }
 
-                    <td>
-                      {item.clients.toLocaleString("en-IN")}
-                    </td>
+                  return displayData.map(item => (
+                    <tr
+                      key={
+                        isPeriodReport
+                          ? item.period
+                          : item.city
+                      }
+                    >
 
-                    <td>
-                      {item.enquiries.toLocaleString("en-IN")}
-                    </td>
+                      {/* FIRST COLUMN */}
 
-                    <td>
-                      {item.franchisees.toLocaleString("en-IN")}
-                    </td>
-
-                    <td>
-                      {formatCurrency(item.billing)}
-                    </td>
-
-                    <td>
-                      {formatCurrency(item.netAmount)}
-                    </td>
-
-                    {hasCityExpenditurePercentage && (
                       <td>
-                        {formatCurrency(item.cityExpenditure)}
+                        {isPeriodReport ? (
+                          <span className="city-period-label">
+                            {item.period}
+                          </span>
+                        ) : (
+                          <div className="city-name-cell">
+                            <div className="city-avatar">
+                              {item.city.charAt(0).toUpperCase()}
+                            </div>
+
+                            <span>
+                              {capitalizeWords(item.city)}
+                            </span>
+                          </div>
+                        )}
                       </td>
-                    )}
 
-                    <td>
-                      <button
-                        type="button"
-                        className="city-view-performance-btn"
-                        onClick={() =>
-                          handleViewPerformance(item.city)
-                        }
-                      >
-                        <span>
-                          View Performance
-                        </span>
 
-                        <span className="city-view-arrow">
-                          →
-                        </span>
-                      </button>
-                    </td>
+                      {/* CLIENTS */}
 
-                  </tr>
-                ))
+                      <td>
+                        {item.clients.toLocaleString("en-IN")}
+                      </td>
+
+
+                      {/* ENQUIRIES */}
+
+                      <td>
+                        {item.enquiries.toLocaleString("en-IN")}
+                      </td>
+
+
+                      {/* FRANCHISEES */}
+
+                      <td>
+                        {item.franchisees.toLocaleString("en-IN")}
+                      </td>
+
+
+                      {/* BILLING */}
+
+                      <td>
+                        {formatCurrency(item.billing)}
+                      </td>
+
+
+                      {/* NET AMOUNT */}
+
+                      <td>
+                        {formatCurrency(item.netAmount)}
+                      </td>
+
+
+                      {/* CITY EXPENDITURE */}
+
+                      {hasCityExpenditurePercentage && (
+                        <td>
+                          {formatCurrency(item.cityExpenditure)}
+                        </td>
+                      )}
+
+
+                      {/* PERFORMANCE ALWAYS VISIBLE */}
+
+                      <td>
+                        <button
+                          type="button"
+                          className="city-view-performance-btn"
+                          onClick={() =>
+                            handleViewPerformance(
+                              isPeriodReport
+                                ? selectedCityFilter
+                                : item.city
+                            )
+                          }
+                        >
+                          <span>
+                            View Performance
+                          </span>
+
+                          <span className="city-view-arrow">
+                            →
+                          </span>
+                        </button>
+                      </td>
+
+                    </tr>
+                  ));
+                })()
+
               )}
+
             </tbody>
 
           </table>
+
         </div>
 
       </div>
@@ -1565,11 +1905,13 @@ const CityPerformance = () => {
             }
           }}
         >
+
           <div className="city-performance-modal">
 
             {/* MODAL HEADER */}
 
             <div className="city-modal-header">
+
               <div>
                 <div className="city-modal-eyebrow">
                   CITY PERFORMANCE
@@ -1593,6 +1935,7 @@ const CityPerformance = () => {
               >
                 ×
               </button>
+
             </div>
 
 
@@ -1616,6 +1959,7 @@ const CityPerformance = () => {
                 </small>
               </div>
 
+
               <div className="city-summary-card">
                 <span>Best City</span>
 
@@ -1632,6 +1976,7 @@ const CityPerformance = () => {
                 </small>
               </div>
 
+
               <div className="city-summary-card">
                 <span>Total Billing</span>
 
@@ -1643,6 +1988,7 @@ const CityPerformance = () => {
 
                 <small>Gross billing</small>
               </div>
+
 
               {hasCityExpenditurePercentage && (
                 <div className="city-summary-card">
@@ -1659,6 +2005,7 @@ const CityPerformance = () => {
                   </small>
                 </div>
               )}
+
 
               <div className="city-summary-card">
                 <span>Net Amount</span>
@@ -1690,6 +2037,7 @@ const CityPerformance = () => {
                 </p>
               </div>
 
+
               <div className="city-report-filter-row">
 
                 <div className="city-filter-group">
@@ -1718,6 +2066,7 @@ const CityPerformance = () => {
                   </select>
                 </div>
 
+
                 <div className="city-filter-group">
                   <label>
                     Info Status
@@ -1745,6 +2094,7 @@ const CityPerformance = () => {
                 </div>
 
               </div>
+
             </div>
 
 
@@ -1772,6 +2122,7 @@ const CityPerformance = () => {
               <div className="city-chart-card">
 
                 <div className="city-chart-heading">
+
                   <div>
                     <h3>
                       Client Acquired
@@ -1786,9 +2137,12 @@ const CityPerformance = () => {
                     <span />
                     Client Acquired
                   </div>
+
                 </div>
 
+
                 <div className="city-chart-container">
+
                   {reportData.length === 0 ? (
                     <div className="city-no-chart-data">
                       No client data available.
@@ -1807,6 +2161,7 @@ const CityPerformance = () => {
                           bottom: 5
                         }}
                       >
+
                         <CartesianGrid
                           strokeDasharray="3 3"
                           vertical={false}
@@ -1841,10 +2196,13 @@ const CityPerformance = () => {
                           radius={[5, 5, 0, 0]}
                           maxBarSize={42}
                         />
+
                       </BarChart>
                     </ResponsiveContainer>
                   )}
+
                 </div>
+
               </div>
 
 
@@ -1853,6 +2211,7 @@ const CityPerformance = () => {
               <div className="city-chart-card">
 
                 <div className="city-chart-heading">
+
                   <div>
                     <h3>
                       Total Billing
@@ -1867,9 +2226,12 @@ const CityPerformance = () => {
                     <span />
                     Total Billing
                   </div>
+
                 </div>
 
+
                 <div className="city-chart-container">
+
                   {reportData.length === 0 ? (
                     <div className="city-no-chart-data">
                       No billing data available.
@@ -1888,6 +2250,7 @@ const CityPerformance = () => {
                           bottom: 5
                         }}
                       >
+
                         <CartesianGrid
                           strokeDasharray="3 3"
                           vertical={false}
@@ -1926,10 +2289,13 @@ const CityPerformance = () => {
                           radius={[5, 5, 0, 0]}
                           maxBarSize={42}
                         />
+
                       </BarChart>
                     </ResponsiveContainer>
                   )}
+
                 </div>
+
               </div>
 
             </div>
@@ -1938,6 +2304,7 @@ const CityPerformance = () => {
             {/* MODAL FOOTER */}
 
             <div className="city-modal-footer">
+
               <div>
                 <strong>
                   {performanceSummary.uniqueClients}
@@ -1967,9 +2334,11 @@ const CityPerformance = () => {
               >
                 Close
               </button>
+
             </div>
 
           </div>
+
         </div>
       )}
 
