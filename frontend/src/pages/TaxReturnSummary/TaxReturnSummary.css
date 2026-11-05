@@ -1,13 +1,13 @@
 
 /* =========================================================
    TAX RETURN SUMMARY PAGE
-   ========================================================= */
+========================================================= */
 
 .tax-summary-page {
   width: 100%;
+  min-height: 100%;
   padding: 24px;
   background: #f7f3e8;
-  min-height: 100%;
   box-sizing: border-box;
   color: #102a43;
   font-family: inherit;
@@ -21,7 +21,7 @@
 
 /* =========================================================
    PAGE HEADER
-   ========================================================= */
+========================================================= */
 
 .tax-summary-header {
   display: flex;
@@ -44,7 +44,7 @@
 
 /* =========================================================
    DOWNLOAD BUTTON
-   ========================================================= */
+========================================================= */
 
 .tax-download-btn {
   display: inline-flex;
@@ -78,7 +78,7 @@
 
 /* =========================================================
    STATUS MESSAGES
-   ========================================================= */
+========================================================= */
 
 .tax-message {
   padding: 12px 16px;
@@ -109,7 +109,7 @@
 
 /* =========================================================
    LOADING INDICATOR
-   ========================================================= */
+========================================================= */
 
 .tax-loading {
   margin-bottom: 16px;
@@ -124,7 +124,7 @@
 
 /* =========================================================
    ROWS
-   ========================================================= */
+========================================================= */
 
 .tax-row {
   display: grid;
@@ -146,14 +146,14 @@
 
 /* =========================================================
    FIELD CARDS
-   ========================================================= */
+========================================================= */
 
 .tax-field {
   min-width: 0;
+  padding: 16px;
   background: #fffdf7;
   border: 1px solid #d9cfb5;
   border-radius: 8px;
-  padding: 16px;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -165,7 +165,7 @@
 
 /* =========================================================
    LABELS
-   ========================================================= */
+========================================================= */
 
 .tax-field label,
 .difference-box label {
@@ -178,19 +178,19 @@
 
 /* =========================================================
    INPUTS / SELECTS
-   ========================================================= */
+========================================================= */
 
 .tax-field input,
 .tax-field select {
   width: 100%;
   height: 40px;
+  padding: 0 12px;
   border: 1px solid #cfc5aa;
   border-radius: 6px;
-  padding: 0 12px;
-  font-size: 14px;
   box-sizing: border-box;
   background: #fffef9;
   color: #102a43;
+  font-size: 14px;
   outline: none;
   transition:
     border-color 0.2s ease,
@@ -213,15 +213,15 @@
 
 /* =========================================================
    AMOUNT INPUT
-   ========================================================= */
+========================================================= */
 
 .amount-input {
   display: flex;
   align-items: center;
-  border: 1px solid #cfc5aa;
-  border-radius: 6px;
   height: 40px;
   overflow: hidden;
+  border: 1px solid #cfc5aa;
+  border-radius: 6px;
   background: #fffef9;
   transition:
     border-color 0.2s ease,
@@ -234,30 +234,30 @@
 }
 
 .amount-input span {
+  display: flex;
   flex-shrink: 0;
+  align-items: center;
+  height: 100%;
   padding: 0 12px;
   color: #a27c00;
   font-weight: 700;
   border-right: 1px solid #e1d8c2;
-  height: 100%;
-  display: flex;
-  align-items: center;
   background: #faf6e9;
 }
 
 .amount-input input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   border: 0;
   border-radius: 0;
-  height: 100%;
-  min-width: 0;
-  flex: 1;
   background: transparent;
   color: #102a43;
 }
 
 .amount-input input:focus {
-  outline: none;
   border: 0;
+  outline: none;
   box-shadow: none;
 }
 
@@ -268,11 +268,11 @@
 
 /* =========================================================
    CALCULATED / READ-ONLY FIELDS
-   ========================================================= */
+========================================================= */
 
 .calculated-input {
-  background: #f7f1dc;
   border-color: #c9a227;
+  background: #f7f1dc;
 }
 
 .calculated-input input {
@@ -284,59 +284,59 @@
 
 /* =========================================================
    CALCULATED REFUND BOX
-   ========================================================= */
+========================================================= */
 
 .calculated-box {
-  background: #102a43;
+  margin-top: 8px;
+  padding: 22px;
   border: 1px solid #c9a227;
   border-radius: 8px;
-  padding: 22px;
+  background: #102a43;
   text-align: center;
-  margin-top: 8px;
   box-shadow: 0 3px 8px rgba(16, 42, 67, 0.12);
 }
 
 .calculated-title {
+  color: #f0d36b;
   font-size: 14px;
   font-weight: 700;
-  color: #f0d36b;
   letter-spacing: 0.6px;
 }
 
 .calculated-value {
   margin-top: 8px;
+  color: #fffdf7;
   font-size: 24px;
   font-weight: 700;
-  color: #fffdf7;
 }
 
 /* =========================================================
    DIFFERENCE SECTION
-   ========================================================= */
+========================================================= */
 
 .difference-section {
   margin-top: 28px;
 }
 
 .difference-section h3 {
-  text-align: center;
-  font-size: 16px;
   margin-bottom: 16px;
   color: #102a43;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 /* =========================================================
    DIFFERENCE BOXES
-   ========================================================= */
+========================================================= */
 
 .difference-box {
   min-width: 0;
-  background: #fffdf7;
+  padding: 16px;
   border: 1px solid #d9cfb5;
   border-radius: 8px;
-  padding: 16px;
+  background: #fffdf7;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -348,14 +348,14 @@
 }
 
 .difference-box strong {
-  font-size: 18px;
   color: #102a43;
+  font-size: 18px;
   overflow-wrap: anywhere;
 }
 
 /* =========================================================
    BOTTOM ACTION BUTTONS
-   ========================================================= */
+========================================================= */
 
 .tax-action-buttons {
   display: flex;
@@ -380,12 +380,12 @@
     transform 0.2s ease;
 }
 
-/* SAVE / UPDATE BUTTON */
+/* SAVE / UPDATE */
 
 .tax-save-btn {
+  border: 1px solid #102a43;
   background: #102a43;
   color: #fffdf7;
-  border: 1px solid #102a43;
 }
 
 .tax-save-btn:hover:not(:disabled) {
@@ -393,12 +393,12 @@
   box-shadow: 0 3px 8px rgba(16, 42, 67, 0.15);
 }
 
-/* EDIT BUTTON */
+/* EDIT */
 
 .tax-edit-btn {
+  border: 1px solid #c9a227;
   background: #fffdf7;
   color: #102a43;
-  border: 1px solid #c9a227;
 }
 
 .tax-edit-btn:hover:not(:disabled) {
@@ -418,7 +418,7 @@
 
 /* =========================================================
    RESPONSIVE
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 768px) {
   .two-columns,
@@ -455,7 +455,7 @@
 
 /* =========================================================
    SMALL MOBILE SCREENS
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 480px) {
   .tax-summary-page {
@@ -480,69 +480,8 @@
 }
 
 /* =========================================================
-   PRINT / PDF SETTINGS
-   ========================================================= */
-
-@media print {
-  @page {
-    size: A4;
-    margin: 12mm;
-  }
-
-  body {
-    background: #ffffff !important;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .tax-summary-page {
-    width: 100%;
-    min-height: auto;
-    padding: 0;
-    background: #ffffff !important;
-  }
-
-  .tax-summary-header {
-    margin-bottom: 16px;
-  }
-
-  .tax-summary-header h2 {
-    font-size: 22px;
-  }
-
-  .tax-row {
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  .tax-field,
-  .difference-box,
-  .calculated-box {
-    break-inside: avoid;
-    box-shadow: none;
-  }
-
-  .tax-field input,
-  .tax-field select {
-    color: #102a43 !important;
-    -webkit-text-fill-color: #102a43;
-  }
-
-  .calculated-box {
-    background: #102a43 !important;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-}
-
-
-/* =========================================
    SIMPLE WHITE POPUP
-========================================= */
+========================================================= */
 
 .tax-popup-overlay {
   position: fixed;
@@ -559,10 +498,10 @@
   width: 100%;
   max-width: 500px;
   padding: 22px 20px;
-  background: #ffffff !important;
-  color: #333333 !important;
-  border: 1px solid #dddddd;
+  border: 1px solid #ddd;
   border-radius: 10px;
+  background: #fff !important;
+  color: #333 !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
   text-align: left;
   animation: none !important;
@@ -574,14 +513,14 @@
 
 .tax-popup h3 {
   margin: 0 0 12px;
-  color: #333333 !important;
+  color: #333 !important;
   font-size: 20px;
   font-weight: 600;
 }
 
 .tax-popup p {
   margin: 0 0 18px;
-  color: #666666 !important;
+  color: #666 !important;
   font-size: 15px;
   line-height: 1.5;
 }
@@ -595,10 +534,10 @@
 .tax-popup-actions button {
   min-width: 85px;
   padding: 8px 16px;
-  background: #102a43 !important;
-  color: #ffffff !important;
-  border: 1px solid #cccccc !important;
+  border: 1px solid #ccc !important;
   border-radius: 5px;
+  background: #102a43 !important;
+  color: #fff !important;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -610,7 +549,7 @@
 .tax-popup-actions button:focus,
 .tax-popup-actions button:active {
   background: #102a43 !important;
-  color: #ffffff !important;
+  color: #fff !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -620,37 +559,21 @@
   cursor: not-allowed;
 }
 
-@media print {
-  .tax-popup-overlay {
-    display: none !important;
-  }
-}
-
-/* =========================================
-   PDF REPORT - HIDDEN IN NORMAL APPLICATION
-========================================= */
+/* =========================================================
+   PDF REPORT - HIDDEN ON APPLICATION SCREEN
+========================================================= */
 
 .tax-print-report {
   display: none;
 }
 
-/* =========================================
-   PDF REPORT - HIDDEN ON SCREEN
-========================================= */
-
-.tax-print-report {
-  display: none;
-}
-
-/* =========================================
-   STRICT A4 PDF PRINT SETTINGS
-========================================= */
-
-.tax-print-report {
-  display: none;
-}
+/* =========================================================
+   TAX RETURN SUMMARY PDF
+========================================================= */
 
 @media print {
+
+  /* A4 paper with 2.54 cm margins on all sides */
   @page {
     size: A4 portrait;
     margin: 2.54cm;
@@ -658,57 +581,141 @@
 
   html,
   body {
-    margin: 0 !important;
-    padding: 0 !important;
     width: auto !important;
     height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
     overflow: visible !important;
     background: #fff !important;
   }
 
-  body * {
-    visibility: hidden !important;
+  /* Hide all application content except the print report */
+  .tax-summary-page > :not(.tax-print-report) {
+    display: none !important;
   }
 
-  .tax-print-report,
-  .tax-print-report * {
-    visibility: visible !important;
-  }
-
-  .tax-print-report {
+  .tax-summary-page {
     display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
     width: 100% !important;
-    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    box-sizing: border-box !important;
+    overflow: visible !important;
     background: #fff !important;
-    color: #222 !important;
-    font-family: Arial, sans-serif !important;
-    font-size: 8.5pt !important;
-    line-height: 1.1 !important;
   }
 
+  /* Main report */
+  .tax-print-report {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    color: #000 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 9pt !important;
+    line-height: 1.12 !important;
+  }
+
+  /* Download date and time on right */
+  .tax-print-date {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 8pt !important;
+    padding: 0 !important;
+    color: #000 !important;
+    text-align: right !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 9pt !important;
+    font-weight: normal !important;
+  }
+
+  /* Report header */
+  .tax-print-header {
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 0 12pt !important;
+    padding: 0 !important;
+    color: #000 !important;
+    text-align: center !important;
+    font-family: "Times New Roman", Times, serif !important;
+  }
+
+  .tax-print-header h2 {
+    margin: 0 0 6pt !important;
+    padding: 0 !important;
+    color: #000 !important;
+    text-align: center !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 16pt !important;
+    font-weight: bold !important;
+  }
+
+  .tax-print-header p {
+    display: inline-block !important;
+    margin: 2pt 10pt !important;
+    padding: 0 !important;
+    color: #000 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 9pt !important;
+  }
+
+  /* Report tables */
   .tax-print-table {
     width: 100% !important;
     border-collapse: collapse !important;
     table-layout: fixed !important;
-    font-size: 8pt !important;
-    margin-bottom: 6pt !important;
+    margin: 0 0 8pt !important;
+    padding: 0 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 8.5pt !important;
   }
 
   .tax-print-table th,
   .tax-print-table td {
-    border: 0.5pt solid #777 !important;
-    padding: 3pt 4pt !important;
-    overflow-wrap: anywhere;
+    border: 1px solid #555 !important;
+    padding: 3pt 5pt !important;
+    color: #000 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 8.5pt !important;
+    line-height: 1.1 !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .tax-print-table th {
+    background: #eee !important;
+    font-weight: bold !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
   .tax-print-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Difference heading */
+  .tax-print-difference-heading {
+    margin: 8pt 0 4pt !important;
+    padding: 0 !important;
+    color: #000 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 11pt !important;
+    font-weight: bold !important;
+    text-align: left !important;
+  }
+
+  /* Do not print popups */
+  .tax-popup-overlay,
+  .no-print {
+    display: none !important;
   }
 }

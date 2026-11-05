@@ -97,6 +97,9 @@ const TaxReturnSummary = () => {
   const [popupType, setPopupType] = useState("confirm");
   const [popupMessage, setPopupMessage] = useState("");
 
+  // PDF DOWNLOAD DATE AND TIME
+  const [downloadDateTime, setDownloadDateTime] = useState("");
+
   const fieldsDisabled = Boolean(recordId) && !isEditing;
 
   // ------------------------------------------------------
@@ -403,16 +406,30 @@ const TaxReturnSummary = () => {
       return;
     }
 
-    // Generate filename using selected Financial Year
+    const now = new Date();
+
+    const formattedDateTime = now.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
+
     const selectedFY = String(form.financialYear)
       .trim()
       .replace(/[\\/:*?"<>|]/g, "-");
 
     const originalTitle = document.title;
 
+    // Filename suggested by the browser PDF dialog
     document.title = `Tax Summary FY ${selectedFY}`;
 
-    // Restore the original browser tab title after printing
+    // Set the date and time shown in the PDF header
+    setDownloadDateTime(formattedDateTime);
+
     const restoreTitle = () => {
       document.title = originalTitle;
       window.removeEventListener("afterprint", restoreTitle);
@@ -420,7 +437,10 @@ const TaxReturnSummary = () => {
 
     window.addEventListener("afterprint", restoreTitle);
 
-    window.print();
+    // Wait for React to render the updated date and time
+    window.setTimeout(() => {
+      window.print();
+    }, 200);
   };
 
   // ------------------------------------------------------
@@ -800,11 +820,19 @@ const TaxReturnSummary = () => {
 
       <div className="tax-print-report">
 
+        {/* PDF HEADER */}
+
         <div className="tax-print-header">
+
+          <div className="tax-print-date">
+            Downloaded On: {downloadDateTime || "—"}
+          </div>
+
           <h2>TAX RETURN SUMMARY</h2>
-          <p>Financial Year: {form.financialYear || "—"}</p>
-          <p>Assessment Year: {form.assessmentYear || "—"}</p>
+
         </div>
+
+        {/* MAIN REPORT TABLE */}
 
         <table className="tax-print-table">
           <thead>
@@ -816,25 +844,103 @@ const TaxReturnSummary = () => {
           </thead>
 
           <tbody>
-            <tr><td>1</td><td>Financial Year (FY)</td><td>{form.financialYear || "—"}</td></tr>
-            <tr><td>2</td><td>Assessment Year (AY)</td><td>{form.assessmentYear || "—"}</td></tr>
-            <tr><td>3</td><td>ITR Filing Date</td><td>{form.itrFilingDate || "—"}</td></tr>
-            <tr><td>4</td><td>Gross Income As per ITR</td><td>₹ {formatCurrency(form.grossIncome)}</td></tr>
-            <tr><td>5</td><td>Tax Payable</td><td>₹ {formatCurrency(form.taxPayable)}</td></tr>
-            <tr><td>6</td><td>TDS Claim As per 26AS</td><td>₹ {formatCurrency(form.tdsClaim)}</td></tr>
-            <tr><td>7</td><td>Refund Due</td><td>₹ {formatCurrency(refundDue)}</td></tr>
-            <tr><td>8</td><td>Refund Process</td><td>{form.refundProcess || "—"}</td></tr>
-            <tr><td>9</td><td>Date of Refund Process</td><td>{form.refundProcessDate || "—"}</td></tr>
-            <tr><td>10</td><td>Income As per Assessment</td><td>₹ {formatCurrency(form.incomeAssessment)}</td></tr>
-            <tr><td>11</td><td>Income Tax As Per AY</td><td>₹ {formatCurrency(form.incomeTax)}</td></tr>
-            <tr><td>12</td><td>TDS Credit</td><td>₹ {formatCurrency(form.tdsCredit)}</td></tr>
-            <tr><td>13</td><td>Refund Amount</td><td>₹ {formatCurrency(form.refundAmount)}</td></tr>
-            <tr><td>14</td><td>Interest</td><td>₹ {formatCurrency(form.interest)}</td></tr>
-            <tr><td>15</td><td>Refund Amount (Calculated)</td><td>₹ {formatCurrency(calculatedRefund)}</td></tr>
+            <tr>
+              <td>1</td>
+              <td>Financial Year (FY)</td>
+              <td>{form.financialYear || "—"}</td>
+            </tr>
+
+            <tr>
+              <td>2</td>
+              <td>Assessment Year (AY)</td>
+              <td>{form.assessmentYear || "—"}</td>
+            </tr>
+
+            <tr>
+              <td>3</td>
+              <td>ITR Filing Date</td>
+              <td>{form.itrFilingDate || "—"}</td>
+            </tr>
+
+            <tr>
+              <td>4</td>
+              <td>Gross Income As per ITR</td>
+              <td>₹ {formatCurrency(form.grossIncome)}</td>
+            </tr>
+
+            <tr>
+              <td>5</td>
+              <td>Tax Payable</td>
+              <td>₹ {formatCurrency(form.taxPayable)}</td>
+            </tr>
+
+            <tr>
+              <td>6</td>
+              <td>TDS Claim As per 26AS</td>
+              <td>₹ {formatCurrency(form.tdsClaim)}</td>
+            </tr>
+
+            <tr>
+              <td>7</td>
+              <td>Refund Due</td>
+              <td>₹ {formatCurrency(refundDue)}</td>
+            </tr>
+
+            <tr>
+              <td>8</td>
+              <td>Refund Process</td>
+              <td>{form.refundProcess || "—"}</td>
+            </tr>
+
+            <tr>
+              <td>9</td>
+              <td>Date of Refund Process</td>
+              <td>{form.refundProcessDate || "—"}</td>
+            </tr>
+
+            <tr>
+              <td>10</td>
+              <td>Income As per Assessment</td>
+              <td>₹ {formatCurrency(form.incomeAssessment)}</td>
+            </tr>
+
+            <tr>
+              <td>11</td>
+              <td>Income Tax As Per AY</td>
+              <td>₹ {formatCurrency(form.incomeTax)}</td>
+            </tr>
+
+            <tr>
+              <td>12</td>
+              <td>TDS Credit</td>
+              <td>₹ {formatCurrency(form.tdsCredit)}</td>
+            </tr>
+
+            <tr>
+              <td>13</td>
+              <td>Refund Amount</td>
+              <td>₹ {formatCurrency(form.refundAmount)}</td>
+            </tr>
+
+            <tr>
+              <td>14</td>
+              <td>Interest</td>
+              <td>₹ {formatCurrency(form.interest)}</td>
+            </tr>
+
+            <tr>
+              <td>15</td>
+              <td>Refund Amount (Calculated)</td>
+              <td>₹ {formatCurrency(calculatedRefund)}</td>
+            </tr>
           </tbody>
         </table>
 
-        <h3 className="tax-print-difference-heading">DIFFERENCE</h3>
+        {/* DIFFERENCE TABLE */}
+
+        <h3 className="tax-print-difference-heading">
+          DIFFERENCE
+        </h3>
 
         <table className="tax-print-table">
           <thead>
@@ -849,10 +955,12 @@ const TaxReturnSummary = () => {
               <td>Income</td>
               <td>₹ {formatCurrency(differenceIncome)}</td>
             </tr>
+
             <tr>
               <td>Income Tax</td>
               <td>₹ {formatCurrency(differenceIncomeTax)}</td>
             </tr>
+
             <tr>
               <td>Return</td>
               <td>₹ {formatCurrency(differenceReturn)}</td>
@@ -866,6 +974,7 @@ const TaxReturnSummary = () => {
 
       {showPopup && (
         <div className="tax-popup-overlay no-print">
+
           <div
             className={`tax-popup tax-popup-${popupType}`}
             role="dialog"
@@ -925,6 +1034,7 @@ const TaxReturnSummary = () => {
             </div>
 
           </div>
+
         </div>
       )}
 
