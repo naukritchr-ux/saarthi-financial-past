@@ -1,3 +1,4 @@
+
 import { useMemo, useState, useEffect } from "react";
 
 import {
@@ -1187,176 +1188,190 @@ const IndustryPerformance = () => {
           </div>
         </div>
 
-        {/* FILTER SECTION */}
+        {/* =====================================================
+            FILTER SECTION
+        ===================================================== */}
 
         <div className="industry-performance-filters">
 
-          {/* 1. INDUSTRY FILTER */}
+          {/* FIRST ROW: MAIN FILTERS */}
 
-          <div className="industry-filter-group">
-            <label>Industry</label>
+          <div className={`industry-filter-row industry-filter-row-primary ${isIndividualIndustry ? "has-view-report-as" : ""}`}>
 
-            <select
-              value={selectedIndustryFilter}
-              onChange={(event) => {
-                setSelectedIndustryFilter(event.target.value);
-                setViewReportAs("all-time");
-              }}
-            >
-              <option value="ALL">All Industries</option>
+            {/* 1. INDUSTRY FILTER */}
 
-              {industries.map((industry) => (
-                <option key={industry} value={industry}>
-                  {industry}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 2. VIEW REPORT AS */}
-
-          {isIndividualIndustry && (
             <div className="industry-filter-group">
-              <label>View Report As</label>
+              <label>Industry</label>
 
               <select
-                value={viewReportAs}
-                onChange={(event) =>
-                  setViewReportAs(event.target.value)
-                }
+                value={selectedIndustryFilter}
+                onChange={(event) => {
+                  setSelectedIndustryFilter(event.target.value);
+                  setViewReportAs("all-time");
+                }}
               >
-                <option value="all-time">All Time</option>
-                <option value="yearly">Yearly</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
+                <option value="ALL">All Industries</option>
+
+                {industries.map((industry) => (
+                  <option key={industry} value={industry}>
+                    {industry}
+                  </option>
+                ))}
               </select>
             </div>
-          )}
 
-          {/* 3. FINANCIAL YEAR FILTER */}
+            {/* 2. VIEW REPORT AS */}
 
-          <div className="industry-filter-group">
-            <label>Financial Year</label>
+            {isIndividualIndustry && (
+              <div className="industry-filter-group industry-view-report-as-filter">
+                <label>View Report As</label>
 
-            <select
-              value={selectedFinancialYear}
-              onChange={(event) =>
-                setSelectedFinancialYear(event.target.value)
-              }
-            >
-              <option value="ALL">All Financial Years</option>
-
-              {financialYears.map((year) => (
-                <option key={year} value={year}>
-                  FY {year}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 4. MONTH FILTER */}
-
-          <div className="industry-filter-group">
-            <label>Month</label>
-
-            <select
-              value={selectedMonth}
-              onChange={(event) =>
-                setSelectedMonth(event.target.value)
-              }
-            >
-              <option value="ALL">All Months</option>
-
-              {financialMonths.map((month) => (
-                <option
-                  key={month.month}
-                  value={String(month.month)}
+                <select
+                  value={viewReportAs}
+                  onChange={(event) =>
+                    setViewReportAs(event.target.value)
+                  }
                 >
-                  {month.full}
-                </option>
-              ))}
-            </select>
-          </div>
+                  <option value="all-time">All Time</option>
+                  <option value="yearly">Yearly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                </select>
+              </div>
+            )}
 
-          {/* 5. INFO STATUS FILTER */}
+            {/* 3. FINANCIAL YEAR FILTER */}
 
-          <div className="industry-filter-group">
-            <label>Info Status</label>
+            <div className="industry-filter-group">
+              <label>Financial Year</label>
 
-            <select
-              value={selectedInfoStatus}
-              onChange={(event) =>
-                setSelectedInfoStatus(event.target.value)
-              }
-            >
-              <option value="ALL">All</option>
-              <option value="R">R</option>
-              <option value="RV">RV</option>
-              <option value="C">C</option>
-              <option value="CN">CN</option>
-            </select>
-          </div>
-
-          {/* 6. INDUSTRY EXPENDITURE */}
-
-          <div className="industry-filter-group">
-            <label>Industry Expenditure %</label>
-
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={industryExpenditurePercentage}
-              placeholder="0 - 100"
-              onChange={(event) => {
-                const value = event.target.value;
-
-                if (value === "") {
-                  setIndustryExpenditurePercentage("");
-                  return;
+              <select
+                value={selectedFinancialYear}
+                onChange={(event) =>
+                  setSelectedFinancialYear(event.target.value)
                 }
+              >
+                <option value="ALL">All Financial Years</option>
 
-                const number = Number(value);
+                {financialYears.map((year) => (
+                  <option key={year} value={year}>
+                    FY {year}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                if (
-                  Number.isFinite(number) &&
-                  number >= 0 &&
-                  number <= 100
-                ) {
-                  setIndustryExpenditurePercentage(value);
+            {/* 4. MONTH FILTER */}
+
+            <div className="industry-filter-group">
+              <label>Month</label>
+
+              <select
+                value={selectedMonth}
+                onChange={(event) =>
+                  setSelectedMonth(event.target.value)
                 }
-              }}
-            />
+              >
+                <option value="ALL">All Months</option>
+
+                {financialMonths.map((month) => (
+                  <option
+                    key={month.month}
+                    value={String(month.month)}
+                  >
+                    {month.full}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 5. INFO STATUS FILTER */}
+
+            <div className="industry-filter-group">
+              <label>Info Status</label>
+
+              <select
+                value={selectedInfoStatus}
+                onChange={(event) =>
+                  setSelectedInfoStatus(event.target.value)
+                }
+              >
+                <option value="ALL">All</option>
+                <option value="R">R</option>
+                <option value="RV">RV</option>
+                <option value="C">C</option>
+                <option value="CN">CN</option>
+              </select>
+            </div>
+
           </div>
 
-          {/* 7. VIEW COLUMNS FILTER */}
+          {/* SECOND ROW: EXPENDITURE, VIEW AS AND RESET */}
 
-          <div className="industry-filter-group">
-            <label>View Columns</label>
+          <div className="industry-filter-row industry-filter-row-secondary">
 
-            <select
-              value={tableViewType}
-              onChange={(event) =>
-                setTableViewType(event.target.value)
-              }
-            >
-              <option value="all">All</option>
-              <option value="count">Count</option>
-              <option value="revenue">Revenue</option>
-            </select>
-          </div>
+            {/* 6. INDUSTRY EXPENDITURE */}
 
-          {/* 8. RESET FILTERS */}
+            <div className="industry-filter-group industry-expenditure-filter">
+              <label>Industry Expenditure %</label>
 
-          <div className="industry-filter-group industry-reset-filter-group">
-            <button
-              type="button"
-              className="industry-reset-filters-btn"
-              onClick={handleResetFilters}
-            >
-              Reset Filters
-            </button>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={industryExpenditurePercentage}
+                placeholder="0 - 100"
+                onChange={(event) => {
+                  const value = event.target.value;
+
+                  if (value === "") {
+                    setIndustryExpenditurePercentage("");
+                    return;
+                  }
+
+                  const number = Number(value);
+
+                  if (
+                    Number.isFinite(number) &&
+                    number >= 0 &&
+                    number <= 100
+                  ) {
+                    setIndustryExpenditurePercentage(value);
+                  }
+                }}
+              />
+            </div>
+
+            {/* 7. VIEW AS */}
+
+            <div className="industry-filter-group industry-view-columns-filter">
+              <label>View As</label>
+
+              <select
+                value={tableViewType}
+                onChange={(event) =>
+                  setTableViewType(event.target.value)
+                }
+              >
+                <option value="all">All</option>
+                <option value="count">Count</option>
+                <option value="revenue">Revenue</option>
+              </select>
+            </div>
+
+            {/* 8. RESET FILTERS */}
+
+            <div className="industry-filter-group industry-reset-filter-group">
+              <button
+                type="button"
+                className="industry-reset-filters-btn"
+                onClick={handleResetFilters}
+              >
+                Reset Filters
+              </button>
+            </div>
+
           </div>
 
         </div>
@@ -1538,7 +1553,9 @@ const IndustryPerformance = () => {
 
       </div>
 
-      {/* PERFORMANCE MODAL */}
+      {/* =====================================================
+          PERFORMANCE MODAL
+      ===================================================== */}
 
       {showModal && modalIndustry && (
         <div

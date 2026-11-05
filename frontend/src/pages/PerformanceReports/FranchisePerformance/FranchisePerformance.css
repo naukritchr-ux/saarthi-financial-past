@@ -1,4 +1,3 @@
-
 /* =========================================================
    FRANCHISE PERFORMANCE PAGE
 ========================================================= */
@@ -109,23 +108,21 @@
 }
 
 /* =========================================================
-   MAIN FILTERS
+   MAIN FILTERS - ALIGNED LAYOUT
 
-   Order:
-   1. Franchisee
-   2. Financial Year
-   3. Month
-   4. Info Status
-   5. Franchise Expenditure %
-   6. View Report As (conditional)
-   7. Remove Filter button
+   Desktop:
+   Row 1: Franchisee | Financial Year | Month | Info Status
+   Row 2: Franchise Expenditure % | View Report As | Remove Filter
+
+   The layout automatically adapts when View Report As
+   is conditionally displayed.
 ========================================================= */
 
 .franchise-main-filters {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: end;
-  gap: 16px;
+  gap: 18px;
   padding: 22px 24px;
   background: #fcfcfd;
   border-bottom: 1px solid #edf0f4;
@@ -133,11 +130,13 @@
 
 .franchise-main-filters > div {
   min-width: 0;
+  width: 100%;
 }
 
 .franchise-main-filters label,
 .franchise-report-controls label {
   display: block;
+  min-height: 16px;
   margin-bottom: 8px;
   color: #4b5567;
   font-size: 12px;
@@ -151,6 +150,7 @@
   display: block;
   width: 100%;
   height: 42px;
+  min-width: 0;
   padding: 0 12px;
   color: #273449;
   background: #ffffff;
@@ -189,6 +189,11 @@
   display: flex;
   align-items: flex-end;
   min-width: 0;
+  width: 100%;
+}
+
+.franchise-filter-action label {
+  visibility: hidden;
 }
 
 .franchise-remove-filter-btn {
@@ -197,10 +202,10 @@
   justify-content: center;
   width: 100%;
   min-width: 0;
-  height: 39px;
+  height: 42px;
   padding: 0 12px;
   border: 1px solid #d1c7b4;
-  border-radius: 7px;
+  border-radius: 8px;
   background: #f1ede3;
   color: #5a513f;
   font-family: inherit;
@@ -208,10 +213,7 @@
   font-weight: 800;
   white-space: nowrap;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .franchise-remove-filter-btn:hover:not(:disabled) {
@@ -485,7 +487,6 @@
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -514,7 +515,6 @@
     opacity: 0;
     transform: translateY(12px) scale(0.99);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -885,7 +885,7 @@
 
   .franchise-main-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 13px;
+    gap: 14px;
     padding: 18px;
   }
 
@@ -967,7 +967,7 @@
 
   .franchise-main-filters {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 13px;
     padding: 16px;
   }
 
@@ -1120,3 +1120,58 @@
 /* =========================================================
    FRANCHISEE NAME DISPLAY
 ========================================================= */
+
+.franchise-name {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 180px;
+}
+
+.franchise-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   TABLE SCROLLBAR
+========================================================= */
+
+.franchise-table-wrapper::-webkit-scrollbar {
+  height: 7px;
+}
+
+.franchise-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f3f6;
+  border-radius: 10px;
+}
+
+.franchise-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd2dc;
+  border-radius: 10px;
+}
+
+.franchise-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #aab3c0;
+}
+
+/* =========================================================
+   MODAL SCROLLBAR
+========================================================= */
+
+.franchise-performance-modal::-webkit-scrollbar {
+  width: 7px;
+}
+
+.franchise-performance-modal::-webkit-scrollbar-track {
+  background: #f1f3f6;
+}
+
+.franchise-performance-modal::-webkit-scrollbar-thumb {
+  background: #cbd2dc;
+  border-radius: 10px;
+}
+
+.franchise-performance-modal::-webkit-scrollbar-thumb:hover {
+  background: #aab3c0;
+}

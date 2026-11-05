@@ -112,9 +112,6 @@
 
 /* =========================================================
    MAIN FILTERS
-
-   Desktop: 4 columns
-   Individual member: View Report As appears dynamically
 ========================================================= */
 
 .bd-performance-filters {
@@ -242,7 +239,6 @@
 
 /* =========================================================
    SELECTED BD MEMBER HEADING
-   MATCHES TEAM LEADER HEADING
 ========================================================= */
 
 .bd-selected-member-heading {
@@ -259,8 +255,6 @@
   box-sizing: border-box;
 }
 
-/* BD MEMBER label */
-
 .bd-selected-member-heading .bd-member-label {
   display: block;
   margin: 0 0 5px;
@@ -272,8 +266,6 @@
   text-transform: uppercase;
 }
 
-/* BD member name */
-
 .bd-selected-member-heading h3 {
   margin: 0;
   color: #172d50;
@@ -282,8 +274,6 @@
   font-weight: 700;
   line-height: 1.2;
 }
-
-/* Report subtitle */
 
 .bd-selected-member-heading p {
   margin: 5px 0 0;
@@ -651,16 +641,16 @@
 
 
 /* =========================================================
-   REPORT CONTROLS
+   REPORT CONTROLS — VIEW PERFORMANCE
 ========================================================= */
 
 .bd-report-controls {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 16px;
   margin: 0 25px 20px;
-  padding: 17px 19px;
+  padding: 18px 19px;
   background: #faf9f5;
   border: 1px solid #e7e1d4;
   border-radius: 11px;
@@ -671,18 +661,22 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-  min-width: 210px;
+  width: 100%;
+  min-width: 0;
 }
 
 .bd-report-controls label {
+  min-height: 16px;
   color: #55514a;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .bd-report-controls select {
+  display: block;
   width: 100%;
-  min-width: 210px;
+  min-width: 0;
   height: 39px;
   padding: 0 12px;
   outline: none;
@@ -690,6 +684,7 @@
   border-radius: 7px;
   background: #ffffff;
   color: #333333;
+  font-family: inherit;
   font-size: 13px;
   cursor: pointer;
   box-sizing: border-box;
@@ -708,10 +703,12 @@
 .bd-report-period {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
+  min-width: 130px;
   min-height: 39px;
-  margin-left: auto;
-  padding: 0 5px;
+  margin-left: 0;
+  padding: 0 5px 3px;
+  box-sizing: border-box;
 }
 
 .bd-report-period span {
@@ -1012,8 +1009,8 @@
   }
 
   .bd-report-controls {
-    align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
   }
 
   .bd-report-controls > div:not(.bd-report-period) {
@@ -1026,7 +1023,9 @@
   }
 
   .bd-report-period {
-    margin-left: 0;
+    min-width: 0;
+    min-height: auto;
+    padding: 5px 0;
   }
 
   .bd-report-graphs {
@@ -1118,8 +1117,19 @@
   }
 
   .bd-report-controls {
+    grid-template-columns: 1fr;
     margin: 0 15px 15px;
     padding: 14px;
+    gap: 13px;
+  }
+
+  .bd-report-controls > div:not(.bd-report-period) {
+    width: 100%;
+  }
+
+  .bd-report-period {
+    min-height: auto;
+    padding: 5px 0;
   }
 
   .bd-report-graphs {
