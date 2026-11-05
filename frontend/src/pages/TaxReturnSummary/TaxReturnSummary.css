@@ -538,3 +538,146 @@
     -webkit-print-color-adjust: exact;
   }
 }
+
+
+/* ======================================================
+   TAX RETURN SAVE CONFIRMATION POPUP
+====================================================== */
+
+.tax-popup-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.58);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 99999;
+}
+
+.tax-popup {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  padding: 32px 28px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+  animation: taxPopupAnimation 0.25s ease-out;
+}
+
+.tax-popup-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.tax-popup-confirm-icon {
+  background: #fff4d6;
+  color: #b7791f;
+}
+
+.tax-popup-success .tax-popup-icon {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.tax-popup-error .tax-popup-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.tax-popup h3 {
+  margin: 0 0 12px;
+  color: #172554;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.tax-popup p {
+  margin: 0 0 25px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.tax-popup-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.tax-popup-actions button {
+  min-width: 110px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tax-popup-cancel {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.tax-popup-cancel:hover {
+  background: #cbd5e1;
+}
+
+.tax-popup-confirm {
+  background: #172554;
+  color: #ffffff;
+}
+
+.tax-popup-confirm:hover {
+  background: #263b70;
+}
+
+.tax-popup-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes taxPopupAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .tax-popup {
+    padding: 26px 20px;
+  }
+
+  .tax-popup-actions {
+    flex-direction: column-reverse;
+  }
+
+  .tax-popup-actions button {
+    width: 100%;
+  }
+}
+
+@media print {
+  .tax-popup-overlay {
+    display: none !important;
+  }
+}
