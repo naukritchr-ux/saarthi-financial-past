@@ -1,4 +1,3 @@
-
 import {
   useMemo,
   useState
@@ -19,7 +18,6 @@ import {
 } from "../../../context/DataContext";
 
 import "./BDPerformance.css";
-
 
 /* =========================================================
    FINANCIAL YEAR MONTHS
@@ -44,7 +42,6 @@ const financialMonthNumbers = [
   4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3
 ];
 
-
 /* =========================================================
    NORMALIZE UNIQUE VALUE
 ========================================================= */
@@ -55,7 +52,6 @@ function normalizeKey(value) {
     .replace(/\s+/g, " ")
     .trim();
 }
-
 
 /* =========================================================
    NUMBER HELPER
@@ -85,7 +81,6 @@ function toNumber(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
-
 /* =========================================================
    CURRENCY FORMAT
 ========================================================= */
@@ -97,7 +92,6 @@ function formatCurrency(value) {
     maximumFractionDigits: 0
   }).format(toNumber(value));
 }
-
 
 /* =========================================================
    GET BD MEMBER
@@ -111,7 +105,6 @@ function getBDMember(row) {
     ""
   ).trim();
 }
-
 
 /* =========================================================
    GET COMPANY NAME
@@ -131,7 +124,6 @@ function getCompanyName(row) {
   ).trim();
 }
 
-
 /* =========================================================
    GET INDUSTRY
 ========================================================= */
@@ -144,7 +136,6 @@ function getIndustry(row) {
   ).trim();
 }
 
-
 /* =========================================================
    GET CITY
 ========================================================= */
@@ -156,7 +147,6 @@ function getCity(row) {
     ""
   ).trim();
 }
-
 
 /* =========================================================
    GET FRANCHISE NAME
@@ -172,7 +162,6 @@ function getFranchiseName(row) {
   ).trim();
 }
 
-
 /* =========================================================
    GET INFO STATUS
 ========================================================= */
@@ -186,7 +175,6 @@ function getInfoStatus(row) {
     ""
   ).trim().toUpperCase();
 }
-
 
 /* =========================================================
    GET BILLING
@@ -208,7 +196,6 @@ function getBilling(row) {
   );
 }
 
-
 /* =========================================================
    GET FRANCHISEE SHARE
 ========================================================= */
@@ -224,7 +211,6 @@ function getFranchiseeShare(row) {
     0
   );
 }
-
 
 /* =========================================================
    GET BD EXPENDITURE
@@ -253,7 +239,6 @@ function getBDExpenditure(row, percentage) {
   return billing * (rate / 100);
 }
 
-
 /* =========================================================
    GET CLIENT ACQUIRED DATE
 ========================================================= */
@@ -267,7 +252,6 @@ function getClientAcquiredDate(row) {
     ""
   );
 }
-
 
 /* =========================================================
    SAFE DATE PARSER
@@ -306,7 +290,6 @@ function parseDate(value) {
 
   return Number.isNaN(date.getTime()) ? null : date;
 }
-
 
 /* =========================================================
    GET FINANCIAL YEAR
@@ -350,7 +333,6 @@ function getFinancialYear(row) {
   return "";
 }
 
-
 /* =========================================================
    GET MONTH
 ========================================================= */
@@ -365,7 +347,6 @@ function getMonth(row) {
 
   return date.getMonth() + 1;
 }
-
 
 /* =========================================================
    BD FINANCIAL CALCULATION
@@ -459,7 +440,6 @@ function getFinancialValues(
   };
 }
 
-
 /* =========================================================
    CUSTOM TOOLTIP
 ========================================================= */
@@ -503,7 +483,6 @@ function BDTooltip({
   );
 }
 
-
 /* =========================================================
    MAIN COMPONENT
 ========================================================= */
@@ -512,7 +491,6 @@ function BDPerformance() {
   const {
     rows = []
   } = useData();
-
 
   /* =======================================================
      MAIN TABLE FILTER STATE
@@ -544,7 +522,6 @@ function BDPerformance() {
     setSelectedReportView
   ] = useState("ALL_TIME");
 
-
   /* =======================================================
      MODAL STATE
   ======================================================= */
@@ -564,7 +541,6 @@ function BDPerformance() {
     setReportInfoStatus
   ] = useState("");
 
-
   /* =======================================================
      BD EXPENDITURE
   ======================================================= */
@@ -574,6 +550,12 @@ function BDPerformance() {
     setBdExpenditurePercentage
   ] = useState("");
 
+  // ALL | COUNT | REVENUE
+  const [
+    displayFilter,
+    setDisplayFilter
+  ] = useState("ALL");
+
   const hasBDExpenditurePercentage =
     bdExpenditurePercentage !== "" &&
     bdExpenditurePercentage !== null &&
@@ -581,6 +563,16 @@ function BDPerformance() {
     Number.isFinite(Number(bdExpenditurePercentage)) &&
     Number(bdExpenditurePercentage) >= 0;
 
+  const showCountColumns =
+    displayFilter === "ALL" || displayFilter === "COUNT";
+
+  const showRevenueColumns =
+    displayFilter === "ALL" || displayFilter === "REVENUE";
+
+  const tableColumnCount =
+    2 +
+    (showCountColumns ? 3 : 0) +
+    (showRevenueColumns ? 2 + (hasBDExpenditurePercentage ? 1 : 0) : 0);
 
   /* =======================================================
      BD MEMBER OPTIONS
@@ -607,7 +599,6 @@ function BDPerformance() {
       .sort((a, b) => a.localeCompare(b));
   }, [rows]);
 
-
   /* =======================================================
      FINANCIAL YEAR OPTIONS
   ======================================================= */
@@ -630,7 +621,6 @@ function BDPerformance() {
       return yearA - yearB;
     });
   }, [rows]);
-
 
   /* =======================================================
      MAIN TABLE MONTH OPTIONS
@@ -668,7 +658,6 @@ function BDPerformance() {
     rows,
     selectedFinancialYear
   ]);
-
 
   /* =======================================================
      MAIN TABLE MEMBER SUMMARY
@@ -770,7 +759,6 @@ function BDPerformance() {
 
         return a.member.localeCompare(b.member);
       });
-
   }, [
     rows,
     selectedBDMember,
@@ -779,7 +767,6 @@ function BDPerformance() {
     selectedInfoStatus,
     bdExpenditurePercentage
   ]);
-
 
   /* =======================================================
      SELECTED BD MEMBER PERIOD DATA
@@ -938,7 +925,6 @@ function BDPerformance() {
         franchisees: item.franchisees.size
       }))
       .sort((a, b) => a.periodOrder - b.periodOrder);
-
   }, [
     rows,
     selectedBDMember,
@@ -947,7 +933,6 @@ function BDPerformance() {
     selectedInfoStatus,
     bdExpenditurePercentage
   ]);
-
 
   /* =======================================================
      DETERMINE TABLE VIEW
@@ -968,7 +953,6 @@ function BDPerformance() {
     ? periodMemberData
     : memberData;
 
-
   /* =======================================================
      SELECTED MEMBER HEADING SUBTITLE
   ======================================================= */
@@ -978,7 +962,6 @@ function BDPerformance() {
     MONTHLY: "Monthly Performance Report",
     QUARTERLY: "Quarterly Performance Report"
   }[selectedReportView] || "Performance Report";
-
 
   /* =======================================================
      SELECTED MEMBER ROWS FOR MODAL
@@ -1014,14 +997,12 @@ function BDPerformance() {
 
       return true;
     });
-
   }, [
     rows,
     selectedMember,
     reportFinancialYear,
     reportInfoStatus
   ]);
-
 
   /* =======================================================
      PERFORMANCE SUMMARY
@@ -1059,13 +1040,11 @@ function BDPerformance() {
       totalBDExpenditure,
       netAmount
     };
-
   }, [
     selectedRows,
     reportInfoStatus,
     bdExpenditurePercentage
   ]);
-
 
   /* =======================================================
      BEST INDUSTRY
@@ -1100,11 +1079,9 @@ function BDPerformance() {
     });
 
     return best || "—";
-
   }, [
     selectedRows
   ]);
-
 
   /* =======================================================
      BEST CITY
@@ -1139,11 +1116,9 @@ function BDPerformance() {
     });
 
     return best || "—";
-
   }, [
     selectedRows
   ]);
-
 
   /* =======================================================
      YEARLY REPORT
@@ -1195,13 +1170,11 @@ function BDPerformance() {
 
         return yearA - yearB;
       });
-
   }, [
     selectedRows,
     reportInfoStatus,
     bdExpenditurePercentage
   ]);
-
 
   /* =======================================================
      MONTHLY REPORT
@@ -1264,14 +1237,12 @@ function BDPerformance() {
         billing: data.billing
       };
     });
-
   }, [
     selectedRows,
     reportFinancialYear,
     reportInfoStatus,
     bdExpenditurePercentage
   ]);
-
 
   /* =======================================================
      REPORT DATA
@@ -1280,7 +1251,6 @@ function BDPerformance() {
   const reportData = reportFinancialYear
     ? monthlyReportData
     : yearlyReportData;
-
 
   /* =======================================================
      OPEN PERFORMANCE
@@ -1292,7 +1262,6 @@ function BDPerformance() {
     setReportInfoStatus(selectedInfoStatus);
   }
 
-
   /* =======================================================
      CLOSE MODAL
   ======================================================= */
@@ -1302,7 +1271,6 @@ function BDPerformance() {
     setReportFinancialYear("");
     setReportInfoStatus("");
   }
-
 
   /* =======================================================
      RESET MAIN FILTERS
@@ -1315,8 +1283,8 @@ function BDPerformance() {
     setSelectedInfoStatus("");
     setSelectedReportView("ALL_TIME");
     setBdExpenditurePercentage("");
+    setDisplayFilter("ALL");
   }
-
 
   /* =======================================================
      GET TABLE DESCRIPTION
@@ -1346,14 +1314,12 @@ function BDPerformance() {
     return "BD member performance overview";
   })();
 
-
   /* =======================================================
      RENDER
   ======================================================= */
 
   return (
     <div className="bd-performance-page">
-
       {/* PAGE HEADER */}
 
       <div className="bd-page-header">
@@ -1373,11 +1339,9 @@ function BDPerformance() {
         </div>
       </div>
 
-
       {/* MAIN TABLE CARD */}
 
       <div className="bd-table-card">
-
         {/* TABLE HEADER */}
 
         <div className="bd-table-header">
@@ -1400,11 +1364,9 @@ function BDPerformance() {
           </div>
         </div>
 
-
         {/* MAIN FILTERS */}
 
         <div className="bd-performance-filters">
-
           {/* 1. BD MEMBER */}
 
           <div className="bd-filter-group">
@@ -1433,7 +1395,6 @@ function BDPerformance() {
               ))}
             </select>
           </div>
-
 
           {/* 2. VIEW REPORT AS */}
 
@@ -1470,7 +1431,6 @@ function BDPerformance() {
             </div>
           )}
 
-
           {/* 3. FINANCIAL YEAR */}
 
           <div className="bd-filter-group">
@@ -1501,7 +1461,6 @@ function BDPerformance() {
             </select>
           </div>
 
-
           {/* 4. MONTH */}
 
           <div className="bd-filter-group">
@@ -1531,7 +1490,6 @@ function BDPerformance() {
               ))}
             </select>
           </div>
-
 
           {/* 5. INFO STATUS */}
 
@@ -1569,7 +1527,6 @@ function BDPerformance() {
             </select>
           </div>
 
-
           {/* 6. BD EXPENDITURE */}
 
           <div className="bd-filter-group">
@@ -1606,6 +1563,25 @@ function BDPerformance() {
             />
           </div>
 
+          {/* 7. VIEW AS */}
+
+          <div className="bd-filter-group">
+            <label htmlFor="bd-view-as">
+              View As
+            </label>
+
+            <select
+              id="bd-view-as"
+              value={displayFilter}
+              onChange={event => {
+                setDisplayFilter(event.target.value);
+              }}
+            >
+              <option value="ALL">All</option>
+              <option value="COUNT">Count</option>
+              <option value="REVENUE">Revenue</option>
+            </select>
+          </div>
 
           {/* RESET FILTERS */}
 
@@ -1622,16 +1598,13 @@ function BDPerformance() {
               Reset Filters
             </button>
           </div>
-
         </div>
-
 
         {/* SELECTED MEMBER HEADING
             VISIBLE ONLY FOR YEARLY, MONTHLY AND QUARTERLY */}
 
         {selectedBDMember && selectedReportView !== "ALL_TIME" && (
           <div className="bd-selected-member-heading">
-
             <span className="bd-member-label">
               BD MEMBER
             </span>
@@ -1643,42 +1616,47 @@ function BDPerformance() {
             <p>
               {memberReportSubtitle}
             </p>
-
           </div>
         )}
-
 
         {/* TABLE */}
 
         <div className="bd-table-wrapper">
           <table className="bd-performance-table">
-
             <thead>
               <tr>
                 <th>
                   {isPeriodView ? "Period" : "BD Member"}
                 </th>
 
-                <th>Total Acquired Client</th>
-                <th>Total Enquiries</th>
-                <th>No. of Franchisee</th>
-                <th>Total Billing</th>
-                <th>Net Amount</th>
+                {showCountColumns && (
+                  <>
+                    <th>Total Acquired Client</th>
+                    <th>Total Enquiries</th>
+                    <th>No. of Franchisee</th>
+                  </>
+                )}
 
-                {hasBDExpenditurePercentage && (
-                  <th>BD Expenditure</th>
+                {showRevenueColumns && (
+                  <>
+                    <th>Total Billing</th>
+                    <th>Net Amount</th>
+
+                    {hasBDExpenditurePercentage && (
+                      <th>BD Expenditure</th>
+                    )}
+                  </>
                 )}
 
                 <th>Performance</th>
               </tr>
             </thead>
 
-
             <tbody>
               {needsFinancialYear && !selectedFinancialYear ? (
                 <tr>
                   <td
-                    colSpan={hasBDExpenditurePercentage ? 8 : 7}
+                    colSpan={tableColumnCount}
                     className="bd-empty"
                   >
                     Please select a Financial Year to view monthly or quarterly performance.
@@ -1687,7 +1665,7 @@ function BDPerformance() {
               ) : displayedMemberData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={hasBDExpenditurePercentage ? 8 : 7}
+                    colSpan={tableColumnCount}
                     className="bd-empty"
                   >
                     No BD member data available for the selected filters.
@@ -1698,7 +1676,6 @@ function BDPerformance() {
                   <tr
                     key={`${member.member}-${member.period || "all-time"}-${index}`}
                   >
-
                     <td>
                       {isPeriodView ? (
                         <strong>
@@ -1717,50 +1694,51 @@ function BDPerformance() {
                       )}
                     </td>
 
+                    {showCountColumns && (
+                      <>
+                        <td>
+                          <span className="bd-client-count">
+                            {member.clients}
+                          </span>
+                        </td>
 
-                    <td>
-                      <span className="bd-client-count">
-                        {member.clients}
-                      </span>
-                    </td>
+                        <td>
+                          <span className="bd-client-count">
+                            {member.enquiries}
+                          </span>
+                        </td>
 
-
-                    <td>
-                      <span className="bd-client-count">
-                        {member.enquiries}
-                      </span>
-                    </td>
-
-
-                    <td>
-                      <span className="bd-client-count">
-                        {member.franchisees}
-                      </span>
-                    </td>
-
-
-                    <td>
-                      <span className="bd-billing-value">
-                        {formatCurrency(member.billing)}
-                      </span>
-                    </td>
-
-
-                    <td>
-                      <span className="bd-net-value">
-                        {formatCurrency(member.netAmount)}
-                      </span>
-                    </td>
-
-
-                    {hasBDExpenditurePercentage && (
-                      <td>
-                        <span className="bd-expenditure-value">
-                          {formatCurrency(member.bdExpenditure)}
-                        </span>
-                      </td>
+                        <td>
+                          <span className="bd-client-count">
+                            {member.franchisees}
+                          </span>
+                        </td>
+                      </>
                     )}
 
+                    {showRevenueColumns && (
+                      <>
+                        <td>
+                          <span className="bd-billing-value">
+                            {formatCurrency(member.billing)}
+                          </span>
+                        </td>
+
+                        <td>
+                          <span className="bd-net-value">
+                            {formatCurrency(member.netAmount)}
+                          </span>
+                        </td>
+
+                        {hasBDExpenditurePercentage && (
+                          <td>
+                            <span className="bd-expenditure-value">
+                              {formatCurrency(member.bdExpenditure)}
+                            </span>
+                          </td>
+                        )}
+                      </>
+                    )}
 
                     <td>
                       <button
@@ -1777,17 +1755,13 @@ function BDPerformance() {
                         </span>
                       </button>
                     </td>
-
                   </tr>
                 ))
               )}
             </tbody>
-
           </table>
         </div>
-
       </div>
-
 
       {/* ===================================================
           PERFORMANCE MODAL
@@ -1798,12 +1772,10 @@ function BDPerformance() {
           className="bd-performance-overlay"
           onClick={handleCloseModal}
         >
-
           <div
             className="bd-performance-modal"
             onClick={event => event.stopPropagation()}
           >
-
             {/* MODAL HEADER */}
 
             <div className="bd-modal-header">
@@ -1832,11 +1804,9 @@ function BDPerformance() {
               </button>
             </div>
 
-
             {/* SUMMARY CARDS */}
 
             <div className="bd-summary-grid">
-
               <div className="bd-summary-card">
                 <span className="bd-summary-label">
                   Best Industry
@@ -1846,7 +1816,6 @@ function BDPerformance() {
                   {bestIndustry}
                 </strong>
               </div>
-
 
               <div className="bd-summary-card">
                 <span className="bd-summary-label">
@@ -1858,7 +1827,6 @@ function BDPerformance() {
                 </strong>
               </div>
 
-
               <div className="bd-summary-card">
                 <span className="bd-summary-label">
                   Total Billing
@@ -1868,7 +1836,6 @@ function BDPerformance() {
                   {formatCurrency(performanceSummary.totalBilling)}
                 </strong>
               </div>
-
 
               {hasBDExpenditurePercentage && (
                 <div className="bd-summary-card">
@@ -1886,7 +1853,6 @@ function BDPerformance() {
                 </div>
               )}
 
-
               <div className="bd-summary-card bd-summary-net">
                 <span className="bd-summary-label">
                   Net Amount
@@ -1896,14 +1862,11 @@ function BDPerformance() {
                   {formatCurrency(performanceSummary.netAmount)}
                 </strong>
               </div>
-
             </div>
-
 
             {/* REPORT CONTROLS */}
 
             <div className="bd-report-controls">
-
               <div>
                 <label htmlFor="bd-financial-year">
                   Financial Year
@@ -1930,7 +1893,6 @@ function BDPerformance() {
                   ))}
                 </select>
               </div>
-
 
               <div>
                 <label htmlFor="bd-report-info-status">
@@ -1966,7 +1928,6 @@ function BDPerformance() {
                 </select>
               </div>
 
-
               <div className="bd-report-period">
                 <span>
                   Report Period
@@ -1978,18 +1939,14 @@ function BDPerformance() {
                     : "Yearly"}
                 </strong>
               </div>
-
             </div>
-
 
             {/* GRAPHS */}
 
             <div className="bd-report-graphs">
-
               {/* CLIENT ACQUIRED */}
 
               <div className="bd-chart-card">
-
                 <div className="bd-chart-heading">
                   <div>
                     <span className="bd-chart-indicator bd-client-indicator"></span>
@@ -2003,7 +1960,6 @@ function BDPerformance() {
                     {reportFinancialYear ? "Monthly" : "Yearly"}
                   </span>
                 </div>
-
 
                 <div className="bd-chart-container">
                   {reportData.length === 0 ? (
@@ -2056,14 +2012,11 @@ function BDPerformance() {
                     </ResponsiveContainer>
                   )}
                 </div>
-
               </div>
-
 
               {/* TOTAL BILLING */}
 
               <div className="bd-chart-card">
-
                 <div className="bd-chart-heading">
                   <div>
                     <span className="bd-chart-indicator bd-billing-indicator"></span>
@@ -2077,7 +2030,6 @@ function BDPerformance() {
                     {reportFinancialYear ? "Monthly" : "Yearly"}
                   </span>
                 </div>
-
 
                 <div className="bd-chart-container">
                   {reportData.length === 0 ? (
@@ -2152,11 +2104,8 @@ function BDPerformance() {
                     </ResponsiveContainer>
                   )}
                 </div>
-
               </div>
-
             </div>
-
 
             {/* MODAL FOOTER */}
 
@@ -2175,11 +2124,9 @@ function BDPerformance() {
                 Close
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useMemo, useState, useEffect } from "react";
 
 import {
@@ -399,6 +400,9 @@ function FranchisePerformance() {
 
   const [viewReportAs, setViewReportAs] = useState("all-time");
 
+  // View By: All, Count, Revenue
+  const [selectedViewType, setSelectedViewType] = useState("all");
+
   /* MODAL FILTERS */
 
   const [selectedFranchise, setSelectedFranchise] = useState("");
@@ -410,7 +414,6 @@ function FranchisePerformance() {
     setReportFranchiseExpenditurePercentage
   ] = useState("");
 
-  // Additional modal period filters.
   const [reportMonth, setReportMonth] = useState("");
   const [reportQuarter, setReportQuarter] = useState("");
 
@@ -436,6 +439,7 @@ function FranchisePerformance() {
     setSelectedInfoStatus("");
     setFranchiseExpenditurePercentage("");
     setViewReportAs("all-time");
+    setSelectedViewType("all");
   }
 
   /* EXPENDITURE VALIDATION */
@@ -451,6 +455,23 @@ function FranchisePerformance() {
     Number.isFinite(Number(reportFranchiseExpenditurePercentage)) &&
     Number(reportFranchiseExpenditurePercentage) >= 0 &&
     Number(reportFranchiseExpenditurePercentage) <= 100;
+
+  /* VIEW TYPE CONDITIONS */
+
+  const showCountColumns =
+    selectedViewType === "all" ||
+    selectedViewType === "count";
+
+  const showRevenueColumns =
+    selectedViewType === "all" ||
+    selectedViewType === "revenue";
+
+  const mainTableColumnCount =
+    2 +
+    (showCountColumns ? 2 : 0) +
+    (showRevenueColumns
+      ? 2 + (hasFranchiseExpenditurePercentage ? 1 : 0)
+      : 0);
 
   /* FRANCHISE OPTIONS */
 
@@ -948,8 +969,6 @@ function FranchisePerformance() {
   function handleViewPerformance(item) {
     if (!item) return;
 
-    // All Time: the row itself identifies the franchise.
-    // Period reports: all rows belong to the selected franchise.
     const franchise =
       viewReportAs === "all-time"
         ? item.franchise
@@ -958,7 +977,6 @@ function FranchisePerformance() {
     if (!franchise) return;
 
     setSelectedFranchise(franchise);
-
     setReportInfoStatus(selectedInfoStatus);
 
     setReportFranchiseExpenditurePercentage(
@@ -1086,7 +1104,7 @@ function FranchisePerformance() {
           </div>
         </div>
 
-        {/* FILTERS */}
+        {/* MAIN FILTERS */}
 
         <div className="franchise-main-filters">
 
@@ -1233,6 +1251,24 @@ function FranchisePerformance() {
             />
           </div>
 
+          {/* VIEW BY FILTER */}
+
+          <div>
+            <label htmlFor="franchise-view-type">View By</label>
+
+            <select
+              id="franchise-view-type"
+              value={selectedViewType}
+              onChange={event =>
+                setSelectedViewType(event.target.value)
+              }
+            >
+              <option value="all">All</option>
+              <option value="count">Count</option>
+              <option value="revenue">Revenue</option>
+            </select>
+          </div>
+
           {/* RESET */}
 
           <div className="franchise-filter-action">
@@ -1246,7 +1282,8 @@ function FranchisePerformance() {
                 !selectedMonth &&
                 !selectedInfoStatus &&
                 franchiseExpenditurePercentage === "" &&
-                viewReportAs === "all-time"
+                viewReportAs === "all-time" &&
+                selectedViewType === "all"
               }
             >
               Reset Filter
@@ -1290,7 +1327,7 @@ function FranchisePerformance() {
                 Please select a Financial Year from the filter above
                 to view the{" "}
                 {viewReportAs === "monthly" ? "monthly" : "quarterly"}
-                {" "}performance report for {selectedFranchisee}.
+                {" "}performance report for {selectedFranchisee || "all franchisees"}.
               </p>
             </div>
           ) : (
@@ -1299,16 +1336,28 @@ function FranchisePerformance() {
               <thead>
                 <tr>
                   <th>{tableFirstColumnLabel}</th>
-                  <th>Total Acquired Client</th>
-                  <th>Total Enquiries</th>
-                  <th>Total Billing</th>
-                  <th>Net Amount</th>
 
-                  {hasFranchiseExpenditurePercentage && (
-                    <th>Franchise Expenditure</th>
+                  {/* COUNT COLUMNS */}
+
+                  {showCountColumns && (
+                    <>
+                      <th>Total Acquired Client</th>
+                      <th>Total Enquiries</th>
+                    </>
                   )}
 
-                  {/* PERFORMANCE COLUMN ALWAYS VISIBLE */}
+                  {/* REVENUE COLUMNS */}
+
+                  {showRevenueColumns && (
+                    <>
+                      <th>Total Billing</th>
+                      <th>Net Amount</th>
+
+                      {hasFranchiseExpenditurePercentage && (
+                        <th>Franchise Expenditure</th>
+                      )}
+                    </>
+                  )}
 
                   <th>Performance</th>
                 </tr>
@@ -1318,10 +1367,7 @@ function FranchisePerformance() {
                 {franchiseData.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={
-                        6 +
-                        (hasFranchiseExpenditurePercentage ? 1 : 0)
-                      }
+                      colSpan={mainTableColumnCount}
                       className="franchise-empty"
                     >
                       No franchise data available.
@@ -1341,39 +1387,51 @@ function FranchisePerformance() {
                         </div>
                       </td>
 
-                      <td>
-                        <span className="franchise-client-count">
-                          {item.clients}
-                        </span>
-                      </td>
+                      {/* COUNT VIEW */}
 
-                      <td>
-                        <span className="franchise-client-count">
-                          {item.enquiries}
-                        </span>
-                      </td>
+                      {showCountColumns && (
+                        <>
+                          <td>
+                            <span className="franchise-client-count">
+                              {item.clients}
+                            </span>
+                          </td>
 
-                      <td>
-                        <span className="franchise-billing-value">
-                          {formatCurrency(item.billing)}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span className="franchise-net-value">
-                          {formatCurrency(item.netAmount)}
-                        </span>
-                      </td>
-
-                      {hasFranchiseExpenditurePercentage && (
-                        <td>
-                          <span className="franchise-expenditure-value">
-                            {formatCurrency(item.franchiseExpenditure)}
-                          </span>
-                        </td>
+                          <td>
+                            <span className="franchise-client-count">
+                              {item.enquiries}
+                            </span>
+                          </td>
+                        </>
                       )}
 
-                      {/* VIEW BUTTON IN ALL REPORT TYPES */}
+                      {/* REVENUE VIEW */}
+
+                      {showRevenueColumns && (
+                        <>
+                          <td>
+                            <span className="franchise-billing-value">
+                              {formatCurrency(item.billing)}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span className="franchise-net-value">
+                              {formatCurrency(item.netAmount)}
+                            </span>
+                          </td>
+
+                          {hasFranchiseExpenditurePercentage && (
+                            <td>
+                              <span className="franchise-expenditure-value">
+                                {formatCurrency(item.franchiseExpenditure)}
+                              </span>
+                            </td>
+                          )}
+                        </>
+                      )}
+
+                      {/* PERFORMANCE BUTTON */}
 
                       <td>
                         <button
@@ -1593,7 +1651,6 @@ function FranchisePerformance() {
 
               <div className="franchise-report-period">
                 <span>Report Period</span>
-
                 <strong>{reportPeriodLabel}</strong>
               </div>
 

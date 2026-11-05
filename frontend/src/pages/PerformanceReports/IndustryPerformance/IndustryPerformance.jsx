@@ -1,8 +1,4 @@
-import {
-  useMemo,
-  useState,
-  useEffect
-} from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import {
   BarChart,
@@ -538,6 +534,10 @@ const IndustryPerformance = () => {
   const [viewReportAs, setViewReportAs] =
     useState("all-time");
 
+  // All is the default table view.
+  const [tableViewType, setTableViewType] =
+    useState("all");
+
   /* MODAL STATES */
 
   const [modalIndustry, setModalIndustry] = useState("");
@@ -555,7 +555,6 @@ const IndustryPerformance = () => {
   const isIndividualIndustry =
     selectedIndustryFilter !== "ALL";
 
-  // Monthly and Quarterly reports require a financial year selection.
   const isFinancialYearMissing =
     isIndividualIndustry &&
     (viewReportAs === "monthly" || viewReportAs === "quarterly") &&
@@ -772,6 +771,22 @@ const IndustryPerformance = () => {
     quarterly: "Quarter"
   }[viewReportAs];
 
+  /* =========================================================
+     TABLE COLUMN VISIBILITY
+  ========================================================= */
+
+  const showCountColumns =
+    tableViewType === "all" || tableViewType === "count";
+
+  const showRevenueColumns =
+    tableViewType === "all" || tableViewType === "revenue";
+
+  const tableColumnCount =
+    2 +
+    (showCountColumns ? 3 : 0) +
+    (showRevenueColumns ? 2 : 0) +
+    (showRevenueColumns && hasIndustryExpenditure ? 1 : 0);
+
   /* RESET FILTERS */
 
   const handleResetFilters = () => {
@@ -780,6 +795,7 @@ const IndustryPerformance = () => {
     setSelectedMonth("ALL");
     setSelectedInfoStatus("ALL");
     setIndustryExpenditurePercentage("");
+    setTableViewType("all");
     setViewReportAs("all-time");
   };
 
@@ -1197,7 +1213,7 @@ const IndustryPerformance = () => {
             </select>
           </div>
 
-          {/* 2. VIEW REPORT AS - IMMEDIATELY AFTER INDUSTRY */}
+          {/* 2. VIEW REPORT AS */}
 
           {isIndividualIndustry && (
             <div className="industry-filter-group">
@@ -1314,7 +1330,24 @@ const IndustryPerformance = () => {
             />
           </div>
 
-          {/* 7. RESET FILTERS */}
+          {/* 7. VIEW COLUMNS FILTER */}
+
+          <div className="industry-filter-group">
+            <label>View Columns</label>
+
+            <select
+              value={tableViewType}
+              onChange={(event) =>
+                setTableViewType(event.target.value)
+              }
+            >
+              <option value="all">All</option>
+              <option value="count">Count</option>
+              <option value="revenue">Revenue</option>
+            </select>
+          </div>
+
+          {/* 8. RESET FILTERS */}
 
           <div className="industry-filter-group industry-reset-filter-group">
             <button
@@ -1356,14 +1389,28 @@ const IndustryPerformance = () => {
             <thead>
               <tr>
                 <th>{tableFirstColumnLabel}</th>
-                <th>Total Acquired Client</th>
-                <th>Total Enquiries</th>
-                <th>No. of Franchisee</th>
-                <th>Total Billing</th>
-                <th>Net Amount</th>
 
-                {hasIndustryExpenditure && (
-                  <th>Industry Expenditure</th>
+                {/* COUNT COLUMNS */}
+
+                {showCountColumns && (
+                  <>
+                    <th>Total Acquired Client</th>
+                    <th>Total Enquiries</th>
+                    <th>No. of Franchisee</th>
+                  </>
+                )}
+
+                {/* REVENUE COLUMNS */}
+
+                {showRevenueColumns && (
+                  <>
+                    <th>Total Billing</th>
+                    <th>Net Amount</th>
+
+                    {hasIndustryExpenditure && (
+                      <th>Industry Expenditure</th>
+                    )}
+                  </>
                 )}
 
                 <th>Performance</th>
@@ -1374,7 +1421,7 @@ const IndustryPerformance = () => {
               {isFinancialYearMissing ? (
                 <tr>
                   <td
-                    colSpan={hasIndustryExpenditure ? 8 : 7}
+                    colSpan={tableColumnCount}
                     className="industry-empty industry-financial-year-table-message"
                     role="alert"
                   >
@@ -1384,7 +1431,7 @@ const IndustryPerformance = () => {
               ) : reportTableData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={hasIndustryExpenditure ? 8 : 7}
+                    colSpan={tableColumnCount}
                     className="industry-empty"
                   >
                     No industry data found for the selected filters.
@@ -1401,6 +1448,7 @@ const IndustryPerformance = () => {
 
                   return (
                     <tr key={item.key || item.industry}>
+
                       <td>
                         {isAllTime ? (
                           <div className="industry-name">
@@ -1417,39 +1465,53 @@ const IndustryPerformance = () => {
                         )}
                       </td>
 
-                      <td>
-                        <span className="industry-client-count">
-                          {formatNumber(item.totalAcquiredClients)}
-                        </span>
-                      </td>
+                      {/* COUNT COLUMNS */}
 
-                      <td>
-                        {formatNumber(item.totalEnquiries)}
-                      </td>
+                      {showCountColumns && (
+                        <>
+                          <td>
+                            <span className="industry-client-count">
+                              {formatNumber(item.totalAcquiredClients)}
+                            </span>
+                          </td>
 
-                      <td>
-                        {formatNumber(item.totalFranchisees)}
-                      </td>
+                          <td>
+                            {formatNumber(item.totalEnquiries)}
+                          </td>
 
-                      <td>
-                        <span className="industry-billing-value">
-                          {formatCurrency(item.totalBilling)}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span className="industry-net-value">
-                          {formatCurrency(item.totalNet)}
-                        </span>
-                      </td>
-
-                      {hasIndustryExpenditure && (
-                        <td>
-                          <span className="industry-net-value">
-                            {formatCurrency(item.totalExpenditure)}
-                          </span>
-                        </td>
+                          <td>
+                            {formatNumber(item.totalFranchisees)}
+                          </td>
+                        </>
                       )}
+
+                      {/* REVENUE COLUMNS */}
+
+                      {showRevenueColumns && (
+                        <>
+                          <td>
+                            <span className="industry-billing-value">
+                              {formatCurrency(item.totalBilling)}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span className="industry-net-value">
+                              {formatCurrency(item.totalNet)}
+                            </span>
+                          </td>
+
+                          {hasIndustryExpenditure && (
+                            <td>
+                              <span className="industry-net-value">
+                                {formatCurrency(item.totalExpenditure)}
+                              </span>
+                            </td>
+                          )}
+                        </>
+                      )}
+
+                      {/* PERFORMANCE BUTTON */}
 
                       <td>
                         <button
@@ -1464,6 +1526,7 @@ const IndustryPerformance = () => {
                           </span>
                         </button>
                       </td>
+
                     </tr>
                   );
                 })
@@ -1670,6 +1733,8 @@ const IndustryPerformance = () => {
 
             <div className="industry-report-graphs">
 
+              {/* CLIENT ACQUISITION CHART */}
+
               <div className="industry-chart-card">
                 <div className="industry-chart-heading">
                   <div>
@@ -1726,6 +1791,8 @@ const IndustryPerformance = () => {
                   )}
                 </div>
               </div>
+
+              {/* BILLING CHART */}
 
               <div className="industry-chart-card">
                 <div className="industry-chart-heading">

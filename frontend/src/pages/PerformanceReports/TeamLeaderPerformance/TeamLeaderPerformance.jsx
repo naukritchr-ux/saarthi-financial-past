@@ -1,4 +1,3 @@
-
 import { useMemo, useState, useEffect } from "react";
 
 import {
@@ -524,6 +523,7 @@ const TeamLeaderPerformance = () => {
   const [selectedFinancialYear, setSelectedFinancialYear] = useState("");
   const [selectedInfoStatus, setSelectedInfoStatus] = useState("");
   const [tlExpenditurePercentage, setTlExpenditurePercentage] = useState("");
+  const [displayFilter, setDisplayFilter] = useState("ALL");
 
   const [selectedReportView, setSelectedReportView] = useState("ALL_TIME");
 
@@ -573,6 +573,13 @@ const TeamLeaderPerformance = () => {
   const showLeaderHeading = isSingleLeaderSelected && isPeriodView;
 
   /* =======================================================
+     MAIN TABLE DISPLAY FILTER
+  ======================================================= */
+
+  const showCountColumns = displayFilter === "ALL" || displayFilter === "COUNT";
+  const showRevenueColumns = displayFilter === "ALL" || displayFilter === "REVENUE";
+
+  /* =======================================================
      RESET MAIN PAGE FILTERS
   ======================================================= */
 
@@ -582,6 +589,7 @@ const TeamLeaderPerformance = () => {
     setSelectedMonth("");
     setSelectedInfoStatus("");
     setTlExpenditurePercentage("");
+    setDisplayFilter("ALL");
     setSelectedReportView("ALL_TIME");
   };
 
@@ -1356,7 +1364,9 @@ const TeamLeaderPerformance = () => {
   ========================================================= */
 
   const tableColumnCount =
-    7 + (hasTLExpenditurePercentage ? 1 : 0);
+    2 +
+    (showCountColumns ? 3 : 0) +
+    (showRevenueColumns ? 2 + (hasTLExpenditurePercentage ? 1 : 0) : 0);
 
   /* =========================================================
      RENDER
@@ -1534,6 +1544,20 @@ const TeamLeaderPerformance = () => {
             />
           </div>
 
+          {/* VIEW AS */}
+
+          <div className="tl-filter-group">
+            <label>View As</label>
+            <select
+              value={displayFilter}
+              onChange={event => setDisplayFilter(event.target.value)}
+            >
+              <option value="ALL">All</option>
+              <option value="COUNT">Count</option>
+              <option value="REVENUE">Revenue</option>
+            </select>
+          </div>
+
           {/* RESET FILTERS */}
 
           <div className="tl-reset-filter-group">
@@ -1545,6 +1569,7 @@ const TeamLeaderPerformance = () => {
               Reset Filters
             </button>
           </div>
+
         </div>
 
         {/* SELECTED TEAM LEADER HEADING */}
@@ -1590,13 +1615,22 @@ const TeamLeaderPerformance = () => {
                       : "Team Leader"}
                   </th>
 
-                  <th>Total Acquired Client</th>
-                  <th>Total Enquiries</th>
-                  <th>No. of Franchisee</th>
-                  <th>Total Billing</th>
-                  <th>Net Amount</th>
+                  {showCountColumns && (
+                    <>
+                      <th>Total Acquired Client</th>
+                      <th>Total Enquiries</th>
+                      <th>No. of Franchisee</th>
+                    </>
+                  )}
 
-                  {hasTLExpenditurePercentage && (
+                  {showRevenueColumns && (
+                    <>
+                      <th>Total Billing</th>
+                      <th>Net Amount</th>
+                    </>
+                  )}
+
+                  {showRevenueColumns && hasTLExpenditurePercentage && (
                     <th>TL Expenditure</th>
                   )}
 
@@ -1644,33 +1678,34 @@ const TeamLeaderPerformance = () => {
                         )}
                       </td>
 
-                      <td>
-                        <span className="tl-client-count">
-                          {leader.clients.toLocaleString("en-IN")}
-                        </span>
-                      </td>
+                      {showCountColumns && (
+                        <>
+                          <td>
+                            <span className="tl-client-count">
+                              {leader.clients.toLocaleString("en-IN")}
+                            </span>
+                          </td>
+                          <td>{leader.enquiries.toLocaleString("en-IN")}</td>
+                          <td>{leader.franchisees.toLocaleString("en-IN")}</td>
+                        </>
+                      )}
 
-                      <td>
-                        {leader.enquiries.toLocaleString("en-IN")}
-                      </td>
+                      {showRevenueColumns && (
+                        <>
+                          <td>
+                            <span className="tl-billing-value">
+                              {formatCurrency(leader.billing)}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="tl-net-value">
+                              {formatCurrency(leader.netAmount)}
+                            </span>
+                          </td>
+                        </>
+                      )}
 
-                      <td>
-                        {leader.franchisees.toLocaleString("en-IN")}
-                      </td>
-
-                      <td>
-                        <span className="tl-billing-value">
-                          {formatCurrency(leader.billing)}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span className="tl-net-value">
-                          {formatCurrency(leader.netAmount)}
-                        </span>
-                      </td>
-
-                      {hasTLExpenditurePercentage && (
+                      {showRevenueColumns && hasTLExpenditurePercentage && (
                         <td>
                           <span className="tl-expenditure-value">
                             {formatCurrency(leader.tlExpenditure)}
