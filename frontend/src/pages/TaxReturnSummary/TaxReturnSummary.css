@@ -635,27 +635,40 @@
 }
 
 /* =========================================
-   PDF / PRINT LAYOUT
+   PDF REPORT - HIDDEN ON SCREEN
+========================================= */
+
+.tax-print-report {
+  display: none;
+}
+
+/* =========================================
+   STRICT A4 PDF PRINT SETTINGS
 ========================================= */
 
 @media print {
 
   @page {
     size: A4 portrait;
-    margin: 12mm;
+    margin: 12.7mm;
   }
 
   html,
   body {
-    background: #ffffff !important;
+    width: 184.6mm !important;
+    height: 271.6mm !important;
     margin: 0 !important;
     padding: 0 !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
   }
 
+  /* Hide complete application */
   body * {
     visibility: hidden !important;
   }
 
+  /* Display only PDF report */
   .tax-print-report,
   .tax-print-report * {
     visibility: visible !important;
@@ -663,80 +676,112 @@
 
   .tax-print-report {
     display: block !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: #ffffff;
-    color: #222222;
-    font-family: Arial, sans-serif;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+
+    width: 100% !important;
+    max-width: 184.6mm !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #ffffff !important;
+    color: #222222 !important;
+
+    font-family: Arial, sans-serif !important;
+    font-size: 9px !important;
+    line-height: 1.15 !important;
+
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
+  /* Report heading */
   .tax-print-header {
-    text-align: center;
-    margin-bottom: 18px;
+    text-align: center !important;
+    margin: 0 0 8px !important;
+    padding: 0 !important;
   }
 
   .tax-print-header h2 {
-    font-size: 20px;
-    color: #222222;
-    margin-bottom: 12px;
-    font-weight: 700;
+    font-size: 16px !important;
+    margin: 0 0 6px !important;
+    padding: 0 !important;
+    font-weight: 700 !important;
   }
 
   .tax-print-header p {
-    display: inline-block;
-    margin: 4px 18px;
-    font-size: 11px;
-    font-weight: 600;
+    display: inline-block !important;
+    font-size: 9px !important;
+    margin: 2px 12px !important;
   }
 
+  /* Tables */
   .tax-print-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 18px;
-    font-size: 11px;
-    page-break-inside: auto;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    margin: 0 0 9px !important;
+    font-size: 9px !important;
+    page-break-inside: avoid !important;
   }
 
   .tax-print-table th,
   .tax-print-table td {
-    border: 1px solid #777777;
-    padding: 7px 9px;
-    text-align: left;
-    vertical-align: middle;
+    border: 1px solid #777777 !important;
+    padding: 4px 6px !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    line-height: 1.1 !important;
+    overflow-wrap: break-word !important;
   }
 
   .tax-print-table th {
     background: #eeeeee !important;
-    color: #222222 !important;
-    font-weight: 700;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .tax-print-table td:first-child {
-    width: 12%;
-    text-align: center;
-  }
-
-  .tax-print-table td:last-child {
-    width: 30%;
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .tax-print-table tr {
-    page-break-inside: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
+  /* Column widths */
+  .tax-print-table th:first-child,
+  .tax-print-table td:first-child {
+    width: 12% !important;
+    text-align: center !important;
+  }
+
+  .tax-print-table th:nth-child(2),
+  .tax-print-table td:nth-child(2) {
+    width: 58% !important;
+  }
+
+  .tax-print-table th:last-child,
+  .tax-print-table td:last-child {
+    width: 30% !important;
+  }
+
+  /* Difference section */
   .tax-print-difference-heading {
-    font-size: 14px;
-    margin: 16px 0 10px;
-    font-weight: 700;
-    color: #222222;
+    font-size: 12px !important;
+    margin: 7px 0 5px !important;
+    padding: 0 !important;
+    font-weight: 700 !important;
   }
 
-  .tax-print-report * {
-    box-sizing: border-box;
+  /* Prevent application elements from appearing */
+  .no-print,
+  .tax-summary-header,
+  .tax-message,
+  .tax-loading,
+  .tax-action-buttons,
+  .tax-popup-overlay {
+    display: none !important;
   }
-
 }
