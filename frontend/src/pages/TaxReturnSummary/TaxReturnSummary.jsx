@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import "./TaxReturnSummary.css";
 
@@ -333,7 +334,6 @@ const TaxReturnSummary = () => {
       );
       setMessageType("success");
 
-      // SUCCESS POPUP
       setPopupType("success");
       setPopupMessage(
         recordId
@@ -348,7 +348,6 @@ const TaxReturnSummary = () => {
       setMessage(error.message || "Unable to save tax return.");
       setMessageType("error");
 
-      // ERROR POPUP
       setPopupType("error");
       setPopupMessage(
         error.message || "Unable to save Tax Return Summary."
@@ -403,6 +402,23 @@ const TaxReturnSummary = () => {
       setMessageType("error");
       return;
     }
+
+    // Generate filename using selected Financial Year
+    const selectedFY = String(form.financialYear)
+      .trim()
+      .replace(/[\\/:*?"<>|]/g, "-");
+
+    const originalTitle = document.title;
+
+    document.title = `Tax Summary FY ${selectedFY}`;
+
+    // Restore the original browser tab title after printing
+    const restoreTitle = () => {
+      document.title = originalTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+
+    window.addEventListener("afterprint", restoreTitle);
 
     window.print();
   };
