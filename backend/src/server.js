@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -5,6 +6,7 @@ const cors = require("cors");
 
 const ledgerRoutes = require("./routes/ledgerRoutes");
 const revenueRoutes = require("./routes/revenueRoutes");
+const taxReturnSummaryRoutes = require("./routes/taxReturnSummaryRoutes");
 
 const app = express();
 
@@ -43,17 +45,21 @@ app.get("/api/health", (req, res) => {
 
 /* =========================
    LEDGER ROUTES
-   Existing functionality
 ========================= */
 
 app.use("/api/ledger", ledgerRoutes);
 
 /* =========================
    REVENUE ROUTES
-   Shared Revenue storage
 ========================= */
 
 app.use("/api/revenue", revenueRoutes);
+
+/* =========================
+   TAX RETURN SUMMARY ROUTES
+========================= */
+
+app.use("/api/tax-return-summary", taxReturnSummaryRoutes);
 
 /* =========================
    404
