@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import html2pdf from "html2pdf.js";
 import "./TaxReturnSummary.css";
 
 const TAX_RETURN_API_URL = "/api/tax-return-summary";
@@ -387,10 +388,12 @@ const TaxReturnSummary = () => {
   };
 
   // ------------------------------------------------------
-  // DOWNLOAD PDF - ISOLATED FROM SAARTHI 360
+  // DIRECT PDF DOWNLOAD
   // ------------------------------------------------------
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    if (loading) return;
+
     if (!form.financialYear) {
       setMessage(
         "Please select a Financial Year before downloading."
@@ -407,224 +410,224 @@ const TaxReturnSummary = () => {
       return;
     }
 
-    // Open synchronously from the button click to avoid popup blocking.
-    const printWindow = window.open(
-      "",
-      "_blank",
-      "width=900,height=700"
-    );
+    setLoading(true);
+    setMessage("");
 
-    if (!printWindow) {
-      setMessage(
-        "The PDF window was blocked. Please allow pop-ups and try again."
-      );
-      setMessageType("error");
-      return;
-    }
-
-    const now = new Date();
-
-    const formattedDateTime = now.toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true
-    });
-
-    setDownloadDateTime(formattedDateTime);
-
-    // Clone only the report. No Saarthi 360 parent content is copied.
-    const reportClone = report.cloneNode(true);
-
-    const dateElement = reportClone.querySelector(".tax-print-date");
-
-    if (dateElement) {
-      dateElement.textContent = `Downloaded On: ${formattedDateTime}`;
-    }
-
-    const safeFY = String(form.financialYear)
-      .trim()
-      .replace(/[\\/:*?"<>|]/g, "-");
-
-    const suggestedFilename = `Tax Summary FY ${safeFY}`;
-
-    const printStyles = `
-      @page {
-        size: A4 portrait;
-        margin: 2.54cm;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        background: #fff;
-        color: #000;
-        font-family: "Times New Roman", Times, serif;
-      }
-
-      body {
-        font-size: 9pt;
-        line-height: 1.12;
-      }
-
-      .tax-print-report {
-        display: block;
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-        background: #fff;
-        color: #000;
-        font-family: "Times New Roman", Times, serif;
-      }
-
-      .tax-print-date {
-        display: block;
-        width: 100%;
-        margin: 0 0 8pt;
-        text-align: right;
-        font-size: 9pt;
-        font-weight: normal;
-      }
-
-      .tax-print-header {
-        width: 100%;
-        margin: 0 0 12pt;
-        padding: 0;
-        text-align: center;
-      }
-
-      .tax-print-header h2 {
-        margin: 0 0 6pt;
-        padding: 0;
-        text-align: center;
-        font-family: "Times New Roman", Times, serif;
-        font-size: 16pt;
-        font-weight: bold;
-      }
-
-      .tax-print-header p {
-        display: inline-block;
-        margin: 2pt 10pt;
-        font-size: 9pt;
-      }
-
-      .tax-print-table {
-        width: 100%;
-        margin: 0 0 8pt;
-        border-collapse: collapse;
-        table-layout: fixed;
-        font-family: "Times New Roman", Times, serif;
-        font-size: 8.5pt;
-      }
-
-      .tax-print-table th,
-      .tax-print-table td {
-        border: 1px solid #555;
-        padding: 3pt 5pt;
-        color: #000;
-        font-size: 8.5pt;
-        line-height: 1.1;
-        text-align: left;
-        vertical-align: middle;
-        overflow-wrap: anywhere;
-      }
-
-      .tax-print-table th {
-        background: #eee;
-        font-weight: bold;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-
-      .tax-print-table tr {
-        break-inside: avoid;
-        page-break-inside: avoid;
-      }
-
-      .tax-print-difference-heading {
-        margin: 8pt 0 4pt;
-        padding: 0;
-        font-size: 11pt;
-        font-weight: bold;
-        text-align: left;
-      }
-
-      @media screen {
-        body {
-          padding: 20px;
-        }
-      }
-    `;
+    let stagingContainer = null;
 
     try {
-      printWindow.document.open();
+      const now = new Date();
 
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8" />
-            <meta
-              name="viewport"
-              content="width=device-width, initial-scale=1.0"
-            />
-            <title>${suggestedFilename}</title>
-            <style>${printStyles}</style>
-          </head>
-          <body>
-            ${reportClone.outerHTML}
-          </body>
-        </html>
-      `);
+      const formattedDateTime = now.toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      });
 
-      printWindow.document.close();
+      const safeFY = String(form.financialYear)
+        .trim()
+        .replace(/[\\/:*?"<>|]/g, "-");
 
-      // Print after the isolated report has been written.
-      const startPrinting = () => {
-        if (printWindow.closed) return;
+      const filename = `Tax Summary FY ${safeFY}.pdf`;
 
-        printWindow.focus();
-        printWindow.print();
+      // Clone only the report content.
+      const reportClone = report.cloneNode(true);
+
+      // Update the download date in the cloned report.
+      const dateElement = reportClone.querySelector(
+        ".tax-print-date"
+      );
+
+      if (dateElement) {
+        dateElement.textContent =
+          `Downloaded On: ${formattedDateTime}`;
+      }
+
+      // Create an isolated rendering container.
+      stagingContainer = document.createElement("div");
+
+      stagingContainer.style.cssText = `
+        position: fixed;
+        left: -10000px;
+        top: 0;
+        width: 159.2mm;
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+        color: #000000;
+        z-index: -1;
+        overflow: visible;
+      `;
+
+      // PDF-specific styles.
+      const pdfStyles = document.createElement("style");
+
+      pdfStyles.textContent = `
+        .tax-print-report {
+          display: block !important;
+          visibility: visible !important;
+          position: relative !important;
+          width: 159.2mm !important;
+          max-width: 159.2mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #ffffff !important;
+          color: #000000 !important;
+          font-family: "Times New Roman", Times, serif !important;
+          box-sizing: border-box !important;
+        }
+
+        .tax-print-report *,
+        .tax-print-report *::before,
+        .tax-print-report *::after {
+          visibility: visible !important;
+          font-family: "Times New Roman", Times, serif !important;
+          box-sizing: border-box !important;
+        }
+
+        .tax-print-header {
+          width: 100%;
+          text-align: center;
+          margin: 0 0 12pt;
+          padding: 0;
+        }
+
+        .tax-print-date {
+          display: block;
+          width: 100%;
+          text-align: right;
+          font-size: 9pt;
+          font-weight: normal;
+          margin: 0 0 8pt;
+        }
+
+        .tax-print-header h2 {
+          text-align: center;
+          font-family: "Times New Roman", Times, serif;
+          font-size: 16pt;
+          font-weight: bold;
+          margin: 0 0 8pt;
+          padding: 0;
+        }
+
+        .tax-print-header p {
+          font-size: 9pt;
+          margin: 2pt 10pt;
+        }
+
+        .tax-print-table {
+          display: table;
+          width: 100% !important;
+          border-collapse: collapse !important;
+          table-layout: fixed;
+          margin: 0 0 8pt;
+          font-size: 8.5pt;
+        }
+
+        .tax-print-table th,
+        .tax-print-table td {
+          border: 1px solid #555555 !important;
+          padding: 4pt 5pt !important;
+          color: #000000 !important;
+          font-size: 8.5pt !important;
+          line-height: 1.15;
+          text-align: left;
+          vertical-align: middle;
+          overflow-wrap: anywhere;
+        }
+
+        .tax-print-table th {
+          background: #eeeeee !important;
+          font-weight: bold;
+        }
+
+        .tax-print-table tr {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        .tax-print-difference-heading {
+          font-size: 11pt;
+          margin: 8pt 0 5pt;
+          padding: 0;
+          font-weight: bold;
+          text-align: left;
+        }
+      `;
+
+      stagingContainer.appendChild(pdfStyles);
+      stagingContainer.appendChild(reportClone);
+      document.body.appendChild(stagingContainer);
+
+      // Wait for available browser fonts.
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+
+      // PDF generation configuration.
+      const pdfOptions = {
+        margin: [25.4, 25.4, 25.4, 25.4],
+
+        filename,
+
+        image: {
+          type: "jpeg",
+          quality: 0.98
+        },
+
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          scrollX: 0,
+          scrollY: 0
+        },
+
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait"
+        },
+
+        pagebreak: {
+          mode: ["css", "legacy"],
+          avoid: [
+            ".tax-print-table tr",
+            ".tax-print-difference-heading"
+          ]
+        }
       };
 
-      printWindow.onload = () => {
-        setTimeout(startPrinting, 300);
-      };
+      // Generate and download the PDF directly.
+      await html2pdf()
+        .set(pdfOptions)
+        .from(reportClone)
+        .save();
 
-      // Fallback for browsers where the blank document's load
-      // event has already fired before the handler is assigned.
-      setTimeout(startPrinting, 700);
+      setDownloadDateTime(formattedDateTime);
 
-      printWindow.onafterprint = () => {
-        setTimeout(() => {
-          if (!printWindow.closed) {
-            printWindow.close();
-          }
-        }, 300);
-      };
-
-      setMessage("PDF print window opened successfully.");
+      setMessage("Tax Return Summary PDF downloaded successfully.");
       setMessageType("success");
 
     } catch (error) {
       console.error("PDF generation error:", error);
 
-      if (!printWindow.closed) {
-        printWindow.close();
+      setMessage(
+        "Unable to download the PDF. Please try again."
+      );
+      setMessageType("error");
+
+    } finally {
+      if (stagingContainer?.parentNode) {
+        stagingContainer.parentNode.removeChild(stagingContainer);
       }
 
-      setMessage("Unable to generate PDF. Please try again.");
-      setMessageType("error");
+      setLoading(false);
     }
   };
 
@@ -656,7 +659,8 @@ const TaxReturnSummary = () => {
           onClick={handleDownload}
           disabled={loading}
         >
-          <span>↓</span> Download PDF
+          <span>↓</span>
+          {loading ? "Generating PDF..." : "Download PDF"}
         </button>
       </div>
 
@@ -1001,7 +1005,7 @@ const TaxReturnSummary = () => {
 
       </div>
 
-      {/* PRINT-ONLY PDF REPORT */}
+      {/* PDF REPORT - USED ONLY FOR PDF GENERATION */}
 
       <div className="tax-print-report">
 

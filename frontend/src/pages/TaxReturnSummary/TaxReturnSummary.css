@@ -758,3 +758,18 @@
     display: none !important;
   }
 }
+
+
+/* ======================================================
+   PDF REPORT - HIDDEN IN NORMAL APPLICATION VIEW
+====================================================== */
+
+.tax-print-report {
+  display: none;
+}
+
+@media print {
+  .tax-print-report {
+    display: block;
+  }
+}
