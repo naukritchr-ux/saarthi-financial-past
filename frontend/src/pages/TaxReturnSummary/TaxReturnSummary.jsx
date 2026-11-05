@@ -92,12 +92,10 @@ const TaxReturnSummary = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
-  // POPUP STATES
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("confirm");
   const [popupMessage, setPopupMessage] = useState("");
 
-  // PDF DOWNLOAD DATE AND TIME
   const [downloadDateTime, setDownloadDateTime] = useState("");
 
   const fieldsDisabled = Boolean(recordId) && !isEditing;
@@ -213,27 +211,22 @@ const TaxReturnSummary = () => {
   const taxPayable = Number(form.taxPayable) || 0;
   const tdsClaim = Number(form.tdsClaim) || 0;
 
-  // Refund Due = TDS Claim - Tax Payable
   const refundDue = Math.max(0, tdsClaim - taxPayable);
 
-  // Calculated Refund = TDS Credit + Interest
   const tdsCredit = Number(form.tdsCredit) || 0;
   const interest = Number(form.interest) || 0;
 
   const calculatedRefund = tdsCredit + interest;
 
-  // Difference Income = Income Assessment - Gross Income
   const incomeAssessment = Number(form.incomeAssessment) || 0;
   const grossIncome = Number(form.grossIncome) || 0;
 
   const differenceIncome = incomeAssessment - grossIncome;
 
-  // Difference Income Tax = Income Tax - Tax Payable
   const incomeTax = Number(form.incomeTax) || 0;
 
   const differenceIncomeTax = incomeTax - taxPayable;
 
-  // Difference Return = Refund Amount - Calculated Refund
   const refundAmount = Number(form.refundAmount) || 0;
 
   const differenceReturn = refundAmount - calculatedRefund;
@@ -394,13 +387,36 @@ const TaxReturnSummary = () => {
   };
 
   // ------------------------------------------------------
-  // DOWNLOAD / PRINT PDF
+  // DOWNLOAD PDF - ISOLATED FROM SAARTHI 360
   // ------------------------------------------------------
 
   const handleDownload = () => {
     if (!form.financialYear) {
       setMessage(
         "Please select a Financial Year before downloading."
+      );
+      setMessageType("error");
+      return;
+    }
+
+    const report = document.querySelector(".tax-print-report");
+
+    if (!report) {
+      setMessage("Tax Return Summary report could not be found.");
+      setMessageType("error");
+      return;
+    }
+
+    // Open synchronously from the button click to avoid popup blocking.
+    const printWindow = window.open(
+      "",
+      "_blank",
+      "width=900,height=700"
+    );
+
+    if (!printWindow) {
+      setMessage(
+        "The PDF window was blocked. Please allow pop-ups and try again."
       );
       setMessageType("error");
       return;
@@ -418,29 +434,198 @@ const TaxReturnSummary = () => {
       hour12: true
     });
 
-    const selectedFY = String(form.financialYear)
+    setDownloadDateTime(formattedDateTime);
+
+    // Clone only the report. No Saarthi 360 parent content is copied.
+    const reportClone = report.cloneNode(true);
+
+    const dateElement = reportClone.querySelector(".tax-print-date");
+
+    if (dateElement) {
+      dateElement.textContent = `Downloaded On: ${formattedDateTime}`;
+    }
+
+    const safeFY = String(form.financialYear)
       .trim()
       .replace(/[\\/:*?"<>|]/g, "-");
 
-    const originalTitle = document.title;
+    const suggestedFilename = `Tax Summary FY ${safeFY}`;
 
-    // Filename suggested by the browser PDF dialog
-    document.title = `Tax Summary FY ${selectedFY}`;
+    const printStyles = `
+      @page {
+        size: A4 portrait;
+        margin: 2.54cm;
+      }
 
-    // Set the date and time shown in the PDF header
-    setDownloadDateTime(formattedDateTime);
+      * {
+        box-sizing: border-box;
+      }
 
-    const restoreTitle = () => {
-      document.title = originalTitle;
-      window.removeEventListener("afterprint", restoreTitle);
-    };
+      html,
+      body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #000;
+        font-family: "Times New Roman", Times, serif;
+      }
 
-    window.addEventListener("afterprint", restoreTitle);
+      body {
+        font-size: 9pt;
+        line-height: 1.12;
+      }
 
-    // Wait for React to render the updated date and time
-    window.setTimeout(() => {
-      window.print();
-    }, 200);
+      .tax-print-report {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #000;
+        font-family: "Times New Roman", Times, serif;
+      }
+
+      .tax-print-date {
+        display: block;
+        width: 100%;
+        margin: 0 0 8pt;
+        text-align: right;
+        font-size: 9pt;
+        font-weight: normal;
+      }
+
+      .tax-print-header {
+        width: 100%;
+        margin: 0 0 12pt;
+        padding: 0;
+        text-align: center;
+      }
+
+      .tax-print-header h2 {
+        margin: 0 0 6pt;
+        padding: 0;
+        text-align: center;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 16pt;
+        font-weight: bold;
+      }
+
+      .tax-print-header p {
+        display: inline-block;
+        margin: 2pt 10pt;
+        font-size: 9pt;
+      }
+
+      .tax-print-table {
+        width: 100%;
+        margin: 0 0 8pt;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 8.5pt;
+      }
+
+      .tax-print-table th,
+      .tax-print-table td {
+        border: 1px solid #555;
+        padding: 3pt 5pt;
+        color: #000;
+        font-size: 8.5pt;
+        line-height: 1.1;
+        text-align: left;
+        vertical-align: middle;
+        overflow-wrap: anywhere;
+      }
+
+      .tax-print-table th {
+        background: #eee;
+        font-weight: bold;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .tax-print-table tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .tax-print-difference-heading {
+        margin: 8pt 0 4pt;
+        padding: 0;
+        font-size: 11pt;
+        font-weight: bold;
+        text-align: left;
+      }
+
+      @media screen {
+        body {
+          padding: 20px;
+        }
+      }
+    `;
+
+    try {
+      printWindow.document.open();
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0"
+            />
+            <title>${suggestedFilename}</title>
+            <style>${printStyles}</style>
+          </head>
+          <body>
+            ${reportClone.outerHTML}
+          </body>
+        </html>
+      `);
+
+      printWindow.document.close();
+
+      // Print after the isolated report has been written.
+      const startPrinting = () => {
+        if (printWindow.closed) return;
+
+        printWindow.focus();
+        printWindow.print();
+      };
+
+      printWindow.onload = () => {
+        setTimeout(startPrinting, 300);
+      };
+
+      // Fallback for browsers where the blank document's load
+      // event has already fired before the handler is assigned.
+      setTimeout(startPrinting, 700);
+
+      printWindow.onafterprint = () => {
+        setTimeout(() => {
+          if (!printWindow.closed) {
+            printWindow.close();
+          }
+        }, 300);
+      };
+
+      setMessage("PDF print window opened successfully.");
+      setMessageType("success");
+
+    } catch (error) {
+      console.error("PDF generation error:", error);
+
+      if (!printWindow.closed) {
+        printWindow.close();
+      }
+
+      setMessage("Unable to generate PDF. Please try again.");
+      setMessageType("error");
+    }
   };
 
   // ------------------------------------------------------
@@ -820,8 +1005,6 @@ const TaxReturnSummary = () => {
 
       <div className="tax-print-report">
 
-        {/* PDF HEADER */}
-
         <div className="tax-print-header">
 
           <div className="tax-print-date">
@@ -831,8 +1014,6 @@ const TaxReturnSummary = () => {
           <h2>TAX RETURN SUMMARY</h2>
 
         </div>
-
-        {/* MAIN REPORT TABLE */}
 
         <table className="tax-print-table">
           <thead>
@@ -935,8 +1116,6 @@ const TaxReturnSummary = () => {
             </tr>
           </tbody>
         </table>
-
-        {/* DIFFERENCE TABLE */}
 
         <h3 className="tax-print-difference-heading">
           DIFFERENCE

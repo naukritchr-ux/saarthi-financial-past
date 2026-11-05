@@ -380,8 +380,6 @@
     transform 0.2s ease;
 }
 
-/* SAVE / UPDATE */
-
 .tax-save-btn {
   border: 1px solid #102a43;
   background: #102a43;
@@ -393,8 +391,6 @@
   box-shadow: 0 3px 8px rgba(16, 42, 67, 0.15);
 }
 
-/* EDIT */
-
 .tax-edit-btn {
   border: 1px solid #c9a227;
   background: #fffdf7;
@@ -405,8 +401,6 @@
   background: #f7f1dc;
   box-shadow: 0 3px 8px rgba(16, 42, 67, 0.08);
 }
-
-/* DISABLED BUTTONS */
 
 .tax-action-buttons button:disabled,
 .tax-download-btn:disabled {
@@ -560,7 +554,7 @@
 }
 
 /* =========================================================
-   PDF REPORT - HIDDEN ON APPLICATION SCREEN
+   PRINT REPORT - HIDDEN IN APPLICATION
 ========================================================= */
 
 .tax-print-report {
@@ -568,34 +562,23 @@
 }
 
 /* =========================================================
-   TAX RETURN SUMMARY PDF
+   PRINT ONLY - A4 TAX RETURN SUMMARY
 ========================================================= */
 
 @media print {
 
-  /* A4 paper with 2.54 cm margins on all sides */
   @page {
     size: A4 portrait;
     margin: 2.54cm;
   }
 
+  /*
+    Hide the complete Saarthi 360 application:
+    dashboard, sidebar, navigation, header, and other pages.
+  */
+
   html,
   body {
-    width: auto !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    background: #fff !important;
-  }
-
-  /* Hide all application content except the print report */
-  .tax-summary-page > :not(.tax-print-report) {
-    display: none !important;
-  }
-
-  .tax-summary-page {
-    display: block !important;
     width: 100% !important;
     min-height: 0 !important;
     height: auto !important;
@@ -605,13 +588,30 @@
     background: #fff !important;
   }
 
-  /* Main report */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /*
+    Reveal ONLY the tax report and its children.
+    This works even when the report is nested inside
+    the Saarthi 360 application layout.
+  */
+
+  .tax-print-report,
+  .tax-print-report * {
+    visibility: visible !important;
+  }
+
   .tax-print-report {
     display: block !important;
-    position: static !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
@@ -623,7 +623,27 @@
     line-height: 1.12 !important;
   }
 
-  /* Download date and time on right */
+  /*
+    Remove application layout styling from ancestors.
+    The report is positioned independently on the page.
+  */
+
+  .tax-summary-page {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Download date and time */
+
   .tax-print-date {
     display: block !important;
     width: 100% !important;
@@ -636,8 +656,10 @@
     font-weight: normal !important;
   }
 
-  /* Report header */
+  /* Main report heading */
+
   .tax-print-header {
+    display: block !important;
     position: relative !important;
     width: 100% !important;
     margin: 0 0 12pt !important;
@@ -648,6 +670,7 @@
   }
 
   .tax-print-header h2 {
+    display: block !important;
     margin: 0 0 6pt !important;
     padding: 0 !important;
     color: #000 !important;
@@ -657,24 +680,32 @@
     font-weight: bold !important;
   }
 
-  .tax-print-header p {
-    display: inline-block !important;
-    margin: 2pt 10pt !important;
-    padding: 0 !important;
-    color: #000 !important;
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 9pt !important;
-  }
-
   /* Report tables */
+
   .tax-print-table {
+    display: table !important;
     width: 100% !important;
     border-collapse: collapse !important;
     table-layout: fixed !important;
     margin: 0 0 8pt !important;
     padding: 0 !important;
+    background: #fff !important;
     font-family: "Times New Roman", Times, serif !important;
     font-size: 8.5pt !important;
+    page-break-inside: auto !important;
+  }
+
+  .tax-print-table thead {
+    display: table-header-group !important;
+  }
+
+  .tax-print-table tbody {
+    display: table-row-group !important;
+  }
+
+  .tax-print-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .tax-print-table th,
@@ -682,6 +713,7 @@
     border: 1px solid #555 !important;
     padding: 3pt 5pt !important;
     color: #000 !important;
+    background: #fff !important;
     font-family: "Times New Roman", Times, serif !important;
     font-size: 8.5pt !important;
     line-height: 1.1 !important;
@@ -697,13 +729,10 @@
     -webkit-print-color-adjust: exact !important;
   }
 
-  .tax-print-table tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
   /* Difference heading */
+
   .tax-print-difference-heading {
+    display: block !important;
     margin: 8pt 0 4pt !important;
     padding: 0 !important;
     color: #000 !important;
@@ -711,9 +740,19 @@
     font-size: 11pt !important;
     font-weight: bold !important;
     text-align: left !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
   }
 
-  /* Do not print popups */
+  /* Explicitly suppress application controls and popup */
+
+  .tax-summary-header,
+  .tax-message,
+  .tax-loading,
+  .tax-row,
+  .calculated-box,
+  .difference-section,
+  .tax-action-buttons,
   .tax-popup-overlay,
   .no-print {
     display: none !important;
