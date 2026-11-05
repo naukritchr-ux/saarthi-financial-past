@@ -625,3 +625,118 @@
     display: none !important;
   }
 }
+
+/* =========================================
+   PDF REPORT - HIDDEN IN NORMAL APPLICATION
+========================================= */
+
+.tax-print-report {
+  display: none;
+}
+
+/* =========================================
+   PDF / PRINT LAYOUT
+========================================= */
+
+@media print {
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .tax-print-report,
+  .tax-print-report * {
+    visibility: visible !important;
+  }
+
+  .tax-print-report {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    color: #222222;
+    font-family: Arial, sans-serif;
+  }
+
+  .tax-print-header {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .tax-print-header h2 {
+    font-size: 20px;
+    color: #222222;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  .tax-print-header p {
+    display: inline-block;
+    margin: 4px 18px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .tax-print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 18px;
+    font-size: 11px;
+    page-break-inside: auto;
+  }
+
+  .tax-print-table th,
+  .tax-print-table td {
+    border: 1px solid #777777;
+    padding: 7px 9px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .tax-print-table th {
+    background: #eeeeee !important;
+    color: #222222 !important;
+    font-weight: 700;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .tax-print-table td:first-child {
+    width: 12%;
+    text-align: center;
+  }
+
+  .tax-print-table td:last-child {
+    width: 30%;
+  }
+
+  .tax-print-table tr {
+    page-break-inside: avoid;
+  }
+
+  .tax-print-difference-heading {
+    font-size: 14px;
+    margin: 16px 0 10px;
+    font-weight: 700;
+    color: #222222;
+  }
+
+  .tax-print-report * {
+    box-sizing: border-box;
+  }
+
+}

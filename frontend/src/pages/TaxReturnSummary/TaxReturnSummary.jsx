@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import "./TaxReturnSummary.css";
 
@@ -210,14 +209,30 @@ const TaxReturnSummary = () => {
   const taxPayable = Number(form.taxPayable) || 0;
   const tdsClaim = Number(form.tdsClaim) || 0;
 
+  // Refund Due = TDS Claim - Tax Payable
   const refundDue = Math.max(0, tdsClaim - taxPayable);
 
-  // These remain placeholders until calculation formulas
-  // are confirmed.
-  const calculatedRefund = 0;
-  const differenceIncome = 0;
-  const differenceIncomeTax = 0;
-  const differenceReturn = 0;
+  // Calculated Refund = TDS Credit + Interest
+  const tdsCredit = Number(form.tdsCredit) || 0;
+  const interest = Number(form.interest) || 0;
+
+  const calculatedRefund = tdsCredit + interest;
+
+  // Difference Income = Income Assessment - Gross Income
+  const incomeAssessment = Number(form.incomeAssessment) || 0;
+  const grossIncome = Number(form.grossIncome) || 0;
+
+  const differenceIncome = incomeAssessment - grossIncome;
+
+  // Difference Income Tax = Income Tax - Tax Payable
+  const incomeTax = Number(form.incomeTax) || 0;
+
+  const differenceIncomeTax = incomeTax - taxPayable;
+
+  // Difference Return = Refund Amount - Calculated Refund
+  const refundAmount = Number(form.refundAmount) || 0;
+
+  const differenceReturn = refundAmount - calculatedRefund;
 
   // ------------------------------------------------------
   // PREPARE DATABASE PAYLOAD
@@ -228,9 +243,9 @@ const TaxReturnSummary = () => {
     assessment_year: form.assessmentYear,
     itr_filing_date: form.itrFilingDate || null,
 
-    gross_income: Number(form.grossIncome) || 0,
-    tax_payable: Number(form.taxPayable) || 0,
-    tds_claim: Number(form.tdsClaim) || 0,
+    gross_income: grossIncome,
+    tax_payable: taxPayable,
+    tds_claim: tdsClaim,
     refund_due: refundDue,
 
     refund_process: form.refundProcess || "Pending",
@@ -239,11 +254,11 @@ const TaxReturnSummary = () => {
         ? form.refundProcessDate || null
         : null,
 
-    income_assessment: Number(form.incomeAssessment) || 0,
-    income_tax: Number(form.incomeTax) || 0,
-    tds_credit: Number(form.tdsCredit) || 0,
-    refund_amount: Number(form.refundAmount) || 0,
-    interest: Number(form.interest) || 0,
+    income_assessment: incomeAssessment,
+    income_tax: incomeTax,
+    tds_credit: tdsCredit,
+    refund_amount: refundAmount,
+    interest,
 
     calculated_refund: calculatedRefund,
     difference_income: differenceIncome,
@@ -762,6 +777,72 @@ const TaxReturnSummary = () => {
         >
           Edit
         </button>
+
+      </div>
+
+      {/* PRINT-ONLY PDF REPORT */}
+
+      <div className="tax-print-report">
+
+        <div className="tax-print-header">
+          <h2>TAX RETURN SUMMARY</h2>
+          <p>Financial Year: {form.financialYear || "—"}</p>
+          <p>Assessment Year: {form.assessmentYear || "—"}</p>
+        </div>
+
+        <table className="tax-print-table">
+          <thead>
+            <tr>
+              <th>Sr. No.</th>
+              <th>Particulars</th>
+              <th>Amount / Details</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr><td>1</td><td>Financial Year (FY)</td><td>{form.financialYear || "—"}</td></tr>
+            <tr><td>2</td><td>Assessment Year (AY)</td><td>{form.assessmentYear || "—"}</td></tr>
+            <tr><td>3</td><td>ITR Filing Date</td><td>{form.itrFilingDate || "—"}</td></tr>
+            <tr><td>4</td><td>Gross Income As per ITR</td><td>₹ {formatCurrency(form.grossIncome)}</td></tr>
+            <tr><td>5</td><td>Tax Payable</td><td>₹ {formatCurrency(form.taxPayable)}</td></tr>
+            <tr><td>6</td><td>TDS Claim As per 26AS</td><td>₹ {formatCurrency(form.tdsClaim)}</td></tr>
+            <tr><td>7</td><td>Refund Due</td><td>₹ {formatCurrency(refundDue)}</td></tr>
+            <tr><td>8</td><td>Refund Process</td><td>{form.refundProcess || "—"}</td></tr>
+            <tr><td>9</td><td>Date of Refund Process</td><td>{form.refundProcessDate || "—"}</td></tr>
+            <tr><td>10</td><td>Income As per Assessment</td><td>₹ {formatCurrency(form.incomeAssessment)}</td></tr>
+            <tr><td>11</td><td>Income Tax As Per AY</td><td>₹ {formatCurrency(form.incomeTax)}</td></tr>
+            <tr><td>12</td><td>TDS Credit</td><td>₹ {formatCurrency(form.tdsCredit)}</td></tr>
+            <tr><td>13</td><td>Refund Amount</td><td>₹ {formatCurrency(form.refundAmount)}</td></tr>
+            <tr><td>14</td><td>Interest</td><td>₹ {formatCurrency(form.interest)}</td></tr>
+            <tr><td>15</td><td>Refund Amount (Calculated)</td><td>₹ {formatCurrency(calculatedRefund)}</td></tr>
+          </tbody>
+        </table>
+
+        <h3 className="tax-print-difference-heading">DIFFERENCE</h3>
+
+        <table className="tax-print-table">
+          <thead>
+            <tr>
+              <th>Particulars</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>Income</td>
+              <td>₹ {formatCurrency(differenceIncome)}</td>
+            </tr>
+            <tr>
+              <td>Income Tax</td>
+              <td>₹ {formatCurrency(differenceIncomeTax)}</td>
+            </tr>
+            <tr>
+              <td>Return</td>
+              <td>₹ {formatCurrency(differenceReturn)}</td>
+            </tr>
+          </tbody>
+        </table>
 
       </div>
 
