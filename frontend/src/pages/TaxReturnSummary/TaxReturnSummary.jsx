@@ -92,6 +92,11 @@ const TaxReturnSummary = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  // POPUP STATES
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState("confirm");
+  const [popupMessage, setPopupMessage] = useState("");
+
   const fieldsDisabled = Boolean(recordId) && !isEditing;
 
   // ------------------------------------------------------
@@ -159,6 +164,7 @@ const TaxReturnSummary = () => {
         ...INITIAL_FORM,
         financialYear
       });
+
       setRecordId(null);
       setIsEditing(true);
 
@@ -206,8 +212,8 @@ const TaxReturnSummary = () => {
 
   const refundDue = Math.max(0, tdsClaim - taxPayable);
 
-  // These remain placeholders until the calculation
-  // formulas are confirmed.
+  // These remain placeholders until calculation formulas
+  // are confirmed.
   const calculatedRefund = 0;
   const differenceIncome = 0;
   const differenceIncomeTax = 0;
@@ -246,10 +252,10 @@ const TaxReturnSummary = () => {
   });
 
   // ------------------------------------------------------
-  // SAVE NEW RECORD OR UPDATE EXISTING RECORD
+  // OPEN SAVE CONFIRMATION POPUP
   // ------------------------------------------------------
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!form.financialYear || !form.assessmentYear) {
       setMessage("Please select Financial Year and Assessment Year.");
       setMessageType("error");
@@ -265,6 +271,25 @@ const TaxReturnSummary = () => {
       return;
     }
 
+    setPopupType("confirm");
+
+    setPopupMessage(
+      recordId
+        ? "Are you sure you want to update this Tax Return Summary?"
+        : "Are you sure you want to save this Tax Return Summary?"
+    );
+
+    setShowPopup(true);
+  };
+
+  // ------------------------------------------------------
+  // CONFIRM AND SAVE TO SUPABASE
+  // ------------------------------------------------------
+
+  const confirmSave = async () => {
+    if (loading) return;
+
+    setShowPopup(false);
     setLoading(true);
     setMessage("");
 
@@ -292,14 +317,41 @@ const TaxReturnSummary = () => {
         result.message || "Tax Return Summary saved successfully."
       );
       setMessageType("success");
+
+      // SUCCESS POPUP
+      setPopupType("success");
+      setPopupMessage(
+        recordId
+          ? "Tax Return Summary updated successfully!"
+          : "Tax Return Summary saved successfully!"
+      );
+      setShowPopup(true);
+
     } catch (error) {
       console.error("Error saving tax return:", error);
 
       setMessage(error.message || "Unable to save tax return.");
       setMessageType("error");
+
+      // ERROR POPUP
+      setPopupType("error");
+      setPopupMessage(
+        error.message || "Unable to save Tax Return Summary."
+      );
+      setShowPopup(true);
+
     } finally {
       setLoading(false);
     }
+  };
+
+  // ------------------------------------------------------
+  // CLOSE POPUP
+  // ------------------------------------------------------
+
+  const closePopup = () => {
+    if (loading) return;
+    setShowPopup(false);
   };
 
   // ------------------------------------------------------
@@ -316,9 +368,11 @@ const TaxReturnSummary = () => {
     }
 
     setIsEditing(true);
+
     setMessage(
       "Edit mode enabled. Update the required fields and click Update."
     );
+
     setMessageType("info");
   };
 
@@ -710,6 +764,72 @@ const TaxReturnSummary = () => {
         </button>
 
       </div>
+
+      {/* SAVE CONFIRMATION / SUCCESS / ERROR POPUP */}
+
+      {showPopup && (
+        <div className="tax-popup-overlay no-print">
+          <div
+            className={`tax-popup tax-popup-${popupType}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tax-popup-title"
+          >
+
+            <div className="tax-popup-icon">
+              {popupType === "confirm" && "?"}
+              {popupType === "success" && "✓"}
+              {popupType === "error" && "!"}
+            </div>
+
+            <h3 id="tax-popup-title">
+              {popupType === "confirm" && "Confirm Save"}
+              {popupType === "success" && "Success"}
+              {popupType === "error" && "Error"}
+            </h3>
+
+            <p>{popupMessage}</p>
+
+            <div className="tax-popup-actions">
+
+              {popupType === "confirm" && (
+                <>
+                  <button
+                    type="button"
+                    className="tax-popup-cancel"
+                    onClick={closePopup}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="tax-popup-confirm"
+                    onClick={confirmSave}
+                    disabled={loading}
+                  >
+                    {loading ? "Saving..." : "Confirm"}
+                  </button>
+                </>
+              )}
+
+              {(popupType === "success" ||
+                popupType === "error") && (
+                <button
+                  type="button"
+                  className="tax-popup-confirm"
+                  onClick={closePopup}
+                >
+                  OK
+                </button>
+              )}
+
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
