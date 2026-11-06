@@ -101,18 +101,6 @@ const TaxReturnSummary = () => {
   const fieldsDisabled = Boolean(recordId) && !isEditing;
 
   // ------------------------------------------------------
-  // CLEAN UP PDF BLOB URL
-  // ------------------------------------------------------
-
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
-  }, [pdfUrl]);
-
-  // ------------------------------------------------------
   // LOAD EXISTING RECORD BY FINANCIAL YEAR
   // ------------------------------------------------------
 
