@@ -1,6 +1,5 @@
+import React, { useState } from "react";
 
-import React, { useState, useEffect } from "react";
-import html2pdf from "html2pdf.js";
 import "./TaxReturnSummary.css";
 
 const TAX_RETURN_API_URL = "/api/tax-return-summary";
@@ -98,11 +97,6 @@ const TaxReturnSummary = () => {
   const [popupMessage, setPopupMessage] = useState("");
 
   const [downloadDateTime, setDownloadDateTime] = useState("");
-
-  // PDF preview state
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [showPdfPreview, setShowPdfPreview] = useState(false);
-  const [pdfFilename, setPdfFilename] = useState("");
 
   const fieldsDisabled = Boolean(recordId) && !isEditing;
 
@@ -406,276 +400,52 @@ const TaxReturnSummary = () => {
   // GENERATE PDF AND SHOW PREVIEW
   // ------------------------------------------------------
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (loading) return;
 
     if (!form.financialYear) {
-      setMessage(
-        "Please select a Financial Year before generating the PDF."
-      );
+      setMessage("Please select a Financial Year before generating the PDF.");
       setMessageType("error");
       return;
     }
 
     const report = document.querySelector(".tax-print-report");
-
     if (!report) {
       setMessage("Tax Return Summary report could not be found.");
       setMessageType("error");
       return;
     }
 
-    setLoading(true);
-    setMessage("");
+    const formattedDateTime = new Date().toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
 
-    let stagingContainer = null;
-    let newPdfUrl = "";
+    setDownloadDateTime(formattedDateTime);
+    setMessage("Choose “Save as PDF” in the browser print window.");
+    setMessageType("info");
 
-    try {
-      const now = new Date();
+    // Let React render the timestamp before opening the native print dialog.
+    window.setTimeout(() => {
+      document.body.classList.add("tax-print-mode");
 
-      const formattedDateTime = now.toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true
-      });
-
-      const safeFY = String(form.financialYear)
-        .trim()
-        .replace(/[\\/:*?"<>|]/g, "-");
-
-      const filename = `Tax Summary FY ${safeFY}.pdf`;
-
-      // Clone report
-      const reportClone = report.cloneNode(true);
-
-      // Update date in PDF
-      const dateElement = reportClone.querySelector(
-        ".tax-print-date"
-      );
-
-      if (dateElement) {
-        dateElement.textContent =
-          `Downloaded On: ${formattedDateTime}`;
-      }
-
-      // Create staging container
-      stagingContainer = document.createElement("div");
-
-      stagingContainer.style.cssText = `
-        position: fixed;
-        left: -10000px;
-        top: 0;
-        width: 159.2mm;
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
-        color: #000000;
-        z-index: -1;
-        overflow: visible;
-      `;
-
-      // PDF styles
-      const pdfStyles = document.createElement("style");
-
-      pdfStyles.textContent = `
-        .tax-print-report {
-          display: block !important;
-          visibility: visible !important;
-          position: relative !important;
-          width: 159.2mm !important;
-          max-width: 159.2mm !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          background: #ffffff !important;
-          color: #000000 !important;
-          font-family: "Times New Roman", Times, serif !important;
-          box-sizing: border-box !important;
-        }
-
-        .tax-print-report *,
-        .tax-print-report *::before,
-        .tax-print-report *::after {
-          visibility: visible !important;
-          font-family: "Times New Roman", Times, serif !important;
-          box-sizing: border-box !important;
-        }
-
-        .tax-print-header {
-          width: 100%;
-          text-align: center;
-          margin: 0 0 12pt;
-          padding: 0;
-        }
-
-        .tax-print-date {
-          display: block;
-          width: 100%;
-          text-align: right;
-          font-size: 9pt;
-          font-weight: normal;
-          margin: 0 0 8pt;
-        }
-
-        .tax-print-header h2 {
-          text-align: center;
-          font-family: "Times New Roman", Times, serif;
-          font-size: 16pt;
-          font-weight: bold;
-          margin: 0 0 8pt;
-          padding: 0;
-        }
-
-        .tax-print-header p {
-          font-size: 9pt;
-          margin: 2pt 10pt;
-        }
-
-        .tax-print-table {
-          display: table;
-          width: 100% !important;
-          border-collapse: collapse !important;
-          table-layout: fixed;
-          margin: 0 0 8pt;
-          font-size: 8.5pt;
-        }
-
-        .tax-print-table th,
-        .tax-print-table td {
-          border: 1px solid #555555 !important;
-          padding: 4pt 5pt !important;
-          color: #000000 !important;
-          font-size: 8.5pt !important;
-          line-height: 1.15;
-          text-align: left;
-          vertical-align: middle;
-          overflow-wrap: anywhere;
-        }
-
-        .tax-print-table th {
-          background: #eeeeee !important;
-          font-weight: bold;
-        }
-
-        .tax-print-table tr {
-          break-inside: avoid;
-          page-break-inside: avoid;
-        }
-
-        .tax-print-difference-heading {
-          font-size: 11pt;
-          margin: 8pt 0 5pt;
-          padding: 0;
-          font-weight: bold;
-          text-align: left;
-        }
-      `;
-
-      stagingContainer.appendChild(pdfStyles);
-      stagingContainer.appendChild(reportClone);
-      document.body.appendChild(stagingContainer);
-
-      // Wait for fonts
-      if (document.fonts?.ready) {
-        await document.fonts.ready;
-      }
-
-      // PDF configuration
-      const pdfOptions = {
-        margin: [25.4, 25.4, 25.4, 25.4],
-
-        image: {
-          type: "jpeg",
-          quality: 0.98
-        },
-
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-          logging: false,
-          scrollX: 0,
-          scrollY: 0
-        },
-
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait"
-        },
-
-        pagebreak: {
-          mode: ["css", "legacy"],
-          avoid: [
-            ".tax-print-table tr",
-            ".tax-print-difference-heading"
-          ]
-        }
+      const cleanup = () => {
+        document.body.classList.remove("tax-print-mode");
+        window.removeEventListener("afterprint", cleanup);
       };
 
-      // Generate PDF Blob
-      const pdfBlob = await html2pdf()
-        .set(pdfOptions)
-        .from(reportClone)
-        .toPdf()
-        .get("pdf")
-        .thenExternal((pdf) => pdf.output("blob"));
+      window.addEventListener("afterprint", cleanup);
+      window.print();
 
-      if (!pdfBlob || pdfBlob.size === 0) {
-        throw new Error("Generated PDF is empty.");
-      }
-
-      // Create browser object URL
-      newPdfUrl = URL.createObjectURL(pdfBlob);
-
-      // Replace previous PDF URL
-      setPdfUrl((previousUrl) => {
-        if (previousUrl) {
-          URL.revokeObjectURL(previousUrl);
-        }
-
-        return newPdfUrl;
-      });
-
-      setPdfFilename(filename);
-      setDownloadDateTime(formattedDateTime);
-      setShowPdfPreview(true);
-
-      setMessage(
-        "PDF generated successfully. Use the PDF viewer's Save or Download control if available."
-      );
-      setMessageType("success");
-
-    } catch (error) {
-      console.error("PDF generation error:", error);
-
-      setMessage(
-        "Unable to generate the PDF. Please try again."
-      );
-      setMessageType("error");
-
-    } finally {
-      if (stagingContainer?.parentNode) {
-        stagingContainer.parentNode.removeChild(stagingContainer);
-      }
-
-      setLoading(false);
-    }
+      // Fallback cleanup for browsers with unreliable afterprint support.
+      window.setTimeout(cleanup, 1500);
+    }, 150);
   };
 
-  // ------------------------------------------------------
-  // CLOSE PDF PREVIEW
-  // ------------------------------------------------------
-
-  const closePdfPreview = () => {
-    setShowPdfPreview(false);
-  };
-
-  // ------------------------------------------------------
   // CURRENCY FORMAT
   // ------------------------------------------------------
 
@@ -1111,42 +881,6 @@ const TaxReturnSummary = () => {
         </table>
 
       </div>
-
-      {/* PDF PREVIEW */}
-
-      {showPdfPreview && pdfUrl && (
-        <div className="tax-pdf-preview no-print">
-
-          <div className="tax-pdf-preview-header">
-
-            <div>
-              <h3>Tax Return Summary PDF</h3>
-              <p>{pdfFilename}</p>
-            </div>
-
-            <button
-              type="button"
-              className="tax-pdf-close-btn"
-              onClick={closePdfPreview}
-            >
-              Close
-            </button>
-
-          </div>
-
-          <iframe
-            src={pdfUrl}
-            title="Tax Return Summary PDF"
-            className="tax-pdf-viewer"
-          />
-
-          <p className="tax-pdf-help">
-            Use the PDF viewer's Save or Download icon to save your PDF.
-            Availability depends on your ERP browser permissions.
-          </p>
-
-        </div>
-      )}
 
       {/* SAVE CONFIRMATION / SUCCESS / ERROR POPUP */}
 
