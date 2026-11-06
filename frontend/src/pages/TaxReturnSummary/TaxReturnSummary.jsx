@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import html2pdf from "html2pdf.js";
 import "./TaxReturnSummary.css";
 
@@ -99,7 +99,24 @@ const TaxReturnSummary = () => {
 
   const [downloadDateTime, setDownloadDateTime] = useState("");
 
+  // PDF preview state
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [pdfFilename, setPdfFilename] = useState("");
+
   const fieldsDisabled = Boolean(recordId) && !isEditing;
+
+  // ------------------------------------------------------
+  // CLEAN UP PDF BLOB URL
+  // ------------------------------------------------------
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   // ------------------------------------------------------
   // LOAD EXISTING RECORD BY FINANCIAL YEAR
@@ -225,11 +242,9 @@ const TaxReturnSummary = () => {
   const differenceIncome = incomeAssessment - grossIncome;
 
   const incomeTax = Number(form.incomeTax) || 0;
-
   const differenceIncomeTax = incomeTax - taxPayable;
 
   const refundAmount = Number(form.refundAmount) || 0;
-
   const differenceReturn = refundAmount - calculatedRefund;
 
   // ------------------------------------------------------
@@ -388,7 +403,7 @@ const TaxReturnSummary = () => {
   };
 
   // ------------------------------------------------------
-  // DIRECT PDF DOWNLOAD
+  // GENERATE PDF AND SHOW PREVIEW
   // ------------------------------------------------------
 
   const handleDownload = async () => {
@@ -396,7 +411,7 @@ const TaxReturnSummary = () => {
 
     if (!form.financialYear) {
       setMessage(
-        "Please select a Financial Year before downloading."
+        "Please select a Financial Year before generating the PDF."
       );
       setMessageType("error");
       return;
@@ -414,6 +429,7 @@ const TaxReturnSummary = () => {
     setMessage("");
 
     let stagingContainer = null;
+    let newPdfUrl = "";
 
     try {
       const now = new Date();
@@ -434,10 +450,10 @@ const TaxReturnSummary = () => {
 
       const filename = `Tax Summary FY ${safeFY}.pdf`;
 
-      // Clone only the report content.
+      // Clone report
       const reportClone = report.cloneNode(true);
 
-      // Update the download date in the cloned report.
+      // Update date in PDF
       const dateElement = reportClone.querySelector(
         ".tax-print-date"
       );
@@ -447,7 +463,7 @@ const TaxReturnSummary = () => {
           `Downloaded On: ${formattedDateTime}`;
       }
 
-      // Create an isolated rendering container.
+      // Create staging container
       stagingContainer = document.createElement("div");
 
       stagingContainer.style.cssText = `
@@ -463,7 +479,7 @@ const TaxReturnSummary = () => {
         overflow: visible;
       `;
 
-      // PDF-specific styles.
+      // PDF styles
       const pdfStyles = document.createElement("style");
 
       pdfStyles.textContent = `
@@ -563,16 +579,14 @@ const TaxReturnSummary = () => {
       stagingContainer.appendChild(reportClone);
       document.body.appendChild(stagingContainer);
 
-      // Wait for available browser fonts.
+      // Wait for fonts
       if (document.fonts?.ready) {
         await document.fonts.ready;
       }
 
-      // PDF generation configuration.
+      // PDF configuration
       const pdfOptions = {
         margin: [25.4, 25.4, 25.4, 25.4],
-
-        filename,
 
         image: {
           type: "jpeg",
@@ -603,22 +617,44 @@ const TaxReturnSummary = () => {
         }
       };
 
-      // Generate and download the PDF directly.
-      await html2pdf()
+      // Generate PDF Blob
+      const pdfBlob = await html2pdf()
         .set(pdfOptions)
         .from(reportClone)
-        .save();
+        .toPdf()
+        .get("pdf")
+        .thenExternal((pdf) => pdf.output("blob"));
 
+      if (!pdfBlob || pdfBlob.size === 0) {
+        throw new Error("Generated PDF is empty.");
+      }
+
+      // Create browser object URL
+      newPdfUrl = URL.createObjectURL(pdfBlob);
+
+      // Replace previous PDF URL
+      setPdfUrl((previousUrl) => {
+        if (previousUrl) {
+          URL.revokeObjectURL(previousUrl);
+        }
+
+        return newPdfUrl;
+      });
+
+      setPdfFilename(filename);
       setDownloadDateTime(formattedDateTime);
+      setShowPdfPreview(true);
 
-      setMessage("Tax Return Summary PDF downloaded successfully.");
+      setMessage(
+        "PDF generated successfully. Use the PDF viewer's Save or Download control if available."
+      );
       setMessageType("success");
 
     } catch (error) {
       console.error("PDF generation error:", error);
 
       setMessage(
-        "Unable to download the PDF. Please try again."
+        "Unable to generate the PDF. Please try again."
       );
       setMessageType("error");
 
@@ -629,6 +665,14 @@ const TaxReturnSummary = () => {
 
       setLoading(false);
     }
+  };
+
+  // ------------------------------------------------------
+  // CLOSE PDF PREVIEW
+  // ------------------------------------------------------
+
+  const closePdfPreview = () => {
+    setShowPdfPreview(false);
   };
 
   // ------------------------------------------------------
@@ -648,7 +692,7 @@ const TaxReturnSummary = () => {
   return (
     <div className="tax-summary-page">
 
-      {/* HEADER AND DOWNLOAD BUTTON */}
+      {/* HEADER AND PDF BUTTON */}
 
       <div className="tax-summary-header">
         <h2>TAX RETURN SUMMARY</h2>
@@ -660,7 +704,7 @@ const TaxReturnSummary = () => {
           disabled={loading}
         >
           <span>↓</span>
-          {loading ? "Generating PDF..." : "Download PDF"}
+          {loading ? "Generating PDF..." : "Generate PDF"}
         </button>
       </div>
 
@@ -1005,7 +1049,7 @@ const TaxReturnSummary = () => {
 
       </div>
 
-      {/* PDF REPORT - USED ONLY FOR PDF GENERATION */}
+      {/* PDF REPORT */}
 
       <div className="tax-print-report">
 
@@ -1029,95 +1073,21 @@ const TaxReturnSummary = () => {
           </thead>
 
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>Financial Year (FY)</td>
-              <td>{form.financialYear || "—"}</td>
-            </tr>
-
-            <tr>
-              <td>2</td>
-              <td>Assessment Year (AY)</td>
-              <td>{form.assessmentYear || "—"}</td>
-            </tr>
-
-            <tr>
-              <td>3</td>
-              <td>ITR Filing Date</td>
-              <td>{form.itrFilingDate || "—"}</td>
-            </tr>
-
-            <tr>
-              <td>4</td>
-              <td>Gross Income As per ITR</td>
-              <td>₹ {formatCurrency(form.grossIncome)}</td>
-            </tr>
-
-            <tr>
-              <td>5</td>
-              <td>Tax Payable</td>
-              <td>₹ {formatCurrency(form.taxPayable)}</td>
-            </tr>
-
-            <tr>
-              <td>6</td>
-              <td>TDS Claim As per 26AS</td>
-              <td>₹ {formatCurrency(form.tdsClaim)}</td>
-            </tr>
-
-            <tr>
-              <td>7</td>
-              <td>Refund Due</td>
-              <td>₹ {formatCurrency(refundDue)}</td>
-            </tr>
-
-            <tr>
-              <td>8</td>
-              <td>Refund Process</td>
-              <td>{form.refundProcess || "—"}</td>
-            </tr>
-
-            <tr>
-              <td>9</td>
-              <td>Date of Refund Process</td>
-              <td>{form.refundProcessDate || "—"}</td>
-            </tr>
-
-            <tr>
-              <td>10</td>
-              <td>Income As per Assessment</td>
-              <td>₹ {formatCurrency(form.incomeAssessment)}</td>
-            </tr>
-
-            <tr>
-              <td>11</td>
-              <td>Income Tax As Per AY</td>
-              <td>₹ {formatCurrency(form.incomeTax)}</td>
-            </tr>
-
-            <tr>
-              <td>12</td>
-              <td>TDS Credit</td>
-              <td>₹ {formatCurrency(form.tdsCredit)}</td>
-            </tr>
-
-            <tr>
-              <td>13</td>
-              <td>Refund Amount</td>
-              <td>₹ {formatCurrency(form.refundAmount)}</td>
-            </tr>
-
-            <tr>
-              <td>14</td>
-              <td>Interest</td>
-              <td>₹ {formatCurrency(form.interest)}</td>
-            </tr>
-
-            <tr>
-              <td>15</td>
-              <td>Refund Amount (Calculated)</td>
-              <td>₹ {formatCurrency(calculatedRefund)}</td>
-            </tr>
+            <tr><td>1</td><td>Financial Year (FY)</td><td>{form.financialYear || "—"}</td></tr>
+            <tr><td>2</td><td>Assessment Year (AY)</td><td>{form.assessmentYear || "—"}</td></tr>
+            <tr><td>3</td><td>ITR Filing Date</td><td>{form.itrFilingDate || "—"}</td></tr>
+            <tr><td>4</td><td>Gross Income As per ITR</td><td>₹ {formatCurrency(form.grossIncome)}</td></tr>
+            <tr><td>5</td><td>Tax Payable</td><td>₹ {formatCurrency(form.taxPayable)}</td></tr>
+            <tr><td>6</td><td>TDS Claim As per 26AS</td><td>₹ {formatCurrency(form.tdsClaim)}</td></tr>
+            <tr><td>7</td><td>Refund Due</td><td>₹ {formatCurrency(refundDue)}</td></tr>
+            <tr><td>8</td><td>Refund Process</td><td>{form.refundProcess || "—"}</td></tr>
+            <tr><td>9</td><td>Date of Refund Process</td><td>{form.refundProcessDate || "—"}</td></tr>
+            <tr><td>10</td><td>Income As per Assessment</td><td>₹ {formatCurrency(form.incomeAssessment)}</td></tr>
+            <tr><td>11</td><td>Income Tax As Per AY</td><td>₹ {formatCurrency(form.incomeTax)}</td></tr>
+            <tr><td>12</td><td>TDS Credit</td><td>₹ {formatCurrency(form.tdsCredit)}</td></tr>
+            <tr><td>13</td><td>Refund Amount</td><td>₹ {formatCurrency(form.refundAmount)}</td></tr>
+            <tr><td>14</td><td>Interest</td><td>₹ {formatCurrency(form.interest)}</td></tr>
+            <tr><td>15</td><td>Refund Amount (Calculated)</td><td>₹ {formatCurrency(calculatedRefund)}</td></tr>
           </tbody>
         </table>
 
@@ -1134,24 +1104,49 @@ const TaxReturnSummary = () => {
           </thead>
 
           <tbody>
-            <tr>
-              <td>Income</td>
-              <td>₹ {formatCurrency(differenceIncome)}</td>
-            </tr>
-
-            <tr>
-              <td>Income Tax</td>
-              <td>₹ {formatCurrency(differenceIncomeTax)}</td>
-            </tr>
-
-            <tr>
-              <td>Return</td>
-              <td>₹ {formatCurrency(differenceReturn)}</td>
-            </tr>
+            <tr><td>Income</td><td>₹ {formatCurrency(differenceIncome)}</td></tr>
+            <tr><td>Income Tax</td><td>₹ {formatCurrency(differenceIncomeTax)}</td></tr>
+            <tr><td>Return</td><td>₹ {formatCurrency(differenceReturn)}</td></tr>
           </tbody>
         </table>
 
       </div>
+
+      {/* PDF PREVIEW */}
+
+      {showPdfPreview && pdfUrl && (
+        <div className="tax-pdf-preview no-print">
+
+          <div className="tax-pdf-preview-header">
+
+            <div>
+              <h3>Tax Return Summary PDF</h3>
+              <p>{pdfFilename}</p>
+            </div>
+
+            <button
+              type="button"
+              className="tax-pdf-close-btn"
+              onClick={closePdfPreview}
+            >
+              Close
+            </button>
+
+          </div>
+
+          <iframe
+            src={pdfUrl}
+            title="Tax Return Summary PDF"
+            className="tax-pdf-viewer"
+          />
+
+          <p className="tax-pdf-help">
+            Use the PDF viewer's Save or Download icon to save your PDF.
+            Availability depends on your ERP browser permissions.
+          </p>
+
+        </div>
+      )}
 
       {/* SAVE CONFIRMATION / SUCCESS / ERROR POPUP */}
 
