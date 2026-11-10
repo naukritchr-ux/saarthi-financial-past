@@ -3,7 +3,7 @@
    TAX RETURN SUMMARY PAGE
 ========================================================= */
 
-.tax-summary-page {
+.tax-return-summary-page {
   width: 100%;
   min-height: 100%;
   padding: 24px;
@@ -13,33 +13,76 @@
   font-family: inherit;
 }
 
-.tax-summary-page *,
-.tax-summary-page *::before,
-.tax-summary-page *::after {
+.tax-return-summary-page *,
+.tax-return-summary-page *::before,
+.tax-return-summary-page *::after {
   box-sizing: border-box;
+}
+
+.tax-return-summary-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* =========================================================
    PAGE HEADER
 ========================================================= */
 
-.tax-summary-header {
+.tax-return-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
   border-bottom: 2px solid #c9a227;
 }
 
-.tax-summary-header h2 {
+.tax-return-header h2 {
   margin: 0;
+  color: #102a43;
+  font-family: "Courier New", Courier, monospace;
   font-size: 30px;
   font-weight: 800;
-  color: #102a43;
   letter-spacing: 0.4px;
-  font-family: "Courier New", Courier, monospace;
+}
+
+.tax-return-header p {
+  margin: 6px 0 0;
+  color: #304b63;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.tax-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* =========================================================
+   COMMON BUTTON STYLES
+========================================================= */
+
+.tax-return-summary-page button {
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.tax-return-summary-page button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 /* =========================================================
@@ -59,11 +102,6 @@
   color: #fffdf7;
   font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
 }
 
 .tax-download-btn:hover:not(:disabled) {
@@ -71,9 +109,48 @@
   box-shadow: 0 3px 8px rgba(16, 42, 67, 0.15);
 }
 
-.tax-download-btn span {
-  font-size: 18px;
+.tax-download-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* =========================================================
+   EDIT BUTTON
+========================================================= */
+
+.tax-edit-btn {
+  min-height: 40px;
+  padding: 9px 18px;
+  border: 1px solid #c9a227;
+  border-radius: 6px;
+  background: #fffdf7;
+  color: #102a43;
+  font-size: 13px;
   font-weight: 700;
+}
+
+.tax-edit-btn:hover:not(:disabled) {
+  background: #f7f1dc;
+  box-shadow: 0 3px 8px rgba(16, 42, 67, 0.08);
+}
+
+/* =========================================================
+   CANCEL BUTTON
+========================================================= */
+
+.tax-cancel-btn {
+  min-height: 40px;
+  padding: 9px 18px;
+  border: 1px solid #cfc5aa;
+  border-radius: 6px;
+  background: #fffdf7;
+  color: #304b63;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tax-cancel-btn:hover:not(:disabled) {
+  background: #eee9dc;
+  border-color: #b9ad91;
 }
 
 /* =========================================================
@@ -81,8 +158,9 @@
 ========================================================= */
 
 .tax-message {
+  width: 100%;
   padding: 12px 16px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
@@ -112,7 +190,7 @@
 ========================================================= */
 
 .tax-loading {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   padding: 10px 14px;
   background: #fffdf7;
   border: 1px solid #d9cfb5;
@@ -123,32 +201,42 @@
 }
 
 /* =========================================================
-   ROWS
+   SECTIONS
 ========================================================= */
 
-.tax-row {
-  display: grid;
-  gap: 16px;
-  margin-bottom: 16px;
+.tax-section {
+  width: 100%;
+  margin-bottom: 24px;
 }
 
-.two-columns {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.three-columns {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.one-column {
-  grid-template-columns: 1fr;
+.tax-section h3 {
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d9cfb5;
+  color: #102a43;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
 }
 
 /* =========================================================
-   FIELD CARDS
+   FORM GRID
 ========================================================= */
 
-.tax-field {
+.tax-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+/* =========================================================
+   FORM FIELD CARDS
+========================================================= */
+
+.tax-form-group {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   padding: 16px;
   background: #fffdf7;
@@ -159,181 +247,147 @@
     box-shadow 0.2s ease;
 }
 
-.tax-field:hover {
+.tax-form-group:hover {
   border-color: #c9a227;
 }
 
-/* =========================================================
-   LABELS
-========================================================= */
-
-.tax-field label,
-.difference-box label {
+.tax-form-group label {
   display: block;
   margin-bottom: 8px;
+  color: #304b63;
   font-size: 13px;
   font-weight: 600;
-  color: #304b63;
+  line-height: 1.4;
 }
 
 /* =========================================================
-   INPUTS / SELECTS
+   INPUTS AND DROPDOWNS
 ========================================================= */
 
-.tax-field input,
-.tax-field select {
+.tax-form-group input,
+.tax-form-group select {
+  display: block;
   width: 100%;
+  min-width: 0;
   height: 40px;
   padding: 0 12px;
   border: 1px solid #cfc5aa;
   border-radius: 6px;
   box-sizing: border-box;
+  outline: none;
   background: #fffef9;
   color: #102a43;
+  font-family: inherit;
   font-size: 14px;
-  outline: none;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-.tax-field input:focus,
-.tax-field select:focus {
+/* Custom dropdown arrow */
+
+.tax-form-group select {
+  padding-right: 38px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23102a43' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+/* Dropdown options */
+
+.tax-form-group select option {
+  background: #fffdf7;
+  color: #102a43;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.tax-form-group select option:disabled {
+  color: #929292;
+}
+
+/* Input and dropdown focus */
+
+.tax-form-group input:focus,
+.tax-form-group select:focus {
   border-color: #c9a227;
   box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.12);
 }
 
-.tax-field input:disabled,
-.tax-field select:disabled {
+/* Disabled fields */
+
+.tax-form-group input:disabled,
+.tax-form-group select:disabled {
   background: #eee9dc;
   color: #7b8490;
   cursor: not-allowed;
   opacity: 1;
 }
 
+/* Read-only fields */
+
+.tax-form-group input[readonly] {
+  background: #f7f1dc;
+  border-color: #c9a227;
+  color: #102a43;
+  font-weight: 700;
+  cursor: default;
+}
+
+.tax-form-group input::placeholder {
+  color: #929292;
+  opacity: 1;
+}
+
 /* =========================================================
-   AMOUNT INPUT
+   REMOVE NUMBER INPUT SPINNER / SCROLL CONTROLS
 ========================================================= */
 
-.amount-input {
-  display: flex;
-  align-items: center;
-  height: 40px;
-  overflow: hidden;
-  border: 1px solid #cfc5aa;
-  border-radius: 6px;
-  background: #fffef9;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+.tax-return-summary-page input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
-.amount-input:focus-within {
+/* Chrome, Edge and Safari */
+
+.tax-return-summary-page input[type="number"]::-webkit-inner-spin-button,
+.tax-return-summary-page input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* =========================================================
+   READ-ONLY / CALCULATED FIELDS
+========================================================= */
+
+.tax-form-group input[readonly]:focus {
   border-color: #c9a227;
-  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.12);
-}
-
-.amount-input span {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  height: 100%;
-  padding: 0 12px;
-  color: #a27c00;
-  font-weight: 700;
-  border-right: 1px solid #e1d8c2;
-  background: #faf6e9;
-}
-
-.amount-input input {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #102a43;
-}
-
-.amount-input input:focus {
-  border: 0;
-  outline: none;
   box-shadow: none;
 }
 
-.amount-input input:disabled {
-  background: #eee9dc;
-  color: #7b8490;
-}
-
 /* =========================================================
-   CALCULATED / READ-ONLY FIELDS
+   DIFFERENCE SUMMARY
 ========================================================= */
 
-.calculated-input {
-  border-color: #c9a227;
-  background: #f7f1dc;
+.tax-difference-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
 }
 
-.calculated-input input {
-  background: transparent;
-  color: #102a43;
-  font-weight: 700;
-  cursor: not-allowed;
-}
-
-/* =========================================================
-   CALCULATED REFUND BOX
-========================================================= */
-
-.calculated-box {
-  margin-top: 8px;
-  padding: 22px;
-  border: 1px solid #c9a227;
-  border-radius: 8px;
-  background: #102a43;
-  text-align: center;
-  box-shadow: 0 3px 8px rgba(16, 42, 67, 0.12);
-}
-
-.calculated-title {
-  color: #f0d36b;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-}
-
-.calculated-value {
-  margin-top: 8px;
-  color: #fffdf7;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-/* =========================================================
-   DIFFERENCE SECTION
-========================================================= */
-
-.difference-section {
-  margin-top: 28px;
-}
-
-.difference-section h3 {
-  margin-bottom: 16px;
-  color: #102a43;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-align: center;
-}
-
-/* =========================================================
-   DIFFERENCE BOXES
-========================================================= */
-
-.difference-box {
+.tax-difference-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   min-width: 0;
-  padding: 16px;
+  min-height: 95px;
+  padding: 18px;
   border: 1px solid #d9cfb5;
   border-radius: 8px;
   background: #fffdf7;
@@ -342,14 +396,22 @@
     box-shadow 0.2s ease;
 }
 
-.difference-box:hover {
+.tax-difference-card:hover {
   border-color: #c9a227;
   box-shadow: 0 2px 6px rgba(16, 42, 67, 0.08);
 }
 
-.difference-box strong {
+.tax-difference-card span {
+  margin-bottom: 10px;
+  color: #304b63;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tax-difference-card strong {
   color: #102a43;
-  font-size: 18px;
+  font-size: 19px;
+  font-weight: 800;
   overflow-wrap: anywhere;
 }
 
@@ -357,27 +419,26 @@
    BOTTOM ACTION BUTTONS
 ========================================================= */
 
-.tax-action-buttons {
+.tax-bottom-actions {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 14px;
   margin-top: 28px;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
 }
 
-.tax-action-buttons button {
-  min-width: 120px;
+.tax-save-btn,
+.tax-reset-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 150px;
   min-height: 42px;
   padding: 10px 22px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
 }
 
 .tax-save-btn {
@@ -391,93 +452,22 @@
   box-shadow: 0 3px 8px rgba(16, 42, 67, 0.15);
 }
 
-.tax-edit-btn {
+.tax-reset-btn {
   border: 1px solid #c9a227;
   background: #fffdf7;
   color: #102a43;
 }
 
-.tax-edit-btn:hover:not(:disabled) {
+.tax-reset-btn:hover:not(:disabled) {
   background: #f7f1dc;
   box-shadow: 0 3px 8px rgba(16, 42, 67, 0.08);
 }
 
-.tax-action-buttons button:disabled,
-.tax-download-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
 /* =========================================================
-   RESPONSIVE
+   CONFIRMATION POPUP OVERLAY
 ========================================================= */
 
-@media (max-width: 768px) {
-  .two-columns,
-  .three-columns {
-    grid-template-columns: 1fr;
-  }
-
-  .tax-summary-page {
-    padding: 16px;
-  }
-
-  .tax-summary-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .tax-summary-header h2 {
-    font-size: 20px;
-  }
-
-  .tax-download-btn {
-    width: 100%;
-  }
-
-  .tax-action-buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tax-action-buttons button {
-    width: 100%;
-  }
-}
-
-/* =========================================================
-   SMALL MOBILE SCREENS
-========================================================= */
-
-@media (max-width: 480px) {
-  .tax-summary-page {
-    padding: 12px;
-  }
-
-  .tax-field {
-    padding: 12px;
-  }
-
-  .calculated-box {
-    padding: 18px 12px;
-  }
-
-  .calculated-value {
-    font-size: 21px;
-  }
-
-  .difference-box strong {
-    font-size: 16px;
-  }
-}
-
-/* =========================================================
-   SIMPLE WHITE POPUP
-========================================================= */
-
-.tax-popup-overlay {
+.tax-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 99999;
@@ -485,291 +475,166 @@
   align-items: center;
   justify-content: center;
   padding: 15px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.4);
 }
 
-.tax-popup {
+/* =========================================================
+   CONFIRMATION POPUP
+========================================================= */
+
+.tax-confirm-modal {
   width: 100%;
   max-width: 500px;
-  padding: 22px 20px;
-  border: 1px solid #ddd;
+  padding: 24px;
+  border: 1px solid #d9cfb5;
   border-radius: 10px;
-  background: #fff !important;
-  color: #333 !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
-  text-align: left;
-  animation: none !important;
+  background: #fffdf7;
+  color: #102a43;
+  box-shadow: 0 8px 30px rgba(16, 42, 67, 0.18);
 }
 
-.tax-popup-icon {
-  display: none !important;
-}
-
-.tax-popup h3 {
+.tax-confirm-modal h3 {
   margin: 0 0 12px;
-  color: #333 !important;
+  color: #102a43;
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 800;
 }
 
-.tax-popup p {
-  margin: 0 0 18px;
-  color: #666 !important;
-  font-size: 15px;
-  line-height: 1.5;
+.tax-confirm-modal p {
+  margin: 0 0 20px;
+  color: #304b63;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-.tax-popup-actions {
+/* =========================================================
+   POPUP ACTION BUTTONS
+========================================================= */
+
+.tax-modal-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
 }
 
-.tax-popup-actions button {
-  min-width: 85px;
-  padding: 8px 16px;
-  border: 1px solid #ccc !important;
-  border-radius: 5px;
-  background: #102a43 !important;
-  color: #fff !important;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: none !important;
-  transition: none !important;
-}
-
-.tax-popup-actions button:hover,
-.tax-popup-actions button:focus,
-.tax-popup-actions button:active {
-  background: #102a43 !important;
-  color: #fff !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
-
-.tax-popup-actions button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.tax-modal-actions button {
+  min-width: 90px;
 }
 
 /* =========================================================
-   PRINT REPORT - HIDDEN IN APPLICATION
+   RESPONSIVE - TABLETS
 ========================================================= */
 
-.tax-print-report {
-  display: none;
+@media (max-width: 992px) {
+  .tax-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tax-difference-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* =========================================================
-   PRINT ONLY - A4 TAX RETURN SUMMARY
+   RESPONSIVE - MOBILE
 ========================================================= */
 
-@media print {
-
-  @page {
-    size: A4 portrait;
-    margin: 2.54cm;
+@media (max-width: 768px) {
+  .tax-return-summary-page {
+    padding: 16px;
   }
 
-  /*
-    Hide the complete Saarthi 360 application:
-    dashboard, sidebar, navigation, header, and other pages.
-  */
-
-  html,
-  body {
-    width: 100% !important;
-    min-height: 0 !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    background: #fff !important;
+  .tax-return-header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-  body * {
-    visibility: hidden !important;
+  .tax-return-header h2 {
+    font-size: 22px;
   }
 
-  /*
-    Reveal ONLY the tax report and its children.
-    This works even when the report is nested inside
-    the Saarthi 360 application layout.
-  */
-
-  .tax-print-report,
-  .tax-print-report * {
-    visibility: visible !important;
+  .tax-header-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
-  .tax-print-report {
-    display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    box-sizing: border-box !important;
-    background: #fff !important;
-    color: #000 !important;
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 9pt !important;
-    line-height: 1.12 !important;
+  .tax-download-btn {
+    flex: 1;
   }
 
-  /*
-    Remove application layout styling from ancestors.
-    The report is positioned independently on the page.
-  */
-
-  .tax-summary-page {
-    display: block !important;
-    position: static !important;
-    width: auto !important;
-    min-height: 0 !important;
-    height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
+  .tax-form-grid,
+  .tax-difference-grid {
+    grid-template-columns: 1fr;
   }
 
-  /* Download date and time */
-
-  .tax-print-date {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 0 8pt !important;
-    padding: 0 !important;
-    color: #000 !important;
-    text-align: right !important;
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 9pt !important;
-    font-weight: normal !important;
+  .tax-bottom-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  /* Main report heading */
-
-  .tax-print-header {
-    display: block !important;
-    position: relative !important;
-    width: 100% !important;
-    margin: 0 0 12pt !important;
-    padding: 0 !important;
-    color: #000 !important;
-    text-align: center !important;
-    font-family: "Times New Roman", Times, serif !important;
-  }
-
-  .tax-print-header h2 {
-    display: block !important;
-    margin: 0 0 6pt !important;
-    padding: 0 !important;
-    color: #000 !important;
-    text-align: center !important;
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 16pt !important;
-    font-weight: bold !important;
-  }
-
-  /* Report tables */
-
-  .tax-print-table {
-    display: table !important;
-    width: 100% !important;
-    border-collapse: collapse !important;
-    table-layout: fixed !important;
-    margin: 0 0 8pt !important;
-    padding: 0 !important;
-    background: #fff !important;
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 8.5pt !important;
-    page-break-inside: auto !important;
-  }
-
-  .tax-print-table thead {
-    display: table-header-group !important;
-  }
-
-  .tax-print-table tbody {
-    display: table-row-group !important;
-  }
-
-  .tax-print-table tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  .tax-print-table th,
-  .tax-print-table td {
-    border: 1px solid #555 !important;
-    padding: 3pt 5pt !important;
-    color: #000 !important;
-    background: #fff !important;
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 8.5pt !important;
-    line-height: 1.1 !important;
-    text-align: left !important;
-    vertical-align: middle !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  .tax-print-table th {
-    background: #eee !important;
-    font-weight: bold !important;
-    print-color-adjust: exact !important;
-    -webkit-print-color-adjust: exact !important;
-  }
-
-  /* Difference heading */
-
-  .tax-print-difference-heading {
-    display: block !important;
-    margin: 8pt 0 4pt !important;
-    padding: 0 !important;
-    color: #000 !important;
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 11pt !important;
-    font-weight: bold !important;
-    text-align: left !important;
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-  }
-
-  /* Explicitly suppress application controls and popup */
-
-  .tax-summary-header,
-  .tax-message,
-  .tax-loading,
-  .tax-row,
-  .calculated-box,
-  .difference-section,
-  .tax-action-buttons,
-  .tax-popup-overlay,
-  .no-print {
-    display: none !important;
+  .tax-bottom-actions button {
+    width: 100%;
   }
 }
 
+/* =========================================================
+   RESPONSIVE - SMALL MOBILE
+========================================================= */
 
-/* ======================================================
-   PDF REPORT - HIDDEN IN NORMAL APPLICATION VIEW
-====================================================== */
+@media (max-width: 480px) {
+  .tax-return-summary-page {
+    padding: 12px;
+  }
 
-.tax-print-report {
-  display: none;
-}
+  .tax-return-header h2 {
+    font-size: 20px;
+  }
 
-@media print {
-  .tax-print-report {
-    display: block;
+  .tax-return-header p {
+    font-size: 13px;
+  }
+
+  .tax-section h3 {
+    font-size: 16px;
+  }
+
+  .tax-form-group {
+    padding: 12px;
+  }
+
+  .tax-form-group input,
+  .tax-form-group select {
+    font-size: 13px;
+  }
+
+  .tax-difference-card {
+    padding: 14px;
+  }
+
+  .tax-difference-card strong {
+    font-size: 17px;
+  }
+
+  .tax-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tax-header-actions button {
+    width: 100%;
+  }
+
+  .tax-confirm-modal {
+    padding: 20px 16px;
+  }
+
+  .tax-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .tax-modal-actions button {
+    width: 100%;
   }
 }

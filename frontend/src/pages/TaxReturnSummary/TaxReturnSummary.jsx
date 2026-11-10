@@ -1,30 +1,55 @@
-import React, { useState } from "react";
 
+import React, { useEffect, useMemo, useState } from "react";
 import "./TaxReturnSummary.css";
 
 const TAX_RETURN_API_URL = "/api/tax-return-summary";
 
 const FINANCIAL_YEARS = [
-  { value: "2021-22", label: "FY 2021–2022", assessmentYear: "2022-23" },
-  { value: "2022-23", label: "FY 2022–2023", assessmentYear: "2023-24" },
-  { value: "2023-24", label: "FY 2023–2024", assessmentYear: "2024-25" },
-  { value: "2024-25", label: "FY 2024–2025", assessmentYear: "2025-26" },
-  { value: "2025-26", label: "FY 2025–2026", assessmentYear: "2026-27" },
-  { value: "2026-27", label: "FY 2026–2027", assessmentYear: "2027-28" }
+  { financialYear: "2021-22", assessmentYear: "2022-23" },
+  { financialYear: "2022-23", assessmentYear: "2023-24" },
+  { financialYear: "2023-24", assessmentYear: "2024-25" },
+  { financialYear: "2024-25", assessmentYear: "2025-26" },
+  { financialYear: "2025-26", assessmentYear: "2026-27" },
+  { financialYear: "2026-27", assessmentYear: "2027-28" },
 ];
 
 const ASSESSMENT_YEARS = [
-  { value: "2022-23", label: "AY 2022–2023" },
-  { value: "2023-24", label: "AY 2023–2024" },
-  { value: "2024-25", label: "AY 2024–2025" },
-  { value: "2025-26", label: "AY 2025–2026" },
-  { value: "2026-27", label: "AY 2026–2027" },
-  { value: "2027-28", label: "AY 2027–2028" }
+  "2022-23",
+  "2023-24",
+  "2024-25",
+  "2025-26",
+  "2026-27",
+  "2027-28",
+];
+
+const FORM_TYPES = [
+  "ITR-1",
+  "ITR-2",
+  "ITR-3",
+  "ITR-4",
+  "ITR-5",
+  "ITR-6",
+  "ITR-7",
+  "ITR-U",
+];
+
+const FILING_STATUSES = [
+  "Draft",
+  "Filed",
+  "Verified",
+  "Processed",
+  "Defective",
+  "Revised",
+  "Belated",
 ];
 
 const INITIAL_FORM = {
   financialYear: "",
   assessmentYear: "",
+  name: "",
+  acknowledgementNumber: "",
+  formType: "",
+  filingStatus: "",
   itrFilingDate: "",
   grossIncome: "",
   taxPayable: "",
@@ -35,272 +60,246 @@ const INITIAL_FORM = {
   incomeTax: "",
   tdsCredit: "",
   refundAmount: "",
-  interest: ""
+  interest: "",
 };
 
-// ------------------------------------------------------
-// DATABASE RECORD TO FORM
-// ------------------------------------------------------
+const numericValue = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+};
 
-const mapDatabaseToForm = (record) => ({
-  financialYear: record.financial_year || "",
-  assessmentYear: record.assessment_year || "",
-  itrFilingDate: record.itr_filing_date || "",
-  grossIncome: record.gross_income ?? "",
-  taxPayable: record.tax_payable ?? "",
-  tdsClaim: record.tds_claim ?? "",
-  refundProcess: record.refund_process || "",
-  refundProcessDate: record.refund_process_date || "",
-  incomeAssessment: record.income_assessment ?? "",
-  incomeTax: record.income_tax ?? "",
-  tdsCredit: record.tds_credit ?? "",
-  refundAmount: record.refund_amount ?? "",
-  interest: record.interest ?? ""
-});
+const formatCurrency = (value) =>
+  `₹${numericValue(value).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 
-// ------------------------------------------------------
-// API RESPONSE HANDLER
-// ------------------------------------------------------
+async function readResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
 
-const readApiResponse = async (response) => {
-  let result;
-
-  try {
-    result = await response.json();
-  } catch {
-    throw new Error("The server returned an invalid response.");
+  if (contentType.includes("application/json")) {
+    return response.json();
   }
 
-  if (!response.ok || !result?.success) {
+  const responseText = await response.text();
+
+  if (responseText.trim().startsWith("<")) {
     throw new Error(
-      result?.message || `Request failed with status ${response.status}.`
+      "The API returned an HTML page instead of JSON. Check your backend URL and Vite proxy configuration."
     );
   }
 
-  return result;
-};
+  throw new Error(
+    responseText || "The server returned an unexpected response."
+  );
+}
 
-// ------------------------------------------------------
-// MAIN COMPONENT
-// ------------------------------------------------------
-
-const TaxReturnSummary = () => {
+function TaxReturnSummary() {
   const [form, setForm] = useState(INITIAL_FORM);
-  const [recordId, setRecordId] = useState(null);
-  const [isEditing, setIsEditing] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [recordId, setRecordId] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
-
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupType, setPopupType] = useState("confirm");
-  const [popupMessage, setPopupMessage] = useState("");
-
-  const [downloadDateTime, setDownloadDateTime] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const fieldsDisabled = Boolean(recordId) && !isEditing;
 
-  // ------------------------------------------------------
-  // LOAD EXISTING RECORD BY FINANCIAL YEAR
-  // ------------------------------------------------------
+  // Existing calculations retained.
+  const refundDue = useMemo(
+    () =>
+      Math.max(
+        0,
+        numericValue(form.tdsClaim) - numericValue(form.taxPayable)
+      ),
+    [form.tdsClaim, form.taxPayable]
+  );
 
-  const loadTaxRecord = async (financialYear) => {
+  const calculatedRefund = useMemo(
+    () => numericValue(form.tdsCredit) + numericValue(form.interest),
+    [form.tdsCredit, form.interest]
+  );
+
+  const differenceIncome = useMemo(
+    () =>
+      numericValue(form.incomeAssessment) -
+      numericValue(form.grossIncome),
+    [form.incomeAssessment, form.grossIncome]
+  );
+
+  const differenceIncomeTax = useMemo(
+    () =>
+      numericValue(form.incomeTax) -
+      numericValue(form.taxPayable),
+    [form.incomeTax, form.taxPayable]
+  );
+
+  const differenceReturn = useMemo(
+    () => numericValue(form.refundAmount) - calculatedRefund,
+    [form.refundAmount, calculatedRefund]
+  );
+
+  const showMessage = (text, type = "success") => {
+    setMessage(text);
+    setMessageType(type);
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+
+    setMessage("");
+  };
+
+  const handleFinancialYearChange = async (event) => {
+    const financialYear = event.target.value;
+
+    const selectedYear = FINANCIAL_YEARS.find(
+      (item) => item.financialYear === financialYear
+    );
+
+    setForm({
+      ...INITIAL_FORM,
+      financialYear,
+      assessmentYear: selectedYear?.assessmentYear || "",
+    });
+
+    setRecordId(null);
+    setIsEditing(false);
     setMessage("");
 
-    if (!financialYear) {
-      setForm(INITIAL_FORM);
-      setRecordId(null);
-      setIsEditing(true);
-      return;
+    if (financialYear) {
+      await loadTaxReturnSummary(financialYear);
     }
+  };
+
+  const resetForm = () => {
+    setForm(INITIAL_FORM);
+    setRecordId(null);
+    setIsEditing(false);
+    setMessage("");
+    setMessageType("");
+  };
+
+  const getDatabasePayload = () => ({
+    financial_year: form.financialYear || null,
+    assessment_year: form.assessmentYear || null,
+
+    // New fields
+    name: form.name.trim(),
+    acknowledgement_number: form.acknowledgementNumber.trim(),
+    form_type: form.formType || null,
+    filing_status: form.filingStatus || null,
+
+    // Existing fields
+    itr_filing_date: form.itrFilingDate || null,
+    gross_income: numericValue(form.grossIncome),
+    tax_payable: numericValue(form.taxPayable),
+    tds_claim: numericValue(form.tdsClaim),
+    refund_due: refundDue,
+    refund_process: form.refundProcess || null,
+    refund_process_date: form.refundProcessDate || null,
+    income_assessment: numericValue(form.incomeAssessment),
+    income_tax: numericValue(form.incomeTax),
+    tds_credit: numericValue(form.tdsCredit),
+    refund_amount: numericValue(form.refundAmount),
+    interest: numericValue(form.interest),
+    calculated_refund: calculatedRefund,
+    difference_income: differenceIncome,
+    difference_income_tax: differenceIncomeTax,
+    difference_return: differenceReturn,
+  });
+
+  const loadTaxReturnSummary = async (financialYear) => {
+    if (!financialYear) return;
 
     setLoading(true);
+    setMessage("");
 
     try {
       const response = await fetch(
-        `${TAX_RETURN_API_URL}?financialYear=${encodeURIComponent(
+        `${TAX_RETURN_API_URL}?financial_year=${encodeURIComponent(
           financialYear
-        )}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json"
-          },
-          cache: "no-store"
-        }
+        )}`
       );
 
-      const result = await readApiResponse(response);
+      const result = await readResponse(response);
 
-      if (result.exists && result.data) {
-        setForm(mapDatabaseToForm(result.data));
-        setRecordId(result.data.id);
-        setIsEditing(false);
-
-        setMessage("Existing tax return record loaded.");
-        setMessageType("success");
-      } else {
-        const selectedFY = FINANCIAL_YEARS.find(
-          (year) => year.value === financialYear
+      if (!response.ok) {
+        throw new Error(
+          result?.message || "Unable to load Tax Return Summary."
         );
+      }
+
+      const record = result?.data || result?.record || result;
+
+      if (!record || !record.financial_year) {
+        const defaultAssessmentYear = FINANCIAL_YEARS.find(
+          (item) => item.financialYear === financialYear
+        )?.assessmentYear || "";
 
         setForm({
           ...INITIAL_FORM,
           financialYear,
-          assessmentYear: selectedFY?.assessmentYear || ""
+          assessmentYear: defaultAssessmentYear,
         });
 
         setRecordId(null);
-        setIsEditing(true);
-
-        setMessage(
-          "No saved record found. You can enter a new record."
-        );
-        setMessageType("info");
+        setIsEditing(false);
+        return;
       }
-    } catch (error) {
-      console.error("Error loading tax return:", error);
+
+      setRecordId(record.id || null);
+      setIsEditing(false);
 
       setForm({
-        ...INITIAL_FORM,
-        financialYear
+        financialYear: record.financial_year || financialYear,
+        assessmentYear: record.assessment_year || "",
+        name: record.name || "",
+        acknowledgementNumber: record.acknowledgement_number || "",
+        formType: record.form_type || "",
+        filingStatus: record.filing_status || "",
+        itrFilingDate: record.itr_filing_date || "",
+        grossIncome: record.gross_income ?? "",
+        taxPayable: record.tax_payable ?? "",
+        tdsClaim: record.tds_claim ?? "",
+        refundProcess: record.refund_process || "",
+        refundProcessDate: record.refund_process_date || "",
+        incomeAssessment: record.income_assessment ?? "",
+        incomeTax: record.income_tax ?? "",
+        tdsCredit: record.tds_credit ?? "",
+        refundAmount: record.refund_amount ?? "",
+        interest: record.interest ?? "",
       });
-
-      setRecordId(null);
-      setIsEditing(true);
-
-      setMessage(error.message || "Unable to load tax return record.");
-      setMessageType("error");
+    } catch (error) {
+      console.error("Tax Return Summary load error:", error);
+      showMessage(error.message || "Unable to load data.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // ------------------------------------------------------
-  // HANDLE INPUT CHANGES
-  // ------------------------------------------------------
+  useEffect(() => {
+    loadTaxReturnSummary(INITIAL_FORM.financialYear);
+    // Initial load only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleChange = async (e) => {
-    const { name, value } = e.target;
-
-    if (name === "financialYear") {
-      await loadTaxRecord(value);
-      return;
-    }
-
-    if (name === "refundProcess") {
-      setForm((prev) => ({
-        ...prev,
-        refundProcess: value,
-        refundProcessDate:
-          value === "Processed" ? prev.refundProcessDate : ""
-      }));
-      return;
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // ------------------------------------------------------
-  // CALCULATIONS
-  // ------------------------------------------------------
-
-  const taxPayable = Number(form.taxPayable) || 0;
-  const tdsClaim = Number(form.tdsClaim) || 0;
-
-  const refundDue = Math.max(0, tdsClaim - taxPayable);
-
-  const tdsCredit = Number(form.tdsCredit) || 0;
-  const interest = Number(form.interest) || 0;
-
-  const calculatedRefund = tdsCredit + interest;
-
-  const incomeAssessment = Number(form.incomeAssessment) || 0;
-  const grossIncome = Number(form.grossIncome) || 0;
-
-  const differenceIncome = incomeAssessment - grossIncome;
-
-  const incomeTax = Number(form.incomeTax) || 0;
-  const differenceIncomeTax = incomeTax - taxPayable;
-
-  const refundAmount = Number(form.refundAmount) || 0;
-  const differenceReturn = refundAmount - calculatedRefund;
-
-  // ------------------------------------------------------
-  // PREPARE DATABASE PAYLOAD
-  // ------------------------------------------------------
-
-  const getDatabasePayload = () => ({
-    financial_year: form.financialYear,
-    assessment_year: form.assessmentYear,
-    itr_filing_date: form.itrFilingDate || null,
-
-    gross_income: grossIncome,
-    tax_payable: taxPayable,
-    tds_claim: tdsClaim,
-    refund_due: refundDue,
-
-    refund_process: form.refundProcess || "Pending",
-    refund_process_date:
-      form.refundProcess === "Processed"
-        ? form.refundProcessDate || null
-        : null,
-
-    income_assessment: incomeAssessment,
-    income_tax: incomeTax,
-    tds_credit: tdsCredit,
-    refund_amount: refundAmount,
-    interest,
-
-    calculated_refund: calculatedRefund,
-    difference_income: differenceIncome,
-    difference_income_tax: differenceIncomeTax,
-    difference_return: differenceReturn
-  });
-
-  // ------------------------------------------------------
-  // OPEN SAVE CONFIRMATION POPUP
-  // ------------------------------------------------------
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.financialYear || !form.assessmentYear) {
-      setMessage("Please select Financial Year and Assessment Year.");
-      setMessageType("error");
+      showMessage(
+        "Please select Financial Year and Assessment Year.",
+        "error"
+      );
       return;
     }
 
-    if (
-      form.refundProcess === "Processed" &&
-      !form.refundProcessDate
-    ) {
-      setMessage("Please select the Date of Refund Process.");
-      setMessageType("error");
-      return;
-    }
-
-    setPopupType("confirm");
-
-    setPopupMessage(
-      recordId
-        ? "Are you sure you want to update this Tax Return Summary?"
-        : "Are you sure you want to save this Tax Return Summary?"
-    );
-
-    setShowPopup(true);
-  };
-
-  // ------------------------------------------------------
-  // CONFIRM AND SAVE TO SUPABASE
-  // ------------------------------------------------------
-
-  const confirmSave = async () => {
-    if (loading) return;
-
-    setShowPopup(false);
-    setLoading(true);
+    setSaving(true);
     setMessage("");
 
     try {
@@ -308,638 +307,444 @@ const TaxReturnSummary = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json"
         },
-        body: JSON.stringify(getDatabasePayload())
+        body: JSON.stringify(getDatabasePayload()),
       });
 
-      const result = await readApiResponse(response);
+      const result = await readResponse(response);
 
-      if (!result.data) {
-        throw new Error("The server did not return the saved record.");
+      if (!response.ok) {
+        throw new Error(
+          result?.message || "Unable to save Tax Return Summary."
+        );
       }
 
-      setRecordId(result.data.id);
-      setForm(mapDatabaseToForm(result.data));
+      const savedRecord = result?.data || result?.record || result;
+
+      if (savedRecord?.id) {
+        setRecordId(savedRecord.id);
+      }
+
       setIsEditing(false);
+      setShowConfirm(false);
 
-      setMessage(
-        result.message || "Tax Return Summary saved successfully."
+      showMessage(
+        result?.message || "Tax Return Summary saved successfully.",
+        "success"
       );
-      setMessageType("success");
 
-      setPopupType("success");
-      setPopupMessage(
-        recordId
-          ? "Tax Return Summary updated successfully!"
-          : "Tax Return Summary saved successfully!"
-      );
-      setShowPopup(true);
-
+      await loadTaxReturnSummary(form.financialYear);
     } catch (error) {
-      console.error("Error saving tax return:", error);
+      console.error("Tax Return Summary save error:", error);
+      showMessage(error.message || "Unable to save data.", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-      setMessage(error.message || "Unable to save tax return.");
-      setMessageType("error");
+  const handleEdit = () => {
+    setIsEditing(true);
+    setMessage("");
+  };
 
-      setPopupType("error");
-      setPopupMessage(
-        error.message || "Unable to save Tax Return Summary."
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    loadTaxReturnSummary(form.financialYear);
+  };
+
+  const handleDownload = async () => {
+    if (loading || saving) return;
+
+    if (!form.financialYear || !form.assessmentYear) {
+      showMessage(
+        "Please select Financial Year and Assessment Year.",
+        "error"
       );
-      setShowPopup(true);
+      return;
+    }
 
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(`${TAX_RETURN_API_URL}/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/pdf, application/json",
+        },
+        body: JSON.stringify(getDatabasePayload()),
+      });
+
+      if (!response.ok) {
+        const errorResult = await readResponse(response);
+        throw new Error(
+          errorResult?.message || "Unable to generate PDF."
+        );
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+
+      if (!contentType.includes("application/pdf")) {
+        throw new Error(
+          "The server did not return a valid PDF file. Check the backend PDF route."
+        );
+      }
+
+      const pdfBlob = await response.blob();
+
+      if (!pdfBlob.size) {
+        throw new Error("The generated PDF is empty.");
+      }
+
+      const filename = `Tax_Return_Summary_FY_${form.financialYear}.pdf`;
+      const blobUrl = window.URL.createObjectURL(pdfBlob);
+
+      const downloadLink = document.createElement("a");
+      downloadLink.href = blobUrl;
+      downloadLink.download = filename;
+      downloadLink.style.display = "none";
+
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+
+      window.setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 30000);
+
+      showMessage(
+        "Tax Return Summary PDF generated successfully.",
+        "success"
+      );
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      showMessage(
+        error.message || "Unable to generate PDF.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // ------------------------------------------------------
-  // CLOSE POPUP
-  // ------------------------------------------------------
-
-  const closePopup = () => {
-    if (loading) return;
-    setShowPopup(false);
-  };
-
-  // ------------------------------------------------------
-  // ENABLE EDIT MODE
-  // ------------------------------------------------------
-
-  const handleEdit = () => {
-    if (!recordId) {
-      setMessage(
-        "Please select a Financial Year with a saved record."
-      );
-      setMessageType("error");
-      return;
-    }
-
-    setIsEditing(true);
-
-    setMessage(
-      "Edit mode enabled. Update the required fields and click Update."
-    );
-
-    setMessageType("info");
-  };
-
-  // ------------------------------------------------------
-  // GENERATE PDF AND SHOW PREVIEW
-  // ------------------------------------------------------
-
-  const handleDownload = () => {
-    if (loading) return;
-
-    if (!form.financialYear) {
-      setMessage("Please select a Financial Year before generating the PDF.");
-      setMessageType("error");
-      return;
-    }
-
-    const report = document.querySelector(".tax-print-report");
-    if (!report) {
-      setMessage("Tax Return Summary report could not be found.");
-      setMessageType("error");
-      return;
-    }
-
-    const formattedDateTime = new Date().toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true
-    });
-
-    setDownloadDateTime(formattedDateTime);
-    setMessage("Choose “Save as PDF” in the browser print window.");
-    setMessageType("info");
-
-    // Let React render the timestamp before opening the native print dialog.
-    window.setTimeout(() => {
-      document.body.classList.add("tax-print-mode");
-
-      const cleanup = () => {
-        document.body.classList.remove("tax-print-mode");
-        window.removeEventListener("afterprint", cleanup);
-      };
-
-      window.addEventListener("afterprint", cleanup);
-      window.print();
-
-      // Fallback cleanup for browsers with unreliable afterprint support.
-      window.setTimeout(cleanup, 1500);
-    }, 150);
-  };
-
-  // CURRENCY FORMAT
-  // ------------------------------------------------------
-
-  const formatCurrency = (amount) =>
-    Number(amount || 0).toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-
-  // ------------------------------------------------------
-  // RENDER
-  // ------------------------------------------------------
-
-  return (
-    <div className="tax-summary-page">
-
-      {/* HEADER AND PDF BUTTON */}
-
-      <div className="tax-summary-header">
-        <h2>TAX RETURN SUMMARY</h2>
-
-        <button
-          type="button"
-          className="tax-download-btn no-print"
-          onClick={handleDownload}
-          disabled={loading}
-        >
-          <span>↓</span>
-          {loading ? "Generating PDF..." : "Generate PDF"}
-        </button>
-      </div>
-
-      {/* STATUS MESSAGE */}
-
-      {message && (
-        <div className={`tax-message ${messageType} no-print`}>
-          {message}
-        </div>
-      )}
-
-      {loading && (
-        <div className="tax-loading no-print">
-          Processing...
-        </div>
-      )}
-
-      {/* ROW 1 */}
-
-      <div className="tax-row three-columns">
-
-        <div className="tax-field">
-          <label>Financial Year (FY)</label>
-
-          <select
-            name="financialYear"
-            value={form.financialYear}
-            onChange={handleChange}
-            disabled={loading}
-          >
-            <option value="">Select Financial Year</option>
-
-            {FINANCIAL_YEARS.map((year) => (
-              <option key={year.value} value={year.value}>
-                {year.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="tax-field">
-          <label>Assessment Year (AY)</label>
-
-          <select
-            name="assessmentYear"
-            value={form.assessmentYear}
-            onChange={handleChange}
-            disabled={fieldsDisabled || loading}
-          >
-            <option value="">Select Assessment Year</option>
-
-            {ASSESSMENT_YEARS.map((year) => (
-              <option key={year.value} value={year.value}>
-                {year.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="tax-field">
-          <label>ITR Filing Date</label>
-
-          <input
-            type="date"
-            name="itrFilingDate"
-            value={form.itrFilingDate}
-            onChange={handleChange}
-            disabled={fieldsDisabled || loading}
-          />
-        </div>
-
-      </div>
-
-      {/* ROW 2 */}
-
-      <div className="tax-row two-columns">
-
-        <div className="tax-field">
-          <label>Gross Income As per ITR</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="grossIncome"
-              value={form.grossIncome}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-        <div className="tax-field">
-          <label>Tax Payable</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="taxPayable"
-              value={form.taxPayable}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-      </div>
-
-      {/* ROW 3 */}
-
-      <div className="tax-row two-columns">
-
-        <div className="tax-field">
-          <label>TDS Claim As per 26AS</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="tdsClaim"
-              value={form.tdsClaim}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-        <div className="tax-field">
-          <label>Refund Due</label>
-
-          <div className="amount-input calculated-input">
-            <span>₹</span>
-            <input
-              type="text"
-              value={formatCurrency(refundDue)}
-              readOnly
-            />
-          </div>
-        </div>
-
-      </div>
-
-      {/* ROW 4 */}
-
-      <div className="tax-row two-columns">
-
-        <div className="tax-field">
-          <label>Refund Process</label>
-
-          <select
-            name="refundProcess"
-            value={form.refundProcess}
-            onChange={handleChange}
-            disabled={fieldsDisabled || loading}
-          >
-            <option value="">Select Refund Process</option>
-            <option value="Pending">Pending</option>
-            <option value="Processed">Processed</option>
-            <option value="Not Applicable">Not Applicable</option>
-          </select>
-        </div>
-
-        <div className="tax-field">
-          <label>Date of Refund Process</label>
-
-          <input
-            type="date"
-            name="refundProcessDate"
-            value={form.refundProcessDate}
-            onChange={handleChange}
-            disabled={
-              fieldsDisabled ||
-              loading ||
-              form.refundProcess !== "Processed"
-            }
-          />
-        </div>
-
-      </div>
-
-      {/* ROW 5 */}
-
-      <div className="tax-row one-column">
-
-        <div className="tax-field">
-          <label>Income As per Assessment</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="incomeAssessment"
-              value={form.incomeAssessment}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-      </div>
-
-      {/* ROW 6 */}
-
-      <div className="tax-row two-columns">
-
-        <div className="tax-field">
-          <label>Income Tax As Per AY</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="incomeTax"
-              value={form.incomeTax}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-        <div className="tax-field">
-          <label>TDS Credit</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="tdsCredit"
-              value={form.tdsCredit}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-      </div>
-
-      {/* ROW 7 */}
-
-      <div className="tax-row two-columns">
-
-        <div className="tax-field">
-          <label>Refund Amount</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="refundAmount"
-              value={form.refundAmount}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-        <div className="tax-field">
-          <label>Interest</label>
-
-          <div className="amount-input">
-            <span>₹</span>
-            <input
-              type="number"
-              name="interest"
-              value={form.interest}
-              onChange={handleChange}
-              min="0"
-              disabled={fieldsDisabled || loading}
-            />
-          </div>
-        </div>
-
-      </div>
-
-      {/* CALCULATED REFUND */}
-
-      <div className="calculated-box">
-        <div className="calculated-title">
-          REFUND AMOUNT (CALCULATED)
-        </div>
-
-        <div className="calculated-value">
-          ₹ {formatCurrency(calculatedRefund)}
-        </div>
-      </div>
-
-      {/* DIFFERENCE */}
-
-      <div className="difference-section">
-
-        <h3>DIFFERENCE</h3>
-
-        <div className="tax-row three-columns">
-
-          <div className="difference-box">
-            <label>Income</label>
-            <strong>₹ {formatCurrency(differenceIncome)}</strong>
-          </div>
-
-          <div className="difference-box">
-            <label>Income Tax</label>
-            <strong>₹ {formatCurrency(differenceIncomeTax)}</strong>
-          </div>
-
-          <div className="difference-box">
-            <label>Return</label>
-            <strong>₹ {formatCurrency(differenceReturn)}</strong>
-          </div>
-
-        </div>
-      </div>
-
-      {/* BOTTOM ACTION BUTTONS */}
-
-      <div className="tax-action-buttons no-print">
-
-        <button
-          type="button"
-          className="tax-save-btn"
-          onClick={handleSave}
-          disabled={loading || !isEditing}
-        >
-          {loading ? "Saving..." : recordId ? "Update" : "Save"}
-        </button>
-
-        <button
-          type="button"
-          className="tax-edit-btn"
-          onClick={handleEdit}
-          disabled={loading || !recordId || isEditing}
-        >
-          Edit
-        </button>
-
-      </div>
-
-      {/* PDF REPORT */}
-
-      <div className="tax-print-report">
-
-        <div className="tax-print-header">
-
-          <div className="tax-print-date">
-            Downloaded On: {downloadDateTime || "—"}
-          </div>
-
-          <h2>TAX RETURN SUMMARY</h2>
-
-        </div>
-
-        <table className="tax-print-table">
-          <thead>
-            <tr>
-              <th>Sr. No.</th>
-              <th>Particulars</th>
-              <th>Amount / Details</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr><td>1</td><td>Financial Year (FY)</td><td>{form.financialYear || "—"}</td></tr>
-            <tr><td>2</td><td>Assessment Year (AY)</td><td>{form.assessmentYear || "—"}</td></tr>
-            <tr><td>3</td><td>ITR Filing Date</td><td>{form.itrFilingDate || "—"}</td></tr>
-            <tr><td>4</td><td>Gross Income As per ITR</td><td>₹ {formatCurrency(form.grossIncome)}</td></tr>
-            <tr><td>5</td><td>Tax Payable</td><td>₹ {formatCurrency(form.taxPayable)}</td></tr>
-            <tr><td>6</td><td>TDS Claim As per 26AS</td><td>₹ {formatCurrency(form.tdsClaim)}</td></tr>
-            <tr><td>7</td><td>Refund Due</td><td>₹ {formatCurrency(refundDue)}</td></tr>
-            <tr><td>8</td><td>Refund Process</td><td>{form.refundProcess || "—"}</td></tr>
-            <tr><td>9</td><td>Date of Refund Process</td><td>{form.refundProcessDate || "—"}</td></tr>
-            <tr><td>10</td><td>Income As per Assessment</td><td>₹ {formatCurrency(form.incomeAssessment)}</td></tr>
-            <tr><td>11</td><td>Income Tax As Per AY</td><td>₹ {formatCurrency(form.incomeTax)}</td></tr>
-            <tr><td>12</td><td>TDS Credit</td><td>₹ {formatCurrency(form.tdsCredit)}</td></tr>
-            <tr><td>13</td><td>Refund Amount</td><td>₹ {formatCurrency(form.refundAmount)}</td></tr>
-            <tr><td>14</td><td>Interest</td><td>₹ {formatCurrency(form.interest)}</td></tr>
-            <tr><td>15</td><td>Refund Amount (Calculated)</td><td>₹ {formatCurrency(calculatedRefund)}</td></tr>
-          </tbody>
-        </table>
-
-        <h3 className="tax-print-difference-heading">
-          DIFFERENCE
-        </h3>
-
-        <table className="tax-print-table">
-          <thead>
-            <tr>
-              <th>Particulars</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr><td>Income</td><td>₹ {formatCurrency(differenceIncome)}</td></tr>
-            <tr><td>Income Tax</td><td>₹ {formatCurrency(differenceIncomeTax)}</td></tr>
-            <tr><td>Return</td><td>₹ {formatCurrency(differenceReturn)}</td></tr>
-          </tbody>
-        </table>
-
-      </div>
-
-      {/* SAVE CONFIRMATION / SUCCESS / ERROR POPUP */}
-
-      {showPopup && (
-        <div className="tax-popup-overlay no-print">
-
-          <div
-            className={`tax-popup tax-popup-${popupType}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="tax-popup-title"
-          >
-
-            <div className="tax-popup-icon">
-              {popupType === "confirm" && "?"}
-              {popupType === "success" && "✓"}
-              {popupType === "error" && "!"}
-            </div>
-
-            <h3 id="tax-popup-title">
-              {popupType === "confirm" && "Confirm Save"}
-              {popupType === "success" && "Success"}
-              {popupType === "error" && "Error"}
-            </h3>
-
-            <p>{popupMessage}</p>
-
-            <div className="tax-popup-actions">
-
-              {popupType === "confirm" && (
-                <>
-                  <button
-                    type="button"
-                    className="tax-popup-cancel"
-                    onClick={closePopup}
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="button"
-                    className="tax-popup-confirm"
-                    onClick={confirmSave}
-                    disabled={loading}
-                  >
-                    {loading ? "Saving..." : "Confirm"}
-                  </button>
-                </>
-              )}
-
-              {(popupType === "success" ||
-                popupType === "error") && (
-                <button
-                  type="button"
-                  className="tax-popup-confirm"
-                  onClick={closePopup}
-                >
-                  OK
-                </button>
-              )}
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
-
+  const renderInput = (
+    label,
+    name,
+    type = "number",
+    placeholder = "Enter amount"
+  ) => (
+    <div className="tax-form-group" key={name}>
+      <label htmlFor={name}>{label}</label>
+      <input
+        id={name}
+        type={type}
+        name={name}
+        value={form[name]}
+        onChange={handleChange}
+        placeholder={placeholder}
+        disabled={fieldsDisabled}
+        min={type === "number" ? "0" : undefined}
+        step={type === "number" ? "0.01" : undefined}
+      />
     </div>
   );
-};
+
+  const renderReadOnly = (label, value) => (
+    <div className="tax-form-group" key={label}>
+      <label>{label}</label>
+      <input type="text" value={value} readOnly />
+    </div>
+  );
+
+  return (
+    <div className="tax-return-summary-page">
+      <div className="tax-return-summary-container">
+        {/* PAGE HEADER */}
+        <div className="tax-return-header">
+          <div>
+            <h2>Tax Return Summary</h2>
+            <p>Income Tax Return and Assessment Details</p>
+          </div>
+
+          <div className="tax-header-actions">
+            {recordId && !isEditing && (
+              <button
+                type="button"
+                className="tax-edit-btn"
+                onClick={handleEdit}
+                disabled={loading || saving}
+              >
+                Edit
+              </button>
+            )}
+
+            {isEditing && (
+              <button
+                type="button"
+                className="tax-cancel-btn"
+                onClick={handleCancelEdit}
+                disabled={loading || saving}
+              >
+                Cancel
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="tax-download-btn"
+              onClick={handleDownload}
+              disabled={loading || saving}
+            >
+              {loading ? "Generating PDF..." : "Download PDF"}
+            </button>
+          </div>
+        </div>
+
+        {message && (
+          <div className={`tax-message ${messageType}`}>
+            {message}
+          </div>
+        )}
+
+        {loading && (
+          <div className="tax-loading">
+            Loading...
+          </div>
+        )}
+
+        {/* BASIC INFORMATION */}
+        <section className="tax-section">
+          <h3>Basic Information</h3>
+
+          <div className="tax-form-grid">
+            <div className="tax-form-group">
+              <label htmlFor="financialYear">Financial Year</label>
+              <select
+                id="financialYear"
+                name="financialYear"
+                value={form.financialYear}
+                onChange={handleFinancialYearChange}
+                disabled={loading || saving}
+              >
+                <option value="">Select Financial Year</option>
+                {FINANCIAL_YEARS.map((item) => (
+                  <option
+                    key={item.financialYear}
+                    value={item.financialYear}
+                  >
+                    FY {item.financialYear}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="tax-form-group">
+              <label htmlFor="assessmentYear">Assessment Year</label>
+              <select
+                id="assessmentYear"
+                name="assessmentYear"
+                value={form.assessmentYear}
+                onChange={handleChange}
+                disabled={fieldsDisabled || loading}
+              >
+                <option value="">Select Assessment Year</option>
+                {ASSESSMENT_YEARS.map((year) => (
+                  <option key={year} value={year}>
+                    AY {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {renderInput("Name", "name", "text", "Enter name")}
+
+            {renderInput(
+              "Acknowledgement Number",
+              "acknowledgementNumber",
+              "text",
+              "Enter acknowledgement number"
+            )}
+
+            <div className="tax-form-group">
+              <label htmlFor="formType">Form Type</label>
+              <select
+                id="formType"
+                name="formType"
+                value={form.formType}
+                onChange={handleChange}
+                disabled={fieldsDisabled}
+              >
+                <option value="">Select Form Type</option>
+                {FORM_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="tax-form-group">
+              <label htmlFor="filingStatus">Filing Status</label>
+              <select
+                id="filingStatus"
+                name="filingStatus"
+                value={form.filingStatus}
+                onChange={handleChange}
+                disabled={fieldsDisabled}
+              >
+                <option value="">Select Filing Status</option>
+                {FILING_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {renderInput("ITR Filing Date", "itrFilingDate", "date")}
+          </div>
+        </section>
+
+        {/* INCOME AND TAX DETAILS */}
+        <section className="tax-section">
+          <h3>Income and Tax Details</h3>
+
+          <div className="tax-form-grid">
+            {renderInput("Gross Income", "grossIncome")}
+            {renderInput("Tax Payable", "taxPayable")}
+            {renderInput("TDS Claim", "tdsClaim")}
+
+            {renderReadOnly("Refund Due", formatCurrency(refundDue))}
+
+            <div className="tax-form-group">
+              <label htmlFor="refundProcess">Refund Process</label>
+              <select
+                id="refundProcess"
+                name="refundProcess"
+                value={form.refundProcess}
+                onChange={handleChange}
+                disabled={fieldsDisabled}
+              >
+                <option value="">Select Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Processed">Processed</option>
+                <option value="Received">Received</option>
+                <option value="Not Applicable">Not Applicable</option>
+              </select>
+            </div>
+
+            {renderInput(
+              "Date of Refund Process",
+              "refundProcessDate",
+              "date"
+            )}
+          </div>
+        </section>
+
+        {/* ASSESSMENT DETAILS */}
+        <section className="tax-section">
+          <h3>Assessment Details</h3>
+
+          <div className="tax-form-grid">
+            {renderInput(
+              "Income as per Assessment",
+              "incomeAssessment"
+            )}
+
+            {renderInput("Income Tax as per AY", "incomeTax")}
+            {renderInput("TDS Credit", "tdsCredit")}
+            {renderInput("Refund Amount", "refundAmount")}
+            {renderInput("Interest", "interest")}
+
+            {renderReadOnly(
+              "Refund Amount (Calculated)",
+              formatCurrency(calculatedRefund)
+            )}
+          </div>
+        </section>
+
+        {/* DIFFERENCE SUMMARY */}
+        <section className="tax-section">
+          <h3>Difference Summary</h3>
+
+          <div className="tax-difference-grid">
+            <div className="tax-difference-card">
+              <span>Difference in Income</span>
+              <strong>{formatCurrency(differenceIncome)}</strong>
+            </div>
+
+            <div className="tax-difference-card">
+              <span>Difference in Income Tax</span>
+              <strong>{formatCurrency(differenceIncomeTax)}</strong>
+            </div>
+
+            <div className="tax-difference-card">
+              <span>Difference in Return</span>
+              <strong>{formatCurrency(differenceReturn)}</strong>
+            </div>
+          </div>
+        </section>
+
+        {/* SAVE / RESET */}
+        <div className="tax-bottom-actions">
+          {!recordId || isEditing ? (
+            <button
+              type="button"
+              className="tax-save-btn"
+              onClick={() => setShowConfirm(true)}
+              disabled={saving || loading}
+            >
+              {saving ? "Saving..." : "Save Tax Return Summary"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="tax-reset-btn"
+              onClick={resetForm}
+              disabled={loading || saving}
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* CONFIRMATION POPUP */}
+      {showConfirm && (
+        <div className="tax-modal-overlay">
+          <div className="tax-confirm-modal">
+            <h3>Confirm Save</h3>
+
+            <p>
+              Are you sure you want to save the Tax Return Summary
+              for FY {form.financialYear}?
+            </p>
+
+            <div className="tax-modal-actions">
+              <button
+                type="button"
+                className="tax-cancel-btn"
+                onClick={() => setShowConfirm(false)}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="tax-save-btn"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default TaxReturnSummary;
