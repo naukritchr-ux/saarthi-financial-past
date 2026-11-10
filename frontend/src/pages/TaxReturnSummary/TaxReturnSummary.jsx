@@ -5,6 +5,19 @@ import "./TaxReturnSummary.css";
 const TAX_RETURN_API_URL = "/api/tax-return-summary";
 
 const FINANCIAL_YEARS = [
+  { financialYear: "2008-09", assessmentYear: "2009-10" },
+  { financialYear: "2009-10", assessmentYear: "2010-11" },
+  { financialYear: "2010-11", assessmentYear: "2011-12" },
+  { financialYear: "2011-12", assessmentYear: "2012-13" },
+  { financialYear: "2012-13", assessmentYear: "2013-14" },
+  { financialYear: "2013-14", assessmentYear: "2014-15" },
+  { financialYear: "2014-15", assessmentYear: "2015-16" },
+  { financialYear: "2015-16", assessmentYear: "2016-17" },
+  { financialYear: "2016-17", assessmentYear: "2017-18" },
+  { financialYear: "2017-18", assessmentYear: "2018-19" },
+  { financialYear: "2018-19", assessmentYear: "2019-20" },
+  { financialYear: "2019-20", assessmentYear: "2020-21" },
+  { financialYear: "2020-21", assessmentYear: "2021-22" },
   { financialYear: "2021-22", assessmentYear: "2022-23" },
   { financialYear: "2022-23", assessmentYear: "2023-24" },
   { financialYear: "2023-24", assessmentYear: "2024-25" },
@@ -14,6 +27,19 @@ const FINANCIAL_YEARS = [
 ];
 
 const ASSESSMENT_YEARS = [
+  "2009-10",
+  "2010-11",
+  "2011-12",
+  "2012-13",
+  "2013-14",
+  "2014-15",
+  "2015-16",
+  "2016-17",
+  "2017-18",
+  "2018-19",
+  "2019-20",
+  "2020-21",
+  "2021-22",
   "2022-23",
   "2023-24",
   "2024-25",
