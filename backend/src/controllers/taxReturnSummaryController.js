@@ -37,6 +37,8 @@ const formatCurrency = (value) =>
 
 // ======================================================
 // GET TAX RETURN SUMMARY
+// GET /api/tax-return-summary
+// GET /api/tax-return-summary?financialYear=2025-26
 // ======================================================
 
 const getTaxReturnSummary = async (req, res) => {
@@ -50,25 +52,34 @@ const getTaxReturnSummary = async (req, res) => {
 
     const { financialYear } = req.query;
 
-    if (!financialYear) {
-      return res.status(400).json({
-        success: false,
-        message: "Financial Year is required.",
+    // Fetch one record for a selected financial year.
+    if (financialYear) {
+      const { data, error } = await supabase
+        .from(TABLE_NAME)
+        .select("*")
+        .eq("financial_year", financialYear)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return res.status(200).json({
+        success: true,
+        exists: Boolean(data),
+        data: data || null,
       });
     }
 
+    // Fetch all records for dashboard and records table.
     const { data, error } = await supabase
       .from(TABLE_NAME)
       .select("*")
-      .eq("financial_year", financialYear)
-      .maybeSingle();
+      .order("updated_at", { ascending: false });
 
     if (error) throw error;
 
     return res.status(200).json({
       success: true,
-      exists: Boolean(data),
-      data: data || null,
+      records: data || [],
     });
   } catch (error) {
     console.error("Error fetching Tax Return Summary:", error);
@@ -85,6 +96,7 @@ const getTaxReturnSummary = async (req, res) => {
 
 // ======================================================
 // SAVE OR UPDATE TAX RETURN SUMMARY
+// POST /api/tax-return-summary
 // ======================================================
 
 const saveTaxReturnSummary = async (req, res) => {
@@ -458,6 +470,10 @@ const generateTaxReturnSummaryPDF = async (req, res) => {
     res.destroy(error);
   }
 };
+
+// ======================================================
+// EXPORT CONTROLLERS
+// ======================================================
 
 module.exports = {
   getTaxReturnSummary,
