@@ -2,478 +2,797 @@
 const { createClient } = require("@supabase/supabase-js");
 const PDFDocument = require("pdfkit");
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
-
-const supabase =
-  supabaseUrl && supabaseSecretKey
-    ? createClient(supabaseUrl, supabaseSecretKey)
-    : null;
-
 const TABLE_NAME = "tax_return_summary";
 
-// ======================================================
-// HELPER: NUMERIC VALUE
-// ======================================================
+let supabaseClient = null;
+
+// Initialize Supabase only when an API request is made.
+// This avoids crashing the server immediately if environment variables
+// are missing during deployment.
+const getSupabase = () => {
+  if (supabaseClient) {
+    return supabaseClient;
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+  if (!supabaseUrl || !supabaseSecretKey) {
+    throw new Error(
+      "SUPABASE_URL or SUPABASE_SECRET_KEY is missing."
+    );
+  }
+
+  supabaseClient = createClient(
+    supabaseUrl,
+    supabaseSecretKey
+  );
+
+  return supabaseClient;
+};
+
+
+// ------------------------------
+// COMMON HELPERS
+// ------------------------------
 
 const numericValue = (value) => {
-  if (value === "" || value === null || value === undefined) {
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined
+  ) {
     return 0;
   }
 
   const number = Number(value);
+
   return Number.isFinite(number) ? number : 0;
 };
 
-// ======================================================
-// HELPER: CURRENCY FORMAT
-// ======================================================
+const nullableText = (value) => {
+  if (
+    value === undefined ||
+    value === null ||
+    String(value).trim() === ""
+  ) {
+    return null;
+  }
 
-const formatCurrency = (value) =>
-  `INR ${numericValue(value).toLocaleString("en-IN", {
+  return String(value).trim();
+};
+
+const nullableDate = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const date = String(value).trim();
+
+  // Accept YYYY-MM-DD format.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error(`Invalid date format: ${date}`);
+  }
+
+  return date;
+};
+
+const formatCurrency = (value) => {
+  const amount = numericValue(value);
+
+  return `INR ${amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+};
 
-// ======================================================
-// GET TAX RETURN SUMMARY
-// GET /api/tax-return-summary
-// GET /api/tax-return-summary?financialYear=2025-26
-// ======================================================
+const formatDate = (value) => {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
+};
+
+const getField = (body, snakeCase, camelCase) => {
+  return body[snakeCase] ?? body[camelCase];
+};
+
+
+// ------------------------------
+// DATABASE PAYLOAD
+// ------------------------------
+
+const createDatabasePayload = (body) => {
+  const taxpayerName = nullableText(
+    getField(body, "name", "name") ??
+    body.taxpayer_name
+  );
+
+  const formType = nullableText(
+    body.form_type ?? body.itr_form_type
+  );
+
+  const filingDate = nullableDate(
+    body.itr_filing_date ?? body.filing_date
+  );
+
+  const refundProcess = nullableText(
+    body.refund_process ?? body.refund_status
+  ) || "Pending";
+
+  const refundProcessDate = nullableDate(
+    body.refund_process_date ?? body.refund_date
+  );
+
+  return {
+    financial_year:
+      nullableText(
+        body.financial_year ?? body.financialYear
+      ),
+
+    assessment_year:
+      nullableText(
+        body.assessment_year ?? body.assessmentYear
+      ),
+
+    // Taxpayer details
+    name: taxpayerName,
+    taxpayer_name: taxpayerName,
+
+    acknowledgement_number: nullableText(
+      body.acknowledgement_number ??
+      body.acknowledgementNumber
+    ),
+
+    form_type: formType,
+    itr_form_type: formType,
+
+    filing_status: nullableText(
+      body.filing_status ?? body.filingStatus
+    ),
+
+    // Filing date
+    itr_filing_date: filingDate,
+    filing_date: filingDate,
+
+    // Return details
+    gross_income: numericValue(
+      body.gross_income ?? body.grossIncome
+    ),
+
+    tax_payable: numericValue(
+      body.tax_payable ?? body.taxPayable
+    ),
+
+    tds_claim: numericValue(
+      body.tds_claim ?? body.tdsClaim
+    ),
+
+    refund_due: numericValue(
+      body.refund_due ?? body.refundDue
+    ),
+
+    // Refund details
+    refund_process: refundProcess,
+    refund_status: refundProcess,
+
+    refund_process_date: refundProcessDate,
+    refund_date: refundProcessDate,
+
+    // Assessment details
+    income_assessment: numericValue(
+      body.income_assessment ?? body.incomeAssessment
+    ),
+
+    income_tax: numericValue(
+      body.income_tax ?? body.incomeTax
+    ),
+
+    tds_credit: numericValue(
+      body.tds_credit ?? body.tdsCredit
+    ),
+
+    refund_amount: numericValue(
+      body.refund_amount ?? body.refundAmount
+    ),
+
+    interest: numericValue(body.interest),
+
+    // Calculated values
+    calculated_refund: numericValue(
+      body.calculated_refund ?? body.calculatedRefund
+    ),
+
+    difference_income: numericValue(
+      body.difference_income ?? body.differenceIncome
+    ),
+
+    difference_income_tax: numericValue(
+      body.difference_income_tax ?? body.differenceIncomeTax
+    ),
+
+    difference_return: numericValue(
+      body.difference_return ?? body.differenceReturn
+    ),
+
+    updated_at: new Date().toISOString(),
+  };
+};
+
+
+// ------------------------------
+// GET TAX RETURN RECORDS
+// ------------------------------
 
 const getTaxReturnSummary = async (req, res) => {
   try {
-    if (!supabase) {
-      return res.status(500).json({
-        success: false,
-        message: "Supabase configuration is missing.",
+    const supabase = getSupabase();
+
+    const { id } = req.query;
+
+    const financialYear =
+      req.query.financial_year ||
+      req.query.financialYear;
+
+    let query = supabase
+      .from(TABLE_NAME)
+      .select("*")
+      .order("updated_at", {
+        ascending: false,
       });
-    }
 
-    const { financialYear } = req.query;
-
-    // Fetch one record for a selected financial year.
-    if (financialYear) {
-      const { data, error } = await supabase
-        .from(TABLE_NAME)
-        .select("*")
-        .eq("financial_year", financialYear)
+    // Fetch one record using its UUID.
+    if (id) {
+      query = query
+        .eq("id", id)
         .maybeSingle();
 
-      if (error) throw error;
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Get tax return by ID error:", error);
+
+        return res.status(500).json({
+          success: false,
+          message: "Unable to fetch tax return record.",
+          error: error.message,
+        });
+      }
 
       return res.status(200).json({
         success: true,
-        exists: Boolean(data),
         data: data || null,
+        record: data || null,
       });
     }
 
-    // Fetch all records for dashboard and records table.
-    const { data, error } = await supabase
-      .from(TABLE_NAME)
-      .select("*")
-      .order("updated_at", { ascending: false });
+    // Filter records by financial year if provided.
+    if (financialYear) {
+      query = query.eq(
+        "financial_year",
+        financialYear
+      );
+    }
 
-    if (error) throw error;
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Get tax return records error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to fetch tax return records.",
+        error: error.message,
+      });
+    }
 
     return res.status(200).json({
       success: true,
+      data: data || [],
       records: data || [],
     });
   } catch (error) {
-    console.error("Error fetching Tax Return Summary:", error);
+    console.error("GET tax return error:", error);
 
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to fetch Tax Return Summary.",
-      code: error.code || null,
-      details: error.details || null,
-      hint: error.hint || null,
+      message: "Something went wrong while fetching records.",
+      error: error.message,
     });
   }
 };
 
-// ======================================================
-// SAVE OR UPDATE TAX RETURN SUMMARY
-// POST /api/tax-return-summary
-// ======================================================
+
+// ------------------------------
+// SAVE / UPDATE TAX RETURN
+// ------------------------------
 
 const saveTaxReturnSummary = async (req, res) => {
   try {
-    if (!supabase) {
-      return res.status(500).json({
-        success: false,
-        message: "Supabase configuration is missing.",
-      });
-    }
+    const supabase = getSupabase();
 
     const body = req.body?.data || req.body || {};
 
-    const financialYear = body.financial_year;
-    const assessmentYear = body.assessment_year;
+    const financialYear =
+      body.financial_year || body.financialYear;
+
+    const assessmentYear =
+      body.assessment_year || body.assessmentYear;
 
     if (!financialYear || !assessmentYear) {
       return res.status(400).json({
         success: false,
-        message: "Financial Year and Assessment Year are required.",
+        message:
+          "Financial Year and Assessment Year are required.",
       });
     }
 
-    const refundProcess = body.refund_process || "Pending";
+    const payload = createDatabasePayload(body);
 
-    const taxPayable = numericValue(body.tax_payable);
-    const tdsClaim = numericValue(body.tds_claim);
-
-    if (
-      refundProcess === "Processed" &&
-      !body.refund_process_date
-    ) {
+    if (!payload.name) {
       return res.status(400).json({
         success: false,
-        message:
-          "Date of Refund Process is required when status is Processed.",
+        message: "Taxpayer name is required.",
       });
     }
 
-    const payload = {
-      financial_year: financialYear,
-      assessment_year: assessmentYear,
-      itr_filing_date: body.itr_filing_date || null,
+    let result;
 
-      gross_income: numericValue(body.gross_income),
-      tax_payable: taxPayable,
-      tds_claim: tdsClaim,
-      refund_due: Math.max(0, tdsClaim - taxPayable),
+    // UPDATE: When an existing UUID is supplied.
+    if (body.id) {
+      result = await supabase
+        .from(TABLE_NAME)
+        .update(payload)
+        .eq("id", body.id)
+        .select("*")
+        .maybeSingle();
 
-      refund_process: refundProcess,
-      refund_process_date:
-        refundProcess === "Processed"
-          ? body.refund_process_date || null
-          : null,
+      if (!result.error && !result.data) {
+        return res.status(404).json({
+          success: false,
+          message: "Tax return record not found.",
+        });
+      }
+    } else {
+      // INSERT: When no UUID is supplied.
+      // This allows multiple taxpayers in the same financial year.
+      result = await supabase
+        .from(TABLE_NAME)
+        .insert(payload)
+        .select("*")
+        .single();
+    }
 
-      income_assessment: numericValue(body.income_assessment),
-      income_tax: numericValue(body.income_tax),
-      tds_credit: numericValue(body.tds_credit),
-      refund_amount: numericValue(body.refund_amount),
-      interest: numericValue(body.interest),
+    if (result.error) {
+      console.error("Save tax return error:", result.error);
 
-      calculated_refund: numericValue(body.calculated_refund),
-      difference_income: numericValue(body.difference_income),
-      difference_income_tax: numericValue(body.difference_income_tax),
-      difference_return: numericValue(body.difference_return),
+      return res.status(500).json({
+        success: false,
+        message: "Unable to save tax return record.",
+        error: result.error.message,
+      });
+    }
 
-      updated_at: new Date().toISOString(),
-    };
-
-    const { data, error } = await supabase
-      .from(TABLE_NAME)
-      .upsert(payload, {
-        onConflict: "financial_year",
-      })
-      .select("*")
-      .single();
-
-    if (error) throw error;
-
-    return res.status(200).json({
+    return res.status(body.id ? 200 : 201).json({
       success: true,
-      message: "Tax Return Summary saved successfully.",
-      data,
+      message: body.id
+        ? "Tax return record updated successfully."
+        : "Tax return record saved successfully.",
+      data: result.data,
+      record: result.data,
     });
   } catch (error) {
-    console.error("Error saving Tax Return Summary:", error);
+    console.error("Save tax return error:", error);
 
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to save Tax Return Summary.",
-      code: error.code || null,
-      details: error.details || null,
-      hint: error.hint || null,
+      message: "Something went wrong while saving the record.",
+      error: error.message,
     });
   }
 };
 
-// ======================================================
-// GENERATE TAX RETURN SUMMARY PDF
-// POST /api/tax-return-summary/pdf
-// ======================================================
+
+// ------------------------------
+// PDF TABLE HELPER
+// ------------------------------
+
+const drawTable = (
+  doc,
+  headers,
+  rows,
+  options = {}
+) => {
+  const startX = options.x || 40;
+  const startY = options.y || doc.y;
+  const tableWidth =
+    options.width || doc.page.width - 80;
+
+  const columnWidths =
+    options.columnWidths ||
+    headers.map(() => tableWidth / headers.length);
+
+  const rowHeight = options.rowHeight || 25;
+
+  let currentY = startY;
+
+  const drawRow = (values, isHeader = false) => {
+    let currentX = startX;
+
+    values.forEach((value, index) => {
+      const width = columnWidths[index];
+
+      if (isHeader) {
+        doc
+          .rect(currentX, currentY, width, rowHeight)
+          .fill("#E9E3D5");
+      }
+
+      doc
+        .rect(currentX, currentY, width, rowHeight)
+        .stroke("#CFC8B8");
+
+      doc
+        .fillColor("#222222")
+        .font(isHeader ? "Helvetica-Bold" : "Helvetica")
+        .fontSize(8)
+        .text(
+          String(value ?? "-"),
+          currentX + 5,
+          currentY + 8,
+          {
+            width: width - 10,
+            height: rowHeight - 5,
+            ellipsis: true,
+          }
+        );
+
+      currentX += width;
+    });
+
+    currentY += rowHeight;
+  };
+
+  drawRow(headers, true);
+
+  rows.forEach((row) => {
+    if (currentY + rowHeight > doc.page.height - 50) {
+      doc.addPage();
+      currentY = 50;
+    }
+
+    drawRow(row);
+  });
+
+  doc.y = currentY + 15;
+};
+
+
+// ------------------------------
+// GENERATE TAX RETURN PDF
+// ------------------------------
 
 const generateTaxReturnSummaryPDF = async (req, res) => {
   try {
+    const supabase = getSupabase();
+
     const body = req.body?.data || req.body || {};
 
-    const financialYear = body.financial_year;
-    const assessmentYear = body.assessment_year;
+    let record = body;
 
-    if (!financialYear || !assessmentYear) {
-      return res.status(400).json({
-        success: false,
-        message: "Financial Year and Assessment Year are required.",
-      });
+    // If an ID is supplied, fetch the latest saved record.
+    if (body.id) {
+      const { data, error } = await supabase
+        .from(TABLE_NAME)
+        .select("*")
+        .eq("id", body.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("PDF record fetch error:", error);
+
+        return res.status(500).json({
+          success: false,
+          message: "Unable to fetch record for PDF.",
+          error: error.message,
+        });
+      }
+
+      if (!data) {
+        return res.status(404).json({
+          success: false,
+          message: "Tax return record not found.",
+        });
+      }
+
+      record = data;
     }
 
-    const grossIncome = numericValue(body.gross_income);
-    const taxPayable = numericValue(body.tax_payable);
-    const tdsClaim = numericValue(body.tds_claim);
+    const taxpayerName =
+      record.name ||
+      record.taxpayer_name ||
+      "-";
 
-    const refundDue = Math.max(0, tdsClaim - taxPayable);
+    const financialYear =
+      record.financial_year ||
+      record.financialYear ||
+      "-";
 
-    const incomeAssessment = numericValue(body.income_assessment);
-    const incomeTax = numericValue(body.income_tax);
-    const tdsCredit = numericValue(body.tds_credit);
-    const refundAmount = numericValue(body.refund_amount);
-    const interest = numericValue(body.interest);
+    const assessmentYear =
+      record.assessment_year ||
+      record.assessmentYear ||
+      "-";
 
-    const calculatedRefund = tdsCredit + interest;
+    const acknowledgementNumber =
+      record.acknowledgement_number ||
+      record.acknowledgementNumber ||
+      "-";
 
-    const differenceIncome = incomeAssessment - grossIncome;
-    const differenceIncomeTax = incomeTax - taxPayable;
-    const differenceReturn = refundAmount - calculatedRefund;
+    const formType =
+      record.form_type ||
+      record.itr_form_type ||
+      record.formType ||
+      "-";
 
-    const downloadDateTime = new Date().toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    const filingStatus =
+      record.filing_status ||
+      record.filingStatus ||
+      "-";
 
-    const safeFinancialYear = String(financialYear).replace(
-      /[^a-zA-Z0-9_-]/g,
-      "-"
-    );
+    const filingDate =
+      record.itr_filing_date ||
+      record.filing_date ||
+      record.itrFilingDate;
 
-    const filename = `Tax_Return_Summary_FY_${safeFinancialYear}.pdf`;
+    const refundStatus =
+      record.refund_process ||
+      record.refund_status ||
+      record.refundProcess ||
+      "Pending";
 
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${filename}"`
-    );
-    res.setHeader("Cache-Control", "no-store");
+    const refundDate =
+      record.refund_process_date ||
+      record.refund_date ||
+      record.refundProcessDate;
 
     const doc = new PDFDocument({
       size: "A4",
       margins: {
-        top: 50,
-        bottom: 50,
-        left: 50,
-        right: 50,
+        top: 45,
+        bottom: 45,
+        left: 40,
+        right: 40,
       },
-      info: {
-        Title: `Tax Return Summary FY ${financialYear}`,
-        Author: "TCHR Performance Ledger",
-        Subject: "Tax Return Summary",
-      },
+      bufferPages: true,
     });
 
-    doc.on("error", (error) => {
-      console.error("PDF stream error:", error);
+    const filename =
+      `Tax_Return_Summary_${String(financialYear).replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_"
+      )}.pdf`;
 
-      if (!res.headersSent) {
-        res.status(500).json({
-          success: false,
-          message: "Unable to generate Tax Return Summary PDF.",
-        });
-      } else {
-        res.destroy(error);
-      }
-    });
+    res.setHeader(
+      "Content-Type",
+      "application/pdf"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`
+    );
 
     doc.pipe(res);
 
-    // --------------------------------------------------
-    // PDF HEADER
-    // --------------------------------------------------
-
-    const pageWidth = doc.page.width;
-    const contentWidth =
-      pageWidth - doc.page.margins.left - doc.page.margins.right;
-
+    // Header
     doc
-      .font("Helvetica")
-      .fontSize(9)
-      .fillColor("#555555")
-      .text(`Downloaded On: ${downloadDateTime}`, {
-        align: "right",
-      });
-
-    doc.moveDown(1);
-
-    doc
+      .fillColor("#172B4D")
       .font("Helvetica-Bold")
       .fontSize(19)
-      .fillColor("#102a43")
       .text("TAX RETURN SUMMARY", {
         align: "center",
       });
 
-    doc.moveDown(0.5);
+    doc
+      .moveDown(0.4)
+      .fillColor("#777777")
+      .font("Helvetica")
+      .fontSize(9)
+      .text("Income Tax Return Details and Assessment Report", {
+        align: "center",
+      });
+
+    doc.moveDown(1);
 
     doc
-      .strokeColor("#c9a227")
-      .lineWidth(2)
-      .moveTo(doc.page.margins.left, doc.y)
-      .lineTo(doc.page.margins.left + contentWidth, doc.y)
+      .strokeColor("#C9B98B")
+      .lineWidth(1.5)
+      .moveTo(40, doc.y)
+      .lineTo(doc.page.width - 40, doc.y)
       .stroke();
 
     doc.moveDown(1);
 
-    // --------------------------------------------------
-    // PDF TABLE HELPER
-    // --------------------------------------------------
-
-    const drawTable = (headers, rows, widths) => {
-      const startX = doc.page.margins.left;
-      const totalWidth = contentWidth;
-      const rowPadding = 7;
-
-      const drawRow = (values, isHeader = false) => {
-        const fontSize = isHeader ? 9 : 8.5;
-
-        doc.font(isHeader ? "Helvetica-Bold" : "Helvetica");
-        doc.fontSize(fontSize);
-
-        const cellHeights = values.map((value, index) => {
-          const cellWidth = totalWidth * widths[index];
-
-          return doc.heightOfString(String(value ?? "—"), {
-            width: cellWidth - rowPadding * 2,
-            align: "left",
-          });
-        });
-
-        const rowHeight =
-          Math.max(...cellHeights, 12) + rowPadding * 2;
-
-        if (doc.y + rowHeight > doc.page.height - 50) {
-          doc.addPage();
-
-          if (!isHeader) {
-            drawRow(headers, true);
-          }
-        }
-
-        const y = doc.y;
-        let x = startX;
-
-        values.forEach((value, index) => {
-          const cellWidth = totalWidth * widths[index];
-
-          doc
-            .rect(x, y, cellWidth, rowHeight)
-            .lineWidth(0.6)
-            .strokeColor("#777777")
-            .fillAndStroke(
-              isHeader ? "#eeeeee" : "#ffffff",
-              "#777777"
-            );
-
-          doc
-            .font(isHeader ? "Helvetica-Bold" : "Helvetica")
-            .fontSize(fontSize)
-            .fillColor("#000000")
-            .text(String(value ?? "—"), x + rowPadding, y + rowPadding, {
-              width: cellWidth - rowPadding * 2,
-              height: rowHeight - rowPadding * 2,
-              align: "left",
-              lineGap: 1,
-            });
-
-          x += cellWidth;
-        });
-
-        doc.y = y + rowHeight;
-      };
-
-      drawRow(headers, true);
-      rows.forEach((row) => drawRow(row));
-      doc.moveDown(1);
-    };
-
-    // --------------------------------------------------
-    // TAX RETURN PARTICULARS
-    // --------------------------------------------------
-
-    const rows = [
-      ["1", "Financial Year (FY)", financialYear],
-      ["2", "Assessment Year (AY)", assessmentYear],
-      ["3", "ITR Filing Date", body.itr_filing_date || "—"],
-      ["4", "Gross Income As per ITR", formatCurrency(grossIncome)],
-      ["5", "Tax Payable", formatCurrency(taxPayable)],
-      ["6", "TDS Claim As per 26AS", formatCurrency(tdsClaim)],
-      ["7", "Refund Due", formatCurrency(refundDue)],
-      ["8", "Refund Process", body.refund_process || "Pending"],
-      [
-        "9",
-        "Date of Refund Process",
-        body.refund_process_date || "—",
-      ],
-      [
-        "10",
-        "Income As per Assessment",
-        formatCurrency(incomeAssessment),
-      ],
-      ["11", "Income Tax As Per AY", formatCurrency(incomeTax)],
-      ["12", "TDS Credit", formatCurrency(tdsCredit)],
-      ["13", "Refund Amount", formatCurrency(refundAmount)],
-      ["14", "Interest", formatCurrency(interest)],
-      [
-        "15",
-        "Refund Amount (Calculated)",
-        formatCurrency(calculatedRefund),
-      ],
-    ];
-
-    drawTable(
-      ["Sr. No.", "Particulars", "Amount / Details"],
-      rows,
-      [0.12, 0.48, 0.40]
-    );
-
-    // --------------------------------------------------
-    // DIFFERENCE SECTION
-    // --------------------------------------------------
-
+    // Taxpayer details
     doc
+      .fillColor("#172B4D")
       .font("Helvetica-Bold")
       .fontSize(12)
-      .fillColor("#102a43")
-      .text("DIFFERENCE");
+      .text("1. TAXPAYER DETAILS");
 
     doc.moveDown(0.5);
 
+    const taxpayerRows = [
+      ["Taxpayer Name", taxpayerName],
+      ["Financial Year", financialYear],
+      ["Assessment Year", assessmentYear],
+      ["Acknowledgement Number", acknowledgementNumber],
+      ["ITR Form Type", formType],
+      ["Filing Status", filingStatus],
+      ["ITR Filing Date", formatDate(filingDate)],
+    ];
+
     drawTable(
-      ["Particulars", "Amount"],
-      [
-        ["Income", formatCurrency(differenceIncome)],
-        ["Income Tax", formatCurrency(differenceIncomeTax)],
-        ["Return", formatCurrency(differenceReturn)],
-      ],
-      [0.60, 0.40]
+      doc,
+      ["Particulars", "Details"],
+      taxpayerRows,
+      {
+        columnWidths: [190, 325],
+        rowHeight: 26,
+      }
     );
+
+    // Return details
+    doc
+      .fillColor("#172B4D")
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .text("2. RETURN DETAILS");
+
+    doc.moveDown(0.5);
+
+    const returnRows = [
+      ["Gross Income", formatCurrency(record.gross_income)],
+      ["Tax Payable", formatCurrency(record.tax_payable)],
+      ["TDS Claimed", formatCurrency(record.tds_claim)],
+      ["Refund Due", formatCurrency(record.refund_due)],
+      ["Calculated Refund", formatCurrency(record.calculated_refund)],
+    ];
+
+    drawTable(
+      doc,
+      ["Particulars", "Amount"],
+      returnRows,
+      {
+        columnWidths: [190, 325],
+        rowHeight: 26,
+      }
+    );
+
+    // Assessment details
+    doc
+      .fillColor("#172B4D")
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .text("3. INCOME TAX ASSESSMENT");
+
+    doc.moveDown(0.5);
+
+    const assessmentRows = [
+      ["Income Assessment", formatCurrency(record.income_assessment)],
+      ["Income Tax", formatCurrency(record.income_tax)],
+      ["TDS Credit", formatCurrency(record.tds_credit)],
+      ["Refund Amount", formatCurrency(record.refund_amount)],
+      ["Interest", formatCurrency(record.interest)],
+    ];
+
+    drawTable(
+      doc,
+      ["Particulars", "Amount"],
+      assessmentRows,
+      {
+        columnWidths: [190, 325],
+        rowHeight: 26,
+      }
+    );
+
+    // Differences
+    doc
+      .fillColor("#172B4D")
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .text("4. DIFFERENCE ANALYSIS");
+
+    doc.moveDown(0.5);
+
+    const differenceRows = [
+      ["Difference in Income", formatCurrency(record.difference_income)],
+      ["Difference in Income Tax", formatCurrency(record.difference_income_tax)],
+      ["Difference in Return", formatCurrency(record.difference_return)],
+    ];
+
+    drawTable(
+      doc,
+      ["Particulars", "Amount"],
+      differenceRows,
+      {
+        columnWidths: [190, 325],
+        rowHeight: 26,
+      }
+    );
+
+    // Refund information
+    doc
+      .fillColor("#172B4D")
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .text("5. REFUND INFORMATION");
+
+    doc.moveDown(0.5);
+
+    const refundRows = [
+      ["Refund Status", refundStatus],
+      ["Refund Process Date", formatDate(refundDate)],
+    ];
+
+    drawTable(
+      doc,
+      ["Particulars", "Details"],
+      refundRows,
+      {
+        columnWidths: [190, 325],
+        rowHeight: 26,
+      }
+    );
+
+    // Footer
+    doc
+      .moveDown(1)
+      .font("Helvetica")
+      .fontSize(8)
+      .fillColor("#777777")
+      .text(
+        "Generated from the Tax Return Summary application.",
+        40,
+        doc.page.height - 45,
+        {
+          align: "center",
+          width: doc.page.width - 80,
+        }
+      );
 
     doc.end();
   } catch (error) {
-    console.error("Error generating Tax Return Summary PDF:", error);
+    console.error("Generate tax return PDF error:", error);
 
     if (!res.headersSent) {
       return res.status(500).json({
         success: false,
-        message:
-          error.message || "Unable to generate Tax Return Summary PDF.",
+        message: "Unable to generate tax return PDF.",
+        error: error.message,
       });
     }
 
-    res.destroy(error);
+    res.end();
   }
 };
 
-// ======================================================
+
+// ------------------------------
 // EXPORT CONTROLLERS
-// ======================================================
+// ------------------------------
 
 module.exports = {
   getTaxReturnSummary,
