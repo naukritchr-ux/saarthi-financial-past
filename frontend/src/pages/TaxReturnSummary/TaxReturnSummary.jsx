@@ -54,7 +54,7 @@ function normalizeRecord(record) {
     id: record.id,
     financialYear: record.financial_year ?? record.financialYear ?? "",
     assessmentYear: record.assessment_year ?? record.assessmentYear ?? "",
-    name: record.name ?? "",
+    name: record.name ?? record.taxpayer_name ?? "",
     acknowledgementNumber: record.acknowledgement_number ?? record.acknowledgementNumber ?? "",
     formType: record.form_type ?? record.formType ?? "",
     filingStatus: record.filing_status ?? record.filingStatus ?? "",
@@ -62,6 +62,7 @@ function normalizeRecord(record) {
     grossIncome: record.gross_income ?? record.grossIncome ?? 0,
     taxPayable: record.tax_payable ?? record.taxPayable ?? 0,
     tdsClaim: record.tds_claim ?? record.tdsClaim ?? 0,
+    refundDue: record.refund_due ?? record.refundDue ?? 0,
     refundProcess: record.refund_process ?? record.refundProcess ?? "",
     refundProcessDate: record.refund_process_date ?? record.refundProcessDate ?? "",
     incomeAssessment: record.income_assessment ?? record.incomeAssessment ?? 0,
@@ -69,6 +70,8 @@ function normalizeRecord(record) {
     tdsCredit: record.tds_credit ?? record.tdsCredit ?? 0,
     refundAmount: record.refund_amount ?? record.refundAmount ?? 0,
     interest: record.interest ?? 0,
+    createdAt: record.created_at ?? record.createdAt ?? "",
+    updatedAt: record.updated_at ?? record.updatedAt ?? "",
   };
 }
 
@@ -291,51 +294,117 @@ function TaxReturnSummary() {
     <div className="tax-form-group" key={label}><label>{label}</label><input type="text" value={value} readOnly /></div>
   );
 
-  const renderDashboard = () => <div className="trs-content">
-    <div className="trs-page-heading">
-      <div><span className="trs-eyebrow">OVERVIEW</span><h2>Dashboard</h2><p>Monitor income tax returns and financial performance.</p></div>
-      <button className="trs-primary-btn" onClick={() => { resetForm(); setPage("entry"); }}>＋ Add Tax Return</button>
-    </div>
-    <div className="trs-filter-row">
-      <label>Financial Year
-        <select value={fyFilter} onChange={e => setFyFilter(e.target.value)}>
-          <option value="all">All Financial Years</option>
-          {FINANCIAL_YEARS.map(x => <option key={x.financialYear} value={x.financialYear}>FY {x.financialYear}</option>)}
-        </select>
-      </label>
-      <button className="trs-light-btn" onClick={loadAllRecords} disabled={loading}>↻ Refresh Data</button>
-    </div>
-    {dashboardError && <div className="tax-message error">{dashboardError}</div>}
-    {loading && <div className="tax-loading">Loading records...</div>}
-    <div className="trs-stats-grid">
-      <StatCard label="Total Records" value={records.length.toLocaleString("en-IN")} note="Tax return entries" icon="▤" />
-      <StatCard label="Gross Income" value={money(fyFilter === "all" ? totals.gross : records.filter(r => r.financialYear === fyFilter).reduce((s,r) => s + num(r.grossIncome),0))} note="Total reported income" icon="₹" />
-      <StatCard label="Tax Liability" value={money(fyFilter === "all" ? totals.tax : records.filter(r => r.financialYear === fyFilter).reduce((s,r) => s + num(r.taxPayable),0))} note="Total tax payable" icon="▣" />
-      <StatCard label="Refund Amount" value={money(fyFilter === "all" ? totals.refund : records.filter(r => r.financialYear === fyFilter).reduce((s,r) => s + num(r.refundAmount),0))} note="Assessment refund total" icon="↗" />
-    </div>
-    <div className="trs-dashboard-grid">
-      <section className="trs-panel">
-        <div className="trs-panel-heading"><div><h3>Income by Taxpayer</h3><p>Highest gross income records</p></div></div>
-        {records.length ? <div className="trs-bars">
-          {[...records].filter(r => fyFilter === "all" || r.financialYear === fyFilter).sort((a,b) => num(b.grossIncome)-num(a.grossIncome)).slice(0,6).map((r,i) =>
-            <div className="trs-bar-row" key={r.id ?? `${r.name}-${i}`}>
-              <div className="trs-bar-label"><span>{r.name || "Unnamed taxpayer"}</span><b>{money(r.grossIncome)}</b></div>
-              <div className="trs-bar-track"><div className="trs-bar-fill" style={{ width: `${Math.max(2, num(r.grossIncome) / maxIncome * 100)}%` }} /></div>
-            </div>)}
-        </div> : <div className="trs-empty">No records available to display.</div>}
+  const renderDashboard = () => {
+    const dashboardRecords = records.filter(record => fyFilter === "all" || record.financialYear === fyFilter);
+    const sum = field => dashboardRecords.reduce((total, record) => total + num(record[field]), 0);
+    const totalGross = sum("grossIncome");
+    const totalTax = sum("taxPayable");
+    const totalTds = sum("tdsClaim");
+    const totalRefundDue = sum("refundDue") || dashboardRecords.reduce((total, record) => total + Math.max(0, num(record.tdsClaim) - num(record.taxPayable)), 0);
+    const processedRefund = dashboardRecords.reduce((total, record) => {
+      const status = String(record.refundProcess || "").toLowerCase();
+      return total + (["processed", "received"].includes(status) ? num(record.refundAmount) : 0);
+    }, 0);
+    const pendingRefund = dashboardRecords.reduce((total, record) => {
+      const status = String(record.refundProcess || "pending").toLowerCase();
+      return total + (["", "pending"].includes(status) ? Math.max(0, num(record.refundAmount) || num(record.tdsClaim) - num(record.taxPayable)) : 0);
+    }, 0);
+    const filedCount = dashboardRecords.filter(r => ["filed", "verified", "processed", "revised", "belated"].includes(String(r.filingStatus || "").toLowerCase())).length;
+    const pendingCount = dashboardRecords.filter(r => ["draft", ""].includes(String(r.filingStatus || "").toLowerCase())).length;
+    const defectiveCount = dashboardRecords.filter(r => String(r.filingStatus || "").toLowerCase() === "defective").length;
+    const statusPalette = { Draft: "#D9A441", Filed: "#4B83B8", Verified: "#8C78B8", Processed: "#31966B", Defective: "#C95D57", Revised: "#4D9C9A", Belated: "#8A98A8" };
+    const filingBreakdown = FILING_STATUSES.map(status => ({ status, count: dashboardRecords.filter(r => String(r.filingStatus || "").toLowerCase() === status.toLowerCase()).length, color: statusPalette[status] })).filter(item => item.count > 0);
+    const statusTotal = filingBreakdown.reduce((total, item) => total + item.count, 0);
+    let runningPercent = 0;
+    const donutGradient = filingBreakdown.length ? `conic-gradient(${filingBreakdown.map(item => { const start = runningPercent; runningPercent += item.count / statusTotal * 100; return `${item.color} ${start}% ${runningPercent}%`; }).join(", ")})` : "conic-gradient(#e8e3d8 0% 100%)";
+    const incomeLeaders = [...dashboardRecords].sort((a, b) => num(b.grossIncome) - num(a.grossIncome)).slice(0, 5);
+    const maxIncomeValue = Math.max(1, ...incomeLeaders.map(r => num(r.grossIncome)));
+    const yearSummary = FINANCIAL_YEARS.map(year => {
+      const rows = records.filter(r => r.financialYear === year.financialYear);
+      return { year: year.financialYear, income: rows.reduce((t, r) => t + num(r.grossIncome), 0), tax: rows.reduce((t, r) => t + num(r.taxPayable), 0), count: rows.length };
+    }).filter(item => item.count).slice(-6);
+    const maxYearIncome = Math.max(1, ...yearSummary.map(item => item.income));
+    const attentionCount = defectiveCount + dashboardRecords.filter(r => (num(r.incomeAssessment) && Math.abs(num(r.incomeAssessment) - num(r.grossIncome)) > 1) || (num(r.incomeTax) && Math.abs(num(r.incomeTax) - num(r.taxPayable)) > 1)).length;
+    const recentRecords = [...dashboardRecords].sort((a, b) => {
+      const dateA = new Date(a.updatedAt || a.createdAt || a.itrFilingDate || 0).getTime();
+      const dateB = new Date(b.updatedAt || b.createdAt || b.itrFilingDate || 0).getTime();
+      return dateB - dateA;
+    }).slice(0, 5);
+
+    return <div className="trs-content trs-dashboard-content">
+      <div className="trs-dashboard-hero">
+        <div className="trs-hero-copy">
+          <span className="trs-eyebrow">TAX INTELLIGENCE · WORKSPACE</span>
+          <h2>Good overview.<br/><em>Better decisions.</em></h2>
+          <p>Your tax return portfolio, filing progress and refund position — all in one place.</p>
+          <div className="trs-hero-meta"><span className="trs-hero-pulse"/> Live records overview <span className="trs-hero-separator">•</span> {dashboardRecords.length.toLocaleString("en-IN")} records in view</div>
+        </div>
+        <div className="trs-hero-actions">
+          <button className="trs-primary-btn" onClick={() => { resetForm(); setPage("entry"); }}>＋ Add Tax Return</button>
+          <button className="trs-hero-refresh" onClick={loadAllRecords} disabled={loading}>↻ {loading ? "Refreshing" : "Refresh data"}</button>
+        </div>
+        <div className="trs-hero-watermark">₹</div>
+      </div>
+
+      <div className="trs-dashboard-toolbar">
+        <div><span className="trs-toolbar-label">PORTFOLIO VIEW</span><strong>{fyFilter === "all" ? "All financial years" : `FY ${fyFilter}`}</strong></div>
+        <label className="trs-year-select"><span>Financial year</span><select value={fyFilter} onChange={e => setFyFilter(e.target.value)}><option value="all">All Financial Years</option>{FINANCIAL_YEARS.map(x => <option key={x.financialYear} value={x.financialYear}>FY {x.financialYear}</option>)}</select></label>
+      </div>
+
+      {dashboardError && <div className="tax-message error">{dashboardError}</div>}
+      {loading && <div className="tax-loading">Refreshing your tax portfolio…</div>}
+
+      <div className="trs-stats-grid trs-stats-grid-premium">
+        <StatCard label="Total returns" value={dashboardRecords.length.toLocaleString("en-IN")} note={`${filedCount} filed or processed`} icon="▤" />
+        <StatCard label="Gross income" value={money(totalGross)} note="Combined reported income" icon="₹" />
+        <StatCard label="Tax liability" value={money(totalTax)} note="Total tax payable" icon="▣" />
+        <StatCard label="TDS claimed" value={money(totalTds)} note="Tax deducted at source" icon="↘" />
+        <StatCard label="Refund expected" value={money(totalRefundDue)} note="Based on return TDS less tax" icon="↗" />
+        <StatCard label="Refund processed" value={money(processedRefund)} note={`${money(pendingRefund)} currently pending`} icon="✓" />
+      </div>
+
+      <div className="trs-insight-strip">
+        <div className="trs-insight-icon">✦</div>
+        <div className="trs-insight-text"><span>PORTFOLIO INSIGHT</span><strong>{dashboardRecords.length ? (attentionCount ? `${attentionCount} record${attentionCount === 1 ? "" : "s"} may need a review.` : "Your visible portfolio has no flagged filing or assessment differences.") : "Add your first return to unlock portfolio insights."}</strong><small>{dashboardRecords.length ? `${pendingCount} draft or unfiled · ${defectiveCount} defective · ${filedCount} filed, verified or processed` : "Your dashboard will summarize filing progress and tax position automatically."}</small></div>
+        {attentionCount > 0 && <button className="trs-insight-link" onClick={() => { setStatusFilter("Defective"); setPage("records"); }}>Review records →</button>}
+      </div>
+
+      <div className="trs-dashboard-grid trs-dashboard-grid-premium">
+        <section className="trs-panel trs-panel-elevated trs-income-panel">
+          <div className="trs-panel-heading"><div><span className="trs-panel-kicker">INCOME DISTRIBUTION</span><h3>Top taxpayer incomes</h3><p>Highest gross income in the selected period</p></div><span className="trs-panel-icon">↗</span></div>
+          {incomeLeaders.length ? <div className="trs-leader-bars">{incomeLeaders.map((r, i) => <div className="trs-leader-row" key={r.id || `${r.name}-${i}`}><div className="trs-leader-label"><span className="trs-leader-rank">0{i + 1}</span><strong title={r.name}>{r.name || "Unnamed taxpayer"}</strong><b>{money(r.grossIncome)}</b></div><div className="trs-leader-track"><span style={{ width: `${Math.max(2, num(r.grossIncome) / maxIncomeValue * 100)}%`, background: i === 0 ? "linear-gradient(90deg,#B89548,#E0C77E)" : "linear-gradient(90deg,#24476B,#537B9D)" }}/></div></div>)}</div> : <div className="trs-empty">No income records available for this period.</div>}
+          <div className="trs-chart-footnote"><span className="trs-chart-key trs-key-gold"/> Highest income <span className="trs-chart-footnote-text">Ranked by gross income</span></div>
+        </section>
+
+        <section className="trs-panel trs-panel-elevated trs-filing-panel">
+          <div className="trs-panel-heading"><div><span className="trs-panel-kicker">COMPLIANCE SNAPSHOT</span><h3>Filing status</h3><p>Return progress across this portfolio</p></div><span className="trs-panel-icon">◎</span></div>
+          <div className="trs-donut-layout"><div className="trs-donut" style={{ background: donutGradient }}><div className="trs-donut-hole"><strong>{dashboardRecords.length}</strong><span>RETURNS</span></div></div><div className="trs-donut-legend">{filingBreakdown.length ? filingBreakdown.map(item => <div className="trs-legend-row" key={item.status}><span style={{ background: item.color }}/><span>{item.status}</span><b>{item.count}</b></div>) : <span className="trs-muted-note">No filing statuses yet</span>}</div></div>
+          <div className="trs-compliance-footer"><div><strong>{filedCount}</strong><span>Filed / completed</span></div><div><strong className="trs-amber-text">{pendingCount}</strong><span>Draft / pending</span></div><div><strong className="trs-red-text">{defectiveCount}</strong><span>Defective</span></div></div>
+        </section>
+      </div>
+
+      <div className="trs-dashboard-grid trs-dashboard-grid-lower">
+        <section className="trs-panel trs-panel-elevated trs-year-panel">
+          <div className="trs-panel-heading"><div><span className="trs-panel-kicker">YEAR-ON-YEAR VIEW</span><h3>Income across financial years</h3><p>Latest six financial years with saved records</p></div></div>
+          {yearSummary.length ? <div className="trs-year-chart">{yearSummary.map(item => <div className="trs-year-column" key={item.year}><div className="trs-year-bar-area"><span className="trs-year-value">{money(item.income)}</span><div className="trs-year-bar" style={{ height: `${Math.max(5, item.income / maxYearIncome * 100)}%` }}/></div><span className="trs-year-label">{item.year}</span></div>)}</div> : <div className="trs-empty">Financial-year comparison will appear once records are available.</div>}
+          <div className="trs-chart-footnote"><span className="trs-chart-key trs-key-navy"/> Gross income <span className="trs-chart-footnote-text">Values aggregated by financial year</span></div>
+        </section>
+
+        <section className="trs-panel trs-panel-elevated trs-refund-panel">
+          <div className="trs-panel-heading"><div><span className="trs-panel-kicker">REFUND MONITOR</span><h3>Refund position</h3><p>Recorded refund processing status</p></div><span className="trs-panel-icon trs-refund-icon">₹</span></div>
+          <div className="trs-refund-amount"><strong>{money(processedRefund)}</strong><span>Processed / received</span></div>
+          <div className="trs-refund-track"><span style={{ width: `${processedRefund + pendingRefund > 0 ? Math.min(100, processedRefund / (processedRefund + pendingRefund) * 100) : 0}%` }}/></div>
+          <div className="trs-refund-legend"><div><span className="trs-refund-dot paid"/>Processed <b>{money(processedRefund)}</b></div><div><span className="trs-refund-dot pending"/>Pending <b>{money(pendingRefund)}</b></div></div>
+          <small className="trs-refund-disclaimer">Calculated from saved refund status and refund amount fields.</small>
+        </section>
+      </div>
+
+      <section className="trs-panel trs-panel-elevated trs-recent-panel">
+        <div className="trs-panel-heading"><div><span className="trs-panel-kicker">LATEST ACTIVITY</span><h3>Recent taxpayer records</h3><p>Most recently updated records in the selected period</p></div><button className="trs-text-btn" onClick={() => setPage("records")}>View all records →</button></div>
+        <RecordsTable records={recentRecords} onEdit={editFromTable}/>
       </section>
-      <section className="trs-panel">
-        <div className="trs-panel-heading"><div><h3>Filing Status</h3><p>Distribution of return records</p></div></div>
-        {statusCounts.length ? <div className="trs-status-list">{statusCounts.map(item =>
-          <div className="trs-status-row" key={item.status}><span className={`trs-status-dot ${item.status.toLowerCase()}`} /><span>{item.status}</span><b>{item.count}</b></div>)}</div>
-          : <div className="trs-empty">No filing status data available.</div>}
-      </section>
-    </div>
-    <section className="trs-panel trs-recent-panel">
-      <div className="trs-panel-heading"><div><h3>Recent Taxpayer Records</h3><p>Latest records available in the system</p></div><button className="trs-text-btn" onClick={() => setPage("records")}>View all records →</button></div>
-      <RecordsTable records={[...records].slice(-5).reverse()} onEdit={editFromTable} />
-    </section>
-  </div>;
+    </div>;
+  };
 
   const renderRecords = () => <div className="trs-content">
     <div className="trs-page-heading"><div><span className="trs-eyebrow">DATABASE</span><h2>Taxpayer Records</h2><p>Search, filter and open saved tax return records.</p></div><button className="trs-primary-btn" onClick={() => { resetForm(); setPage("entry"); }}>＋ Add Tax Return</button></div>
@@ -390,6 +459,63 @@ function TaxReturnSummary() {
     {showConfirm && <div className="tax-modal-overlay"><div className="tax-confirm-modal"><h3>Confirm Save</h3><p>Are you sure you want to save the Tax Return Summary for FY {form.financialYear}?</p><div className="tax-modal-actions"><button className="tax-cancel-btn" onClick={() => setShowConfirm(false)} disabled={saving}>Cancel</button><button className="tax-save-btn" onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Confirm"}</button></div></div></div>}
   </div>;
 
+
+  const renderReconciliation = () => {
+    const rows = records.map(r => {
+      const checks = [
+        { label: "Income", itr: num(r.grossIncome), assessment: num(r.incomeAssessment) },
+        { label: "Income Tax", itr: num(r.taxPayable), assessment: num(r.incomeTax) },
+        { label: "TDS", itr: num(r.tdsClaim), assessment: num(r.tdsCredit) },
+        { label: "Refund", itr: num(r.refundDue), assessment: num(r.refundAmount) },
+      ];
+      const differences = checks.filter(x => Math.abs(x.itr - x.assessment) > 1);
+      return { ...r, checks, differences };
+    });
+    const flagged = rows.filter(r => r.differences.length);
+    return <div className="trs-content">
+      <div className="trs-page-heading"><div><span className="trs-eyebrow">COMPLIANCE & VERIFICATION</span><h2>Tax Reconciliation</h2><p>Compare return figures with assessment and credit figures saved in your records.</p></div><span className="trs-summary-chip">{flagged.length} record(s) need review</span></div>
+      <div className="trs-stats-grid"><StatCard label="Records checked" value={rows.length} note="Available taxpayer records" icon="▤"/><StatCard label="Matched records" value={rows.length-flagged.length} note="No material difference found" icon="✓"/><StatCard label="Difference found" value={flagged.length} note="Review figures below" icon="!"/></div>
+      <section className="trs-panel"><div className="trs-panel-heading"><div><h3>Reconciliation register</h3><p>Differences are calculated as assessment figure minus return figure.</p></div></div>
+        <div className="trs-table-wrap"><table className="trs-table"><thead><tr><th>Taxpayer</th><th>FY</th><th>Particular</th><th>ITR Data</th><th>Assessment Data</th><th>Difference</th><th>Status</th></tr></thead><tbody>
+          {rows.flatMap(r => r.checks.map((c,i) => <tr key={`${r.id||r.name}-${c.label}`}><td><b>{i===0?(r.name||"—"):""}</b></td><td>{i===0?(r.financialYear||"—"):""}</td><td>{c.label}</td><td>{money(c.itr)}</td><td>{money(c.assessment)}</td><td className={Math.abs(c.assessment-c.itr)>1?"trs-amount-warning":"trs-amount-good"}>{money(c.assessment-c.itr)}</td><td><span className={`trs-badge ${Math.abs(c.assessment-c.itr)>1?"defective":"processed"}`}>{Math.abs(c.assessment-c.itr)>1?"Difference Found":"Matched"}</span></td></tr>))}
+          {!rows.length && <tr><td colSpan="7" className="trs-empty-cell">No records available for reconciliation.</td></tr>}
+        </tbody></table></div>
+        <p className="trs-note">Note: This is a preliminary comparison using the fields currently stored in your database. It is not an official tax assessment or 26AS/AIS verification.</p>
+      </section>
+    </div>;
+  };
+
+  const renderYearAnalysis = () => {
+    const years = FINANCIAL_YEARS.map(y => {
+      const list = records.filter(r => r.financialYear === y.financialYear);
+      return { ...y, count:list.length, income:list.reduce((a,r)=>a+num(r.grossIncome),0), tax:list.reduce((a,r)=>a+num(r.taxPayable),0), tds:list.reduce((a,r)=>a+num(r.tdsClaim),0), refund:list.reduce((a,r)=>a+num(r.refundDue),0) };
+    }).filter(y=>y.count);
+    return <div className="trs-content"><div className="trs-page-heading"><div><span className="trs-eyebrow">PERIOD-WISE ANALYSIS</span><h2>Financial Year Analysis</h2><p>Compare Financial Year and corresponding Assessment Year performance.</p></div></div>
+      <section className="trs-panel"><div className="trs-panel-heading"><div><h3>FY and AY comparison</h3><p>Aggregated from saved taxpayer records.</p></div></div><div className="trs-table-wrap"><table className="trs-table"><thead><tr><th>Financial Year</th><th>Assessment Year</th><th>Returns</th><th>Gross Income</th><th>Tax Payable</th><th>TDS Claimed</th><th>Refund Due</th></tr></thead><tbody>
+      {years.map(y=><tr key={y.financialYear}><td><b>FY {y.financialYear}</b></td><td>AY {y.assessmentYear}</td><td>{y.count}</td><td>{money(y.income)}</td><td>{money(y.tax)}</td><td>{money(y.tds)}</td><td className="trs-amount-good">{money(y.refund)}</td></tr>)}
+      {!years.length&&<tr><td colSpan="7" className="trs-empty-cell">No financial year data available.</td></tr>}
+      </tbody></table></div></section>
+    </div>;
+  };
+
+  const exportRecordsCsv = () => {
+    const headers = ["Taxpayer Name","Financial Year","Assessment Year","Acknowledgement Number","ITR Form Type","Filing Status","Gross Income","Tax Payable","TDS Claimed","Refund Due","Refund Status","Refund Amount"];
+    const keys = ["name","financialYear","assessmentYear","acknowledgementNumber","formType","filingStatus","grossIncome","taxPayable","tdsClaim","refundDue","refundProcess","refundAmount"];
+    const quote = value => `"${String(value ?? "").replace(/"/g,'""')}"`;
+    const csv = [headers.map(quote).join(","), ...records.map(r=>keys.map(k=>quote(r[k])).join(","))].join("\n");
+    const url = URL.createObjectURL(new Blob(["\ufeff",csv],{type:"text/csv;charset=utf-8;"}));
+    const a=document.createElement("a"); a.href=url; a.download="tax-return-records.csv"; a.click(); URL.revokeObjectURL(url);
+  };
+
+  const renderSettings = () => <div className="trs-content"><div className="trs-page-heading"><div><span className="trs-eyebrow">APPLICATION CONTROL</span><h2>Settings & Data Management</h2><p>Manage your records export and review application configuration.</p></div></div>
+    <div className="trs-settings-grid">
+      <section className="trs-panel trs-setting-card"><span className="trs-setting-icon">⇩</span><h3>Export taxpayer records</h3><p>Download all currently loaded tax return records as a CSV file that can be opened in Excel.</p><button className="trs-primary-btn" onClick={exportRecordsCsv} disabled={!records.length}>Download CSV</button></section>
+      <section className="trs-panel trs-setting-card"><span className="trs-setting-icon">↻</span><h3>Refresh application data</h3><p>Fetch the latest taxpayer records from the connected API.</p><button className="trs-light-btn" onClick={loadAllRecords} disabled={loading}>{loading?"Refreshing…":"Refresh records"}</button></section>
+      <section className="trs-panel trs-setting-card"><span className="trs-setting-icon">▤</span><h3>Data overview</h3><p><b>{records.length}</b> records currently loaded. Records are stored through your configured backend.</p><span className="trs-setting-foot">Taxpayer records · CSV export</span></section>
+      <section className="trs-panel trs-setting-card"><span className="trs-setting-icon">⚙</span><h3>Application configuration</h3><p>Financial years, ITR form types and filing statuses are currently managed in the application.</p><span className="trs-setting-foot">Import, backup automation and editable configuration require backend support.</span></section>
+    </div>
+  </div>;
+
   const renderReports = () => <div className="trs-content">
     <div className="trs-page-heading"><div><span className="trs-eyebrow">ANALYTICS</span><h2>Financial Reports</h2><p>Summary of income, tax liability and refunds from available records.</p></div></div>
     <div className="trs-stats-grid"><StatCard label="Gross Income" value={money(totals.gross)} note="Across all records" icon="₹" /><StatCard label="Tax Liability" value={money(totals.tax)} note="Across all records" icon="▣" /><StatCard label="TDS Claimed" value={money(totals.tds)} note="Across all records" icon="▤" /><StatCard label="Refund Amount" value={money(totals.refund)} note="Across all records" icon="↗" /></div>
@@ -401,25 +527,86 @@ function TaxReturnSummary() {
     </section>
   </div>;
 
-  return <div className="trs-app">
-    <aside className="trs-sidebar">
-      <div className="trs-brand"><div className="trs-brand-mark">₹</div><div><strong>Tax Ledger</strong><small>RETURN MANAGEMENT</small></div></div>
-      <div className="trs-nav-label">WORKSPACE</div>
-      <nav className="trs-nav">
-        {[["dashboard","▦","Dashboard"],["entry","＋","Add Tax Return"],["records","▤","Taxpayer Records"],["reports","▥","Financial Reports"]].map(([key,icon,label]) =>
-          <button key={key} className={page === key ? "active" : ""} onClick={() => { setPage(key); if (key === "records") loadAllRecords(); }}><span>{icon}</span>{label}</button>)}
-      </nav>
-      <div className="trs-sidebar-footer"><span className="trs-sidebar-footer-icon">✓</span><div><b>Tax records</b><small>Centralized management</small></div></div>
-    </aside>
-    <main className="trs-main">
-      <header className="trs-topbar"><div><span>Workspace</span><b>/ {({dashboard:"Dashboard",entry:"Add Tax Return",records:"Taxpayer Records",reports:"Financial Reports"})[page]}</b></div><div className="trs-topbar-right"><span className="trs-live-dot" /> Data management</div></header>
-      {page === "dashboard" && renderDashboard()}
-      {page === "entry" && renderEntry()}
-      {page === "records" && renderRecords()}
-      {page === "reports" && renderReports()}
-      <footer className="trs-footer">Tax Ledger <span>•</span> Tax Return Management</footer>
-    </main>
-  </div>;
+  const sectionNavigation = [
+    ["dashboard", "▦", "Dashboard"],
+    ["entry", "+", "Add ITR"],
+    ["records", "▤", "Taxpayer Records"],
+    ["reconciliation", "⇄", "Tax Reconciliation"],
+    ["analysis", "▥", "FY Analysis"],
+    ["reports", "▧", "Reports"],
+    ["settings", "⚙", "Settings"],
+  ];
+
+  const pageTitles = {
+    dashboard: "Dashboard",
+    entry: "Add ITR",
+    records: "Taxpayer Records",
+    reconciliation: "Tax Reconciliation",
+    analysis: "Financial Year Analysis",
+    reports: "Reports",
+    settings: "Settings & Data Management",
+  };
+
+  const navigateTo = key => {
+    setPage(key);
+    setMessage("");
+    if (["records", "reconciliation", "analysis", "reports", "settings"].includes(key)) {
+      loadAllRecords();
+    }
+  };
+
+  return (
+    <div className="trs-app">
+      <main className="trs-main">
+        <header className="trs-topbar">
+          <div className="trs-module-heading">
+            <div className="trs-module-mark">₹</div>
+            <div>
+              <strong>Tax Return Summary</strong>
+              <span>Tax Ledger · Return Management</span>
+            </div>
+          </div>
+          <div className="trs-topbar-context">
+            <span className="trs-live-dot" />
+            <span>Data management</span>
+          </div>
+        </header>
+
+        <nav className="trs-section-nav" aria-label="Tax Return Summary sections">
+          {sectionNavigation.map(([key, icon, label]) => (
+            <button
+              key={key}
+              type="button"
+              className={page === key ? "active" : ""}
+              aria-current={page === key ? "page" : undefined}
+              onClick={() => navigateTo(key)}
+            >
+              <span className="trs-section-nav-icon" aria-hidden="true">{icon}</span>
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="trs-workspace-heading">
+          <div>
+            <span>WORKSPACE</span>
+            <b>{pageTitles[page]}</b>
+          </div>
+          <span className="trs-workspace-status"><i /> Connected module</span>
+        </div>
+
+        {page === "dashboard" && renderDashboard()}
+        {page === "entry" && renderEntry()}
+        {page === "records" && renderRecords()}
+        {page === "reconciliation" && renderReconciliation()}
+        {page === "analysis" && renderYearAnalysis()}
+        {page === "reports" && renderReports()}
+        {page === "settings" && renderSettings()}
+
+        <footer className="trs-footer">Tax Return Summary <span>•</span> Saarthi Financial - Past</footer>
+      </main>
+    </div>
+  );
 }
 
 function RecordsTable({ records, onEdit }) {
