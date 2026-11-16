@@ -158,28 +158,26 @@ function TaxReturnSummary() {
     }
   };
 
-  // Load one exact ITR record by its database ID. A financial year can contain
-  // multiple ITR records, so never use FY alone to identify an editable record.
-  const loadTaxReturnById = async id => {
-    if (!id) return;
+  const loadTaxReturnSummary = async financialYear => {
+    if (!financialYear) return;
     setLoading(true);
     setMessage("");
     try {
-      const response = await fetch(`${TAX_RETURN_API_URL}?id=${encodeURIComponent(id)}`);
+      const response = await fetch(`${TAX_RETURN_API_URL}?financial_year=${encodeURIComponent(financialYear)}`);
       const result = await readResponse(response);
-      if (!response.ok) {
-        throw new Error(result?.message || "Unable to load the selected Tax Return record.");
-      }
-
+      if (!response.ok) throw new Error(result?.message || "Unable to load Tax Return Summary.");
       const record = unwrap(result);
-      if (!record || !record.id) {
-        throw new Error("The selected Tax Return record was not found.");
+      if (!record || !record.financial_year) {
+        const ay = FINANCIAL_YEARS.find(x => x.financialYear === financialYear)?.assessmentYear || "";
+        setForm({ ...INITIAL_FORM, financialYear, assessmentYear: ay });
+        setRecordId(null);
+        setIsEditing(false);
+        return;
       }
-
       const normalized = normalizeRecord(record);
-      setRecordId(normalized.id);
-      setForm({ ...INITIAL_FORM, ...normalized });
+      setRecordId(normalized.id || null);
       setIsEditing(false);
+      setForm({ ...INITIAL_FORM, ...normalized });
     } catch (error) {
       showMessage(error.message || "Unable to load data.", "error");
     } finally {
@@ -189,19 +187,14 @@ function TaxReturnSummary() {
 
   useEffect(() => { loadAllRecords(); }, []);
 
-  const chooseFinancialYear = event => {
+  const chooseFinancialYear = async event => {
     const financialYear = event.target.value;
-    const assessmentYear = FINANCIAL_YEARS.find(
-      item => item.financialYear === financialYear
-    )?.assessmentYear || "";
-
-    // Selecting an FY starts a new ITR entry. Existing records for that FY
-    // remain separate and can be opened from Taxpayer Records.
-    setForm({ ...INITIAL_FORM, financialYear, assessmentYear });
+    const ay = FINANCIAL_YEARS.find(x => x.financialYear === financialYear)?.assessmentYear || "";
+    setForm({ ...INITIAL_FORM, financialYear, assessmentYear: ay });
     setRecordId(null);
     setIsEditing(false);
     setMessage("");
-    setMessageType("");
+    if (financialYear) await loadTaxReturnSummary(financialYear);
   };
 
   const resetForm = () => {
@@ -212,11 +205,6 @@ function TaxReturnSummary() {
   const handleSave = async () => {
     if (!form.financialYear || !form.assessmentYear) {
       showMessage("Please select Financial Year and Assessment Year.", "error");
-      return;
-    }
-
-    if (!form.name.trim()) {
-      showMessage("Please enter the taxpayer name.", "error");
       return;
     }
 
@@ -232,29 +220,25 @@ function TaxReturnSummary() {
       });
 
       const result = await readResponse(response);
+
       if (!response.ok || result?.success === false) {
         throw new Error(
           result?.message || result?.error || "Unable to save Tax Return Summary."
         );
       }
 
-      const savedRecord = result?.data ?? result?.record ?? unwrap(result);
-      if (savedRecord?.id) {
-        const normalized = normalizeRecord(savedRecord);
-        setRecordId(normalized.id);
-        setForm(previous => ({ ...previous, ...normalized }));
-      }
+      // Refresh the records list after the database confirms the save.
+      await loadAllRecords();
 
+      // Clear the form only after a successful save so it is ready for the next ITR.
+      setForm({ ...INITIAL_FORM });
+      setRecordId(null);
       setIsEditing(false);
       setShowConfirm(false);
       showMessage(
-        result?.message || "Tax Return Summary saved successfully.",
+        result?.message || "Tax Return Summary saved successfully. You can enter the next ITR.",
         "success"
       );
-
-      // Refresh the full list only. Do not reload by FY because one FY can
-      // contain multiple ITR records.
-      await loadAllRecords();
     } catch (error) {
       console.error("Tax Return Save Error:", error);
       showMessage(error.message || "Unable to save data.", "error");
@@ -296,20 +280,10 @@ function TaxReturnSummary() {
 
   const editFromTable = async record => {
     setPage("entry");
-
-    if (record.id) {
-      await loadTaxReturnById(record.id);
-      return;
-    }
-
-    // Fallback for legacy rows that do not have a database ID.
     setForm({ ...INITIAL_FORM, ...record });
-    setRecordId(null);
-    setIsEditing(true);
-    showMessage(
-      "This record has no database ID. Saving it will create a new record.",
-      "error"
-    );
+    setRecordId(record.id || null);
+    setIsEditing(false);
+    if (record.financialYear) await loadTaxReturnSummary(record.financialYear);
   };
 
   const filteredRecords = useMemo(() => records.filter(record => {
@@ -501,7 +475,7 @@ function TaxReturnSummary() {
       </div></section>
       <div className="trs-form-actions">
         {recordId && !isEditing && <button className="trs-primary-btn" onClick={() => setIsEditing(true)}>Edit Record</button>}
-        {isEditing && <button className="trs-light-btn" onClick={() => recordId ? loadTaxReturnById(recordId) : resetForm()}>Cancel Edit</button>}
+        {isEditing && <button className="trs-light-btn" onClick={() => loadTaxReturnSummary(form.financialYear)}>Cancel Edit</button>}
         {(!recordId || isEditing) && <button className="trs-primary-btn" onClick={() => setShowConfirm(true)} disabled={saving || loading}>{saving ? "Saving..." : "Save Tax Return"}</button>}
         <button className="trs-light-btn" onClick={handleDownload} disabled={loading || saving}>↓ Download PDF</button>
         <button className="trs-ghost-btn" onClick={resetForm} disabled={loading || saving}>Reset</button>
@@ -578,86 +552,28 @@ function TaxReturnSummary() {
     </section>
   </div>;
 
-  const sectionNavigation = [
-    ["dashboard", "▦", "Dashboard"],
-    ["entry", "+", "Add ITR"],
-    ["records", "▤", "Taxpayer Records"],
-    ["reconciliation", "⇄", "Tax Reconciliation"],
-    ["analysis", "▥", "FY Analysis"],
-    ["reports", "▧", "Reports"],
-    ["settings", "⚙", "Settings"],
-  ];
-
-  const pageTitles = {
-    dashboard: "Dashboard",
-    entry: "Add ITR",
-    records: "Taxpayer Records",
-    reconciliation: "Tax Reconciliation",
-    analysis: "Financial Year Analysis",
-    reports: "Reports",
-    settings: "Settings & Data Management",
-  };
-
-  const navigateTo = key => {
-    setPage(key);
-    setMessage("");
-    if (["records", "reconciliation", "analysis", "reports", "settings"].includes(key)) {
-      loadAllRecords();
-    }
-  };
-
-  return (
-    <div className="trs-app">
-      <main className="trs-main">
-        <header className="trs-topbar">
-          <div className="trs-module-heading">
-            <div className="trs-module-mark">₹</div>
-            <div>
-              <strong>Tax Return Summary</strong>
-              <span>Tax Ledger · Return Management</span>
-            </div>
-          </div>
-          <div className="trs-topbar-context">
-            <span className="trs-live-dot" />
-            <span>Data management</span>
-          </div>
-        </header>
-
-        <nav className="trs-section-nav" aria-label="Tax Return Summary sections">
-          {sectionNavigation.map(([key, icon, label]) => (
-            <button
-              key={key}
-              type="button"
-              className={page === key ? "active" : ""}
-              aria-current={page === key ? "page" : undefined}
-              onClick={() => navigateTo(key)}
-            >
-              <span className="trs-section-nav-icon" aria-hidden="true">{icon}</span>
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="trs-workspace-heading">
-          <div>
-            <span>WORKSPACE</span>
-            <b>{pageTitles[page]}</b>
-          </div>
-          <span className="trs-workspace-status"><i /> Connected module</span>
-        </div>
-
-        {page === "dashboard" && renderDashboard()}
-        {page === "entry" && renderEntry()}
-        {page === "records" && renderRecords()}
-        {page === "reconciliation" && renderReconciliation()}
-        {page === "analysis" && renderYearAnalysis()}
-        {page === "reports" && renderReports()}
-        {page === "settings" && renderSettings()}
-
-        <footer className="trs-footer">Tax Return Summary <span>•</span> Saarthi Financial - Past</footer>
-      </main>
-    </div>
-  );
+  return <div className="trs-app">
+    <aside className="trs-sidebar">
+      <div className="trs-brand"><div className="trs-brand-mark">₹</div><div><strong>Tax Ledger</strong><small>RETURN MANAGEMENT</small></div></div>
+      <div className="trs-nav-label">WORKSPACE</div>
+      <nav className="trs-nav">
+        {[["dashboard","▦","Dashboard"],["entry","＋","Add ITR"],["records","▤","Taxpayer Records"],["reconciliation","⇄","Tax Reconciliation"],["analysis","▥","Financial Year Analysis"],["reports","▧","Reports"],["settings","⚙","Settings & Data Management"]].map(([key,icon,label]) =>
+          <button key={key} className={page === key ? "active" : ""} onClick={() => { setPage(key); if (["records","reconciliation","analysis","reports","settings"].includes(key)) loadAllRecords(); }}><span>{icon}</span>{label}</button>)}
+      </nav>
+      <div className="trs-sidebar-footer"><span className="trs-sidebar-footer-icon">✓</span><div><b>Tax records</b><small>Centralized management</small></div></div>
+    </aside>
+    <main className="trs-main">
+      <header className="trs-topbar"><div><span>Workspace</span><b>/ {({dashboard:"Dashboard",entry:"Add ITR",records:"Taxpayer Records",reconciliation:"Tax Reconciliation",analysis:"Financial Year Analysis",reports:"Reports",settings:"Settings & Data Management"})[page]}</b></div><div className="trs-topbar-right"><span className="trs-live-dot" /> Data management</div></header>
+      {page === "dashboard" && renderDashboard()}
+      {page === "entry" && renderEntry()}
+      {page === "records" && renderRecords()}
+      {page === "reconciliation" && renderReconciliation()}
+      {page === "analysis" && renderYearAnalysis()}
+      {page === "reports" && renderReports()}
+      {page === "settings" && renderSettings()}
+      <footer className="trs-footer">Tax Ledger <span>•</span> Tax Return Management</footer>
+    </main>
+  </div>;
 }
 
 function RecordsTable({ records, onEdit }) {
