@@ -4,6 +4,7 @@ import "./TaxReturnSummary.css";
 const TAX_RETURN_API_URL = "/api/tax-return-summary";
 
 const FINANCIAL_YEARS = [
+  { financialYear: "2007-08", assessmentYear: "2008-09" },
   { financialYear: "2008-09", assessmentYear: "2009-10" },
   { financialYear: "2009-10", assessmentYear: "2010-11" },
   { financialYear: "2010-11", assessmentYear: "2011-12" },
