@@ -1,4 +1,16 @@
+
+const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
+
+// =========================================================
+// ENVIRONMENT CONFIGURATION
+// =========================================================
+
+// Load backend/.env during local development.
+// On Vercel, use Environment Variables configured in settings.
+require("dotenv").config({
+  path: path.resolve(__dirname, "../../.env"),
+});
 
 /* =========================================================
    SUPABASE CONFIGURATION
@@ -7,20 +19,34 @@ const { createClient } = require("@supabase/supabase-js");
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
-if (!SUPABASE_URL) {
-  console.error("ERROR: SUPABASE_URL is not configured");
-}
-
-if (!SUPABASE_SECRET_KEY) {
-  console.error(
-    "ERROR: SUPABASE_SECRET_KEY is not configured"
-  );
-}
-
-const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_SECRET_KEY
+const isSupabaseConfigured = Boolean(
+  SUPABASE_URL && SUPABASE_SECRET_KEY
 );
+
+// Do not initialize the client with undefined credentials.
+const supabase = isSupabaseConfigured
+  ? createClient(SUPABASE_URL, SUPABASE_SECRET_KEY)
+  : null;
+
+function ensureSupabaseConfigured() {
+  if (!supabase) {
+    const error = new Error(
+      "Supabase is not configured. Check SUPABASE_URL and SUPABASE_SECRET_KEY."
+    );
+
+    error.code = "SUPABASE_CONFIG_MISSING";
+
+    throw error;
+  }
+
+  return supabase;
+}
+
+function getSafeErrorDetails(error) {
+  return process.env.NODE_ENV === "development"
+    ? error?.message || "Unknown error"
+    : undefined;
+}
 
 /* =========================================================
    SUPABASE TABLE
@@ -28,12 +54,7 @@ const supabase = createClient(
 
 const TABLE_NAME = "client_master";
 
-/*
-  Supabase/PostgREST can return a limited number of rows
-  per request.
-
-  Therefore we fetch the table in batches.
-*/
+// Fetch records in batches of 1,000.
 const BATCH_SIZE = 1000;
 
 /* =========================================================
@@ -44,7 +65,10 @@ console.log("==========================================");
 console.log("TCHR LEDGER CONTROLLER");
 console.log("DATABASE: SUPABASE");
 console.log("TABLE:", TABLE_NAME);
-console.log("SUPABASE CONFIGURED:", Boolean(SUPABASE_URL));
+console.log(
+  "SUPABASE CONFIGURED:",
+  Boolean(SUPABASE_URL)
+);
 console.log(
   "SUPABASE SECRET CONFIGURED:",
   Boolean(SUPABASE_SECRET_KEY)
@@ -53,7 +77,6 @@ console.log("==========================================");
 
 /* =========================================================
    EMPTY RECORD
-   Keeps the same response structure as the old controller.
 ========================================================= */
 
 function createEmptyRecord() {
@@ -132,10 +155,6 @@ function emptyIfNull(value) {
 
 /* =========================================================
    DATE HELPER
-
-   Supabase may return DATE/TIMESTAMP values as strings.
-
-   Keep them in a frontend-compatible format.
 ========================================================= */
 
 function normalizeDate(value) {
@@ -171,16 +190,9 @@ function normalizeDate(value) {
     return "";
   }
 
-  /*
-    If Supabase returns:
-    2024-04-25
-    2024-04-25T00:00:00+00:00
-  */
-
-  const isoMatch =
-    stringValue.match(
-      /^(\d{4}-\d{2}-\d{2})/
-    );
+  const isoMatch = stringValue.match(
+    /^(\d{4}-\d{2}-\d{2})/
+  );
 
   if (isoMatch) {
     return isoMatch[1];
@@ -190,28 +202,10 @@ function normalizeDate(value) {
 }
 
 /* =========================================================
-   SUPABASE RECORD -> OLD API RECORD
+   SUPABASE RECORD -> API RECORD
 
-   IMPORTANT:
-   Your existing DataContext expects these API field names.
-
-   Actual client_master fields include:
-     aquired_year
-     allotment_year
-     joining_date
-     bill_date_year
-     recived_year
-     paid_date
-
-   We convert them back to:
-     acquired_year
-     allotment_year
-     joining_year
-     bill_year
-     received_year
-     paid_year
-
-   This means the frontend does NOT need to be rewritten.
+   Converts actual Supabase column names into the
+   field names expected by the existing frontend.
 ========================================================= */
 
 function mapSupabaseRecord(record) {
@@ -223,9 +217,7 @@ function mapSupabaseRecord(record) {
 
   result.id = record.id ?? null;
 
-  /* =======================================================
-     BASIC CLIENT INFORMATION
-  ======================================================= */
+  /* BASIC CLIENT INFORMATION */
 
   result.company_name =
     emptyIfNull(record.company_name);
@@ -233,10 +225,7 @@ function mapSupabaseRecord(record) {
   result.tann =
     emptyIfNull(record.tann);
 
-  /*
-    TDS was not imported into client_master.
-    Keep empty for frontend compatibility.
-  */
+  // TDS was not imported into client_master.
   result.tds = "";
 
   result.client_status =
@@ -266,48 +255,30 @@ function mapSupabaseRecord(record) {
   result.no_of_employees =
     emptyIfNull(record.no_of_employees);
 
-  /* =======================================================
-     DATES
-  ======================================================= */
+  /* DATES */
 
   result.date_client_acquired =
-    normalizeDate(
-      record.date_client_acquired
-    );
+    normalizeDate(record.date_client_acquired);
 
   result.date_of_allocation =
-    normalizeDate(
-      record.date_of_allocation
-    );
+    normalizeDate(record.date_of_allocation);
 
   result.date_of_reallocation =
-    normalizeDate(
-      record.date_of_reallocation
-    );
+    normalizeDate(record.date_of_reallocation);
 
   result.date_of_joining =
-    normalizeDate(
-      record.date_of_joining
-    );
+    normalizeDate(record.date_of_joining);
 
   result.bill_date =
-    normalizeDate(
-      record.bill_date
-    );
+    normalizeDate(record.bill_date);
 
   result.date_received =
-    normalizeDate(
-      record.date_received
-    );
+    normalizeDate(record.date_received);
 
   result.paid_on_date =
-    normalizeDate(
-      record.paid_on_date
-    );
+    normalizeDate(record.paid_on_date);
 
-  /* =======================================================
-     FINANCIAL INFORMATION
-  ======================================================= */
+  /* FINANCIAL INFORMATION */
 
   result.placement_fees =
     emptyIfNull(record.placement_fees);
@@ -336,77 +307,40 @@ function mapSupabaseRecord(record) {
   result.soa_no =
     emptyIfNull(record.soa_no);
 
-  /* =======================================================
-     STATUS / INFO
-  ======================================================= */
+  /* STATUS / INFORMATION */
 
   result.info =
     emptyIfNull(record.info);
 
-  /*
-    Position Name was not part of the Supabase import.
-  */
+  // Position Name was not part of the Supabase import.
   result.position_name = "";
 
-  /* =======================================================
-     YEAR FIELDS
+  /* YEAR FIELDS */
 
-     IMPORTANT:
-     client_master uses the original Excel spelling
-     for some columns.
-  ======================================================= */
-
+  // Actual Supabase column: aquired_year
   result.acquired_year =
-    emptyIfNull(
-      record.aquired_year
-    );
+    emptyIfNull(record.aquired_year);
 
   result.allotment_year =
-    emptyIfNull(
-      record.allotment_year
-    );
+    emptyIfNull(record.allotment_year);
 
-  /*
-    Excel "Joining Date" was imported into
-    client_master.joining_date.
-
-    The old API expected joining_year.
-  */
+  // Actual Supabase column: joining_date
   result.joining_year =
-    normalizeDate(
-      record.joining_date
-    );
+    normalizeDate(record.joining_date);
 
-  /*
-    Excel "Bill Date Year" was imported into
-    client_master.bill_date_year.
-  */
+  // Actual Supabase column: bill_date_year
   result.bill_year =
-    emptyIfNull(
-      record.bill_date_year
-    );
+    emptyIfNull(record.bill_date_year);
 
-  /*
-    Excel "Recived Year" was imported into
-    client_master.recived_year.
-  */
+  // Actual Supabase column: recived_year
   result.received_year =
-    emptyIfNull(
-      record.recived_year
-    );
+    emptyIfNull(record.recived_year);
 
-  /*
-    Excel "Paid Date" was imported into
-    client_master.paid_date.
-  */
+  // Actual Supabase column: paid_date
   result.paid_year =
-    normalizeDate(
-      record.paid_date
-    );
+    normalizeDate(record.paid_date);
 
-  /* =======================================================
-     TIMESTAMPS
-  ======================================================= */
+  /* TIMESTAMPS */
 
   result.created_at =
     emptyIfNull(record.created_at);
@@ -420,20 +354,21 @@ function mapSupabaseRecord(record) {
 /* =========================================================
    GET ALL SUPABASE RECORDS
 
-   Fetches records in batches.
+   Fetches all records in batches.
 
-   This is important because:
-   6,378 records > common 1,000-row API limit.
+   Important:
+   This supports datasets larger than 1,000 records.
 ========================================================= */
 
 async function getAllSupabaseRecords() {
+  const client = ensureSupabaseConfigured();
+
   const allRecords = [];
 
   let from = 0;
 
   while (true) {
-    const to =
-      from + BATCH_SIZE - 1;
+    const to = from + BATCH_SIZE - 1;
 
     console.log(
       `Fetching Supabase records ${from} - ${to}`
@@ -442,7 +377,7 @@ async function getAllSupabaseRecords() {
     const {
       data,
       error
-    } = await supabase
+    } = await client
       .from(TABLE_NAME)
       .select("*")
       .order("id", {
@@ -472,13 +407,8 @@ async function getAllSupabaseRecords() {
       `Fetched ${data.length} records. Total: ${allRecords.length}`
     );
 
-    /*
-      If fewer than BATCH_SIZE were returned,
-      this was the last batch.
-    */
-    if (
-      data.length < BATCH_SIZE
-    ) {
+    // Stop when the last batch is reached.
+    if (data.length < BATCH_SIZE) {
       break;
     }
 
@@ -493,22 +423,15 @@ async function getAllSupabaseRecords() {
    GET /api/ledger
 ========================================================= */
 
-async function getLedgerRecords(
-  req,
-  res
-) {
+async function getLedgerRecords(req, res) {
   try {
-    console.log(
-      "GET /api/ledger"
-    );
+    console.log("GET /api/ledger");
 
     const supabaseRecords =
       await getAllSupabaseRecords();
 
     const records =
-      supabaseRecords.map(
-        mapSupabaseRecord
-      );
+      supabaseRecords.map(mapSupabaseRecord);
 
     console.log(
       "Total ledger records returned:",
@@ -520,20 +443,30 @@ async function getLedgerRecords(
       count: records.length,
       data: records
     });
+
   } catch (error) {
     console.error(
       "GET LEDGER RECORDS ERROR:",
       error
     );
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Unable to load ledger records",
-      error:
-        error?.message ||
-        "Unknown error"
-    });
+    const missingConfiguration =
+      error?.code === "SUPABASE_CONFIG_MISSING";
+
+    return res
+      .status(missingConfiguration ? 503 : 500)
+      .json({
+        success: false,
+
+        message: missingConfiguration
+          ? "Supabase configuration is missing"
+          : "Unable to load ledger records",
+
+        code:
+          error?.code || "LEDGER_FETCH_FAILED",
+
+        error: getSafeErrorDetails(error)
+      });
   }
 }
 
@@ -542,13 +475,9 @@ async function getLedgerRecords(
    GET /api/ledger/:id
 ========================================================= */
 
-async function getLedgerRecordById(
-  req,
-  res
-) {
+async function getLedgerRecordById(req, res) {
   try {
-    const { id } =
-      req.params;
+    const { id } = req.params;
 
     if (
       id === undefined ||
@@ -557,8 +486,7 @@ async function getLedgerRecordById(
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Ledger record ID is required"
+        message: "Ledger record ID is required"
       });
     }
 
@@ -567,10 +495,12 @@ async function getLedgerRecordById(
       id
     );
 
+    const client = ensureSupabaseConfigured();
+
     const {
       data,
       error
-    } = await supabase
+    } = await client
       .from(TABLE_NAME)
       .select("*")
       .eq("id", id)
@@ -588,8 +518,7 @@ async function getLedgerRecordById(
     if (!data) {
       return res.status(404).json({
         success: false,
-        message:
-          "Ledger record not found"
+        message: "Ledger record not found"
       });
     }
 
@@ -600,25 +529,35 @@ async function getLedgerRecordById(
       success: true,
       data: record
     });
+
   } catch (error) {
     console.error(
       "GET LEDGER RECORD ERROR:",
       error
     );
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "Unable to load ledger record",
-      error:
-        error?.message ||
-        "Unknown error"
-    });
+    const missingConfiguration =
+      error?.code === "SUPABASE_CONFIG_MISSING";
+
+    return res
+      .status(missingConfiguration ? 503 : 500)
+      .json({
+        success: false,
+
+        message: missingConfiguration
+          ? "Supabase configuration is missing"
+          : "Unable to load ledger record",
+
+        code:
+          error?.code || "LEDGER_RECORD_FETCH_FAILED",
+
+        error: getSafeErrorDetails(error)
+      });
   }
 }
 
 /* =========================================================
-   EXPORT
+   EXPORT CONTROLLER FUNCTIONS
 ========================================================= */
 
 module.exports = {
