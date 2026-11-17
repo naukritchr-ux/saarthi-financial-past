@@ -2887,3 +2887,46 @@
     print-color-adjust: exact;
   }
 }
+
+/* Right-aligned export buttons */
+.trs-record-export-actions,
+.trs-individual-export-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Taxpayer Records export spacing */
+.trs-record-export-actions {
+  margin: 14px 0 16px;
+}
+
+/* Individual taxpayer PDF button */
+.trs-individual-export-actions {
+  margin: 12px 0 18px;
+}
+
+/* Consistent button sizing */
+.trs-record-export-actions button,
+.trs-individual-export-actions button {
+  min-height: 46px;
+  padding: 11px 20px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Mobile alignment */
+@media (max-width: 600px) {
+  .trs-record-export-actions,
+  .trs-individual-export-actions {
+    justify-content: flex-start;
+  }
+
+  .trs-record-export-actions button,
+  .trs-individual-export-actions button {
+    flex: 1 1 auto;
+  }
+}
