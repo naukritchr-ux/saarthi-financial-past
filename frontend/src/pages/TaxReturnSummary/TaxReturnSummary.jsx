@@ -98,6 +98,9 @@ function TaxReturnSummary() {
   const [fyFilter, setFyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [reportFY, setReportFY] = useState("all");
+  const [reportStatus, setReportStatus] = useState("all");
+  const [reportType, setReportType] = useState("all");
 
   const fieldsDisabled = Boolean(recordId) && !isEditing;
   const refundDue = useMemo(() => Math.max(0, num(form.tdsClaim) - num(form.taxPayable)), [form.tdsClaim, form.taxPayable]);
@@ -533,13 +536,98 @@ function TaxReturnSummary() {
   const renderYearAnalysis = () => {
     const years = FINANCIAL_YEARS.map(y => {
       const list = records.filter(r => r.financialYear === y.financialYear);
-      return { ...y, count:list.length, income:list.reduce((a,r)=>a+num(r.grossIncome),0), tax:list.reduce((a,r)=>a+num(r.taxPayable),0), tds:list.reduce((a,r)=>a+num(r.tdsClaim),0), refund:list.reduce((a,r)=>a+num(r.refundDue),0) };
-    }).filter(y=>y.count);
-    return <div className="trs-content"><div className="trs-page-heading"><div><span className="trs-eyebrow">PERIOD-WISE ANALYSIS</span><h2>Financial Year Analysis</h2><p>Compare Financial Year and corresponding Assessment Year performance.</p></div></div>
-      <section className="trs-panel"><div className="trs-panel-heading"><div><h3>FY and AY comparison</h3><p>Aggregated from saved taxpayer records.</p></div></div><div className="trs-table-wrap"><table className="trs-table"><thead><tr><th>Financial Year</th><th>Assessment Year</th><th>Returns</th><th>Gross Income</th><th>Tax Payable</th><th>TDS Claimed</th><th>Refund Due</th></tr></thead><tbody>
-      {years.map(y=><tr key={y.financialYear}><td><b>FY {y.financialYear}</b></td><td>AY {y.assessmentYear}</td><td>{y.count}</td><td>{money(y.income)}</td><td>{money(y.tax)}</td><td>{money(y.tds)}</td><td className="trs-amount-good">{money(y.refund)}</td></tr>)}
-      {!years.length&&<tr><td colSpan="7" className="trs-empty-cell">No financial year data available.</td></tr>}
-      </tbody></table></div></section>
+      return {
+        ...y,
+        count: list.length,
+        income: list.reduce((a, r) => a + num(r.grossIncome), 0),
+        tax: list.reduce((a, r) => a + num(r.taxPayable), 0),
+        tds: list.reduce((a, r) => a + num(r.tdsClaim), 0),
+        refund: list.reduce((a, r) => a + num(r.refundDue), 0),
+      };
+    }).filter(y => y.count);
+    const totalReturns = years.reduce((a, y) => a + y.count, 0);
+    const totalIncome = years.reduce((a, y) => a + y.income, 0);
+    const totalTax = years.reduce((a, y) => a + y.tax, 0);
+    const totalRefund = years.reduce((a, y) => a + y.refund, 0);
+    const maxIncome = Math.max(1, ...years.map(y => y.income));
+    const latest = years[years.length - 1];
+    const previous = years[years.length - 2];
+    const incomeChange = latest && previous ? latest.income - previous.income : null;
+
+    return <div className="trs-content trs-analysis-page">
+      <div className="trs-page-heading">
+        <div>
+          <span className="trs-eyebrow">PERIOD-WISE ANALYSIS</span>
+          <h2>Financial Year Analysis</h2>
+          <p>Understand how income, tax, TDS and refunds change across financial years.</p>
+        </div>
+        <span className="trs-summary-chip">{years.length} financial years tracked</span>
+      </div>
+
+      <div className="trs-analysis-hero">
+        <div>
+          <span className="trs-analysis-kicker">PORTFOLIO OVERVIEW</span>
+          <h3>Financial performance at a glance</h3>
+          <p>Figures are aggregated from the saved ITR records available in this module.</p>
+        </div>
+        <div className="trs-analysis-hero-mark">₹</div>
+      </div>
+
+      <div className="trs-analysis-stats">
+        <StatCard label="Total Returns" value={totalReturns.toLocaleString("en-IN")} note="Saved ITR records" icon="▤" />
+        <StatCard label="Gross Income" value={money(totalIncome)} note="Across tracked years" icon="₹" />
+        <StatCard label="Tax Payable" value={money(totalTax)} note="Recorded tax liability" icon="▣" />
+        <StatCard label="Refund Due" value={money(totalRefund)} note="Based on TDS less tax" icon="↗" />
+      </div>
+
+      <div className="trs-analysis-grid">
+        <section className="trs-panel trs-analysis-chart-panel">
+          <div className="trs-panel-heading">
+            <div><span className="trs-panel-kicker">YEARLY TREND</span><h3>Gross income by financial year</h3><p>Compare total gross income recorded for each FY.</p></div>
+            <span className="trs-panel-icon">▥</span>
+          </div>
+          {years.length ? <div className="trs-analysis-bars">
+            {years.map((y, index) => <div className="trs-analysis-bar-item" key={y.financialYear}>
+              <div className="trs-analysis-bar-value">{money(y.income)}</div>
+              <div className="trs-analysis-bar-track"><span style={{ height: `${Math.max(4, y.income / maxIncome * 100)}%` }} /></div>
+              <b>{y.financialYear}</b>
+              <small>{y.count} {y.count === 1 ? "return" : "returns"}</small>
+            </div>)}
+          </div> : <div className="trs-empty-cell">Add records to view the financial year trend.</div>}
+          <div className="trs-analysis-chart-note"><i /> Gross income · grouped by financial year</div>
+        </section>
+
+        <section className="trs-panel trs-analysis-insight-panel">
+          <span className="trs-panel-kicker">LATEST AVAILABLE YEAR</span>
+          {latest ? <>
+            <h3>FY {latest.financialYear}</h3>
+            <p className="trs-analysis-ay">Assessment Year {latest.assessmentYear}</p>
+            <div className="trs-analysis-highlight"><span>Gross income</span><strong>{money(latest.income)}</strong></div>
+            <div className="trs-analysis-mini-row"><span>Returns recorded</span><b>{latest.count}</b></div>
+            <div className="trs-analysis-mini-row"><span>Tax payable</span><b>{money(latest.tax)}</b></div>
+            <div className="trs-analysis-mini-row"><span>TDS claimed</span><b>{money(latest.tds)}</b></div>
+            <div className="trs-analysis-mini-row"><span>Refund due</span><b className="trs-amount-good">{money(latest.refund)}</b></div>
+            {incomeChange !== null && <div className={`trs-analysis-change ${incomeChange >= 0 ? "positive" : "negative"}`}>
+              {incomeChange >= 0 ? "↑" : "↓"} {money(Math.abs(incomeChange))} {incomeChange >= 0 ? "higher" : "lower"} than the previous recorded FY
+            </div>}
+          </> : <div className="trs-empty-cell">No financial year data available.</div>}
+        </section>
+      </div>
+
+      <section className="trs-panel trs-analysis-table-panel">
+        <div className="trs-panel-heading"><div><span className="trs-panel-kicker">DETAILED BREAKDOWN</span><h3>FY and AY comparison</h3><p>Aggregated values for each financial year with saved records.</p></div></div>
+        <div className="trs-table-wrap"><table className="trs-table">
+          <thead><tr><th>Financial Year</th><th>Assessment Year</th><th>Returns</th><th>Gross Income</th><th>Tax Payable</th><th>TDS Claimed</th><th>Refund Due</th></tr></thead>
+          <tbody>
+            {years.slice().reverse().map(y => <tr key={y.financialYear}>
+              <td><b>FY {y.financialYear}</b></td><td>AY {y.assessmentYear}</td><td>{y.count}</td>
+              <td>{money(y.income)}</td><td>{money(y.tax)}</td><td>{money(y.tds)}</td><td className="trs-amount-good">{money(y.refund)}</td>
+            </tr>)}
+            {!years.length && <tr><td colSpan="7" className="trs-empty-cell">No financial year data available.</td></tr>}
+          </tbody>
+        </table></div>
+      </section>
+      <p className="trs-note">Note: Refund Due is calculated from TDS Claimed less Tax Payable, with a minimum of zero, using the existing application calculation.</p>
     </div>;
   };
 
@@ -561,16 +649,94 @@ function TaxReturnSummary() {
     </div>
   </div>;
 
-  const renderReports = () => <div className="trs-content">
-    <div className="trs-page-heading"><div><span className="trs-eyebrow">ANALYTICS</span><h2>Financial Reports</h2><p>Summary of income, tax liability and refunds from available records.</p></div></div>
-    <div className="trs-stats-grid"><StatCard label="Gross Income" value={money(totals.gross)} note="Across all records" icon="₹" /><StatCard label="Tax Liability" value={money(totals.tax)} note="Across all records" icon="▣" /><StatCard label="TDS Claimed" value={money(totals.tds)} note="Across all records" icon="▤" /><StatCard label="Refund Amount" value={money(totals.refund)} note="Across all records" icon="↗" /></div>
-    <section className="trs-panel"><div className="trs-panel-heading"><div><h3>Financial Year Summary</h3><p>Aggregated figures by financial year</p></div></div>
-      <div className="trs-table-wrap"><table className="trs-table"><thead><tr><th>Financial Year</th><th>Records</th><th>Gross Income</th><th>Tax Payable</th><th>TDS Claimed</th><th>Refund</th></tr></thead><tbody>
-        {FINANCIAL_YEARS.filter(y => records.some(r => r.financialYear === y.financialYear)).map(y => { const rows = records.filter(r => r.financialYear === y.financialYear); return <tr key={y.financialYear}><td>FY {y.financialYear}</td><td>{rows.length}</td><td>{money(rows.reduce((s,r)=>s+num(r.grossIncome),0))}</td><td>{money(rows.reduce((s,r)=>s+num(r.taxPayable),0))}</td><td>{money(rows.reduce((s,r)=>s+num(r.tdsClaim),0))}</td><td>{money(rows.reduce((s,r)=>s+num(r.refundAmount),0))}</td></tr>; })}
-        {!records.length && <tr><td colSpan="6" className="trs-empty-cell">No records available.</td></tr>}
-      </tbody></table></div>
-    </section>
-  </div>;
+  const renderReports = () => {
+    const reportRecords = records.filter(record => {
+      const matchesFY = reportFY === "all" || record.financialYear === reportFY;
+      const matchesStatus = reportStatus === "all" || record.filingStatus === reportStatus;
+      const matchesType = reportType === "all" || record.formType === reportType;
+      return matchesFY && matchesStatus && matchesType;
+    });
+    const reportTotals = reportRecords.reduce((acc, record) => {
+      acc.gross += num(record.grossIncome);
+      acc.tax += num(record.taxPayable);
+      acc.tds += num(record.tdsClaim);
+      acc.refundDue += num(record.refundDue);
+      acc.refundAmount += num(record.refundAmount);
+      return acc;
+    }, { gross: 0, tax: 0, tds: 0, refundDue: 0, refundAmount: 0 });
+
+    const exportReportCsv = () => {
+      const headers = ["Taxpayer Name","Financial Year","Assessment Year","Acknowledgement Number","ITR Form Type","Filing Status","Gross Income","Tax Payable","TDS Claimed","Refund Due","Refund Status","Refund Amount"];
+      const keys = ["name","financialYear","assessmentYear","acknowledgementNumber","formType","filingStatus","grossIncome","taxPayable","tdsClaim","refundDue","refundProcess","refundAmount"];
+      const quote = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
+      const csv = [headers.map(quote).join(","), ...reportRecords.map(r => keys.map(k => quote(r[k])).join(","))].join("\\n");
+      const url = URL.createObjectURL(new Blob(["\\ufeff", csv], { type: "text/csv;charset=utf-8;" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `tax-return-report-${reportFY === "all" ? "all-years" : reportFY}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    return <div className="trs-content trs-reports-page">
+      <div className="trs-page-heading">
+        <div><span className="trs-eyebrow">REPORT CENTRE</span><h2>Financial Reports</h2><p>Filter saved tax return records and export a report for your selected period.</p></div>
+        <button className="trs-primary-btn" onClick={exportReportCsv} disabled={!reportRecords.length}>⇩ Export Report CSV</button>
+      </div>
+
+      <section className="trs-panel trs-report-filter-panel">
+        <div className="trs-panel-heading"><div><span className="trs-panel-kicker">REPORT CONFIGURATION</span><h3>Choose report filters</h3><p>Apply filters to the summary and detailed report below.</p></div></div>
+        <div className="trs-report-filters">
+          <label>Financial Year
+            <select value={reportFY} onChange={e => setReportFY(e.target.value)}>
+              <option value="all">All Financial Years</option>
+              {FINANCIAL_YEARS.filter(y => records.some(r => r.financialYear === y.financialYear)).map(y => <option key={y.financialYear} value={y.financialYear}>FY {y.financialYear}</option>)}
+            </select>
+          </label>
+          <label>Filing Status
+            <select value={reportStatus} onChange={e => setReportStatus(e.target.value)}>
+              <option value="all">All Statuses</option>
+              {FILING_STATUSES.map(status => <option key={status} value={status}>{status}</option>)}
+            </select>
+          </label>
+          <label>ITR Form
+            <select value={reportType} onChange={e => setReportType(e.target.value)}>
+              <option value="all">All ITR Forms</option>
+              {FORM_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+            </select>
+          </label>
+          <button className="trs-light-btn" type="button" onClick={() => { setReportFY("all"); setReportStatus("all"); setReportType("all"); }}>Reset Filters</button>
+        </div>
+      </section>
+
+      <div className="trs-report-result-head"><div><b>Report summary</b><span>{reportRecords.length} matching {reportRecords.length === 1 ? "record" : "records"}</span></div><span className="trs-summary-chip">{reportFY === "all" ? "All years" : `FY ${reportFY}`}</span></div>
+      <div className="trs-report-stats">
+        <StatCard label="Gross Income" value={money(reportTotals.gross)} note="Filtered records" icon="₹" />
+        <StatCard label="Tax Liability" value={money(reportTotals.tax)} note="Recorded tax payable" icon="▣" />
+        <StatCard label="TDS Claimed" value={money(reportTotals.tds)} note="Filtered records" icon="▤" />
+        <StatCard label="Refund Due" value={money(reportTotals.refundDue)} note="TDS claimed less tax payable" icon="↗" />
+      </div>
+
+      <section className="trs-panel trs-report-table-panel">
+        <div className="trs-panel-heading"><div><span className="trs-panel-kicker">RECORD DETAIL</span><h3>Tax return report</h3><p>Detailed records matching the selected filters.</p></div></div>
+        <div className="trs-table-wrap"><table className="trs-table">
+          <thead><tr><th>Taxpayer</th><th>FY / AY</th><th>ITR Form</th><th>Filing Status</th><th>Gross Income</th><th>Tax Payable</th><th>TDS Claimed</th><th>Refund Due</th></tr></thead>
+          <tbody>
+            {reportRecords.map((record, index) => <tr key={record.id ?? `${record.name}-${record.financialYear}-${index}`}>
+              <td><b>{record.name || "—"}</b><small className="trs-report-ack">{record.acknowledgementNumber || "No acknowledgement number"}</small></td>
+              <td>{record.financialYear || "—"}<small className="trs-report-ack">AY {record.assessmentYear || "—"}</small></td>
+              <td>{record.formType || "—"}</td><td>{record.filingStatus || "—"}</td>
+              <td>{money(record.grossIncome)}</td><td>{money(record.taxPayable)}</td><td>{money(record.tdsClaim)}</td><td className="trs-amount-good">{money(record.refundDue)}</td>
+            </tr>)}
+            {!reportRecords.length && <tr><td colSpan="8" className="trs-empty-cell">No records match the selected filters.</td></tr>}
+          </tbody>
+        </table></div>
+      </section>
+      <p className="trs-note">Report values are based on the fields currently stored in Tax Return Summary. Outstanding tax is not calculated because advance-tax and self-assessment-tax payment fields are not part of the current record structure.</p>
+    </div>;
+  };
 
   const sectionNavigation = [
     ["dashboard", "▦", "Dashboard"],
