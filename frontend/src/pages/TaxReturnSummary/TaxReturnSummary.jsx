@@ -739,13 +739,8 @@ function TaxReturnSummary() {
     }
   };
 
-  // Export only the currently filtered Taxpayer Records.
+  // Export only the currently filtered Taxpayer Records.  
   const exportRecordsCsv = () => {
-    if (!filteredRecords.length) {
-      showMessage("There are no records available to export.", "error");
-      return;
-    }
-
     const headers = [
       "Taxpayer Name",
       "Financial Year",
@@ -753,18 +748,12 @@ function TaxReturnSummary() {
       "Acknowledgement Number",
       "ITR Form Type",
       "Filing Status",
-      "ITR Filing Date",
       "Gross Income",
       "Tax Payable",
       "TDS Claimed",
       "Refund Due",
       "Refund Status",
-      "Refund Process Date",
-      "Income as per Assessment",
-      "Income Tax as per AY",
-      "TDS Credit",
-      "Refund Amount",
-      "Interest",
+      "Refund Amount"
     ];
 
     const keys = [
@@ -774,18 +763,12 @@ function TaxReturnSummary() {
       "acknowledgementNumber",
       "formType",
       "filingStatus",
-      "itrFilingDate",
       "grossIncome",
       "taxPayable",
       "tdsClaim",
       "refundDue",
       "refundProcess",
-      "refundProcessDate",
-      "incomeAssessment",
-      "incomeTax",
-      "tdsCredit",
-      "refundAmount",
-      "interest",
+      "refundAmount"
     ];
 
     const quote = value =>
@@ -793,27 +776,32 @@ function TaxReturnSummary() {
 
     const csv = [
       headers.map(quote).join(","),
-      ...filteredRecords.map(record =>
+      ...records.map(record =>
         keys.map(key => quote(record[key])).join(",")
-      ),
-    ].join("\r\n");
+      )
+    ].join("\n");
 
     const blob = new Blob(["\ufeff", csv], {
-      type: "text/csv;charset=utf-8;",
+      type: "text/csv;charset=utf-8;"
     });
 
-    const url = URL.createObjectURL(blob);
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
 
     link.href = url;
     link.download = "tax-return-records.csv";
+    link.style.display = "none";
 
     document.body.appendChild(link);
     link.click();
     link.remove();
 
-    URL.revokeObjectURL(url);
+    // Do not revoke the URL immediately.
+    window.setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 30000);
   };
+
 
   const downloadRecordsPdf = () => {
     if (!filteredRecords.length) {
