@@ -51,10 +51,10 @@ const INITIAL_FORM = {
   tdsClaim: "",
   refundProcess: "",
   refundProcessDate: "",
-  incomeAssessment: "",
-  incomeTax: "",
+  totalAssessedIncome: "",
+  totalAssessedTaxPayable: "",
   tdsCredit: "",
-  refundAmount: "",
+  refundAmountBeforeInterest: "",
   interest: "",
 };
 
@@ -112,12 +112,39 @@ function normalizeRecord(record) {
       record.refund_process ?? record.refundProcess ?? "",
     refundProcessDate:
       record.refund_process_date ?? record.refundProcessDate ?? "",
-    incomeAssessment:
-      record.income_assessment ?? record.incomeAssessment ?? 0,
-    incomeTax: record.income_tax ?? record.incomeTax ?? 0,
+    totalAssessedIncome:
+      record.total_assessed_income ??
+      record.totalAssessedIncome ??
+      record.income_assessment ??
+      record.incomeAssessment ??
+      0,
+    totalAssessedTaxPayable:
+      record.total_assessed_tax_payable ??
+      record.totalAssessedTaxPayable ??
+      record.income_tax ??
+      record.incomeTax ??
+      0,
     tdsCredit: record.tds_credit ?? record.tdsCredit ?? 0,
-    refundAmount: record.refund_amount ?? record.refundAmount ?? 0,
+    refundAmountBeforeInterest:
+      record.refund_amount_before_interest ??
+      record.refundAmountBeforeInterest ??
+      record.refund_amount ??
+      record.refundAmount ??
+      0,
     interest: record.interest ?? 0,
+    netRefundAmount:
+      record.net_refund_amount ??
+      record.netRefundAmount ??
+      (
+        Number(
+          record.refund_amount_before_interest ??
+          record.refundAmountBeforeInterest ??
+          record.refund_amount ??
+          record.refundAmount ??
+          0
+        ) +
+        Number(record.interest ?? 0)
+      ),
     createdAt: record.created_at ?? record.createdAt ?? "",
     updatedAt: record.updated_at ?? record.updatedAt ?? "",
   };
@@ -370,24 +397,26 @@ function TaxReturnSummary() {
     [form.tdsClaim, form.taxPayable]
   );
 
-  const calculatedRefund = useMemo(
-    () => num(form.tdsCredit) + num(form.interest),
-    [form.tdsCredit, form.interest]
+  const netRefundAmount = useMemo(
+    () =>
+      num(form.refundAmountBeforeInterest) +
+      num(form.interest),
+    [form.refundAmountBeforeInterest, form.interest]
   );
 
   const differenceIncome = useMemo(
-    () => num(form.incomeAssessment) - num(form.grossIncome),
-    [form.incomeAssessment, form.grossIncome]
+    () => num(form.totalAssessedIncome) - num(form.grossIncome),
+    [form.totalAssessedIncome, form.grossIncome]
   );
 
   const differenceIncomeTax = useMemo(
-    () => num(form.incomeTax) - num(form.taxPayable),
-    [form.incomeTax, form.taxPayable]
+    () => num(form.totalAssessedTaxPayable) - num(form.taxPayable),
+    [form.totalAssessedTaxPayable, form.taxPayable]
   );
 
   const differenceReturn = useMemo(
-    () => num(form.refundAmount) - calculatedRefund,
-    [form.refundAmount, calculatedRefund]
+    () => netRefundAmount - refundDue,
+    [netRefundAmount, refundDue]
   );
 
   const showMessage = (text, type = "success") => {
@@ -421,12 +450,13 @@ function TaxReturnSummary() {
     refund_due: refundDue,
     refund_process: form.refundProcess || null,
     refund_process_date: form.refundProcessDate || null,
-    income_assessment: num(form.incomeAssessment),
-    income_tax: num(form.incomeTax),
+    income_assessment: num(form.totalAssessedIncome),
+    income_tax: num(form.totalAssessedTaxPayable),
     tds_credit: num(form.tdsCredit),
-    refund_amount: num(form.refundAmount),
+    // Keep the existing database column names so the current API remains compatible.
+    refund_amount: num(form.refundAmountBeforeInterest),
     interest: num(form.interest),
-    calculated_refund: calculatedRefund,
+    calculated_refund: netRefundAmount,
     difference_income: differenceIncome,
     difference_income_tax: differenceIncomeTax,
     difference_return: differenceReturn,
@@ -709,14 +739,14 @@ function TaxReturnSummary() {
 
       <h2>Assessment Details</h2>
       <div class="pdf-grid">
-        ${pdfField("Income as per Assessment", money(savedRecord.incomeAssessment))}
-        ${pdfField("Income Tax as per AY", money(savedRecord.incomeTax))}
+        ${pdfField("Total Assessed Income", money(savedRecord.totalAssessedIncome))}
+        ${pdfField("Total Tax Payable as Assessed", money(savedRecord.totalAssessedTaxPayable))}
         ${pdfField("TDS Credit", money(savedRecord.tdsCredit))}
-        ${pdfField("Refund Amount", money(savedRecord.refundAmount))}
+        ${pdfField("Refund Amount Before Interest", money(savedRecord.refundAmountBeforeInterest))}
         ${pdfField("Interest", money(savedRecord.interest))}
         ${pdfField(
-          "Calculated Refund",
-          money(num(savedRecord.tdsCredit) + num(savedRecord.interest))
+          "Net Refund Amount",
+          money(num(savedRecord.refundAmountBeforeInterest) + num(savedRecord.interest))
         )}
       </div>
 
@@ -753,7 +783,7 @@ function TaxReturnSummary() {
       "TDS Claimed",
       "Refund Due",
       "Refund Status",
-      "Refund Amount"
+      "Refund Amount Before Interest"
     ];
 
     const keys = [
@@ -768,7 +798,7 @@ function TaxReturnSummary() {
       "tdsClaim",
       "refundDue",
       "refundProcess",
-      "refundAmount"
+      "refundAmountBeforeInterest"
     ];
 
     const quote = value =>
@@ -869,7 +899,7 @@ function TaxReturnSummary() {
         acc.gross += num(record.grossIncome);
         acc.tax += num(record.taxPayable);
         acc.tds += num(record.tdsClaim);
-        acc.refund += num(record.refundAmount);
+        acc.refund += num(record.refundAmountBeforeInterest) + num(record.interest);
         return acc;
       },
       { gross: 0, tax: 0, tds: 0, refund: 0 }
@@ -956,7 +986,7 @@ function TaxReturnSummary() {
 
         return total +
           (["processed", "received"].includes(status)
-            ? num(record.refundAmount)
+            ? num(record.refundAmountBeforeInterest) + num(record.interest)
             : 0);
       },
       0
@@ -972,7 +1002,7 @@ function TaxReturnSummary() {
           (["", "pending"].includes(status)
             ? Math.max(
                 0,
-                num(record.refundAmount) ||
+                (num(record.refundAmountBeforeInterest) + num(record.interest)) ||
                 num(record.tdsClaim) - num(record.taxPayable)
               )
             : 0);
@@ -1090,14 +1120,14 @@ function TaxReturnSummary() {
       defectiveCount +
       dashboardRecords.filter(
         record =>
-          (num(record.incomeAssessment) &&
+          (num(record.totalAssessedIncome) &&
             Math.abs(
-              num(record.incomeAssessment) -
+              num(record.totalAssessedIncome) -
               num(record.grossIncome)
             ) > 1) ||
-          (num(record.incomeTax) &&
+          (num(record.totalAssessedTaxPayable) &&
             Math.abs(
-              num(record.incomeTax) -
+              num(record.totalAssessedTaxPayable) -
               num(record.taxPayable)
             ) > 1)
       ).length;
@@ -1915,22 +1945,22 @@ function TaxReturnSummary() {
 
           <div className="tax-form-grid">
             {renderInput(
-              "Income as per Assessment",
-              "incomeAssessment"
+              "Total Assessed Income",
+              "totalAssessedIncome"
             )}
 
             {renderInput(
-              "Income Tax as per AY",
-              "incomeTax"
+              "Total Tax Payable as Assessed",
+              "totalAssessedTaxPayable"
             )}
 
             {renderInput("TDS Credit", "tdsCredit")}
-            {renderInput("Refund Amount", "refundAmount")}
+            {renderInput("Refund Amount Before Interest", "refundAmountBeforeInterest")}
             {renderInput("Interest", "interest")}
 
             {renderReadOnly(
-              "Refund Amount (Calculated)",
-              money(calculatedRefund)
+              "Net Refund Amount",
+              money(netRefundAmount)
             )}
           </div>
         </section>
@@ -2040,12 +2070,12 @@ function TaxReturnSummary() {
         {
           label: "Income",
           itr: num(record.grossIncome),
-          assessment: num(record.incomeAssessment),
+          assessment: num(record.totalAssessedIncome),
         },
         {
           label: "Income Tax",
           itr: num(record.taxPayable),
-          assessment: num(record.incomeTax),
+          assessment: num(record.totalAssessedTaxPayable),
         },
         {
           label: "TDS",
@@ -2053,9 +2083,9 @@ function TaxReturnSummary() {
           assessment: num(record.tdsCredit),
         },
         {
-          label: "Refund",
+          label: "Net Refund",
           itr: num(record.refundDue),
-          assessment: num(record.refundAmount),
+          assessment: num(record.refundAmountBeforeInterest) + num(record.interest),
         },
       ];
 
@@ -2631,7 +2661,7 @@ function TaxReturnSummary() {
         acc.tax += num(record.taxPayable);
         acc.tds += num(record.tdsClaim);
         acc.refundDue += num(record.refundDue);
-        acc.refundAmount += num(record.refundAmount);
+        acc.refundAmount += num(record.refundAmountBeforeInterest) + num(record.interest);
 
         return acc;
       },
@@ -3046,7 +3076,7 @@ function RecordsTable({ records, onEdit }) {
 
               <td>{money(record.grossIncome)}</td>
               <td>{money(record.taxPayable)}</td>
-              <td>{money(record.refundAmount)}</td>
+              <td>{money(num(record.refundAmountBeforeInterest) + num(record.interest))}</td>
 
               <td>
                 <span
