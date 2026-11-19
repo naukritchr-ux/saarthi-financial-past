@@ -7,8 +7,6 @@ const TABLE_NAME = "tax_return_summary";
 let supabaseClient = null;
 
 // Initialize Supabase only when an API request is made.
-// This avoids crashing the server immediately if environment variables
-// are missing during deployment.
 const getSupabase = () => {
   if (supabaseClient) {
     return supabaseClient;
@@ -190,6 +188,15 @@ const createDatabasePayload = (body) => {
 
     refund_process_date: refundProcessDate,
     refund_date: refundProcessDate,
+
+    // Assessment order details
+    order_type: nullableText(
+      body.order_type ?? body.orderType
+    ),
+
+    date_of_order: nullableDate(
+      body.date_of_order ?? body.dateOfOrder
+    ),
 
     // Assessment details
     income_assessment: numericValue(
@@ -567,6 +574,16 @@ const generateTaxReturnSummaryPDF = async (req, res) => {
       record.refund_date ||
       record.refundProcessDate;
 
+    // Assessment order details
+    const orderType =
+      record.order_type ||
+      record.orderType ||
+      "-";
+
+    const dateOfOrder =
+      record.date_of_order ||
+      record.dateOfOrder;
+
     const doc = new PDFDocument({
       size: "A4",
       margins: {
@@ -691,19 +708,22 @@ const generateTaxReturnSummaryPDF = async (req, res) => {
     doc.moveDown(0.5);
 
     const assessmentRows = [
-      ["Income Assessment", formatCurrency(record.income_assessment)],
-      ["Income Tax", formatCurrency(record.income_tax)],
+      ["Order Type", orderType],
+      ["Date of Order", formatDate(dateOfOrder)],
+      ["Total Assessed Income", formatCurrency(record.income_assessment)],
+      ["Total Tax Payable as Assessed", formatCurrency(record.income_tax)],
       ["TDS Credit", formatCurrency(record.tds_credit)],
-      ["Refund Amount", formatCurrency(record.refund_amount)],
+      ["Refund Amount Before Interest", formatCurrency(record.refund_amount)],
       ["Interest", formatCurrency(record.interest)],
+      ["Net Refund Amount", formatCurrency(record.calculated_refund)],
     ];
 
     drawTable(
       doc,
-      ["Particulars", "Amount"],
+      ["Particulars", "Amount / Details"],
       assessmentRows,
       {
-        columnWidths: [190, 325],
+        columnWidths: [250, 265],
         rowHeight: 26,
       }
     );

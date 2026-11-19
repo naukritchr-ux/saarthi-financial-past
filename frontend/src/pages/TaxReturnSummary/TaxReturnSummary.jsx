@@ -50,7 +50,8 @@ const INITIAL_FORM = {
   taxPayable: "",
   tdsClaim: "",
   refundProcess: "",
-  refundProcessDate: "",
+  orderType: "",
+  dateOfOrder: "",
   totalAssessedIncome: "",
   totalAssessedTaxPayable: "",
   tdsCredit: "",
@@ -110,8 +111,8 @@ function normalizeRecord(record) {
     refundDue: record.refund_due ?? record.refundDue ?? 0,
     refundProcess:
       record.refund_process ?? record.refundProcess ?? "",
-    refundProcessDate:
-      record.refund_process_date ?? record.refundProcessDate ?? "",
+    orderType: record.order_type ?? record.orderType ?? "",
+    dateOfOrder: record.date_of_order ?? record.dateOfOrder ?? "",
     totalAssessedIncome:
       record.total_assessed_income ??
       record.totalAssessedIncome ??
@@ -449,7 +450,8 @@ function TaxReturnSummary() {
     tds_claim: num(form.tdsClaim),
     refund_due: refundDue,
     refund_process: form.refundProcess || null,
-    refund_process_date: form.refundProcessDate || null,
+    order_type: form.orderType.trim() || null,
+    date_of_order: form.dateOfOrder || null,
     income_assessment: num(form.totalAssessedIncome),
     income_tax: num(form.totalAssessedTaxPayable),
     tds_credit: num(form.tdsCredit),
@@ -734,11 +736,12 @@ function TaxReturnSummary() {
         ${pdfField("TDS Claimed", money(savedRecord.tdsClaim))}
         ${pdfField("Refund Due", money(savedRecord.refundDue))}
         ${pdfField("Refund Process", savedRecord.refundProcess)}
-        ${pdfField("Refund Process Date", savedRecord.refundProcessDate)}
       </div>
 
       <h2>Assessment Details</h2>
       <div class="pdf-grid">
+        ${pdfField("Order Type", savedRecord.orderType)}
+        ${pdfField("Date of Order", savedRecord.dateOfOrder)}
         ${pdfField("Total Assessed Income", money(savedRecord.totalAssessedIncome))}
         ${pdfField("Total Tax Payable as Assessed", money(savedRecord.totalAssessedTaxPayable))}
         ${pdfField("TDS Credit", money(savedRecord.tdsCredit))}
@@ -1930,11 +1933,6 @@ function TaxReturnSummary() {
               </select>
             </div>
 
-            {renderInput(
-              "Date of Refund Process",
-              "refundProcessDate",
-              "date"
-            )}
           </div>
         </section>
 
@@ -1944,6 +1942,19 @@ function TaxReturnSummary() {
           </h3>
 
           <div className="tax-form-grid">
+            {renderInput(
+              "Order Type",
+              "orderType",
+              "text",
+              "Enter order type"
+            )}
+
+            {renderInput(
+              "Date of Order",
+              "dateOfOrder",
+              "date"
+            )}
+
             {renderInput(
               "Total Assessed Income",
               "totalAssessedIncome"
