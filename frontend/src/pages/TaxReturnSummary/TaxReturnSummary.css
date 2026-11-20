@@ -2930,3 +2930,19 @@
     flex: 1 1 auto;
   }
 }
+
+
+.trs-individual-export {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.trs-individual-export > div {
+  display: none;
+}
+
+.trs-individual-export button {
+  margin-left: auto;
+}
