@@ -3053,3 +3053,83 @@
   font-weight: 600;
   font-size: 13px;
 }
+
+/* Add to the end of TaxReturnSummary.css (replaces the earlier .trs-category-switch rules) */
+.trs-category-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.trs-home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.trs-home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  text-align: left;
+  font: inherit;
+  color: #172f4d;
+  background: #ffffff;
+  border: 1px solid #e3e6eb;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.trs-home-card:hover,
+.trs-home-card:focus-visible {
+  border-color: #c4a15a;
+  outline: none;
+}
+
+.trs-home-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+.trs-home-card p {
+  margin: 0;
+  color: #657286;
+  font-size: 13px;
+}
+
+.trs-home-card-stats {
+  display: flex;
+  gap: 24px;
+  margin: 4px 0;
+}
+
+.trs-home-card-stats div {
+  display: flex;
+  flex-direction: column;
+}
+
+.trs-home-card-stats b {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.trs-home-card-stats span {
+  color: #657286;
+  font-size: 12px;
+}
+
+.trs-home-card small {
+  color: #7b8491;
+}
+
+.trs-home-card-open {
+  margin-top: 4px;
+  color: #172f4d;
+  font-weight: 600;
+  font-size: 13px;
+}

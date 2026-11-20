@@ -1108,6 +1108,7 @@ function TaxReturnSummary() {
     const totalGross = sum("grossIncome");
     const totalTax = sum("taxPayable");
     const totalTds = sum("tdsClaim");
+    const totalTdsCredit = sum("tdsCredit");
 
     const totalRefundDue =
       sum("refundDue") ||
@@ -1120,6 +1121,10 @@ function TaxReturnSummary() {
           ),
         0
       );
+
+    const totalRefundBeforeInterest = sum("refundAmountBeforeInterest");
+    const totalInterest = sum("interest");
+    const netRefundTotal = totalRefundBeforeInterest + totalInterest;
 
     const processedRefund = dashboardRecords.reduce(
       (total, record) => {
@@ -1429,8 +1434,15 @@ function TaxReturnSummary() {
           <StatCard
             label="TDS claimed"
             value={money(totalTds)}
-            note="Tax deducted at source"
+            note="Claimed in ITR"
             icon="↘"
+          />
+
+          <StatCard
+            label="TDS credit"
+            value={money(totalTdsCredit)}
+            note={`Difference vs claim: ${money(totalTdsCredit - totalTds)}`}
+            icon="✓"
           />
 
           <StatCard
@@ -1787,11 +1799,11 @@ function TaxReturnSummary() {
             <div className="trs-panel-heading">
               <div>
                 <span className="trs-panel-kicker">
-                  REFUND MONITOR
+                  REFUND AND INTEREST
                 </span>
-                <h3>Refund position</h3>
+                <h3>Refund summary</h3>
                 <p>
-                  Recorded refund processing status
+                  Totals from assessment records in this view
                 </p>
               </div>
 
@@ -1801,20 +1813,18 @@ function TaxReturnSummary() {
             </div>
 
             <div className="trs-refund-amount">
-              <strong>{money(processedRefund)}</strong>
-              <span>Processed / received</span>
+              <strong>{money(netRefundTotal)}</strong>
+              <span>Total net refund (incl. interest)</span>
             </div>
 
             <div className="trs-refund-track">
               <span
                 style={{
                   width: `${
-                    processedRefund + pendingRefund > 0
+                    netRefundTotal > 0
                       ? Math.min(
                           100,
-                          (processedRefund /
-                            (processedRefund + pendingRefund)) *
-                            100
+                          (totalInterest / netRefundTotal) * 100
                         )
                       : 0
                   }%`,
@@ -1825,19 +1835,25 @@ function TaxReturnSummary() {
             <div className="trs-refund-legend">
               <div>
                 <span className="trs-refund-dot paid" />
-                Processed
-                <b>{money(processedRefund)}</b>
+                Refund before interest
+                <b>{money(totalRefundBeforeInterest)}</b>
               </div>
 
               <div>
                 <span className="trs-refund-dot pending" />
-                Pending
-                <b>{money(pendingRefund)}</b>
+                Total interest
+                <b>{money(totalInterest)}</b>
+              </div>
+
+              <div>
+                <span className="trs-refund-dot paid" />
+                Refund expected (TDS less tax)
+                <b>{money(totalRefundDue)}</b>
               </div>
             </div>
 
             <small className="trs-refund-disclaimer">
-              Calculated from saved refund status and refund amount fields.
+              Bar shows interest as a share of the net refund.
             </small>
           </section>
         </div>
