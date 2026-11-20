@@ -175,7 +175,11 @@ function normalizeRecord(record) {
     grossIncome: record.gross_income ?? record.grossIncome ?? 0,
     taxPayable: record.tax_payable ?? record.taxPayable ?? 0,
     tdsClaim: record.tds_claim ?? record.tdsClaim ?? 0,
-    refundDue: record.refund_due ?? record.refundDue ?? 0,
+    // Always recalculate from source ITR values so legacy clamped refund_due
+    // values do not hide a tax-payable balance.
+    refundDue:
+      num(record.tds_claim ?? record.tdsClaim ?? 0) -
+      num(record.tax_payable ?? record.taxPayable ?? 0),
     refundProcess:
       record.refund_process ?? record.refundProcess ?? "",
     orderType: record.order_type ?? record.orderType ?? "",
@@ -473,8 +477,10 @@ function TaxReturnSummary() {
 
   const fieldsDisabled = Boolean(recordId) && !isEditing;
 
+  // Section 2: expected refund = TDS claimed - tax payable.
+  // A negative result means tax is still payable; do not force it to zero.
   const refundDue = useMemo(
-    () => Math.max(0, num(form.tdsClaim) - num(form.taxPayable)),
+    () => num(form.tdsClaim) - num(form.taxPayable),
     [form.tdsClaim, form.taxPayable]
   );
 
@@ -496,8 +502,8 @@ function TaxReturnSummary() {
   );
 
   const differenceReturn = useMemo(
-    () => netRefundAmount - refundDue,
-    [netRefundAmount, refundDue]
+    () => refundDue - netRefundAmount,
+    [refundDue, netRefundAmount]
   );
 
   const showMessage = (text, type = "success") => {
@@ -845,7 +851,7 @@ function TaxReturnSummary() {
         ${pdfField("Gross Income", money(savedRecord.grossIncome))}
         ${pdfField("Tax Payable", money(savedRecord.taxPayable))}
         ${pdfField("TDS Claimed", money(savedRecord.tdsClaim))}
-        ${pdfField("Refund Due", money(savedRecord.refundDue))}
+        ${pdfField("Expected Refund / (Tax Payable)", money(savedRecord.refundDue))}
         ${pdfField("Refund Process", savedRecord.refundProcess)}
       </div>
 
@@ -897,7 +903,7 @@ function TaxReturnSummary() {
       "Gross Income",
       "Tax Payable",
       "TDS Claimed",
-      "Refund Due",
+      "Expected Refund / (Tax Payable)",
       "Refund Status",
       "Refund Amount Before Interest"
     ];
@@ -924,7 +930,7 @@ function TaxReturnSummary() {
 
     const csv = [
       headers.map(quote).join(","),
-      ...records.map(record =>
+      ...filteredRecords.map(record =>
         keys.map(key => quote(record[key])).join(",")
       )
     ].join("\n");
@@ -995,7 +1001,7 @@ function TaxReturnSummary() {
             <th>Gross Income</th>
             <th>Tax Payable</th>
             <th>TDS Claimed</th>
-            <th>Refund Due</th>
+            <th>Expected Refund / (Tax Payable)</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1110,17 +1116,8 @@ function TaxReturnSummary() {
     const totalTds = sum("tdsClaim");
     const totalTdsCredit = sum("tdsCredit");
 
-    const totalRefundDue =
-      sum("refundDue") ||
-      dashboardRecords.reduce(
-        (total, record) =>
-          total +
-          Math.max(
-            0,
-            num(record.tdsClaim) - num(record.taxPayable)
-          ),
-        0
-      );
+    // Signed net position: positive = refund expected; negative = tax payable.
+    const totalRefundDue = sum("refundDue");
 
     const totalRefundBeforeInterest = sum("refundAmountBeforeInterest");
     const totalInterest = sum("interest");
@@ -1446,9 +1443,9 @@ function TaxReturnSummary() {
           />
 
           <StatCard
-            label="Refund expected"
+            label="Expected refund / (tax payable)"
             value={money(totalRefundDue)}
-            note="Based on return TDS less tax"
+            note="TDS less tax; negative means tax payable"
             icon="↗"
           />
 
@@ -1521,7 +1518,7 @@ function TaxReturnSummary() {
                     <th>Gross Income</th>
                     <th>Tax Payable</th>
                     <th>TDS Claimed</th>
-                    <th>Refund Due</th>
+                    <th>Expected Refund / (Tax Payable)</th>
                   </tr>
                 </thead>
 
@@ -1847,7 +1844,7 @@ function TaxReturnSummary() {
 
               <div>
                 <span className="trs-refund-dot paid" />
-                Refund expected (TDS less tax)
+                Expected refund / (tax payable)
                 <b>{money(totalRefundDue)}</b>
               </div>
             </div>
@@ -2181,7 +2178,7 @@ function TaxReturnSummary() {
             {renderInput("TDS Claim", "tdsClaim")}
 
             {renderReadOnly(
-              "Refund Due",
+              "Expected Refund / (Tax Payable)",
               money(refundDue)
             )}
 
@@ -2209,8 +2206,11 @@ function TaxReturnSummary() {
                 ))}
               </select>
             </div>
-
           </div>
+          <p className="trs-note">
+            Expected refund = TDS Claim − Tax Payable. A negative result means
+            tax is still payable; it is not a refund.
+          </p>
         </section>
 
         <section className="tax-section">
@@ -2270,7 +2270,7 @@ function TaxReturnSummary() {
             </div>
 
             <div className="tax-difference-card">
-              <span>Difference in Return</span>
+              <span>Difference in Return (Expected − Assessment Net Refund)</span>
               <strong>{money(differenceReturn)}</strong>
             </div>
           </div>
@@ -2372,7 +2372,7 @@ function TaxReturnSummary() {
           assessment: num(record.tdsCredit),
         },
         {
-          label: "Net Refund",
+          label: "Expected Refund / (Tax Payable)",
           itr: num(record.refundDue),
           assessment: num(record.refundAmountBeforeInterest) + num(record.interest),
         },
@@ -2666,7 +2666,7 @@ function TaxReturnSummary() {
           />
 
           <StatCard
-            label="Refund Due"
+            label="Expected Refund / (Tax Payable)"
             value={money(totalRefund)}
             note="Based on TDS less tax"
             icon="↗"
@@ -2821,7 +2821,7 @@ function TaxReturnSummary() {
                   <th>Gross Income</th>
                   <th>Tax Payable</th>
                   <th>TDS Claimed</th>
-                  <th>Refund Due</th>
+                  <th>Expected Refund / (Tax Payable)</th>
                 </tr>
               </thead>
 
@@ -2858,9 +2858,8 @@ function TaxReturnSummary() {
         </section>
 
         <p className="trs-note">
-          Note: Refund Due is calculated from TDS Claimed less
-          Tax Payable, with a minimum of zero, using the existing
-          application calculation.
+          Note: Expected refund / (tax payable) is calculated as TDS Claimed less
+          Tax Payable. A negative result indicates a tax-payable balance.
         </p>
       </div>
     );
@@ -3125,9 +3124,9 @@ function TaxReturnSummary() {
           />
 
           <StatCard
-            label="Refund Due"
+            label="Expected Refund / (Tax Payable)"
             value={money(reportTotals.refundDue)}
-            note="TDS claimed less tax payable"
+            note="TDS claimed less tax payable; negative means payable"
             icon="↗"
           />
         </div>
@@ -3156,7 +3155,7 @@ function TaxReturnSummary() {
                   <th>Gross Income</th>
                   <th>Tax Payable</th>
                   <th>TDS Claimed</th>
-                  <th>Refund Due</th>
+                  <th>Expected Refund / (Tax Payable)</th>
                 </tr>
               </thead>
 
