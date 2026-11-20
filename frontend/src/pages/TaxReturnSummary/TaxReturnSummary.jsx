@@ -444,6 +444,7 @@ function TaxReturnSummary() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [allRecords, setAllRecords] = useState([]);
   const [category, setCategory] = useState(DATA_CATEGORIES[0]);
+  const [showHome, setShowHome] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -3203,6 +3204,124 @@ function TaxReturnSummary() {
     );
   };
 
+  const openCategory = name => {
+    switchCategory(name);
+    resetForm();
+    setPage("dashboard");
+    setShowHome(false);
+  };
+
+  const renderHome = () => {
+    const sectionInfo = {
+      "Talent Corner": {
+        icon: "▣",
+        description: "Company tax records",
+        uniqueLabel: "Companies",
+      },
+      "Doshi Family": {
+        icon: "◉",
+        description: "Individual and HUF tax records",
+        uniqueLabel: "Members",
+      },
+    };
+
+    return (
+      <div className="trs-content trs-home">
+        <div className="trs-page-heading">
+          <div>
+            <span className="trs-eyebrow">TAX RETURN SUMMARY</span>
+            <h2>Choose a section</h2>
+            <p>Open a dashboard to view and manage its tax returns.</p>
+          </div>
+
+          <button
+            className="trs-light-btn"
+            onClick={loadAllRecords}
+            disabled={loading}
+          >
+            ↻ {loading ? "Refreshing" : "Refresh data"}
+          </button>
+        </div>
+
+        {dashboardError && (
+          <div className="tax-message error">{dashboardError}</div>
+        )}
+
+        <div className="trs-home-grid">
+          {DATA_CATEGORIES.map(name => {
+            const list = allRecords.filter(
+              record => record.dataCategory === name
+            );
+            const stats = taxpayerStats(list);
+            const latest = [...list].sort((a, b) =>
+              String(b.financialYear).localeCompare(
+                String(a.financialYear)
+              )
+            )[0];
+
+            return (
+              <button
+                key={name}
+                type="button"
+                className="trs-home-card"
+                onClick={() => openCategory(name)}
+              >
+                <div className="trs-home-card-head">
+                  <span className="trs-stat-icon">
+                    {sectionInfo[name].icon}
+                  </span>
+                  <strong>{name}</strong>
+                </div>
+
+                <p>{sectionInfo[name].description}</p>
+
+                <div className="trs-home-card-stats">
+                  <div>
+                    <b>{stats.returnRecords}</b>
+                    <span>Return records</span>
+                  </div>
+
+                  <div>
+                    <b>{stats.uniqueTaxpayers}</b>
+                    <span>{sectionInfo[name].uniqueLabel}</span>
+                  </div>
+
+                  {stats.withoutPan > 0 && (
+                    <div>
+                      <b className="trs-amber-text">
+                        {stats.withoutPan}
+                      </b>
+                      <span>PAN missing</span>
+                    </div>
+                  )}
+                </div>
+
+                <small>
+                  {latest
+                    ? `Latest: FY ${latest.financialYear} · ${
+                        latest.filingStatus || "Draft"
+                      }`
+                    : "No records yet"}
+                </small>
+
+                <span className="trs-home-card-open">
+                  Open dashboard →
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {unclassifiedCount > 0 && (
+          <div className="tax-message error">
+            {unclassifiedCount} saved record(s) have no category and are not
+            shown in either section. Set their data_category in the database.
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const sectionNavigation = [
     ["dashboard", "▦", "Dashboard"],
     ["entry", "+", "Add ITR"],
@@ -3259,32 +3378,25 @@ function TaxReturnSummary() {
           </div>
         </header>
 
-        <div
-          className="trs-category-switch"
-          role="tablist"
-          aria-label="Data category"
-        >
-          {DATA_CATEGORIES.map(name => (
+        {!showHome && (
+          <div className="trs-category-bar">
             <button
-              key={name}
               type="button"
-              role="tab"
-              aria-selected={name === category}
-              className={name === category ? "active" : ""}
-              onClick={() => switchCategory(name)}
+              className="trs-light-btn"
+              onClick={() => {
+                resetForm();
+                setShowHome(true);
+              }}
             >
-              {name}
+              ← All sections
             </button>
-          ))}
-        </div>
 
-        {unclassifiedCount > 0 && (
-          <div className="tax-message error">
-            {unclassifiedCount} saved record(s) have no category and are not
-            shown in either section. Set their data_category in the database.
+            <span className="trs-summary-chip">{category}</span>
           </div>
         )}
 
+        {showHome ? renderHome() : (
+          <>
         <nav
           className="trs-section-nav"
           aria-label="Tax Return Summary sections"
@@ -3331,6 +3443,9 @@ function TaxReturnSummary() {
         {page === "analysis" && renderYearAnalysis()}
         {page === "reports" && renderReports()}
         {page === "settings" && renderSettings()}
+
+          </>
+        )}
 
         <footer className="trs-footer">
           Tax Return Summary <span>•</span> Saarthi Financial - Past
