@@ -38,7 +38,14 @@ const FILING_STATUSES = [
   "Defective", "Revised", "Belated"
 ];
 
+// Data separation: Talent Corner (company) and Doshi Family (individual / HUF).
+const DATA_CATEGORIES = ["Talent Corner", "Doshi Family"];
+
+const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+
 const INITIAL_FORM = {
+  dataCategory: "",
+  pan: "",
   financialYear: "",
   assessmentYear: "",
   name: "",
@@ -71,6 +78,64 @@ const money = value =>
 
 const unwrap = result => result?.data ?? result?.record ?? result;
 
+// A taxpayer is identified by PAN when available, otherwise by exact name.
+// "Bankim Doshi" and "Bankim J Doshi HUF" are different names, so they stay separate.
+const taxpayerKey = record =>
+  record.pan?.trim().toUpperCase() ||
+  `name:${String(record.name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")}`;
+
+// Return records = every saved entry. Unique taxpayers = distinct taxpayers.
+function taxpayerStats(list) {
+  const all = new Set(list.map(taxpayerKey));
+  const withPan = new Set(
+    list.filter(record => record.pan?.trim()).map(taxpayerKey)
+  );
+
+  return {
+    returnRecords: list.length,
+    uniqueTaxpayers: all.size,
+    withPan: withPan.size,
+    withoutPan: all.size - withPan.size,
+  };
+}
+
+// Member-wise summary used by the Doshi Family dashboard.
+function memberSummary(list) {
+  const map = new Map();
+
+  list.forEach(record => {
+    const key = taxpayerKey(record);
+
+    const row = map.get(key) || {
+      key,
+      name: record.name,
+      pan: record.pan,
+      returns: 0,
+      grossIncome: 0,
+      taxPayable: 0,
+      tdsClaim: 0,
+      refundDue: 0,
+    };
+
+    row.returns += 1;
+    row.grossIncome += num(record.grossIncome);
+    row.taxPayable += num(record.taxPayable);
+    row.tdsClaim += num(record.tdsClaim);
+    row.refundDue += num(record.refundDue);
+
+    if (!row.pan && record.pan) row.pan = record.pan;
+
+    map.set(key, row);
+  });
+
+  return [...map.values()].sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""))
+  );
+}
+
 async function readResponse(response) {
   const type = response.headers.get("content-type") || "";
 
@@ -92,6 +157,8 @@ async function readResponse(response) {
 function normalizeRecord(record) {
   return {
     id: record.id,
+    dataCategory: record.data_category ?? record.dataCategory ?? "",
+    pan: record.pan ?? "",
     financialYear:
       record.financial_year ?? record.financialYear ?? "",
     assessmentYear:
@@ -375,7 +442,8 @@ function StatCard({ label, value, note, icon }) {
 function TaxReturnSummary() {
   const [page, setPage] = useState("dashboard");
   const [form, setForm] = useState(INITIAL_FORM);
-  const [records, setRecords] = useState([]);
+  const [allRecords, setAllRecords] = useState([]);
+  const [category, setCategory] = useState(DATA_CATEGORIES[0]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -390,6 +458,17 @@ function TaxReturnSummary() {
   const [reportFY, setReportFY] = useState("all");
   const [reportStatus, setReportStatus] = useState("all");
   const [reportType, setReportType] = useState("all");
+
+  // Every page below reads `records`, which now follows the selected category.
+  const records = useMemo(
+    () => allRecords.filter(record => record.dataCategory === category),
+    [allRecords, category]
+  );
+
+  const unclassifiedCount = useMemo(
+    () => allRecords.filter(record => !DATA_CATEGORIES.includes(record.dataCategory)).length,
+    [allRecords]
+  );
 
   const fieldsDisabled = Boolean(recordId) && !isEditing;
 
@@ -430,7 +509,7 @@ function TaxReturnSummary() {
 
     setForm(previous => ({
       ...previous,
-      [name]: value,
+      [name]: name === "pan" ? value.toUpperCase() : value,
     }));
 
     setMessage("");
@@ -438,6 +517,8 @@ function TaxReturnSummary() {
 
   const getDatabasePayload = () => ({
     ...(recordId ? { id: recordId } : {}),
+    data_category: form.dataCategory || category,
+    pan: form.pan.trim().toUpperCase() || null,
     financial_year: form.financialYear || null,
     assessment_year: form.assessmentYear || null,
     name: form.name.trim(),
@@ -493,7 +574,7 @@ function TaxReturnSummary() {
         );
       }
 
-      setRecords(list.map(normalizeRecord));
+      setAllRecords(list.map(normalizeRecord));
     } catch (error) {
       setDashboardError(
         error.message || "Unable to load dashboard data."
@@ -582,17 +663,43 @@ function TaxReturnSummary() {
     setMessageType("");
   };
 
+  // Switch between Talent Corner and Doshi Family data.
+  const switchCategory = nextCategory => {
+    if (nextCategory === category) return;
+
+    setCategory(nextCategory);
+    resetForm();
+    setFyFilter("all");
+    setStatusFilter("all");
+    setSearch("");
+    setReportFY("all");
+    setReportStatus("all");
+    setReportType("all");
+    setShowConfirm(false);
+  };
+
   const handleSave = async () => {
     if (!form.financialYear || !form.assessmentYear) {
       showMessage(
         "Please select Financial Year and Assessment Year.",
         "error"
       );
+      setShowConfirm(false);
       return;
     }
 
     if (!form.name.trim()) {
       showMessage("Please enter the taxpayer name.", "error");
+      setShowConfirm(false);
+      return;
+    }
+
+    if (form.pan.trim() && !PAN_REGEX.test(form.pan.trim().toUpperCase())) {
+      showMessage(
+        "PAN format is invalid. It should look like ABCDE1234F, or leave it blank.",
+        "error"
+      );
+      setShowConfirm(false);
       return;
     }
 
@@ -683,6 +790,7 @@ function TaxReturnSummary() {
         !term ||
         [
           record.name,
+          record.pan,
           record.acknowledgementNumber,
           record.financialYear,
           record.assessmentYear,
@@ -720,7 +828,9 @@ function TaxReturnSummary() {
     const content = `
       <h2>Taxpayer Information</h2>
       <div class="pdf-grid">
+        ${pdfField("Category", savedRecord.dataCategory)}
         ${pdfField("Taxpayer Name", savedRecord.name)}
+        ${pdfField("PAN", savedRecord.pan)}
         ${pdfField("Financial Year", savedRecord.financialYear)}
         ${pdfField("Assessment Year", savedRecord.assessmentYear)}
         ${pdfField("Acknowledgement Number", savedRecord.acknowledgementNumber)}
@@ -775,7 +885,9 @@ function TaxReturnSummary() {
   // Export only the currently filtered Taxpayer Records.  
   const exportRecordsCsv = () => {
     const headers = [
+      "Category",
       "Taxpayer Name",
+      "PAN",
       "Financial Year",
       "Assessment Year",
       "Acknowledgement Number",
@@ -790,7 +902,9 @@ function TaxReturnSummary() {
     ];
 
     const keys = [
+      "dataCategory",
       "name",
+      "pan",
       "financialYear",
       "assessmentYear",
       "acknowledgementNumber",
@@ -822,7 +936,7 @@ function TaxReturnSummary() {
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "tax-return-records.csv";
+    link.download = `tax-return-records-${category.toLowerCase().replace(/\s+/g, "-")}.csv`;
     link.style.display = "none";
 
     document.body.appendChild(link);
@@ -845,6 +959,7 @@ function TaxReturnSummary() {
     const rows = filteredRecords.map(record => `
       <tr>
         <td>${escapeHtml(record.name || "—")}</td>
+        <td>${escapeHtml(record.pan || "—")}</td>
         <td>${escapeHtml(record.financialYear || "—")}</td>
         <td>${escapeHtml(record.assessmentYear || "—")}</td>
         <td>${escapeHtml(record.acknowledgementNumber || "—")}</td>
@@ -857,16 +972,20 @@ function TaxReturnSummary() {
       </tr>
     `).join("");
 
+    const stats = taxpayerStats(filteredRecords);
+
     const content = `
-      <h2>Taxpayer Records</h2>
+      <h2>Taxpayer Records · ${escapeHtml(category)}</h2>
       <p>
-        Total records: <strong>${filteredRecords.length}</strong>
+        Total records: <strong>${stats.returnRecords}</strong> ·
+        Unique taxpayers: <strong>${stats.uniqueTaxpayers}</strong>
       </p>
 
       <table class="pdf-table">
         <thead>
           <tr>
             <th>Taxpayer</th>
+            <th>PAN</th>
             <th>FY</th>
             <th>AY</th>
             <th>Acknowledgement No.</th>
@@ -887,7 +1006,7 @@ function TaxReturnSummary() {
     `;
 
     try {
-      openPrintWindow("Taxpayer Records Report", content, true);
+      openPrintWindow(`Taxpayer Records Report - ${category}`, content, true);
     } catch (error) {
       showMessage(
         error.message || "Unable to open the PDF print window.",
@@ -923,11 +1042,21 @@ function TaxReturnSummary() {
     ...records.map(record => num(record.grossIncome))
   );
 
+  // Existing names in the selected category, used as suggestions to keep spelling consistent.
+  const nameSuggestions = useMemo(
+    () =>
+      [...new Set(records.map(record => record.name).filter(Boolean))].sort(
+        (a, b) => a.localeCompare(b)
+      ),
+    [records]
+  );
+
   const renderInput = (
     label,
     name,
     type = "number",
-    placeholder = "Enter amount"
+    placeholder = "Enter amount",
+    listId
   ) => (
     <div className="tax-form-group" key={name}>
       <label htmlFor={name}>{label}</label>
@@ -939,6 +1068,8 @@ function TaxReturnSummary() {
         onChange={handleChange}
         placeholder={placeholder}
         disabled={fieldsDisabled}
+        list={listId}
+        maxLength={name === "pan" ? 10 : undefined}
         min={type === "number" ? "0" : undefined}
         step={type === "number" ? "0.01" : undefined}
       />
@@ -952,12 +1083,20 @@ function TaxReturnSummary() {
     </div>
   );
 
-    const renderDashboard = () => {
+  const renderDashboard = () => {
     const dashboardRecords = records.filter(
       record =>
         fyFilter === "all" ||
         record.financialYear === fyFilter
     );
+
+    const stats = taxpayerStats(dashboardRecords);
+    const members =
+      category === "Doshi Family"
+        ? memberSummary(dashboardRecords)
+        : [];
+    const takerLabel =
+      category === "Doshi Family" ? "Unique members" : "Unique companies";
 
     const sum = field =>
       dashboardRecords.reduce(
@@ -1176,7 +1315,7 @@ function TaxReturnSummary() {
 
             <div className="trs-hero-meta">
               <span className="trs-hero-pulse" />
-              Live records overview
+              {category}
               <span className="trs-hero-separator">•</span>
               {dashboardRecords.length.toLocaleString("en-IN")}
               {" "}records in view
@@ -1213,6 +1352,7 @@ function TaxReturnSummary() {
             </span>
 
             <strong>
+              {category} ·{" "}
               {fyFilter === "all"
                 ? "All financial years"
                 : `FY ${fyFilter}`}
@@ -1258,10 +1398,17 @@ function TaxReturnSummary() {
 
         <div className="trs-stats-grid trs-stats-grid-premium">
           <StatCard
-            label="Total returns"
-            value={dashboardRecords.length.toLocaleString("en-IN")}
+            label="Return records"
+            value={stats.returnRecords.toLocaleString("en-IN")}
             note={`${filedCount} filed or processed`}
             icon="▤"
+          />
+
+          <StatCard
+            label={takerLabel}
+            value={stats.uniqueTaxpayers.toLocaleString("en-IN")}
+            note={`${stats.withPan} with PAN · ${stats.withoutPan} without PAN`}
+            icon="◉"
           />
 
           <StatCard
@@ -1335,6 +1482,100 @@ function TaxReturnSummary() {
             </button>
           )}
         </div>
+
+        {category === "Doshi Family" && (
+          <section className="trs-panel trs-panel-elevated">
+            <div className="trs-panel-heading">
+              <div>
+                <span className="trs-panel-kicker">
+                  FAMILY SUMMARY
+                </span>
+                <h3>Member-wise summary</h3>
+                <p>
+                  Each member or HUF is counted once, with all of
+                  their return records combined.
+                </p>
+              </div>
+            </div>
+
+            <div className="trs-table-wrap">
+              <table className="trs-table">
+                <thead>
+                  <tr>
+                    <th>Member</th>
+                    <th>PAN</th>
+                    <th>Returns</th>
+                    <th>Gross Income</th>
+                    <th>Tax Payable</th>
+                    <th>TDS Claimed</th>
+                    <th>Refund Due</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {members.map(member => (
+                    <tr key={member.key}>
+                      <td>
+                        <b>{member.name || "—"}</b>
+                      </td>
+                      <td>{member.pan || "PAN missing"}</td>
+                      <td>{member.returns}</td>
+                      <td>{money(member.grossIncome)}</td>
+                      <td>{money(member.taxPayable)}</td>
+                      <td>{money(member.tdsClaim)}</td>
+                      <td className="trs-amount-good">
+                        {money(member.refundDue)}
+                      </td>
+                    </tr>
+                  ))}
+
+                  {members.length > 0 && (
+                    <tr>
+                      <td>
+                        <b>Consolidated family total</b>
+                      </td>
+                      <td>—</td>
+                      <td>
+                        <b>{stats.returnRecords}</b>
+                      </td>
+                      <td>
+                        <b>{money(totalGross)}</b>
+                      </td>
+                      <td>
+                        <b>{money(totalTax)}</b>
+                      </td>
+                      <td>
+                        <b>{money(totalTds)}</b>
+                      </td>
+                      <td className="trs-amount-good">
+                        <b>
+                          {money(
+                            members.reduce(
+                              (total, member) =>
+                                total + member.refundDue,
+                              0
+                            )
+                          )}
+                        </b>
+                      </td>
+                    </tr>
+                  )}
+
+                  {!members.length && (
+                    <tr>
+                      <td
+                        colSpan="7"
+                        className="trs-empty-cell"
+                      >
+                        No family records for this period.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         <div className="trs-dashboard-grid trs-dashboard-grid-premium">
           <section className="trs-panel trs-panel-elevated trs-income-panel">
@@ -1656,7 +1897,7 @@ function TaxReturnSummary() {
           <input
             value={search}
             onChange={event => setSearch(event.target.value)}
-            placeholder="Search name, acknowledgement number or year..."
+            placeholder="Search name, PAN, acknowledgement number or year..."
           />
 
           <select
@@ -1729,7 +1970,7 @@ function TaxReturnSummary() {
     </div>
   );
 
-    const renderEntry = () => (
+  const renderEntry = () => (
     <div className="trs-content">
       <div className="trs-page-heading">
         <div>
@@ -1787,6 +2028,11 @@ function TaxReturnSummary() {
           </h3>
 
           <div className="tax-form-grid">
+            {renderReadOnly(
+              "Category",
+              form.dataCategory || category
+            )}
+
             <div className="tax-form-group">
               <label htmlFor="financialYear">
                 Financial Year
@@ -1837,7 +2083,21 @@ function TaxReturnSummary() {
               "Taxpayer Name",
               "name",
               "text",
-              "Enter taxpayer name"
+              "Enter taxpayer name",
+              "trs-name-suggestions"
+            )}
+
+            <datalist id="trs-name-suggestions">
+              {nameSuggestions.map(name => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
+
+            {renderInput(
+              "PAN (optional)",
+              "pan",
+              "text",
+              "ABCDE1234F"
             )}
 
             {renderInput(
@@ -2049,7 +2309,8 @@ function TaxReturnSummary() {
 
             <p>
               Are you sure you want to save the Tax Return
-              Summary for FY {form.financialYear}?
+              Summary for FY {form.financialYear} under{" "}
+              {form.dataCategory || category}?
             </p>
 
             <div className="tax-modal-actions">
@@ -2186,7 +2447,7 @@ function TaxReturnSummary() {
                 {rows.flatMap(record =>
                   record.checks.map((check, index) => (
                     <tr
-                      key={`${record.id || record.name}-${check.label}`}
+                      key={`${record.id || record.name}-${record.financialYear}-${check.label}`}
                     >
                       <td>
                         <b>
@@ -2588,7 +2849,7 @@ function TaxReturnSummary() {
     );
   };
 
-    const renderSettings = () => (
+  const renderSettings = () => (
     <div className="trs-content">
       <div className="trs-page-heading">
         <div>
@@ -2623,8 +2884,19 @@ function TaxReturnSummary() {
           <span className="trs-setting-icon">▤</span>
           <h3>Data overview</h3>
           <p>
-            <b>{records.length}</b> records currently loaded.
-            Records are stored through your configured backend.
+            <b>{allRecords.length}</b> records currently loaded:{" "}
+            {DATA_CATEGORIES.map(
+              (name, index) =>
+                `${index ? " · " : ""}${name} ${
+                  allRecords.filter(
+                    record => record.dataCategory === name
+                  ).length
+                }`
+            )}
+            {unclassifiedCount
+              ? ` · Unclassified ${unclassifiedCount}`
+              : ""}
+            . Records are stored through your configured backend.
           </p>
 
           <span className="trs-setting-foot">
@@ -2797,7 +3069,7 @@ function TaxReturnSummary() {
 
         <div className="trs-report-result-head">
           <div>
-            <b>Report summary</b>
+            <b>Report summary · {category}</b>
             <span>
               {reportRecords.length} matching{" "}
               {reportRecords.length === 1
@@ -2987,6 +3259,32 @@ function TaxReturnSummary() {
           </div>
         </header>
 
+        <div
+          className="trs-category-switch"
+          role="tablist"
+          aria-label="Data category"
+        >
+          {DATA_CATEGORIES.map(name => (
+            <button
+              key={name}
+              type="button"
+              role="tab"
+              aria-selected={name === category}
+              className={name === category ? "active" : ""}
+              onClick={() => switchCategory(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+
+        {unclassifiedCount > 0 && (
+          <div className="tax-message error">
+            {unclassifiedCount} saved record(s) have no category and are not
+            shown in either section. Set their data_category in the database.
+          </div>
+        )}
+
         <nav
           className="trs-section-nav"
           aria-label="Tax Return Summary sections"
@@ -3021,7 +3319,7 @@ function TaxReturnSummary() {
 
           <span className="trs-workspace-status">
             <i />
-            Connected module
+            {category}
           </span>
         </div>
 
@@ -3077,6 +3375,9 @@ function RecordsTable({ records, onEdit }) {
             >
               <td>
                 <b>{record.name || "—"}</b>
+                <small className="trs-report-ack">
+                  {record.pan || "PAN missing"}
+                </small>
               </td>
 
               <td>{record.financialYear || "—"}</td>

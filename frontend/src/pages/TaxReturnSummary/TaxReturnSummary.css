@@ -2946,3 +2946,30 @@
 .trs-individual-export button {
   margin-left: auto;
 }
+
+/* Add to the end of TaxReturnSummary.css (only new rules; nothing existing changes) */
+.trs-category-switch {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.trs-category-switch button {
+  padding: 9px 20px;
+  border: 1px solid #c4a15a;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #172f4d;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.trs-category-switch button.active {
+  background: #172f4d;
+  color: #ffffff;
+}
+
+.trs-category-switch button:focus-visible {
+  outline: 2px solid #c4a15a;
+  outline-offset: 2px;
+}
