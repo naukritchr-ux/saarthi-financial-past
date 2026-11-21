@@ -1372,8 +1372,8 @@ function TaxReturnSummary() {
     const yearComparisonChartWidth = 1000;
     const yearComparisonPlotLeft = 58;
     const yearComparisonPlotRight = yearComparisonChartWidth - 16;
-    const yearComparisonPlotTop = 18;
-    const yearComparisonPlotBottom = 242;
+    const yearComparisonPlotTop = 28;
+    const yearComparisonPlotBottom = 300;
     const yearComparisonX = index =>
       yearComparisonPlotLeft + (index * (yearComparisonPlotRight - yearComparisonPlotLeft) / Math.max(yearSummary.length - 1, 1));
     const yearComparisonY = value =>
@@ -1746,15 +1746,16 @@ function TaxReturnSummary() {
                     <svg
                       role="img"
                       aria-label="Year-on-year line chart showing Income, Tax Paid, and TDS in lakhs across financial years"
-                      viewBox={`0 0 ${yearComparisonChartWidth} 300`}
-                      style={{ display: "block", width: "100%", height: "300px" }}
+                      viewBox={`0 0 ${yearComparisonChartWidth} 380`}
+                      preserveAspectRatio="xMidYMid meet"
+                      style={{ display: "block", width: "100%", height: "380px", maxWidth: "100%" }}
                     >
                       {yearComparisonTicks.map((tick, index) => {
                         const y = yearComparisonPlotTop + (index / yearComparisonTickCount) * (yearComparisonPlotBottom - yearComparisonPlotTop);
                         return (
                           <g key={`tick-${index}`}>
                             <line x1={yearComparisonPlotLeft} x2={yearComparisonPlotRight} y1={y} y2={y} stroke="#E5E7EB" strokeDasharray="4 4" />
-                            <text x={yearComparisonPlotLeft - 8} y={y + 4} textAnchor="end" fill="#667085" fontSize="11">
+                            <text x={yearComparisonPlotLeft - 8} y={y + 4} textAnchor="end" fill="#596579" fontSize="15">
                               ₹{(tick / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })}L
                             </text>
                           </g>
@@ -1767,20 +1768,20 @@ function TaxReturnSummary() {
                           <polyline
                             fill="none"
                             stroke={series.color}
-                            strokeWidth="3"
+                            strokeWidth="3.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             points={yearSummary.map((item, index) => `${yearComparisonX(index)},${yearComparisonY(item[series.key])}`).join(" ")}
                           />
                           {yearSummary.map((item, index) => (
-                            <circle key={`${series.key}-${item.year}`} cx={yearComparisonX(index)} cy={yearComparisonY(item[series.key])} r="3.5" fill={series.color} stroke="#FFFFFF" strokeWidth="1.2">
+                            <circle key={`${series.key}-${item.year}`} cx={yearComparisonX(index)} cy={yearComparisonY(item[series.key])} r="4.5" fill={series.color} stroke="#FFFFFF" strokeWidth="1.2">
                               <title>{`${item.year} ${series.label}: ${money(item[series.key])}`}</title>
                             </circle>
                           ))}
                         </g>
                       ))}
                       {yearSummary.map((item, index) => (
-                        <text key={item.year} x={yearComparisonX(index)} y={yearComparisonPlotBottom + 28} textAnchor="end" transform={`rotate(-45 ${yearComparisonX(index)} ${yearComparisonPlotBottom + 28})`} fill="#667085" fontSize="10">
+                        <text key={item.year} x={yearComparisonX(index)} y={yearComparisonPlotBottom + 34} textAnchor="end" transform={`rotate(-45 ${yearComparisonX(index)} ${yearComparisonPlotBottom + 34})`} fill="#596579" fontSize="15">
                           {item.year}
                         </text>
                       ))}
