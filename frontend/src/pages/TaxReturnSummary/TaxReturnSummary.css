@@ -1300,7 +1300,7 @@
 }
 
 .trs-dashboard-grid-premium {
-  grid-template-columns: minmax(0, 1.35fr) minmax(300px, .9fr);
+  grid-template-columns: minmax(0, 1.65fr) minmax(260px, .75fr);
   gap: 15px;
   margin-bottom: 15px;
 }
@@ -1423,16 +1423,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 23px;
-  min-height: 155px;
+  gap: 14px;
+  min-height: 140px;
 }
 
 .trs-donut {
   display: grid;
-  flex: 0 0 142px;
+  flex: 0 0 125px;
   place-items: center;
-  width: 142px;
-  height: 142px;
+  width: 125px;
+  height: 125px;
   border-radius: 50%;
 }
 
@@ -1441,8 +1441,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 91px;
-  height: 91px;
+  width: 80px;
+  height: 80px;
   border: 1px solid #eee8da;
   border-radius: 50%;
   background: #fffdf7;
@@ -1772,18 +1772,19 @@
   }
 
   .trs-donut-layout {
-    gap: 14px;
+    gap: 12px;
+    min-height: 125px;
   }
 
   .trs-donut {
-    flex-basis: 118px;
-    width: 118px;
-    height: 118px;
+    flex-basis: 110px;
+    width: 110px;
+    height: 110px;
   }
 
   .trs-donut-hole {
-    width: 77px;
-    height: 77px;
+    width: 70px;
+    height: 70px;
   }
 
   .trs-donut-hole strong {
@@ -3155,4 +3156,43 @@
   display: block;
   height: 100%;
   background: #d8a52e;
+}
+/* Further reduce Filing Status donut size */
+.trs-donut-layout {
+  gap: 10px;
+  min-height: 120px;
+}
+
+.trs-donut {
+  flex: 0 0 110px;
+  width: 110px;
+  height: 110px;
+}
+
+.trs-donut-hole {
+  width: 70px;
+  height: 70px;
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .trs-donut-layout {
+    gap: 8px;
+    min-height: 110px;
+  }
+
+  .trs-donut {
+    flex-basis: 95px;
+    width: 95px;
+    height: 95px;
+  }
+
+  .trs-donut-hole {
+    width: 62px;
+    height: 62px;
+  }
+
+  .trs-donut-hole strong {
+    font-size: 20px;
+  }
 }
