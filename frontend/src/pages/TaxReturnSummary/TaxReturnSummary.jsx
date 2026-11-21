@@ -1369,7 +1369,7 @@ function TaxReturnSummary() {
       { length: yearComparisonTickCount + 1 },
       (_, index) => maxYearComparison - (index * maxYearComparison / yearComparisonTickCount)
     );
-    const yearComparisonChartWidth = Math.max(yearSummary.length * 88, 720);
+    const yearComparisonChartWidth = 1000;
     const yearComparisonPlotLeft = 58;
     const yearComparisonPlotRight = yearComparisonChartWidth - 16;
     const yearComparisonPlotTop = 18;
@@ -1742,12 +1742,12 @@ function TaxReturnSummary() {
             {category === "Talent Corner" ? (
               yearSummary.length ? (
                 <div className="trs-year-comparison-wrap" style={{ width: "100%", minWidth: 0 }}>
-                  <div style={{ width: "100%", overflowX: "auto", overflowY: "hidden" }}>
+                  <div style={{ width: "100%", overflow: "hidden" }}>
                     <svg
                       role="img"
                       aria-label="Year-on-year line chart showing Income, Tax Paid, and TDS in lakhs across financial years"
                       viewBox={`0 0 ${yearComparisonChartWidth} 300`}
-                      style={{ display: "block", width: "100%", minWidth: `${yearComparisonChartWidth}px`, height: "300px" }}
+                      style={{ display: "block", width: "100%", height: "300px" }}
                     >
                       {yearComparisonTicks.map((tick, index) => {
                         const y = yearComparisonPlotTop + (index / yearComparisonTickCount) * (yearComparisonPlotBottom - yearComparisonPlotTop);
@@ -1780,7 +1780,7 @@ function TaxReturnSummary() {
                         </g>
                       ))}
                       {yearSummary.map((item, index) => (
-                        <text key={item.year} x={yearComparisonX(index)} y={yearComparisonPlotBottom + 22} textAnchor="middle" fill="#667085" fontSize="11">
+                        <text key={item.year} x={yearComparisonX(index)} y={yearComparisonPlotBottom + 28} textAnchor="end" transform={`rotate(-45 ${yearComparisonX(index)} ${yearComparisonPlotBottom + 28})`} fill="#667085" fontSize="10">
                           {item.year}
                         </text>
                       ))}
