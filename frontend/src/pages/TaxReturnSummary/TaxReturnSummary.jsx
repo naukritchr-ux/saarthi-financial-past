@@ -103,37 +103,72 @@ function taxpayerStats(list) {
 }
 
 // Member-wise summary used by the Doshi Family dashboard.
-function memberSummary(list) {
-  const map = new Map();
+// Build one income figure per unique family member.
+// When "All Financial Years" is selected, count one final return per member
+// per financial year. A revised return takes precedence over its original
+// return so the same year's income is not double-counted.
+function memberIncomeSummary(list) {
+  const members = new Map();
 
   list.forEach(record => {
     const key = taxpayerKey(record);
-
-    const row = map.get(key) || {
+    const financialYear = record.financialYear || "Unknown";
+    const member = members.get(key) || {
       key,
       name: record.name,
-      pan: record.pan,
-      returns: 0,
-      grossIncome: 0,
-      taxPayable: 0,
-      tdsClaim: 0,
-      refundDue: 0,
+      pan: record.pan || "",
+      returnsByYear: new Map(),
     };
 
-    row.returns += 1;
-    row.grossIncome += num(record.grossIncome);
-    row.taxPayable += num(record.taxPayable);
-    row.tdsClaim += num(record.tdsClaim);
-    row.refundDue += num(record.refundDue);
+    const current = member.returnsByYear.get(financialYear);
+    const isRevised = /revised/i.test(String(record.filingStatus || ""));
+    const currentIsRevised = /revised/i.test(
+      String(current?.filingStatus || "")
+    );
 
-    if (!row.pan && record.pan) row.pan = record.pan;
+    const recordDate = new Date(
+      record.itrFilingDate || record.updatedAt || record.createdAt || 0
+    ).getTime() || 0;
+    const currentDate = current
+      ? new Date(
+          current.itrFilingDate ||
+          current.updatedAt ||
+          current.createdAt ||
+          0
+        ).getTime() || 0
+      : -1;
 
-    map.set(key, row);
+    const shouldReplace =
+      !current ||
+      (isRevised && !currentIsRevised) ||
+      (isRevised === currentIsRevised && recordDate >= currentDate);
+
+    if (shouldReplace) {
+      member.returnsByYear.set(financialYear, record);
+    }
+
+    if (!member.pan && record.pan) member.pan = record.pan;
+    if (!member.name && record.name) member.name = record.name;
+
+    members.set(key, member);
   });
 
-  return [...map.values()].sort((a, b) =>
-    String(a.name || "").localeCompare(String(b.name || ""))
-  );
+  return [...members.values()]
+    .map(member => {
+      const finalReturns = [...member.returnsByYear.values()];
+
+      return {
+        key: member.key,
+        name: member.name,
+        pan: member.pan,
+        grossIncome: finalReturns.reduce(
+          (total, record) => total + num(record.grossIncome),
+          0
+        ),
+        financialYears: finalReturns.length,
+      };
+    })
+    .sort((a, b) => b.grossIncome - a.grossIncome);
 }
 
 async function readResponse(response) {
@@ -1218,18 +1253,21 @@ function TaxReturnSummary() {
           .join(", ")})`
       : "conic-gradient(#e8e3d8 0% 100%)";
 
-    const incomeLeaders = [...dashboardRecords]
-      .sort(
-        (a, b) =>
-          num(b.grossIncome) - num(a.grossIncome)
-      )
-      .slice(0, 5);
+    // Doshi Family: rank unique members, not individual ITR rows.
+    // Talent Corner keeps its existing record-wise ranking.
+    const incomeLeaders =
+      category === "Doshi Family"
+        ? memberIncomeSummary(dashboardRecords).slice(0, 5)
+        : [...dashboardRecords]
+            .sort(
+              (a, b) =>
+                num(b.grossIncome) - num(a.grossIncome)
+            )
+            .slice(0, 5);
 
     const maxIncomeValue = Math.max(
       1,
-      ...incomeLeaders.map(record =>
-        num(record.grossIncome)
-      )
+      ...incomeLeaders.map(record => num(record.grossIncome))
     );
 
     const yearSummary = FINANCIAL_YEARS.map(year => {
@@ -1594,9 +1632,15 @@ function TaxReturnSummary() {
                 <span className="trs-panel-kicker">
                   INCOME DISTRIBUTION
                 </span>
-                <h3>Top taxpayer incomes</h3>
+                <h3>
+                  {category === "Doshi Family"
+                    ? "Top family members by gross income"
+                    : "Top taxpayer incomes"}
+                </h3>
                 <p>
-                  Highest gross income in the selected period
+                  {category === "Doshi Family"
+                    ? "Each member appears once, with income consolidated across the selected period"
+                    : "Highest gross income in the selected period"}
                 </p>
               </div>
 
@@ -1609,6 +1653,7 @@ function TaxReturnSummary() {
                   <div
                     className="trs-leader-row"
                     key={
+                      record.key ||
                       record.id ||
                       `${record.name}-${index}`
                     }
@@ -1656,7 +1701,9 @@ function TaxReturnSummary() {
               <span className="trs-chart-key trs-key-gold" />
               Highest income
               <span className="trs-chart-footnote-text">
-                Ranked by gross income
+                {category === "Doshi Family"
+                  ? "Ranked by unique member income"
+                  : "Ranked by gross income"}
               </span>
             </div>
           </section>
