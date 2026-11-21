@@ -3159,10 +3159,10 @@
 }
 
 /* Updated Year-on-Year Financial Trends chart: clearer vertical plotting area */
-.trs-year-comparison-wrap { width: 100%; min-width: 0; }
-.trs-year-comparison-wrap svg { height: 380px !important; max-width: 100%; }
+.trs-year-comparison-wrap { width: 100%; min-width: 0; margin: 2px 0 0; }
+.trs-year-comparison-wrap svg { height: 310px !important; max-width: 100%; }
 @media (max-width: 520px) {
-  .trs-year-comparison-wrap svg { height: 340px !important; }
+  .trs-year-comparison-wrap svg { height: 290px !important; }
 }
 
 /* Compact Filing Status donut (latest requested sizing) */
@@ -3202,30 +3202,72 @@
   }
 }
 
-/* Remove excess empty height from top dashboard cards */
+
+/* Final compact layout: remove excess empty space from the two top cards */
 .trs-dashboard-grid-premium {
   align-items: start !important;
+  grid-template-columns: minmax(0, 1.65fr) minmax(250px, .75fr);
+  gap: 15px;
 }
-
-.trs-income-panel,
-.trs-filing-panel {
-  height: fit-content !important;
+.trs-dashboard-grid-premium > .trs-income-panel,
+.trs-dashboard-grid-premium > .trs-filing-panel {
+  height: auto !important;
   min-height: 0 !important;
   align-self: start !important;
 }
-
-/* Compact income chart height */
-.trs-income-panel svg {
-  height: 320px !important;
+.trs-income-panel {
+  padding-bottom: 14px !important;
 }
-
-/* Compact filing status panel */
+.trs-income-panel .trs-panel-heading {
+  margin-bottom: 7px !important;
+}
+.trs-year-comparison-wrap {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+}
+.trs-year-comparison-wrap > div {
+  overflow: hidden !important;
+}
+.trs-year-comparison-wrap svg {
+  height: 310px !important;
+  margin: 0 !important;
+}
+.trs-income-panel .trs-chart-footnote {
+  margin-top: 2px !important;
+}
 .trs-filing-panel {
-  padding-bottom: 18px !important;
+  padding-bottom: 16px !important;
 }
-
-/* Reduce space around filing status donut */
 .trs-donut-layout {
   min-height: 0 !important;
+  gap: 10px !important;
   margin-bottom: 0 !important;
+}
+.trs-donut {
+  flex: 0 0 90px !important;
+  width: 90px !important;
+  height: 90px !important;
+}
+.trs-donut-hole {
+  width: 58px !important;
+  height: 58px !important;
+}
+@media (max-width: 520px) {
+  .trs-dashboard-grid-premium {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .trs-year-comparison-wrap svg {
+    height: 290px !important;
+  }
+  .trs-donut-layout { gap: 8px !important; }
+  .trs-donut {
+    flex-basis: 80px !important;
+    width: 80px !important;
+    height: 80px !important;
+  }
+  .trs-donut-hole {
+    width: 52px !important;
+    height: 52px !important;
+  }
 }

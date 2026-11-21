@@ -1372,8 +1372,8 @@ function TaxReturnSummary() {
     const yearComparisonChartWidth = 1000;
     const yearComparisonPlotLeft = 58;
     const yearComparisonPlotRight = yearComparisonChartWidth - 16;
-    const yearComparisonPlotTop = 28;
-    const yearComparisonPlotBottom = 300;
+    const yearComparisonPlotTop = 20;
+    const yearComparisonPlotBottom = 255;
     const yearComparisonX = index =>
       yearComparisonPlotLeft + (index * (yearComparisonPlotRight - yearComparisonPlotLeft) / Math.max(yearSummary.length - 1, 1));
     const yearComparisonY = value =>
@@ -1746,9 +1746,9 @@ function TaxReturnSummary() {
                     <svg
                       role="img"
                       aria-label="Year-on-year line chart showing Income, Tax Paid, and TDS in lakhs across financial years"
-                      viewBox={`0 0 ${yearComparisonChartWidth} 380`}
+                      viewBox={`0 0 ${yearComparisonChartWidth} 310`}
                       preserveAspectRatio="xMidYMid meet"
-                      style={{ display: "block", width: "100%", height: "380px", maxWidth: "100%" }}
+                      style={{ display: "block", width: "100%", height: "310px", maxWidth: "100%" }}
                     >
                       {yearComparisonTicks.map((tick, index) => {
                         const y = yearComparisonPlotTop + (index / yearComparisonTickCount) * (yearComparisonPlotBottom - yearComparisonPlotTop);
@@ -1781,7 +1781,7 @@ function TaxReturnSummary() {
                         </g>
                       ))}
                       {yearSummary.map((item, index) => (
-                        <text key={item.year} x={yearComparisonX(index)} y={yearComparisonPlotBottom + 34} textAnchor="end" transform={`rotate(-45 ${yearComparisonX(index)} ${yearComparisonPlotBottom + 34})`} fill="#596579" fontSize="15">
+                        <text key={item.year} x={yearComparisonX(index)} y={yearComparisonPlotBottom + 30} textAnchor="end" transform={`rotate(-45 ${yearComparisonX(index)} ${yearComparisonPlotBottom + 30})`} fill="#596579" fontSize="15">
                           {item.year}
                         </text>
                       ))}
