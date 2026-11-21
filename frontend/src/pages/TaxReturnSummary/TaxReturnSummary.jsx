@@ -1354,10 +1354,10 @@ function TaxReturnSummary() {
         ),
         count: rows.length,
       };
-    })
-      .filter(item => item.count)
-      .slice(-6);
+    });
 
+    // Keep every configured financial year (FY 2007-08 onward) on the chart,
+    // including years with no saved records, so the timeline remains complete.
     const maxYearComparison = Math.max(
       1,
       ...yearSummary.flatMap(item => [item.income, item.tax])
@@ -1721,71 +1721,144 @@ function TaxReturnSummary() {
             {category === "Talent Corner" ? (
               yearSummary.length ? (
                 <div
-                  className="trs-year-comparison-chart"
+                  className="trs-year-comparison-wrap"
                   style={{
                     display: "flex",
                     alignItems: "stretch",
-                    justifyContent: "space-around",
-                    gap: "12px",
-                    height: "245px",
-                    padding: "18px 4px 0",
-                    borderBottom: "1px solid #E9E2D5",
+                    gap: "10px",
+                    width: "100%",
                   }}
                 >
-                  {yearSummary.map(item => (
+                  {/* Y-axis labels for the grouped Income vs Tax chart */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      width: "82px",
+                      minWidth: "82px",
+                      height: "270px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      padding: "8px 0 32px",
+                      boxSizing: "border-box",
+                      color: "#667085",
+                      fontSize: "10px",
+                      textAlign: "right",
+                    }}
+                  >
+                    {[4, 3, 2, 1, 0].map(tick => (
+                      <span key={tick}>
+                        {money((maxYearComparison * tick) / 4)}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Horizontal scrolling keeps all years readable */}
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      overflowX: "auto",
+                      overflowY: "hidden",
+                    }}
+                  >
                     <div
-                      key={item.year}
+                      className="trs-year-comparison-chart"
                       style={{
-                        flex: 1,
-                        minWidth: 0,
+                        position: "relative",
                         display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "flex-end",
+                        alignItems: "stretch",
+                        justifyContent: "space-around",
+                        gap: "12px",
+                        height: "270px",
+                        minWidth: `${Math.max(yearSummary.length * 62, 100)}px`,
+                        padding: "8px 4px 0",
+                        boxSizing: "border-box",
+                        borderLeft: "1px solid #D8DDE5",
+                        borderBottom: "1px solid #D8DDE5",
                       }}
                     >
-                      <div
-                        style={{
-                          flex: 1,
-                          width: "100%",
-                          display: "flex",
-                          alignItems: "flex-end",
-                          justifyContent: "center",
-                          gap: "5px",
-                          minHeight: 0,
-                        }}
-                      >
+                      {/* Y-axis grid lines */}
+                      {[0, 1, 2, 3, 4].map(line => (
                         <div
-                          title={`${item.year} Gross Income: ${money(item.income)}`}
+                          key={line}
                           style={{
-                            width: "34%",
-                            maxWidth: "38px",
-                            minWidth: "9px",
-                            height: `${Math.max(2, (item.income / maxYearComparison) * 100)}%`,
-                            background: "linear-gradient(180deg,#DCC47E,#B89548)",
-                            borderRadius: "6px 6px 0 0",
+                            position: "absolute",
+                            left: 0,
+                            right: 0,
+                            top: `${8 + line * 21}%`,
+                            borderTop: "1px dashed #E5E7EB",
+                            pointerEvents: "none",
                           }}
                         />
+                      ))}
+
+                      {yearSummary.map(item => (
                         <div
-                          title={`${item.year} Tax Payable: ${money(item.tax)}`}
+                          key={item.year}
                           style={{
-                            width: "34%",
-                            maxWidth: "38px",
-                            minWidth: "9px",
-                            height: `${Math.max(2, (item.tax / maxYearComparison) * 100)}%`,
-                            background: "linear-gradient(180deg,#6489A8,#24476B)",
-                            borderRadius: "6px 6px 0 0",
+                            position: "relative",
+                            zIndex: 1,
+                            flex: 1,
+                            minWidth: "48px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "flex-end",
                           }}
-                        />
-                      </div>
-                      <span
-                        className="trs-year-label"
-                        style={{ marginTop: "10px", whiteSpace: "nowrap" }}
-                      >
-                        {item.year}
-                      </span>
+                        >
+                          <div
+                            style={{
+                              height: "225px",
+                              width: "100%",
+                              display: "flex",
+                              alignItems: "flex-end",
+                              justifyContent: "center",
+                              gap: "5px",
+                              minHeight: 0,
+                            }}
+                          >
+                            <div
+                              title={`${item.year} Gross Income: ${money(item.income)}`}
+                              style={{
+                                width: "34%",
+                                maxWidth: "38px",
+                                minWidth: "9px",
+                                height: item.income > 0
+                                  ? `${Math.max(1, (item.income / maxYearComparison) * 100)}%`
+                                  : "0%",
+                                background: "linear-gradient(180deg,#DCC47E,#B89548)",
+                                borderRadius: "6px 6px 0 0",
+                              }}
+                            />
+                            <div
+                              title={`${item.year} Tax Payable: ${money(item.tax)}`}
+                              style={{
+                                width: "34%",
+                                maxWidth: "38px",
+                                minWidth: "9px",
+                                height: item.tax > 0
+                                  ? `${Math.max(1, (item.tax / maxYearComparison) * 100)}%`
+                                  : "0%",
+                                background: "linear-gradient(180deg,#6489A8,#24476B)",
+                                borderRadius: "6px 6px 0 0",
+                              }}
+                            />
+                          </div>
+                          <span
+                            className="trs-year-label"
+                            style={{
+                              marginTop: "10px",
+                              whiteSpace: "nowrap",
+                              fontSize: "10px",
+                            }}
+                          >
+                            {item.year}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               ) : (
                 <div className="trs-empty">
@@ -1928,13 +2001,17 @@ function TaxReturnSummary() {
                 </span>
                 <h3>Income across financial years</h3>
                 <p>
-                  Latest six financial years with saved records
+                  Complete financial-year comparison from FY 2007-08 to the latest configured year
                 </p>
               </div>
             </div>
 
             {yearSummary.length ? (
-              <div className="trs-year-chart">
+              <div style={{ width: "100%", overflowX: "auto", overflowY: "hidden" }}>
+                <div
+                  className="trs-year-chart"
+                  style={{ minWidth: `${Math.max(yearSummary.length * 76, 100)}px` }}
+                >
                 {yearSummary.map(item => (
                   <div
                     className="trs-year-column"
@@ -1948,12 +2025,9 @@ function TaxReturnSummary() {
                       <div
                         className="trs-year-bar"
                         style={{
-                          height: `${
-                            Math.max(
-                              5,
-                              (item.income / maxYearIncome) * 100
-                            )
-                          }%`,
+                          height: item.income > 0
+                            ? `${Math.max(1, (item.income / maxYearIncome) * 100)}%`
+                            : "0%",
                         }}
                       />
                     </div>
@@ -1963,6 +2037,7 @@ function TaxReturnSummary() {
                     </span>
                   </div>
                 ))}
+                </div>
               </div>
             ) : (
               <div className="trs-empty">
@@ -2761,24 +2836,26 @@ function TaxReturnSummary() {
           0
         ),
       };
-    }).filter(year => year.count);
+    });
 
-    const totalReturns = years.reduce(
+    const recordedYears = years.filter(year => year.count > 0);
+
+    const totalReturns = recordedYears.reduce(
       (total, year) => total + year.count,
       0
     );
 
-    const totalIncome = years.reduce(
+    const totalIncome = recordedYears.reduce(
       (total, year) => total + year.income,
       0
     );
 
-    const totalTax = years.reduce(
+    const totalTax = recordedYears.reduce(
       (total, year) => total + year.tax,
       0
     );
 
-    const totalRefund = years.reduce(
+    const totalRefund = recordedYears.reduce(
       (total, year) => total + year.refund,
       0
     );
@@ -2788,8 +2865,8 @@ function TaxReturnSummary() {
       ...years.map(year => year.income)
     );
 
-    const latest = years[years.length - 1];
-    const previous = years[years.length - 2];
+    const latest = recordedYears[recordedYears.length - 1];
+    const previous = recordedYears[recordedYears.length - 2];
 
     const incomeChange =
       latest && previous
@@ -2877,7 +2954,11 @@ function TaxReturnSummary() {
             </div>
 
             {years.length ? (
-              <div className="trs-analysis-bars">
+              <div style={{ width: "100%", overflowX: "auto", overflowY: "hidden" }}>
+                <div
+                  className="trs-analysis-bars"
+                  style={{ minWidth: `${Math.max(years.length * 76, 100)}px` }}
+                >
                 {years.map(year => (
                   <div
                     className="trs-analysis-bar-item"
@@ -2890,12 +2971,9 @@ function TaxReturnSummary() {
                     <div className="trs-analysis-bar-track">
                       <span
                         style={{
-                          height: `${
-                            Math.max(
-                              4,
-                              (year.income / maxIncome) * 100
-                            )
-                          }%`,
+                          height: year.income > 0
+                            ? `${Math.max(1, (year.income / maxIncome) * 100)}%`
+                            : "0%",
                         }}
                       />
                     </div>
@@ -2908,6 +2986,7 @@ function TaxReturnSummary() {
                     </small>
                   </div>
                 ))}
+                </div>
               </div>
             ) : (
               <div className="trs-empty-cell">
