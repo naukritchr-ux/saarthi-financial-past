@@ -3584,3 +3584,91 @@
     font-size: 9px;
   }
 }
+
+
+/* =========================================================
+   FINAL SPACING FIX
+   Align the left financial-trends panel with the full
+   Filing Status + TDS stack on the right.
+   ========================================================= */
+
+.trs-dashboard-top-grid {
+  align-items: stretch !important;
+}
+
+/* Let the trends card fill the complete height of the right stack. */
+.trs-dashboard-top-grid > .trs-income-panel {
+  align-self: stretch !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Give the chart more vertical room instead of leaving blank space below it. */
+.trs-dashboard-top-grid > .trs-income-panel .trs-year-comparison-wrap {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-height: 0 !important;
+}
+
+.trs-dashboard-top-grid > .trs-income-panel .trs-year-comparison-wrap > div {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+.trs-dashboard-top-grid > .trs-income-panel .trs-year-comparison-wrap svg {
+  display: block !important;
+  width: 100% !important;
+  height: 455px !important;
+  max-height: none !important;
+}
+
+/* Keep the right-hand cards naturally stacked with a consistent gap. */
+.trs-dashboard-top-grid > .trs-dashboard-side-stack {
+  align-self: stretch !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  gap: 18px !important;
+}
+
+.trs-dashboard-top-grid > .trs-dashboard-side-stack > .trs-panel {
+  flex: 0 0 auto;
+}
+
+/* Tablet: stack the panels; don't force a tall chart card. */
+@media (max-width: 1050px) {
+  .trs-dashboard-top-grid {
+    align-items: start !important;
+  }
+
+  .trs-dashboard-top-grid > .trs-income-panel {
+    height: auto !important;
+    display: block !important;
+  }
+
+  .trs-dashboard-top-grid > .trs-income-panel .trs-year-comparison-wrap {
+    display: block !important;
+  }
+
+  .trs-dashboard-top-grid > .trs-income-panel .trs-year-comparison-wrap > div {
+    min-height: 0 !important;
+  }
+
+  .trs-dashboard-top-grid > .trs-income-panel .trs-year-comparison-wrap svg {
+    height: 340px !important;
+  }
+
+  .trs-dashboard-top-grid > .trs-dashboard-side-stack {
+    height: auto !important;
+  }
+}
+
+/* Mobile: retain a compact chart and single-column card stack. */
+@media (max-width: 680px) {
+  .trs-dashboard-top-grid > .trs-income-panel .trs-year-comparison-wrap svg {
+    height: 290px !important;
+  }
+}
