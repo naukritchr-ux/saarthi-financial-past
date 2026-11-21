@@ -3201,3 +3201,31 @@
     font-size: 18px;
   }
 }
+
+/* Remove excess empty height from top dashboard cards */
+.trs-dashboard-grid-premium {
+  align-items: start !important;
+}
+
+.trs-income-panel,
+.trs-filing-panel {
+  height: fit-content !important;
+  min-height: 0 !important;
+  align-self: start !important;
+}
+
+/* Compact income chart height */
+.trs-income-panel svg {
+  height: 320px !important;
+}
+
+/* Compact filing status panel */
+.trs-filing-panel {
+  padding-bottom: 18px !important;
+}
+
+/* Reduce space around filing status donut */
+.trs-donut-layout {
+  min-height: 0 !important;
+  margin-bottom: 0 !important;
+}
