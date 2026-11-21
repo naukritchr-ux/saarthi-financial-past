@@ -1717,7 +1717,7 @@ function TaxReturnSummary() {
           </section>
         )}
 
-        <div className="trs-dashboard-grid trs-dashboard-grid-premium">
+        <div className="trs-dashboard-grid trs-dashboard-grid-premium" style={{ gridTemplateColumns: "minmax(0, 1.65fr) minmax(260px, 0.9fr)" }}>
           <section className="trs-panel trs-panel-elevated trs-income-panel">
             <div className="trs-panel-heading">
               <div>
@@ -1863,10 +1863,10 @@ function TaxReturnSummary() {
               <span className="trs-panel-icon">◎</span>
             </div>
 
-            <div className="trs-donut-layout">
+            <div className="trs-donut-layout" style={{ display: "flex", alignItems: "center", gap: "20px" }}>
               <div
                 className="trs-donut"
-                style={{ background: donutGradient }}
+                style={{ background: donutGradient, width: "150px", height: "150px", flex: "0 0 150px" }}
               >
                 <div className="trs-donut-hole">
                   <strong>{dashboardRecords.length}</strong>
@@ -1874,7 +1874,7 @@ function TaxReturnSummary() {
                 </div>
               </div>
 
-              <div className="trs-donut-legend">
+              <div className="trs-donut-legend" style={{ flex: "1", minWidth: 0 }}>
                 {filingBreakdown.length
                   ? filingBreakdown.map(item => (
                       <div
