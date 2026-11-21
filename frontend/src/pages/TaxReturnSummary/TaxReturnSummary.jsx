@@ -1363,6 +1363,13 @@ function TaxReturnSummary() {
       ...yearSummary.flatMap(item => [item.income, item.tax])
     );
 
+    // Highest gross income in the selected financial-year chart.
+    // The minimum of 1 prevents division by zero when there is no income.
+    const maxYearIncome = Math.max(
+      1,
+      ...yearSummary.map(item => num(item.income))
+    );
+
     const attentionCount =
       defectiveCount +
       dashboardRecords.filter(
