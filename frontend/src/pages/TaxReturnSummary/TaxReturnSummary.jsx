@@ -1358,9 +1358,19 @@ function TaxReturnSummary() {
 
     // Keep every configured financial year (FY 2007-08 onward) on the chart,
     // including years with no saved records, so the timeline remains complete.
+    // Use fixed ₹10 lakh intervals on the grouped chart Y-axis.
+    // Round the maximum up to the next ₹10 lakh so every bar fits the scale.
     const maxYearComparison = Math.max(
-      1,
-      ...yearSummary.flatMap(item => [item.income, item.tax])
+      1000000,
+      Math.ceil(
+        Math.max(0, ...yearSummary.flatMap(item => [item.income, item.tax])) /
+          1000000
+      ) * 1000000
+    );
+    const yearComparisonTickCount = Math.round(maxYearComparison / 1000000);
+    const yearComparisonTicks = Array.from(
+      { length: yearComparisonTickCount + 1 },
+      (_, index) => maxYearComparison - index * 1000000
     );
 
     // Highest gross income in the selected financial-year chart.
@@ -1739,16 +1749,18 @@ function TaxReturnSummary() {
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
-                      padding: "8px 0 32px",
+                      padding: "8px 0 37px",
                       boxSizing: "border-box",
                       color: "#667085",
                       fontSize: "10px",
                       textAlign: "right",
                     }}
                   >
-                    {[4, 3, 2, 1, 0].map(tick => (
-                      <span key={tick}>
-                        {money((maxYearComparison * tick) / 4)}
+                    {yearComparisonTicks.map(value => (
+                      <span key={value}>
+                        ₹{(value / 100000).toLocaleString("en-IN", {
+                          maximumFractionDigits: 0,
+                        })}L
                       </span>
                     ))}
                   </div>
@@ -1779,14 +1791,14 @@ function TaxReturnSummary() {
                       }}
                     >
                       {/* Y-axis grid lines */}
-                      {[0, 1, 2, 3, 4].map(line => (
+                      {yearComparisonTicks.map((value, index) => (
                         <div
-                          key={line}
+                          key={value}
                           style={{
                             position: "absolute",
                             left: 0,
                             right: 0,
-                            top: `${8 + line * 21}%`,
+                            top: `${8 + (index / yearComparisonTickCount) * 225}px`,
                             borderTop: "1px dashed #E5E7EB",
                             pointerEvents: "none",
                           }}
@@ -2076,17 +2088,51 @@ function TaxReturnSummary() {
               <span>Total net refund (incl. interest)</span>
             </div>
 
-            <div className="trs-refund-track">
+            <div
+              className="trs-refund-track"
+              style={{
+                display: "flex",
+                width: "100%",
+                overflow: "hidden",
+                gap: 0,
+              }}
+            >
               <span
+                title={`Refund before interest: ${money(totalRefundBeforeInterest)}`}
                 style={{
+                  display: "block",
+                  flex: "0 0 auto",
                   width: `${
                     netRefundTotal > 0
-                      ? Math.min(
-                          100,
-                          (totalInterest / netRefundTotal) * 100
+                      ? Math.max(
+                          0,
+                          Math.min(
+                            100,
+                            (totalRefundBeforeInterest / netRefundTotal) * 100
+                          )
                         )
                       : 0
                   }%`,
+                  height: "100%",
+                  background: "#31966D",
+                }}
+              />
+
+              <span
+                title={`Interest: ${money(totalInterest)}`}
+                style={{
+                  display: "block",
+                  flex: "0 0 auto",
+                  width: `${
+                    netRefundTotal > 0
+                      ? Math.max(
+                          0,
+                          Math.min(100, (totalInterest / netRefundTotal) * 100)
+                        )
+                      : 0
+                  }%`,
+                  height: "100%",
+                  background: "#D8A52E",
                 }}
               />
             </div>
@@ -2112,7 +2158,7 @@ function TaxReturnSummary() {
             </div>
 
             <small className="trs-refund-disclaimer">
-              Bar shows interest as a share of the net refund.
+              Bar shows refund before interest and interest as shares of the net refund.
             </small>
           </section>
         </div>
