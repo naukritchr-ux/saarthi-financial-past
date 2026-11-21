@@ -1358,9 +1358,9 @@ function TaxReturnSummary() {
       .filter(item => item.count)
       .slice(-6);
 
-    const maxYearIncome = Math.max(
+    const maxYearComparison = Math.max(
       1,
-      ...yearSummary.map(item => item.income)
+      ...yearSummary.flatMap(item => [item.income, item.tax])
     );
 
     const attentionCount =
@@ -1699,56 +1699,113 @@ function TaxReturnSummary() {
                 <h3>
                   {category === "Doshi Family"
                     ? "Top family members by gross income"
-                    : "Top taxpayer incomes"}
+                    : "Year-wise Income vs Tax Payable"}
                 </h3>
                 <p>
                   {category === "Doshi Family"
                     ? "Each member appears once, with income consolidated across the selected period"
-                    : "Highest gross income in the selected period"}
+                    : "Annual comparison of gross income and tax payable"}
                 </p>
               </div>
 
               <span className="trs-panel-icon">↗</span>
             </div>
 
-            {incomeLeaders.length ? (
+            {category === "Talent Corner" ? (
+              yearSummary.length ? (
+                <div
+                  className="trs-year-comparison-chart"
+                  style={{
+                    display: "flex",
+                    alignItems: "stretch",
+                    justifyContent: "space-around",
+                    gap: "12px",
+                    height: "245px",
+                    padding: "18px 4px 0",
+                    borderBottom: "1px solid #E9E2D5",
+                  }}
+                >
+                  {yearSummary.map(item => (
+                    <div
+                      key={item.year}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <div
+                        style={{
+                          flex: 1,
+                          width: "100%",
+                          display: "flex",
+                          alignItems: "flex-end",
+                          justifyContent: "center",
+                          gap: "5px",
+                          minHeight: 0,
+                        }}
+                      >
+                        <div
+                          title={`${item.year} Gross Income: ${money(item.income)}`}
+                          style={{
+                            width: "34%",
+                            maxWidth: "38px",
+                            minWidth: "9px",
+                            height: `${Math.max(2, (item.income / maxYearComparison) * 100)}%`,
+                            background: "linear-gradient(180deg,#DCC47E,#B89548)",
+                            borderRadius: "6px 6px 0 0",
+                          }}
+                        />
+                        <div
+                          title={`${item.year} Tax Payable: ${money(item.tax)}`}
+                          style={{
+                            width: "34%",
+                            maxWidth: "38px",
+                            minWidth: "9px",
+                            height: `${Math.max(2, (item.tax / maxYearComparison) * 100)}%`,
+                            background: "linear-gradient(180deg,#6489A8,#24476B)",
+                            borderRadius: "6px 6px 0 0",
+                          }}
+                        />
+                      </div>
+                      <span
+                        className="trs-year-label"
+                        style={{ marginTop: "10px", whiteSpace: "nowrap" }}
+                      >
+                        {item.year}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="trs-empty">
+                  Financial-year comparison will appear once records are available.
+                </div>
+              )
+            ) : incomeLeaders.length ? (
               <div className="trs-leader-bars">
                 {incomeLeaders.map((record, index) => (
                   <div
                     className="trs-leader-row"
-                    key={
-                      record.key ||
-                      record.id ||
-                      `${record.name}-${index}`
-                    }
+                    key={record.key || record.id || `${record.name}-${index}`}
                   >
                     <div className="trs-leader-label">
-                      <span className="trs-leader-rank">
-                        0{index + 1}
-                      </span>
-
+                      <span className="trs-leader-rank">0{index + 1}</span>
                       <strong title={record.name}>
                         {record.name || "Unnamed taxpayer"}
                       </strong>
-
                       <b>{money(record.grossIncome)}</b>
                     </div>
-
                     <div className="trs-leader-track">
                       <span
                         style={{
-                          width: `${
-                            Math.max(
-                              2,
-                              (num(record.grossIncome) /
-                                maxIncomeValue) *
-                                100
-                            )
-                          }%`,
-                          background:
-                            index === 0
-                              ? "linear-gradient(90deg,#B89548,#E0C77E)"
-                              : "linear-gradient(90deg,#24476B,#537B9D)",
+                          width: `${Math.max(2, (num(record.grossIncome) / maxIncomeValue) * 100)}%`,
+                          background: index === 0
+                            ? "linear-gradient(90deg,#B89548,#E0C77E)"
+                            : "linear-gradient(90deg,#24476B,#537B9D)",
                         }}
                       />
                     </div>
@@ -1762,13 +1819,25 @@ function TaxReturnSummary() {
             )}
 
             <div className="trs-chart-footnote">
-              <span className="trs-chart-key trs-key-gold" />
-              Highest income
-              <span className="trs-chart-footnote-text">
-                {category === "Doshi Family"
-                  ? "Ranked by unique member income"
-                  : "Ranked by gross income"}
-              </span>
+              {category === "Talent Corner" ? (
+                <>
+                  <span className="trs-chart-key trs-key-gold" />
+                  Gross Income
+                  <span className="trs-chart-key trs-key-navy" style={{ marginLeft: "16px" }} />
+                  Tax Payable
+                  <span className="trs-chart-footnote-text">
+                    Year-wise comparison
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="trs-chart-key trs-key-gold" />
+                  Highest income
+                  <span className="trs-chart-footnote-text">
+                    Ranked by gross income
+                  </span>
+                </>
+              )}
             </div>
           </section>
 
