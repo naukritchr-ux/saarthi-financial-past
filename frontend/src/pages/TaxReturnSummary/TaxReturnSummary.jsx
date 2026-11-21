@@ -2906,10 +2906,45 @@ function TaxReturnSummary() {
       0
     );
 
-    const maxIncome = Math.max(
-      1,
-      ...years.map(year => year.income)
+    // Trend chart scale: fixed ₹10 lakh intervals, rounded up to fit data.
+    const maxIncomeValue = Math.max(0, ...years.map(year => year.income));
+    const yAxisMax = Math.max(
+      10_00_000,
+      Math.ceil(maxIncomeValue / 10_00_000) * 10_00_000
     );
+    const yAxisStep = 10_00_000;
+    const chart = {
+      width: Math.max(900, years.length * 58),
+      height: 340,
+      left: 76,
+      right: 24,
+      top: 22,
+      bottom: 68,
+    };
+    const plotWidth = chart.width - chart.left - chart.right;
+    const plotHeight = chart.height - chart.top - chart.bottom;
+    const chartX = index =>
+      chart.left + (years.length <= 1 ? plotWidth / 2 : (index / (years.length - 1)) * plotWidth);
+    const chartY = value =>
+      chart.top + plotHeight - (value / yAxisMax) * plotHeight;
+    const plottedPoints = years.map((year, index) => ({
+      ...year,
+      x: chartX(index),
+      y: chartY(year.income),
+      hasData: year.count > 0,
+    }));
+    // Break the line across years with no saved records instead of treating them as zero.
+    const trendSegments = [];
+    let currentSegment = [];
+    plottedPoints.forEach(point => {
+      if (point.hasData) {
+        currentSegment.push(point);
+      } else if (currentSegment.length) {
+        trendSegments.push(currentSegment);
+        currentSegment = [];
+      }
+    });
+    if (currentSegment.length) trendSegments.push(currentSegment);
 
     const latest = recordedYears[recordedYears.length - 1];
     const previous = recordedYears[recordedYears.length - 2];
@@ -3000,49 +3035,111 @@ function TaxReturnSummary() {
             </div>
 
             {years.length ? (
-              <div style={{ width: "100%", overflowX: "auto", overflowY: "hidden" }}>
-                <div
-                  className="trs-analysis-bars"
-                  style={{ minWidth: `${Math.max(years.length * 76, 100)}px` }}
+              <>
+              <style>{incomeTrendStyles}</style>
+              <div className="trs-income-trend-scroll">
+                <svg
+                  className="trs-income-trend-svg"
+                  viewBox={`0 0 ${chart.width} ${chart.height}`}
+                  role="img"
+                  aria-label="Gross income trend by financial year, with Y-axis in lakhs and ten-lakh intervals"
                 >
-                {years.map(year => (
-                  <div
-                    className="trs-analysis-bar-item"
-                    key={year.financialYear}
-                  >
-                    <div className="trs-analysis-bar-value">
-                      {money(year.income)}
-                    </div>
+                  {Array.from(
+                    { length: Math.floor(yAxisMax / yAxisStep) + 1 },
+                    (_, index) => index * yAxisStep
+                  ).map(value => {
+                    const y = chartY(value);
+                    return (
+                      <g key={value}>
+                        <line
+                          x1={chart.left}
+                          y1={y}
+                          x2={chart.width - chart.right}
+                          y2={y}
+                          stroke="#D9D5CC"
+                          strokeDasharray="4 5"
+                          strokeWidth="1"
+                        />
+                        <text
+                          x={chart.left - 12}
+                          y={y + 4}
+                          textAnchor="end"
+                          className="trs-income-trend-axis-label"
+                        >
+                          ₹{value / 1_00_000}L
+                        </text>
+                      </g>
+                    );
+                  })}
 
-                    <div className="trs-analysis-bar-track">
-                      <span
-                        style={{
-                          height: year.income > 0
-                            ? `${Math.max(1, (year.income / maxIncome) * 100)}%`
-                            : "0%",
-                        }}
-                      />
-                    </div>
+                  <line
+                    x1={chart.left}
+                    y1={chart.top}
+                    x2={chart.left}
+                    y2={chart.height - chart.bottom}
+                    stroke="#A9A397"
+                  />
+                  <line
+                    x1={chart.left}
+                    y1={chart.height - chart.bottom}
+                    x2={chart.width - chart.right}
+                    y2={chart.height - chart.bottom}
+                    stroke="#A9A397"
+                  />
 
-                    <b>{year.financialYear}</b>
+                  {trendSegments.map((segment, segmentIndex) => (
+                    <g key={`segment-${segmentIndex}`}>
+                      {segment.length > 1 && (
+                        <polyline
+                          points={segment.map(point => `${point.x},${point.y}`).join(" ")}
+                          fill="none"
+                          stroke="#3976A8"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      )}
+                      {segment.map(point => (
+                        <circle
+                          key={point.financialYear}
+                          cx={point.x}
+                          cy={point.y}
+                          r="5"
+                          fill="#3976A8"
+                          stroke="#FFFFFF"
+                          strokeWidth="2"
+                        >
+                          <title>{`FY ${point.financialYear} · Gross income: ${money(point.income)} · ${point.count} ${point.count === 1 ? "return" : "returns"}`}</title>
+                        </circle>
+                      ))}
+                    </g>
+                  ))}
 
-                    <small>
-                      {year.count}{" "}
-                      {year.count === 1 ? "return" : "returns"}
-                    </small>
-                  </div>
-                ))}
-                </div>
+                  {plottedPoints.map((point, index) => (
+                    <text
+                      key={`year-${point.financialYear}`}
+                      x={point.x}
+                      y={chart.height - chart.bottom + 24}
+                      textAnchor="end"
+                      transform={`rotate(-42 ${point.x} ${chart.height - chart.bottom + 24})`}
+                      className="trs-income-trend-year-label"
+                    >
+                      {point.financialYear}
+                    </text>
+                  ))}
+                </svg>
               </div>
+              </>
             ) : (
               <div className="trs-empty-cell">
                 Add records to view the financial year trend.
               </div>
             )}
 
-            <div className="trs-analysis-chart-note">
+            <div className="trs-analysis-chart-note trs-income-trend-legend">
               <i />
-              Gross income · grouped by financial year
+              Gross income trend · Y-axis interval ₹10 lakh · Hover over a point for details
+              <small>Years without saved records are shown as gaps in the trend.</small>
             </div>
           </section>
 
@@ -3859,5 +3956,15 @@ function RecordsTable({ records, onEdit }) {
     </div>
   );
 }
+
+
+const incomeTrendStyles = `
+.trs-income-trend-scroll { width: 100%; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
+.trs-income-trend-svg { display: block; width: 100%; min-width: 900px; height: auto; }
+.trs-income-trend-axis-label { fill: #69665F; font-size: 12px; }
+.trs-income-trend-year-label { fill: #69665F; font-size: 11px; }
+.trs-income-trend-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.trs-income-trend-legend small { flex-basis: 100%; color: #77736B; margin-left: 18px; }
+`;
 
 export default TaxReturnSummary;
