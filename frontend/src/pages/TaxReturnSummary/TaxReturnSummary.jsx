@@ -1334,44 +1334,55 @@ function TaxReturnSummary() {
       ...incomeLeaders.map(record => num(record.grossIncome))
     );
 
-    const yearSummary = FINANCIAL_YEARS.map(year => {
-      const rows = records.filter(
-        record =>
-          record.financialYear === year.financialYear
-      );
+    // Build the chart timeline directly from financialYear values saved in the database.
+    // This automatically includes newly added FYs and excludes FYs with no records.
+    const databaseFinancialYears = [...new Set(
+      records.map(record => String(record.financialYear || "").trim()).filter(Boolean)
+    )].sort((a, b) => {
+      const startA = Number(a.match(/^(\d{4})/)?.[1] || 0);
+      const startB = Number(b.match(/^(\d{4})/)?.[1] || 0);
+      return startA - startB || a.localeCompare(b);
+    });
 
+    const yearSummary = databaseFinancialYears.map(financialYear => {
+      const rows = records.filter(record => String(record.financialYear || "").trim() === financialYear);
       return {
-        year: year.financialYear,
-        income: rows.reduce(
-          (total, record) =>
-            total + num(record.grossIncome),
-          0
-        ),
-        tax: rows.reduce(
-          (total, record) =>
-            total + num(record.taxPayable),
-          0
-        ),
+        year: financialYear,
+        income: rows.reduce((total, record) => total + num(record.grossIncome), 0),
+        tax: rows.reduce((total, record) => total + num(record.taxPayable), 0),
+        tds: rows.reduce((total, record) => total + num(record.tdsClaim), 0),
         count: rows.length,
       };
     });
 
-    // Keep every configured financial year (FY 2007-08 onward) on the chart,
-    // including years with no saved records, so the timeline remains complete.
-    // Use fixed ₹10 lakh intervals on the grouped chart Y-axis.
-    // Round the maximum up to the next ₹10 lakh so every bar fits the scale.
+    // Shared scale for Income, Tax Paid, and TDS. Values are stored in rupees
+    // and shown as lakhs on the chart axis.
     const maxYearComparison = Math.max(
       1000000,
       Math.ceil(
-        Math.max(0, ...yearSummary.flatMap(item => [item.income, item.tax])) /
+        Math.max(0, ...yearSummary.flatMap(item => [item.income, item.tax, item.tds])) /
           1000000
       ) * 1000000
     );
-    const yearComparisonTickCount = Math.round(maxYearComparison / 1000000);
+    const yearComparisonTickCount = 4;
     const yearComparisonTicks = Array.from(
       { length: yearComparisonTickCount + 1 },
-      (_, index) => maxYearComparison - index * 1000000
+      (_, index) => maxYearComparison - (index * maxYearComparison / yearComparisonTickCount)
     );
+    const yearComparisonChartWidth = Math.max(yearSummary.length * 88, 720);
+    const yearComparisonPlotLeft = 58;
+    const yearComparisonPlotRight = yearComparisonChartWidth - 16;
+    const yearComparisonPlotTop = 18;
+    const yearComparisonPlotBottom = 242;
+    const yearComparisonX = index =>
+      yearComparisonPlotLeft + (index * (yearComparisonPlotRight - yearComparisonPlotLeft) / Math.max(yearSummary.length - 1, 1));
+    const yearComparisonY = value =>
+      yearComparisonPlotBottom - (num(value) / maxYearComparison) * (yearComparisonPlotBottom - yearComparisonPlotTop);
+    const yearComparisonSeries = [
+      { key: "income", label: "Income", color: "#2878D0" },
+      { key: "tax", label: "Tax Paid", color: "#D64545" },
+      { key: "tds", label: "TDS", color: "#24965A" },
+    ];
 
     // Highest gross income in the selected financial-year chart.
     // The minimum of 1 prevents division by zero when there is no income.
@@ -1716,12 +1727,12 @@ function TaxReturnSummary() {
                 <h3>
                   {category === "Doshi Family"
                     ? "Top family members by gross income"
-                    : "Year-wise Income vs Tax Payable"}
+                    : "Year-on-Year Financial Trends"}
                 </h3>
                 <p>
                   {category === "Doshi Family"
                     ? "Each member appears once, with income consolidated across the selected period"
-                    : "Annual comparison of gross income and tax payable"}
+                    : "Annual trends for income, tax paid, and TDS"}
                 </p>
               </div>
 
@@ -1730,146 +1741,50 @@ function TaxReturnSummary() {
 
             {category === "Talent Corner" ? (
               yearSummary.length ? (
-                <div
-                  className="trs-year-comparison-wrap"
-                  style={{
-                    display: "flex",
-                    alignItems: "stretch",
-                    gap: "10px",
-                    width: "100%",
-                  }}
-                >
-                  {/* Y-axis labels for the grouped Income vs Tax chart */}
-                  <div
-                    aria-hidden="true"
-                    style={{
-                      width: "82px",
-                      minWidth: "82px",
-                      height: "270px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      padding: "8px 0 37px",
-                      boxSizing: "border-box",
-                      color: "#667085",
-                      fontSize: "10px",
-                      textAlign: "right",
-                    }}
-                  >
-                    {yearComparisonTicks.map(value => (
-                      <span key={value}>
-                        ₹{(value / 100000).toLocaleString("en-IN", {
-                          maximumFractionDigits: 0,
-                        })}L
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Horizontal scrolling keeps all years readable */}
-                  <div
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      overflowX: "auto",
-                      overflowY: "hidden",
-                    }}
-                  >
-                    <div
-                      className="trs-year-comparison-chart"
-                      style={{
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "stretch",
-                        justifyContent: "space-around",
-                        gap: "12px",
-                        height: "270px",
-                        minWidth: `${Math.max(yearSummary.length * 62, 100)}px`,
-                        padding: "8px 4px 0",
-                        boxSizing: "border-box",
-                        borderLeft: "1px solid #D8DDE5",
-                        borderBottom: "1px solid #D8DDE5",
-                      }}
+                <div className="trs-year-comparison-wrap" style={{ width: "100%", minWidth: 0 }}>
+                  <div style={{ width: "100%", overflowX: "auto", overflowY: "hidden" }}>
+                    <svg
+                      role="img"
+                      aria-label="Year-on-year line chart showing Income, Tax Paid, and TDS in lakhs across financial years"
+                      viewBox={`0 0 ${yearComparisonChartWidth} 300`}
+                      style={{ display: "block", width: "100%", minWidth: `${yearComparisonChartWidth}px`, height: "300px" }}
                     >
-                      {/* Y-axis grid lines */}
-                      {yearComparisonTicks.map((value, index) => (
-                        <div
-                          key={value}
-                          style={{
-                            position: "absolute",
-                            left: 0,
-                            right: 0,
-                            top: `${8 + (index / yearComparisonTickCount) * 225}px`,
-                            borderTop: "1px dashed #E5E7EB",
-                            pointerEvents: "none",
-                          }}
-                        />
+                      {yearComparisonTicks.map((tick, index) => {
+                        const y = yearComparisonPlotTop + (index / yearComparisonTickCount) * (yearComparisonPlotBottom - yearComparisonPlotTop);
+                        return (
+                          <g key={`tick-${index}`}>
+                            <line x1={yearComparisonPlotLeft} x2={yearComparisonPlotRight} y1={y} y2={y} stroke="#E5E7EB" strokeDasharray="4 4" />
+                            <text x={yearComparisonPlotLeft - 8} y={y + 4} textAnchor="end" fill="#667085" fontSize="11">
+                              ₹{(tick / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })}L
+                            </text>
+                          </g>
+                        );
+                      })}
+                      <line x1={yearComparisonPlotLeft} x2={yearComparisonPlotLeft} y1={yearComparisonPlotTop} y2={yearComparisonPlotBottom} stroke="#CBD5E1" />
+                      <line x1={yearComparisonPlotLeft} x2={yearComparisonPlotRight} y1={yearComparisonPlotBottom} y2={yearComparisonPlotBottom} stroke="#CBD5E1" />
+                      {yearComparisonSeries.map(series => (
+                        <g key={series.key}>
+                          <polyline
+                            fill="none"
+                            stroke={series.color}
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            points={yearSummary.map((item, index) => `${yearComparisonX(index)},${yearComparisonY(item[series.key])}`).join(" ")}
+                          />
+                          {yearSummary.map((item, index) => (
+                            <circle key={`${series.key}-${item.year}`} cx={yearComparisonX(index)} cy={yearComparisonY(item[series.key])} r="3.5" fill={series.color} stroke="#FFFFFF" strokeWidth="1.2">
+                              <title>{`${item.year} ${series.label}: ${money(item[series.key])}`}</title>
+                            </circle>
+                          ))}
+                        </g>
                       ))}
-
-                      {yearSummary.map(item => (
-                        <div
-                          key={item.year}
-                          style={{
-                            position: "relative",
-                            zIndex: 1,
-                            flex: 1,
-                            minWidth: "48px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          <div
-                            style={{
-                              height: "225px",
-                              width: "100%",
-                              display: "flex",
-                              alignItems: "flex-end",
-                              justifyContent: "center",
-                              gap: "5px",
-                              minHeight: 0,
-                            }}
-                          >
-                            <div
-                              title={`${item.year} Gross Income: ${money(item.income)}`}
-                              style={{
-                                width: "34%",
-                                maxWidth: "38px",
-                                minWidth: "9px",
-                                height: item.income > 0
-                                  ? `${Math.max(1, (item.income / maxYearComparison) * 100)}%`
-                                  : "0%",
-                                background: "linear-gradient(180deg,#DCC47E,#B89548)",
-                                borderRadius: "6px 6px 0 0",
-                              }}
-                            />
-                            <div
-                              title={`${item.year} Tax Payable: ${money(item.tax)}`}
-                              style={{
-                                width: "34%",
-                                maxWidth: "38px",
-                                minWidth: "9px",
-                                height: item.tax > 0
-                                  ? `${Math.max(1, (item.tax / maxYearComparison) * 100)}%`
-                                  : "0%",
-                                background: "linear-gradient(180deg,#6489A8,#24476B)",
-                                borderRadius: "6px 6px 0 0",
-                              }}
-                            />
-                          </div>
-                          <span
-                            className="trs-year-label"
-                            style={{
-                              marginTop: "10px",
-                              whiteSpace: "nowrap",
-                              fontSize: "10px",
-                            }}
-                          >
-                            {item.year}
-                          </span>
-                        </div>
+                      {yearSummary.map((item, index) => (
+                        <text key={item.year} x={yearComparisonX(index)} y={yearComparisonPlotBottom + 22} textAnchor="middle" fill="#667085" fontSize="11">
+                          {item.year}
+                        </text>
                       ))}
-                    </div>
+                    </svg>
                   </div>
                 </div>
               ) : (
@@ -1913,13 +1828,13 @@ function TaxReturnSummary() {
             <div className="trs-chart-footnote">
               {category === "Talent Corner" ? (
                 <>
-                  <span className="trs-chart-key trs-key-gold" />
-                  Gross Income
-                  <span className="trs-chart-key trs-key-navy" style={{ marginLeft: "16px" }} />
-                  Tax Payable
-                  <span className="trs-chart-footnote-text">
-                    Year-wise comparison
-                  </span>
+                  {yearComparisonSeries.map(series => (
+                    <span key={series.key} style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginRight: "14px" }}>
+                      <span style={{ display: "inline-block", width: "18px", height: "3px", borderRadius: "4px", background: series.color }} />
+                      {series.label}
+                    </span>
+                  ))}
+                  <span className="trs-chart-footnote-text">Year-wise comparison · ₹ Lakhs</span>
                 </>
               ) : (
                 <>
