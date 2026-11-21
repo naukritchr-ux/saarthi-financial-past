@@ -171,6 +171,70 @@ function memberIncomeSummary(list) {
     .sort((a, b) => b.grossIncome - a.grossIncome);
 }
 
+
+// Build the Doshi Family member table from one final return per member per FY.
+// Revised returns take precedence over original returns to avoid double-counting.
+function memberSummary(list) {
+  const grouped = new Map();
+
+  list.forEach(record => {
+    const key = taxpayerKey(record);
+    const financialYear = record.financialYear || "Unknown";
+    const member = grouped.get(key) || {
+      key,
+      name: record.name || "",
+      pan: record.pan || "",
+      returnsByYear: new Map(),
+    };
+
+    const current = member.returnsByYear.get(financialYear);
+    const isRevised = /revised/i.test(String(record.filingStatus || ""));
+    const currentIsRevised = /revised/i.test(
+      String(current?.filingStatus || "")
+    );
+    const recordDate = new Date(
+      record.itrFilingDate || record.updatedAt || record.createdAt || 0
+    ).getTime() || 0;
+    const currentDate = current
+      ? new Date(
+          current.itrFilingDate || current.updatedAt || current.createdAt || 0
+        ).getTime() || 0
+      : -1;
+
+    const shouldReplace =
+      !current ||
+      (isRevised && !currentIsRevised) ||
+      (isRevised === currentIsRevised && recordDate >= currentDate);
+
+    if (shouldReplace) member.returnsByYear.set(financialYear, record);
+    if (!member.name && record.name) member.name = record.name;
+    if (!member.pan && record.pan) member.pan = record.pan;
+    grouped.set(key, member);
+  });
+
+  return [...grouped.values()].map(member => {
+    const finalReturns = [...member.returnsByYear.values()];
+    return {
+      key: member.key,
+      name: member.name,
+      pan: member.pan,
+      returns: finalReturns.length,
+      grossIncome: finalReturns.reduce(
+        (total, record) => total + num(record.grossIncome), 0
+      ),
+      taxPayable: finalReturns.reduce(
+        (total, record) => total + num(record.taxPayable), 0
+      ),
+      tdsClaim: finalReturns.reduce(
+        (total, record) => total + num(record.tdsClaim), 0
+      ),
+      refundDue: finalReturns.reduce(
+        (total, record) => total + num(record.refundDue), 0
+      ),
+    };
+  }).sort((a, b) => b.grossIncome - a.grossIncome);
+}
+
 async function readResponse(response) {
   const type = response.headers.get("content-type") || "";
 
