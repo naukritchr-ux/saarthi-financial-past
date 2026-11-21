@@ -1215,6 +1215,44 @@ function TaxReturnSummary() {
     const totalTds = sum("tdsClaim");
     const totalTdsCredit = sum("tdsCredit");
 
+    // TDS reconciliation is derived from the existing ITR TDS claim
+    // and assessment TDS credit values. Differences within ₹1 are treated
+    // as matched to avoid rounding-only mismatches.
+    const tdsReconciliation = dashboardRecords.reduce(
+      (summary, record) => {
+        const claimed = num(record.tdsClaim);
+        const credited = num(record.tdsCredit);
+
+        // Ignore records where neither side contains a TDS value.
+        if (claimed === 0 && credited === 0) return summary;
+
+        const difference = credited - claimed;
+
+        if (Math.abs(difference) <= 1) {
+          summary.matched.count += 1;
+          summary.matched.amount += Math.min(claimed, credited);
+        } else if (difference > 1) {
+          summary.excess.count += 1;
+          summary.excess.amount += difference;
+        } else {
+          summary.less.count += 1;
+          summary.less.amount += Math.abs(difference);
+        }
+
+        return summary;
+      },
+      {
+        matched: { count: 0, amount: 0 },
+        excess: { count: 0, amount: 0 },
+        less: { count: 0, amount: 0 },
+      }
+    );
+
+    const totalTdsReconciliationRecords =
+      tdsReconciliation.matched.count +
+      tdsReconciliation.excess.count +
+      tdsReconciliation.less.count;
+
     // Signed net position: positive = refund expected; negative = tax payable.
     const totalRefundDue = sum("refundDue");
 
@@ -1717,7 +1755,7 @@ function TaxReturnSummary() {
           </section>
         )}
 
-        <div className="trs-dashboard-grid trs-dashboard-grid-premium" style={{ gridTemplateColumns: "minmax(0, 1.65fr) minmax(260px, 0.9fr)" }}>
+        <div className="trs-dashboard-grid trs-dashboard-grid-premium trs-dashboard-top-grid">
           <section className="trs-panel trs-panel-elevated trs-income-panel">
             <div className="trs-panel-heading">
               <div>
@@ -1849,75 +1887,140 @@ function TaxReturnSummary() {
             </div>
           </section>
 
-          <section className="trs-panel trs-panel-elevated trs-filing-panel">
-            <div className="trs-panel-heading">
-              <div>
-                <span className="trs-panel-kicker">
-                  COMPLIANCE SNAPSHOT
-                </span>
-                <h3>Filing status</h3>
-                <p>
-                  Return progress across this portfolio
-                </p>
+          <div className="trs-dashboard-side-stack">
+            <section className="trs-panel trs-panel-elevated trs-filing-panel">
+              <div className="trs-panel-heading">
+                <div>
+                  <span className="trs-panel-kicker">
+                    COMPLIANCE SNAPSHOT
+                  </span>
+                  <h3>Filing status</h3>
+                  <p>
+                    Return progress across this portfolio
+                  </p>
+                </div>
+
+                <span className="trs-panel-icon">◎</span>
               </div>
 
-              <span className="trs-panel-icon">◎</span>
-            </div>
+              <div className="trs-donut-layout">
+                <div
+                  className="trs-donut"
+                  style={{ background: donutGradient }}
+                  role="img"
+                  aria-label={`Filing status breakdown for ${dashboardRecords.length} returns`}
+                >
+                  <div className="trs-donut-hole">
+                    <strong>{dashboardRecords.length}</strong>
+                    <span>RETURNS</span>
+                  </div>
+                </div>
 
-            <div className="trs-donut-layout" style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-              <div
-                className="trs-donut"
-                style={{ background: donutGradient, width: "150px", height: "150px", flex: "0 0 150px" }}
-              >
-                <div className="trs-donut-hole">
-                  <strong>{dashboardRecords.length}</strong>
-                  <span>RETURNS</span>
+                <div className="trs-donut-legend">
+                  {filingBreakdown.length
+                    ? filingBreakdown.map(item => (
+                        <div
+                          className="trs-legend-row"
+                          key={item.status}
+                        >
+                          <span style={{ background: item.color }} />
+                          <span>{item.status}</span>
+                          <b>{item.count}</b>
+                        </div>
+                      ))
+                    : (
+                      <span className="trs-muted-note">
+                        No filing statuses yet
+                      </span>
+                    )}
                 </div>
               </div>
 
-              <div className="trs-donut-legend" style={{ flex: "1", minWidth: 0 }}>
-                {filingBreakdown.length
-                  ? filingBreakdown.map(item => (
-                      <div
-                        className="trs-legend-row"
-                        key={item.status}
-                      >
-                        <span
-                          style={{ background: item.color }}
-                        />
-                        <span>{item.status}</span>
-                        <b>{item.count}</b>
-                      </div>
-                    ))
-                  : (
-                    <span className="trs-muted-note">
-                      No filing statuses yet
-                    </span>
-                  )}
-              </div>
-            </div>
+              <div className="trs-compliance-footer">
+                <div>
+                  <strong>{filedCount}</strong>
+                  <span>Filed / completed</span>
+                </div>
 
-            <div className="trs-compliance-footer">
-              <div>
-                <strong>{filedCount}</strong>
-                <span>Filed / completed</span>
+                <div>
+                  <strong className="trs-amber-text">
+                    {pendingCount}
+                  </strong>
+                  <span>Draft / pending</span>
+                </div>
+
+                <div>
+                  <strong className="trs-red-text">
+                    {defectiveCount}
+                  </strong>
+                  <span>Defective</span>
+                </div>
+              </div>
+            </section>
+
+            <section className="trs-panel trs-panel-elevated trs-tds-summary-panel">
+              <div className="trs-panel-heading trs-tds-summary-heading">
+                <div>
+                  <span className="trs-panel-kicker">
+                    TAX CREDIT RECONCILIATION
+                  </span>
+                  <h3>TDS Reconciliation Summary</h3>
+                  <p>ITR TDS claim compared with assessment TDS credit</p>
+                </div>
+
+                <button
+                  type="button"
+                  className="trs-tds-view-btn"
+                  onClick={() => setPage("reconciliation")}
+                >
+                  View details <span aria-hidden="true">→</span>
+                </button>
               </div>
 
-              <div>
-                <strong className="trs-amber-text">
-                  {pendingCount}
-                </strong>
-                <span>Draft / pending</span>
+              <div className="trs-tds-summary-grid">
+                <button
+                  type="button"
+                  className="trs-tds-summary-item matched"
+                  onClick={() => setPage("reconciliation")}
+                  title="Open the reconciliation register"
+                >
+                  <span className="trs-tds-status-label">Matched</span>
+                  <strong>{tdsReconciliation.matched.count.toLocaleString("en-IN")}</strong>
+                  <b>{money(tdsReconciliation.matched.amount)}</b>
+                  <small>Matched amount</small>
+                </button>
+
+                <button
+                  type="button"
+                  className="trs-tds-summary-item excess"
+                  onClick={() => setPage("reconciliation")}
+                  title="Open the reconciliation register"
+                >
+                  <span className="trs-tds-status-label">Excess Paid</span>
+                  <strong>{tdsReconciliation.excess.count.toLocaleString("en-IN")}</strong>
+                  <b>{money(tdsReconciliation.excess.amount)}</b>
+                  <small>Excess TDS credit</small>
+                </button>
+
+                <button
+                  type="button"
+                  className="trs-tds-summary-item less"
+                  onClick={() => setPage("reconciliation")}
+                  title="Open the reconciliation register"
+                >
+                  <span className="trs-tds-status-label">Less Paid</span>
+                  <strong>{tdsReconciliation.less.count.toLocaleString("en-IN")}</strong>
+                  <b>{money(tdsReconciliation.less.amount)}</b>
+                  <small>TDS credit shortfall</small>
+                </button>
               </div>
 
-              <div>
-                <strong className="trs-red-text">
-                  {defectiveCount}
-                </strong>
-                <span>Defective</span>
+              <div className="trs-tds-summary-footer">
+                <span>Total reconciliation records</span>
+                <strong>{totalTdsReconciliationRecords.toLocaleString("en-IN")}</strong>
               </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </div>
 
         <div className="trs-dashboard-grid trs-dashboard-grid-lower">
