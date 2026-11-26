@@ -72,12 +72,12 @@ const num = value => {
 };
 
 // Status is determined strictly by the signed difference.
-// Negative = Less, Positive = Excess, Zero = Match.
+// Negative = Less Paid, Positive = Excess, Zero = Match.
 const getFinancialStatus = difference => {
   const value = Number(difference);
 
   if (!Number.isFinite(value)) return "Pending";
-  if (value < 0) return "Less";
+  if (value < 0) return "Less Paid";
   if (value > 0) return "Excess";
   return "Match";
 };
@@ -573,6 +573,7 @@ function TaxReturnSummary() {
   const [reportFY, setReportFY] = useState("all");
   const [reportStatus, setReportStatus] = useState("all");
   const [reportType, setReportType] = useState("all");
+  const [reconciliationStatusFilter, setReconciliationStatusFilter] = useState("all");
 
   // Every page below reads `records`, which now follows the selected category.
   const records = useMemo(
@@ -1246,7 +1247,7 @@ function TaxReturnSummary() {
         } else if (status === "Excess") {
           summary.excess.count += 1;
           summary.excess.amount += difference;
-        } else if (status === "Less") {
+        } else if (status === "Less Paid") {
           summary.less.count += 1;
           summary.less.amount += Math.abs(difference);
         }
@@ -2738,6 +2739,25 @@ function TaxReturnSummary() {
       record => record.differences.length
     );
 
+    // Each comparison line is independently classified and filtered.
+    const reconciliationLines = rows.flatMap(record =>
+      record.checks.map((check, index) => ({
+        record,
+        check,
+        index,
+        key: `${record.id || record.name}-${record.financialYear}-${check.label}`,
+      }))
+    );
+    const reconciliationStatusCounts = {
+      all: reconciliationLines.length,
+      "Less Paid": reconciliationLines.filter(item => item.check.status === "Less Paid").length,
+      Excess: reconciliationLines.filter(item => item.check.status === "Excess").length,
+      Match: reconciliationLines.filter(item => item.check.status === "Match").length,
+    };
+    const visibleReconciliationLines = reconciliationStatusFilter === "all"
+      ? reconciliationLines
+      : reconciliationLines.filter(item => item.check.status === reconciliationStatusFilter);
+
     return (
       <div className="trs-content">
         <div className="trs-page-heading">
@@ -2791,6 +2811,26 @@ function TaxReturnSummary() {
             </div>
           </div>
 
+          <div className="trs-reconciliation-filters" role="group" aria-label="Filter reconciliation records by status">
+            {[
+              { value: "all", label: "All Records" },
+              { value: "Less Paid", label: "Less" },
+              { value: "Excess", label: "Excess" },
+              { value: "Match", label: "Match" },
+            ].map(option => (
+              <button
+                key={option.value}
+                type="button"
+                className={`trs-reconciliation-filter-btn ${reconciliationStatusFilter === option.value ? "active" : ""} ${option.value === "Less Paid" ? "less" : option.value.toLowerCase()}`}
+                onClick={() => setReconciliationStatusFilter(option.value)}
+                aria-pressed={reconciliationStatusFilter === option.value}
+              >
+                <span>{option.label}</span>
+                <strong>{reconciliationStatusCounts[option.value]}</strong>
+              </button>
+            ))}
+          </div>
+
           <div className="trs-table-wrap">
             <table className="trs-table">
               <thead>
@@ -2806,24 +2846,13 @@ function TaxReturnSummary() {
               </thead>
 
               <tbody>
-                {rows.flatMap(record =>
-                  record.checks.map((check, index) => (
-                    <tr
-                      key={`${record.id || record.name}-${record.financialYear}-${check.label}`}
-                    >
+                {visibleReconciliationLines.map(({ record, check, index, key }) => (
+                    <tr key={key}>
                       <td>
-                        <b>
-                          {index === 0
-                            ? record.name || "—"
-                            : ""}
-                        </b>
+                        <b>{record.name || "—"}</b>
                       </td>
 
-                      <td>
-                        {index === 0
-                          ? record.financialYear || "—"
-                          : ""}
-                      </td>
+                      <td>{record.financialYear || "—"}</td>
 
                       <td>{check.label}</td>
                       <td>{money(check.itr)}</td>
@@ -2853,16 +2882,14 @@ function TaxReturnSummary() {
                         </span>
                       </td>
                     </tr>
-                  ))
-                )}
+                ))}
 
-                {!rows.length && (
+                {!visibleReconciliationLines.length && (
                   <tr>
-                    <td
-                      colSpan="7"
-                      className="trs-empty-cell"
-                    >
-                      No records available for reconciliation.
+                    <td colSpan="7" className="trs-empty-cell">
+                      {rows.length
+                        ? `No ${reconciliationStatusFilter} records found.`
+                        : "No records available for reconciliation."}
                     </td>
                   </tr>
                 )}

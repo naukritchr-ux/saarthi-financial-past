@@ -3764,3 +3764,75 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Status filters for the Tax Return Summary reconciliation register. */
+.trs-reconciliation-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.trs-reconciliation-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 132px;
+  padding: 10px 13px;
+  border: 1px solid var(--trs-border);
+  border-radius: 9px;
+  background: #fffdf7;
+  color: var(--trs-navy);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+
+.trs-reconciliation-filter-btn strong {
+  display: inline-grid;
+  min-width: 25px;
+  height: 25px;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 20px;
+  background: #f0ede5;
+  color: inherit;
+  font-size: 12px;
+}
+
+.trs-reconciliation-filter-btn:hover,
+.trs-reconciliation-filter-btn.active {
+  border-color: var(--trs-gold);
+  background: #fbf5e3;
+  box-shadow: 0 0 0 2px #c9a22714;
+}
+
+.trs-reconciliation-filter-btn.less.active {
+  border-color: #d97757;
+  background: #fff3ee;
+}
+
+.trs-reconciliation-filter-btn.excess.active {
+  border-color: #d5a33b;
+  background: #fff9e9;
+}
+
+.trs-reconciliation-filter-btn.match.active {
+  border-color: #5b9b78;
+  background: #eff8f1;
+}
+
+@media (max-width: 600px) {
+  .trs-reconciliation-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trs-reconciliation-filter-btn {
+    min-width: 0;
+  }
+}
