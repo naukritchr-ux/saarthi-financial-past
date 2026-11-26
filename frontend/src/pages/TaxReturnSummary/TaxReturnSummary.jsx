@@ -2315,6 +2315,7 @@ function TaxReturnSummary() {
           records={filteredRecords}
           onEdit={editFromTable}
           showAssessmentDetails={category === "Talent Corner"}
+          showBasicTotals={category === "Doshi Family"}
         />
       </div>
     </div>
@@ -3842,7 +3843,12 @@ function TaxReturnSummary() {
   );
 }
 
-function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
+function RecordsTable({
+  records,
+  onEdit,
+  showAssessmentDetails = false,
+  showBasicTotals = false,
+}) {
   if (!records.length) {
     return (
       <div className="trs-empty">
@@ -4090,6 +4096,17 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                 </td>
               </tr>
             ))}
+
+            {showBasicTotals && !showAssessmentDetails && (
+              <tr className="trs-assessment-total-row">
+                <td colSpan={2}><strong>Total</strong></td>
+                <td><strong>{money(totals.itrGrossIncome)}</strong></td>
+                <td><strong>{money(totals.itrTaxPayable)}</strong></td>
+                <td><strong>{money(totals.itrRefund)}</strong></td>
+                <td></td>
+                <td></td>
+              </tr>
+            )}
 
             {showAssessmentDetails && (
               <tr className="trs-assessment-total-row">
