@@ -3940,170 +3940,136 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
     <div className="trs-records-table-section">
       <div className="trs-table-wrap">
         <table className="trs-table">
-          {/* Keep the existing Taxpayer Records columns and their order unchanged. */}
-          <thead>
-            <tr>
-              <th>Taxpayer</th>
-              <th>Financial Year</th>
-              <th>Acknowledgement No.</th>
-              <th>Gross Income</th>
-              <th>Tax Payable</th>
-              <th>Refund</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+          {showAssessmentDetails ? (
+            <thead>
+              <tr>
+                <th rowSpan={2}>Taxpayer</th>
+                <th rowSpan={2}>Financial Year</th>
+                <th rowSpan={2}>Assessment Year</th>
+                <th colSpan={5} className="trs-record-group-heading">ITR Records</th>
+                <th rowSpan={2}>Action</th>
+                <th colSpan={8} className="trs-record-group-heading">Assessment Records</th>
+              </tr>
+              <tr>
+                <th>Acknowledgement No.</th>
+                <th>Gross Income</th>
+                <th>Tax Payable</th>
+                <th>Refund</th>
+                <th>Status</th>
+                <th>Order Type</th>
+                <th>Date of Order</th>
+                <th>Total Assessed Income</th>
+                <th>Total Assessed Tax Payable</th>
+                <th>TDS Credit</th>
+                <th>Refund Before Interest</th>
+                <th>Interest</th>
+                <th>Net Refund</th>
+              </tr>
+            </thead>
+          ) : (
+            <thead>
+              <tr>
+                <th>Taxpayer</th>
+                <th>Financial Year</th>
+                <th>Acknowledgement No.</th>
+                <th>Gross Income</th>
+                <th>Tax Payable</th>
+                <th>Refund</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+          )}
 
           <tbody>
             {records.map((record, index) => (
-              <React.Fragment
+              <tr
                 key={
                   record.id ??
                   `${record.name}-${record.financialYear}-${index}`
                 }
               >
-                <tr>
-                  <td>
-                    <b>{record.name || "—"}</b>
-                    <small className="trs-report-ack">
-                      {record.pan || "PAN missing"}
-                    </small>
-                  </td>
+                <td>
+                  <b>{record.name || "—"}</b>
+                  <small className="trs-report-ack">
+                    {record.pan || "PAN missing"}
+                  </small>
+                </td>
 
-                  <td>{record.financialYear || "—"}</td>
-
-                  <td className="trs-ack">
-                    {record.acknowledgementNumber || "—"}
-                  </td>
-
-                  <td>{money(record.grossIncome)}</td>
-                  <td>{money(record.taxPayable)}</td>
-                  <td>
-                    {money(
-                      num(record.refundAmountBeforeInterest) +
-                      num(record.interest)
-                    )}
-                  </td>
-
-                  <td>
-                    <span
-                      className={`trs-badge ${
-                        String(record.filingStatus || "Draft").toLowerCase()
-                      }`}
-                    >
-                      {record.filingStatus || "Draft"}
-                    </span>
-                  </td>
-
-                  <td>
-                    <button
-                      className="trs-row-action"
-                      onClick={() => onEdit(record)}
-                    >
-                      View / Edit
-                    </button>
-                  </td>
-                </tr>
+                <td>{record.financialYear || "—"}</td>
 
                 {showAssessmentDetails && (
-                  <tr className="trs-assessment-detail-row">
-                    <td colSpan={8}>
-                      <div className="trs-assessment-record">
-                        <div className="trs-assessment-record-heading">
-                          <strong>Assessment Record</strong>
-                          <span>
-                            AY {record.assessmentYear || "—"}
-                          </span>
-                        </div>
-
-                        <div className="trs-assessment-detail-grid">
-                          <div>
-                            <span>Order Type</span>
-                            <strong>{record.orderType || "—"}</strong>
-                          </div>
-                          <div>
-                            <span>Date of Order</span>
-                            <strong>{record.dateOfOrder || "—"}</strong>
-                          </div>
-                          <div>
-                            <span>Total Assessed Income</span>
-                            <strong>{money(record.totalAssessedIncome)}</strong>
-                          </div>
-                          <div>
-                            <span>Total Assessed Tax Payable</span>
-                            <strong>{money(record.totalAssessedTaxPayable)}</strong>
-                          </div>
-                          <div>
-                            <span>TDS Credit</span>
-                            <strong>{money(record.tdsCredit)}</strong>
-                          </div>
-                          <div>
-                            <span>Refund Before Interest</span>
-                            <strong>{money(record.refundAmountBeforeInterest)}</strong>
-                          </div>
-                          <div>
-                            <span>Interest</span>
-                            <strong>{money(record.interest)}</strong>
-                          </div>
-                          <div>
-                            <span>Net Refund</span>
-                            <strong>
-                              {money(
-                                num(record.refundAmountBeforeInterest) +
-                                num(record.interest)
-                              )}
-                            </strong>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
+                  <td>{record.assessmentYear || "—"}</td>
                 )}
-              </React.Fragment>
+
+                <td className="trs-ack">
+                  {record.acknowledgementNumber || "—"}
+                </td>
+                <td>{money(record.grossIncome)}</td>
+                <td>{money(record.taxPayable)}</td>
+                <td>
+                  {money(
+                    num(record.refundAmountBeforeInterest) +
+                    num(record.interest)
+                  )}
+                </td>
+                <td>
+                  <span
+                    className={`trs-badge ${
+                      String(record.filingStatus || "Draft").toLowerCase()
+                    }`}
+                  >
+                    {record.filingStatus || "Draft"}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    className="trs-row-action"
+                    onClick={() => onEdit(record)}
+                  >
+                    View / Edit
+                  </button>
+                </td>
+
+                {showAssessmentDetails && (
+                  <>
+                    <td>{record.orderType || "—"}</td>
+                    <td>{record.dateOfOrder || "—"}</td>
+                    <td>{money(record.totalAssessedIncome)}</td>
+                    <td>{money(record.totalAssessedTaxPayable)}</td>
+                    <td>{money(record.tdsCredit)}</td>
+                    <td>{money(record.refundAmountBeforeInterest)}</td>
+                    <td>{money(record.interest)}</td>
+                    <td>
+                      {money(
+                        num(record.refundAmountBeforeInterest) +
+                        num(record.interest)
+                      )}
+                    </td>
+                  </>
+                )}
+              </tr>
             ))}
+
+            {showAssessmentDetails && (
+              <tr className="trs-assessment-total-row">
+                <td colSpan={9}><strong>Assessment Records Total</strong></td>
+                <td>—</td>
+                <td>—</td>
+                <td><strong>{money(assessmentTotals.totalAssessedIncome)}</strong></td>
+                <td><strong>{money(assessmentTotals.totalAssessedTaxPayable)}</strong></td>
+                <td><strong>{money(assessmentTotals.tdsCredit)}</strong></td>
+                <td><strong>{money(assessmentTotals.refundAmountBeforeInterest)}</strong></td>
+                <td><strong>{money(assessmentTotals.interest)}</strong></td>
+                <td><strong>{money(assessmentTotals.netRefundAmount)}</strong></td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-
-      {showAssessmentDetails && (
-        <section className="trs-assessment-total-panel">
-          <div className="trs-assessment-total-heading">
-            <strong>Assessment Records Total</strong>
-            <span>{records.length} taxpayer record(s)</span>
-          </div>
-
-          <div className="trs-assessment-total-grid">
-            <div>
-              <span>Total Assessed Income</span>
-              <strong>{money(assessmentTotals.totalAssessedIncome)}</strong>
-            </div>
-            <div>
-              <span>Total Assessed Tax Payable</span>
-              <strong>{money(assessmentTotals.totalAssessedTaxPayable)}</strong>
-            </div>
-            <div>
-              <span>Total TDS Credit</span>
-              <strong>{money(assessmentTotals.tdsCredit)}</strong>
-            </div>
-            <div>
-              <span>Total Refund Before Interest</span>
-              <strong>{money(assessmentTotals.refundAmountBeforeInterest)}</strong>
-            </div>
-            <div>
-              <span>Total Interest</span>
-              <strong>{money(assessmentTotals.interest)}</strong>
-            </div>
-            <div>
-              <span>Total Net Refund</span>
-              <strong>{money(assessmentTotals.netRefundAmount)}</strong>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
-
 
 const incomeTrendStyles = `
 .trs-income-trend-scroll { width: 100%; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
