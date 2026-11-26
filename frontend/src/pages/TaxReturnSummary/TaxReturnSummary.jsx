@@ -71,6 +71,17 @@ const num = value => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+// Status is determined strictly by the signed difference.
+// Negative = Less Paid, Positive = Excess, Zero = Match.
+const getFinancialStatus = difference => {
+  const value = Number(difference);
+
+  if (!Number.isFinite(value)) return "Pending";
+  if (value < 0) return "Less Paid";
+  if (value > 0) return "Excess";
+  return "Match";
+};
+
 const money = value =>
   `₹${num(value).toLocaleString("en-IN", {
     maximumFractionDigits: 2,
@@ -1215,9 +1226,8 @@ function TaxReturnSummary() {
     const totalTds = sum("tdsClaim");
     const totalTdsCredit = sum("tdsCredit");
 
-    // TDS reconciliation is derived from the existing ITR TDS claim
-    // and assessment TDS credit values. Differences within ₹1 are treated
-    // as matched to avoid rounding-only mismatches.
+    // TDS reconciliation is derived from the ITR TDS claim
+    // and assessment TDS credit values. Status uses the exact signed difference.
     const tdsReconciliation = dashboardRecords.reduce(
       (summary, record) => {
         const claimed = num(record.tdsClaim);
@@ -1228,13 +1238,15 @@ function TaxReturnSummary() {
 
         const difference = credited - claimed;
 
-        if (Math.abs(difference) <= 1) {
+        const status = getFinancialStatus(difference);
+
+        if (status === "Match") {
           summary.matched.count += 1;
           summary.matched.amount += Math.min(claimed, credited);
-        } else if (difference > 1) {
+        } else if (status === "Excess") {
           summary.excess.count += 1;
           summary.excess.amount += difference;
-        } else {
+        } else if (status === "Less Paid") {
           summary.less.count += 1;
           summary.less.amount += Math.abs(difference);
         }
@@ -1434,15 +1446,11 @@ function TaxReturnSummary() {
       dashboardRecords.filter(
         record =>
           (num(record.totalAssessedIncome) &&
-            Math.abs(
-              num(record.totalAssessedIncome) -
-              num(record.grossIncome)
-            ) > 1) ||
+            num(record.totalAssessedIncome) !==
+              num(record.grossIncome)) ||
           (num(record.totalAssessedTaxPayable) &&
-            Math.abs(
-              num(record.totalAssessedTaxPayable) -
-              num(record.taxPayable)
-            ) > 1)
+            num(record.totalAssessedTaxPayable) !==
+              num(record.taxPayable))
       ).length;
 
     const recentRecords = [...dashboardRecords]
@@ -2706,13 +2714,22 @@ function TaxReturnSummary() {
         },
       ];
 
-      const differences = checks.filter(
-        item => Math.abs(item.itr - item.assessment) > 1
+      const checksWithStatus = checks.map(item => {
+        const difference = item.assessment - item.itr;
+        return {
+          ...item,
+          difference,
+          status: getFinancialStatus(difference),
+        };
+      });
+
+      const differences = checksWithStatus.filter(
+        item => item.status !== "Match"
       );
 
       return {
         ...record,
-        checks,
+        checks: checksWithStatus,
         differences,
       };
     });
@@ -2751,7 +2768,7 @@ function TaxReturnSummary() {
           <StatCard
             label="Matched records"
             value={rows.length - flagged.length}
-            note="No material difference found"
+            note="All comparison figures match exactly"
             icon="✓"
           />
 
@@ -2768,8 +2785,8 @@ function TaxReturnSummary() {
             <div>
               <h3>Reconciliation register</h3>
               <p>
-                Differences are calculated as assessment figure
-                minus return figure.
+                Difference = assessment figure minus return figure.
+                Negative: Less Paid · Positive: Excess · Zero: Match.
               </p>
             </div>
           </div>
@@ -2814,33 +2831,25 @@ function TaxReturnSummary() {
 
                       <td
                         className={
-                          Math.abs(
-                            check.assessment - check.itr
-                          ) > 1
-                            ? "trs-amount-warning"
-                            : "trs-amount-good"
+                          check.status === "Match"
+                            ? "trs-amount-good"
+                            : "trs-amount-warning"
                         }
                       >
-                        {money(
-                          check.assessment - check.itr
-                        )}
+                        {money(check.difference)}
                       </td>
 
                       <td>
                         <span
                           className={`trs-badge ${
-                            Math.abs(
-                              check.assessment - check.itr
-                            ) > 1
-                              ? "defective"
-                              : "processed"
+                            check.status === "Match"
+                              ? "processed"
+                              : check.status === "Excess"
+                                ? "excess"
+                                : "defective"
                           }`}
                         >
-                          {Math.abs(
-                            check.assessment - check.itr
-                          ) > 1
-                            ? "Difference Found"
-                            : "Matched"}
+                          {check.status}
                         </span>
                       </td>
                     </tr>

@@ -569,6 +569,7 @@
 .trs-badge.processed { background: #e7f5eb; color: #216b38; }
 .trs-badge.draft { background: #fbf2d9; color: #8c6b12; }
 .trs-badge.defective { background: #fdeaea; color: #a52828; }
+.trs-badge.excess { background: #fff2d8; color: #8a5a00; }
 
 .trs-row-action {
   padding: 5px 8px;
