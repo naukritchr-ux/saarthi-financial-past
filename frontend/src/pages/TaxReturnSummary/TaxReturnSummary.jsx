@@ -4063,16 +4063,16 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                 <td><strong>{money(totals.itrGrossIncome)}</strong></td>
                 <td><strong>{money(totals.itrTaxPayable)}</strong></td>
                 <td><strong>{money(totals.itrRefund)}</strong></td>
-                <td>—</td>
-                <td>—</td>
-                <td>—</td>
+                <td></td>
+                <td></td>
+                <td></td>
                 <td><strong>{money(totals.totalAssessedIncome)}</strong></td>
                 <td><strong>{money(totals.totalAssessedTaxPayable)}</strong></td>
                 <td><strong>{money(totals.tdsCredit)}</strong></td>
                 <td><strong>{money(totals.refundAmountBeforeInterest)}</strong></td>
                 <td><strong>{money(totals.interest)}</strong></td>
                 <td><strong>{money(totals.netRefundAmount)}</strong></td>
-                <td>—</td>
+                <td></td>
               </tr>
             )}
           </tbody>
