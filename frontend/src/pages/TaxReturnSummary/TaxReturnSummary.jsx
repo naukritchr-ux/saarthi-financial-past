@@ -3908,25 +3908,42 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
     );
   }
 
-  const assessmentTotals = records.reduce(
-    (totals, record) => {
-      const refundBeforeInterest = num(record.refundAmountBeforeInterest);
-      const interest = num(record.interest);
+  // Sort Financial Year from newest to oldest (e.g. 2026-27, 2025-26, ...).
+  const getFinancialYearSortValue = value => {
+    const match = String(value || "").match(/(\d{4})\s*[-/]\s*(\d{2,4})/);
+    if (match) return Number(match[1]);
+    const year = String(value || "").match(/\d{4}/);
+    return year ? Number(year[0]) : -1;
+  };
+  const sortedRecords = [...records].sort((a, b) => {
+    const yearDifference =
+      getFinancialYearSortValue(b.financialYear) -
+      getFinancialYearSortValue(a.financialYear);
+    if (yearDifference !== 0) return yearDifference;
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
 
+  const totals = sortedRecords.reduce(
+    (sum, record) => {
+      const itrRefund = num(record.refundDue);
+      const assessmentRefund = num(record.refundAmountBeforeInterest);
+      const interest = num(record.interest);
       return {
-        totalAssessedIncome:
-          totals.totalAssessedIncome + num(record.totalAssessedIncome),
-        totalAssessedTaxPayable:
-          totals.totalAssessedTaxPayable + num(record.totalAssessedTaxPayable),
-        tdsCredit: totals.tdsCredit + num(record.tdsCredit),
-        refundAmountBeforeInterest:
-          totals.refundAmountBeforeInterest + refundBeforeInterest,
-        interest: totals.interest + interest,
-        netRefundAmount:
-          totals.netRefundAmount + refundBeforeInterest + interest,
+        itrGrossIncome: sum.itrGrossIncome + num(record.grossIncome),
+        itrTaxPayable: sum.itrTaxPayable + num(record.taxPayable),
+        itrRefund: sum.itrRefund + itrRefund,
+        totalAssessedIncome: sum.totalAssessedIncome + num(record.totalAssessedIncome),
+        totalAssessedTaxPayable: sum.totalAssessedTaxPayable + num(record.totalAssessedTaxPayable),
+        tdsCredit: sum.tdsCredit + num(record.tdsCredit),
+        refundAmountBeforeInterest: sum.refundAmountBeforeInterest + assessmentRefund,
+        interest: sum.interest + interest,
+        netRefundAmount: sum.netRefundAmount + num(record.netRefundAmount ?? assessmentRefund + interest),
       };
     },
     {
+      itrGrossIncome: 0,
+      itrTaxPayable: 0,
+      itrRefund: 0,
       totalAssessedIncome: 0,
       totalAssessedTaxPayable: 0,
       tdsCredit: 0,
@@ -4000,40 +4017,23 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
           )}
 
           <tbody>
-            {records.map((record, index) => (
-              <tr
-                key={
-                  record.id ??
-                  `${record.name}-${record.financialYear}-${index}`
-                }
-              >
+            {sortedRecords.map((record, index) => (
+              <tr key={record.id ?? `${record.name}-${record.financialYear}-${index}`}>
                 <td>
                   <b>{record.name || "—"}</b>
                   <small className="trs-report-ack">
                     {record.pan || "PAN missing"}
                   </small>
                 </td>
-
                 <td>{record.financialYear || "—"}</td>
-
                 {showAssessmentDetails && (
                   <td>{record.assessmentYear || "—"}</td>
                 )}
-
                 <td>{money(record.grossIncome)}</td>
                 <td>{money(record.taxPayable)}</td>
+                <td>{money(record.refundDue)}</td>
                 <td>
-                  {money(
-                    num(record.refundAmountBeforeInterest) +
-                    num(record.interest)
-                  )}
-                </td>
-                <td>
-                  <span
-                    className={`trs-badge ${
-                      String(record.filingStatus || "Draft").toLowerCase()
-                    }`}
-                  >
+                  <span className={`trs-badge ${String(record.filingStatus || "Draft").toLowerCase()}`}>
                     {record.filingStatus || "Draft"}
                   </span>
                 </td>
@@ -4046,20 +4046,11 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                     <td>{money(record.tdsCredit)}</td>
                     <td>{money(record.refundAmountBeforeInterest)}</td>
                     <td>{money(record.interest)}</td>
-                    <td>
-                      {money(
-                        num(record.refundAmountBeforeInterest) +
-                        num(record.interest)
-                      )}
-                    </td>
+                    <td>{money(record.netRefundAmount)}</td>
                   </>
                 )}
-
                 <td>
-                  <button
-                    className="trs-row-action"
-                    onClick={() => onEdit(record)}
-                  >
+                  <button className="trs-row-action" onClick={() => onEdit(record)}>
                     View / Edit
                   </button>
                 </td>
@@ -4068,15 +4059,19 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
 
             {showAssessmentDetails && (
               <tr className="trs-assessment-total-row">
-                <td colSpan={7}><strong>Assessment Records Total</strong></td>
+                <td colSpan={3}><strong>Total</strong></td>
+                <td><strong>{money(totals.itrGrossIncome)}</strong></td>
+                <td><strong>{money(totals.itrTaxPayable)}</strong></td>
+                <td><strong>{money(totals.itrRefund)}</strong></td>
                 <td>—</td>
                 <td>—</td>
-                <td><strong>{money(assessmentTotals.totalAssessedIncome)}</strong></td>
-                <td><strong>{money(assessmentTotals.totalAssessedTaxPayable)}</strong></td>
-                <td><strong>{money(assessmentTotals.tdsCredit)}</strong></td>
-                <td><strong>{money(assessmentTotals.refundAmountBeforeInterest)}</strong></td>
-                <td><strong>{money(assessmentTotals.interest)}</strong></td>
-                <td><strong>{money(assessmentTotals.netRefundAmount)}</strong></td>
+                <td>—</td>
+                <td><strong>{money(totals.totalAssessedIncome)}</strong></td>
+                <td><strong>{money(totals.totalAssessedTaxPayable)}</strong></td>
+                <td><strong>{money(totals.tdsCredit)}</strong></td>
+                <td><strong>{money(totals.refundAmountBeforeInterest)}</strong></td>
+                <td><strong>{money(totals.interest)}</strong></td>
+                <td><strong>{money(totals.netRefundAmount)}</strong></td>
                 <td>—</td>
               </tr>
             )}
