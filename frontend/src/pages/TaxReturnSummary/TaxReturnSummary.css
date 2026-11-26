@@ -3672,3 +3672,94 @@
     height: 290px !important;
   }
 }
+
+
+/* TCHR assessment details are shown below each taxpayer row.
+   The original Taxpayer Records table columns remain unchanged. */
+.trs-assessment-detail-row > td {
+  padding: 0 12px 14px !important;
+  background: #fbfaf6;
+  border-bottom: 1px solid var(--trs-border);
+  white-space: normal;
+}
+
+.trs-assessment-record {
+  padding: 13px 15px;
+  border: 1px solid var(--trs-border);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.trs-assessment-record-heading,
+.trs-assessment-total-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--trs-navy);
+}
+
+.trs-assessment-record-heading span,
+.trs-assessment-total-heading span {
+  color: var(--trs-muted);
+  font-size: 11px;
+}
+
+.trs-assessment-detail-grid,
+.trs-assessment-total-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.trs-assessment-detail-grid > div,
+.trs-assessment-total-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 7px;
+  background: #f8f5eb;
+}
+
+.trs-assessment-detail-grid span,
+.trs-assessment-total-grid span {
+  color: var(--trs-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.trs-assessment-detail-grid strong,
+.trs-assessment-total-grid strong {
+  color: var(--trs-navy);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.trs-assessment-total-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--trs-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.trs-assessment-total-heading {
+  margin-bottom: 13px;
+}
+
+@media (max-width: 900px) {
+  .trs-assessment-detail-grid,
+  .trs-assessment-total-grid {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .trs-assessment-detail-grid,
+  .trs-assessment-total-grid {
+    grid-template-columns: 1fr;
+  }
+}
