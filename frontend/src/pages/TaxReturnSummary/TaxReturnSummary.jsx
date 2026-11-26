@@ -2017,7 +2017,7 @@ function TaxReturnSummary() {
                   onClick={() => setPage("reconciliation")}
                   title="Open the reconciliation register"
                 >
-                  <span className="trs-tds-status-label">Less Paid</span>
+                  <span className="trs-tds-status-label">Less</span>
                   <strong>{tdsReconciliation.less.count.toLocaleString("en-IN")}</strong>
                   <b>{money(tdsReconciliation.less.amount)}</b>
                   <small>TDS credit shortfall</small>
@@ -2806,7 +2806,7 @@ function TaxReturnSummary() {
               <h3>Reconciliation register</h3>
               <p>
                 Difference = assessment figure minus return figure.
-                Negative: Less Paid · Positive: Excess · Zero: Match.
+                Negative: Less · Positive: Excess · Zero: Match.
               </p>
             </div>
           </div>
@@ -2814,7 +2814,7 @@ function TaxReturnSummary() {
           <div className="trs-reconciliation-filters" role="group" aria-label="Filter reconciliation records by status">
             {[
               { value: "all", label: "All Records" },
-              { value: "Less Paid", label: "Less Paid" },
+              { value: "Less Paid", label: "Less" },
               { value: "Excess", label: "Excess" },
               { value: "Match", label: "Match" },
             ].map(option => (
