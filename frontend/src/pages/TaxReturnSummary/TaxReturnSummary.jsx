@@ -2735,60 +2735,28 @@ function TaxReturnSummary() {
       };
     });
 
-    // Build the table at particular level, but calculate filter counts at
-    // taxpayer level. A taxpayer is Less/Excess if ANY particular has that
-    // status. A taxpayer is Match only when EVERY particular is matched.
+    const flagged = rows.filter(
+      record => record.differences.length
+    );
+
+    // Each comparison line is independently classified and filtered.
     const reconciliationLines = rows.flatMap(record =>
       record.checks.map((check, index) => ({
         record,
         check,
         index,
-        taxpayerId: taxpayerKey(record),
         key: `${record.id || record.name}-${record.financialYear}-${check.label}`,
       }))
     );
-
-    const taxpayerGroups = new Map();
-    reconciliationLines.forEach(line => {
-      const group = taxpayerGroups.get(line.taxpayerId) || {
-        taxpayerId: line.taxpayerId,
-        lines: [],
-      };
-      group.lines.push(line);
-      taxpayerGroups.set(line.taxpayerId, group);
-    });
-
-    const taxpayerStatusGroups = [...taxpayerGroups.values()].map(group => {
-      const statuses = group.lines.map(line => line.check.status);
-      return {
-        ...group,
-        hasLess: statuses.includes("Less Paid"),
-        hasExcess: statuses.includes("Excess"),
-        isMatch: statuses.length > 0 && statuses.every(status => status === "Match"),
-        needsReview: statuses.some(status => status !== "Match"),
-      };
-    });
-
-    const flagged = taxpayerStatusGroups.filter(group => group.needsReview);
     const reconciliationStatusCounts = {
-      all: taxpayerStatusGroups.length,
-      "Less Paid": taxpayerStatusGroups.filter(group => group.hasLess).length,
-      Excess: taxpayerStatusGroups.filter(group => group.hasExcess).length,
-      Match: taxpayerStatusGroups.filter(group => group.isMatch).length,
+      all: reconciliationLines.length,
+      "Less Paid": reconciliationLines.filter(item => item.check.status === "Less Paid").length,
+      Excess: reconciliationLines.filter(item => item.check.status === "Excess").length,
+      Match: reconciliationLines.filter(item => item.check.status === "Match").length,
     };
-
-    // Selecting a status shows all particular rows for each taxpayer in that
-    // category, so the user can review the taxpayer's complete comparison.
-    const visibleTaxpayerGroups = reconciliationStatusFilter === "all"
-      ? taxpayerStatusGroups
-      : taxpayerStatusGroups.filter(group =>
-          reconciliationStatusFilter === "Less Paid"
-            ? group.hasLess
-            : reconciliationStatusFilter === "Excess"
-              ? group.hasExcess
-              : group.isMatch
-        );
-    const visibleReconciliationLines = visibleTaxpayerGroups.flatMap(group => group.lines);
+    const visibleReconciliationLines = reconciliationStatusFilter === "all"
+      ? reconciliationLines
+      : reconciliationLines.filter(item => item.check.status === reconciliationStatusFilter);
 
     return (
       <div className="trs-content">
@@ -2805,21 +2773,21 @@ function TaxReturnSummary() {
           </div>
 
           <span className="trs-summary-chip">
-            {flagged.length} taxpayer(s) need review
+            {flagged.length} record(s) need review
           </span>
         </div>
 
         <div className="trs-stats-grid">
           <StatCard
             label="Records checked"
-            value={taxpayerStatusGroups.length}
-            note="Unique taxpayers checked"
+            value={rows.length}
+            note="Available taxpayer records"
             icon="▤"
           />
 
           <StatCard
             label="Matched records"
-            value={reconciliationStatusCounts.Match}
+            value={rows.length - flagged.length}
             note="All comparison figures match exactly"
             icon="✓"
           />
@@ -2827,7 +2795,7 @@ function TaxReturnSummary() {
           <StatCard
             label="Difference found"
             value={flagged.length}
-            note="Unique taxpayers with differences"
+            note="Review figures below"
             icon="!"
           />
         </div>
@@ -2846,7 +2814,7 @@ function TaxReturnSummary() {
           <div className="trs-reconciliation-filters" role="group" aria-label="Filter reconciliation records by status">
             {[
               { value: "all", label: "All Records" },
-              { value: "Less Paid", label: "Less" },
+              { value: "Less Paid", label: "Less Paid" },
               { value: "Excess", label: "Excess" },
               { value: "Match", label: "Match" },
             ].map(option => (
