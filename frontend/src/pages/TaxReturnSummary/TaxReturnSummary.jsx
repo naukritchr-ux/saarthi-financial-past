@@ -3966,12 +3966,11 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                 <th rowSpan={2}>Taxpayer</th>
                 <th rowSpan={2}>Financial Year</th>
                 <th rowSpan={2}>Assessment Year</th>
-                <th colSpan={5} className="trs-record-group-heading">ITR Records</th>
+                <th colSpan={4} className="trs-record-group-heading">ITR Records</th>
                 <th colSpan={8} className="trs-record-group-heading">Assessment Records</th>
                 <th rowSpan={2}>Action</th>
               </tr>
               <tr>
-                <th>Acknowledgement No.</th>
                 <th>Gross Income</th>
                 <th>Tax Payable</th>
                 <th>Refund</th>
@@ -3991,7 +3990,6 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
               <tr>
                 <th>Taxpayer</th>
                 <th>Financial Year</th>
-                <th>Acknowledgement No.</th>
                 <th>Gross Income</th>
                 <th>Tax Payable</th>
                 <th>Refund</th>
@@ -4022,9 +4020,6 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                   <td>{record.assessmentYear || "—"}</td>
                 )}
 
-                <td className="trs-ack">
-                  {record.acknowledgementNumber || "—"}
-                </td>
                 <td>{money(record.grossIncome)}</td>
                 <td>{money(record.taxPayable)}</td>
                 <td>
@@ -4073,7 +4068,7 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
 
             {showAssessmentDetails && (
               <tr className="trs-assessment-total-row">
-                <td colSpan={8}><strong>Assessment Records Total</strong></td>
+                <td colSpan={7}><strong>Assessment Records Total</strong></td>
                 <td>—</td>
                 <td>—</td>
                 <td><strong>{money(assessmentTotals.totalAssessedIncome)}</strong></td>
