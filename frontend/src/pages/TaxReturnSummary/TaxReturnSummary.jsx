@@ -71,11 +71,13 @@ const num = value => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-// Status is based on the exact signed difference.
+// Status is determined strictly by the signed difference.
+// Negative = Less Paid, Positive = Excess, Zero = Match.
 const getFinancialStatus = difference => {
   const value = Number(difference);
+
   if (!Number.isFinite(value)) return "Pending";
-  if (value < 0) return "Less";
+  if (value < 0) return "Less Paid";
   if (value > 0) return "Excess";
   return "Match";
 };
@@ -1225,7 +1227,7 @@ function TaxReturnSummary() {
     const totalTds = sum("tdsClaim");
     const totalTdsCredit = sum("tdsCredit");
 
-    // TDS reconciliation is derived from the existing ITR TDS claim
+    // TDS reconciliation is derived from the ITR TDS claim
     // and assessment TDS credit values. Status uses the exact signed difference.
     const tdsReconciliation = dashboardRecords.reduce(
       (summary, record) => {
@@ -1238,13 +1240,14 @@ function TaxReturnSummary() {
         const difference = credited - claimed;
 
         const status = getFinancialStatus(difference);
+
         if (status === "Match") {
           summary.matched.count += 1;
           summary.matched.amount += Math.min(claimed, credited);
         } else if (status === "Excess") {
           summary.excess.count += 1;
           summary.excess.amount += difference;
-        } else if (status === "Less") {
+        } else if (status === "Less Paid") {
           summary.less.count += 1;
           summary.less.amount += Math.abs(difference);
         }
@@ -1444,15 +1447,11 @@ function TaxReturnSummary() {
       dashboardRecords.filter(
         record =>
           (num(record.totalAssessedIncome) &&
-            Math.abs(
-              num(record.totalAssessedIncome) -
-              num(record.grossIncome)
-            ) > 1) ||
+            num(record.totalAssessedIncome) !==
+              num(record.grossIncome)) ||
           (num(record.totalAssessedTaxPayable) &&
-            Math.abs(
-              num(record.totalAssessedTaxPayable) -
-              num(record.taxPayable)
-            ) > 1)
+            num(record.totalAssessedTaxPayable) !==
+              num(record.taxPayable))
       ).length;
 
     const recentRecords = [...dashboardRecords]
@@ -2018,7 +2017,7 @@ function TaxReturnSummary() {
                   onClick={() => setPage("reconciliation")}
                   title="Open the reconciliation register"
                 >
-                  <span className="trs-tds-status-label">Less</span>
+                  <span className="trs-tds-status-label">Less Paid</span>
                   <strong>{tdsReconciliation.less.count.toLocaleString("en-IN")}</strong>
                   <b>{money(tdsReconciliation.less.amount)}</b>
                   <small>TDS credit shortfall</small>
@@ -2714,7 +2713,9 @@ function TaxReturnSummary() {
           itr: num(record.refundDue),
           assessment: num(record.refundAmountBeforeInterest) + num(record.interest),
         },
-      ].map(item => {
+      ];
+
+      const checksWithStatus = checks.map(item => {
         const difference = item.assessment - item.itr;
         return {
           ...item,
@@ -2723,25 +2724,71 @@ function TaxReturnSummary() {
         };
       });
 
-      const differences = checks.filter(item => item.status !== "Match");
-      return { ...record, checks, differences };
+      const differences = checksWithStatus.filter(
+        item => item.status !== "Match"
+      );
+
+      return {
+        ...record,
+        checks: checksWithStatus,
+        differences,
+      };
     });
 
-    const flagged = rows.filter(record => record.differences.length);
-    const allChecks = rows.flatMap(record => record.checks);
-    const statusCounts = {
-      all: allChecks.length,
-      Less: allChecks.filter(item => item.status === "Less").length,
-      Excess: allChecks.filter(item => item.status === "Excess").length,
-      Match: allChecks.filter(item => item.status === "Match").length,
+    // Build the table at particular level, but calculate filter counts at
+    // taxpayer level. A taxpayer is Less/Excess if ANY particular has that
+    // status. A taxpayer is Match only when EVERY particular is matched.
+    const reconciliationLines = rows.flatMap(record =>
+      record.checks.map((check, index) => ({
+        record,
+        check,
+        index,
+        taxpayerId: taxpayerKey(record),
+        key: `${record.id || record.name}-${record.financialYear}-${check.label}`,
+      }))
+    );
+
+    const taxpayerGroups = new Map();
+    reconciliationLines.forEach(line => {
+      const group = taxpayerGroups.get(line.taxpayerId) || {
+        taxpayerId: line.taxpayerId,
+        lines: [],
+      };
+      group.lines.push(line);
+      taxpayerGroups.set(line.taxpayerId, group);
+    });
+
+    const taxpayerStatusGroups = [...taxpayerGroups.values()].map(group => {
+      const statuses = group.lines.map(line => line.check.status);
+      return {
+        ...group,
+        hasLess: statuses.includes("Less Paid"),
+        hasExcess: statuses.includes("Excess"),
+        isMatch: statuses.length > 0 && statuses.every(status => status === "Match"),
+        needsReview: statuses.some(status => status !== "Match"),
+      };
+    });
+
+    const flagged = taxpayerStatusGroups.filter(group => group.needsReview);
+    const reconciliationStatusCounts = {
+      all: taxpayerStatusGroups.length,
+      "Less Paid": taxpayerStatusGroups.filter(group => group.hasLess).length,
+      Excess: taxpayerStatusGroups.filter(group => group.hasExcess).length,
+      Match: taxpayerStatusGroups.filter(group => group.isMatch).length,
     };
 
-    const visibleRows = rows.map(record => ({
-      ...record,
-      visibleChecks: reconciliationStatusFilter === "all"
-        ? record.checks
-        : record.checks.filter(item => item.status === reconciliationStatusFilter),
-    })).filter(record => record.visibleChecks.length > 0);
+    // Selecting a status shows all particular rows for each taxpayer in that
+    // category, so the user can review the taxpayer's complete comparison.
+    const visibleTaxpayerGroups = reconciliationStatusFilter === "all"
+      ? taxpayerStatusGroups
+      : taxpayerStatusGroups.filter(group =>
+          reconciliationStatusFilter === "Less Paid"
+            ? group.hasLess
+            : reconciliationStatusFilter === "Excess"
+              ? group.hasExcess
+              : group.isMatch
+        );
+    const visibleReconciliationLines = visibleTaxpayerGroups.flatMap(group => group.lines);
 
     return (
       <div className="trs-content">
@@ -2758,29 +2805,29 @@ function TaxReturnSummary() {
           </div>
 
           <span className="trs-summary-chip">
-            {flagged.length} record(s) need review
+            {flagged.length} taxpayer(s) need review
           </span>
         </div>
 
         <div className="trs-stats-grid">
           <StatCard
             label="Records checked"
-            value={rows.length}
-            note="Available taxpayer records"
+            value={taxpayerStatusGroups.length}
+            note="Unique taxpayers checked"
             icon="▤"
           />
 
           <StatCard
             label="Matched records"
-            value={rows.length - flagged.length}
-            note="No material difference found"
+            value={reconciliationStatusCounts.Match}
+            note="All comparison figures match exactly"
             icon="✓"
           />
 
           <StatCard
             label="Difference found"
             value={flagged.length}
-            note="Review figures below"
+            note="Unique taxpayers with differences"
             icon="!"
           />
         </div>
@@ -2790,8 +2837,8 @@ function TaxReturnSummary() {
             <div>
               <h3>Reconciliation register</h3>
               <p>
-                Differences are calculated as assessment figure minus return figure.
-                Negative: Less · Positive: Excess · Zero: Match.
+                Difference = assessment figure minus return figure.
+                Negative: Less Paid · Positive: Excess · Zero: Match.
               </p>
             </div>
           </div>
@@ -2799,18 +2846,19 @@ function TaxReturnSummary() {
           <div className="trs-reconciliation-filters" role="group" aria-label="Filter reconciliation records by status">
             {[
               { value: "all", label: "All Records" },
-              { value: "Less", label: "Less" },
+              { value: "Less Paid", label: "Less" },
               { value: "Excess", label: "Excess" },
               { value: "Match", label: "Match" },
             ].map(option => (
               <button
                 key={option.value}
                 type="button"
-                className={`trs-light-btn trs-reconciliation-filter ${reconciliationStatusFilter === option.value ? "active" : ""}`}
+                className={`trs-reconciliation-filter-btn ${reconciliationStatusFilter === option.value ? "active" : ""} ${option.value === "Less Paid" ? "less" : option.value.toLowerCase()}`}
                 onClick={() => setReconciliationStatusFilter(option.value)}
                 aria-pressed={reconciliationStatusFilter === option.value}
               >
-                {option.label} ({statusCounts[option.value]})
+                <span>{option.label}</span>
+                <strong>{reconciliationStatusCounts[option.value]}</strong>
               </button>
             ))}
           </div>
@@ -2830,30 +2878,50 @@ function TaxReturnSummary() {
               </thead>
 
               <tbody>
-                {visibleRows.flatMap(record =>
-                  record.visibleChecks.map((check, index) => (
-                    <tr key={`${record.id || record.name}-${record.financialYear}-${check.label}`}>
-                      <td><b>{index === 0 ? record.name || "—" : ""}</b></td>
-                      <td>{index === 0 ? record.financialYear || "—" : ""}</td>
+                {visibleReconciliationLines.map(({ record, check, index, key }) => (
+                    <tr key={key}>
+                      <td>
+                        <b>{record.name || "—"}</b>
+                      </td>
+
+                      <td>{record.financialYear || "—"}</td>
+
                       <td>{check.label}</td>
                       <td>{money(check.itr)}</td>
                       <td>{money(check.assessment)}</td>
-                      <td className={check.status === "Match" ? "trs-amount-good" : "trs-amount-warning"}>
+
+                      <td
+                        className={
+                          check.status === "Match"
+                            ? "trs-amount-good"
+                            : "trs-amount-warning"
+                        }
+                      >
                         {money(check.difference)}
                       </td>
+
                       <td>
-                        <span className={`trs-badge ${check.status === "Match" ? "processed" : check.status === "Excess" ? "draft" : "defective"}`}>
+                        <span
+                          className={`trs-badge ${
+                            check.status === "Match"
+                              ? "processed"
+                              : check.status === "Excess"
+                                ? "excess"
+                                : "defective"
+                          }`}
+                        >
                           {check.status}
                         </span>
                       </td>
                     </tr>
-                  ))
-                )}
+                ))}
 
-                {!visibleRows.length && (
+                {!visibleReconciliationLines.length && (
                   <tr>
                     <td colSpan="7" className="trs-empty-cell">
-                      No records available for the selected status.
+                      {rows.length
+                        ? `No ${reconciliationStatusFilter} records found.`
+                        : "No records available for reconciliation."}
                     </td>
                   </tr>
                 )}
