@@ -3938,6 +3938,26 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
 
   return (
     <div className="trs-records-table-section">
+      <style>{`
+        .trs-records-table-section .trs-table {
+          width: 100%;
+          border-collapse: collapse;
+          border: 1px solid #c9c5bb;
+        }
+        .trs-records-table-section .trs-table th,
+        .trs-records-table-section .trs-table td {
+          border: 1px solid #c9c5bb;
+          padding: 10px 12px;
+          vertical-align: middle;
+        }
+        .trs-records-table-section .trs-table thead th {
+          border: 1px solid #b8b2a6;
+        }
+        .trs-records-table-section .trs-assessment-total-row td {
+          border: 1px solid #b8b2a6;
+          background: #f7f4ec;
+        }
+      `}</style>
       <div className="trs-table-wrap">
         <table className="trs-table">
           {showAssessmentDetails ? (
@@ -3947,8 +3967,8 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                 <th rowSpan={2}>Financial Year</th>
                 <th rowSpan={2}>Assessment Year</th>
                 <th colSpan={5} className="trs-record-group-heading">ITR Records</th>
-                <th rowSpan={2}>Action</th>
                 <th colSpan={8} className="trs-record-group-heading">Assessment Records</th>
+                <th rowSpan={2}>Action</th>
               </tr>
               <tr>
                 <th>Acknowledgement No.</th>
@@ -4022,15 +4042,6 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                     {record.filingStatus || "Draft"}
                   </span>
                 </td>
-                <td>
-                  <button
-                    className="trs-row-action"
-                    onClick={() => onEdit(record)}
-                  >
-                    View / Edit
-                  </button>
-                </td>
-
                 {showAssessmentDetails && (
                   <>
                     <td>{record.orderType || "—"}</td>
@@ -4048,12 +4059,21 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                     </td>
                   </>
                 )}
+
+                <td>
+                  <button
+                    className="trs-row-action"
+                    onClick={() => onEdit(record)}
+                  >
+                    View / Edit
+                  </button>
+                </td>
               </tr>
             ))}
 
             {showAssessmentDetails && (
               <tr className="trs-assessment-total-row">
-                <td colSpan={9}><strong>Assessment Records Total</strong></td>
+                <td colSpan={8}><strong>Assessment Records Total</strong></td>
                 <td>—</td>
                 <td>—</td>
                 <td><strong>{money(assessmentTotals.totalAssessedIncome)}</strong></td>
@@ -4062,6 +4082,7 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
                 <td><strong>{money(assessmentTotals.refundAmountBeforeInterest)}</strong></td>
                 <td><strong>{money(assessmentTotals.interest)}</strong></td>
                 <td><strong>{money(assessmentTotals.netRefundAmount)}</strong></td>
+                <td>—</td>
               </tr>
             )}
           </tbody>
