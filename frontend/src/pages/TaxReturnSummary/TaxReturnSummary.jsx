@@ -2710,87 +2710,28 @@ function TaxReturnSummary() {
         {
           label: "Expected Refund / (Tax Payable)",
           itr: num(record.refundDue),
-          assessment: num(record.refundAmountBeforeInterest) + num(record.interest),
+          assessment:
+            num(record.refundAmountBeforeInterest) + num(record.interest),
         },
       ];
 
-      const checksWithStatus = checks.map(item => {
-        const difference = item.assessment - item.itr;
-        return {
-          ...item,
-          difference,
-          status: getFinancialStatus(difference),
-        };
-      });
-
-      const differences = checksWithStatus.filter(
-        item => item.status !== "Match"
-      );
-
       return {
         ...record,
-        checks: checksWithStatus,
-        differences,
+        checks: checks.map(item => {
+          const difference = item.assessment - item.itr;
+
+          return {
+            ...item,
+            difference,
+            status: getFinancialStatus(difference),
+          };
+        }),
       };
     });
 
-    const flagged = rows.filter(
-      record => record.differences.length
-    );
-
     return (
       <div className="trs-content">
-        <div className="trs-page-heading">
-          <div>
-            <span className="trs-eyebrow">
-              COMPLIANCE & VERIFICATION
-            </span>
-            <h2>Tax Reconciliation</h2>
-            <p>
-              Compare return figures with assessment and credit
-              figures saved in your records.
-            </p>
-          </div>
-
-          <span className="trs-summary-chip">
-            {flagged.length} record(s) need review
-          </span>
-        </div>
-
-        <div className="trs-stats-grid">
-          <StatCard
-            label="Records checked"
-            value={rows.length}
-            note="Available taxpayer records"
-            icon="▤"
-          />
-
-          <StatCard
-            label="Matched records"
-            value={rows.length - flagged.length}
-            note="All comparison figures match exactly"
-            icon="✓"
-          />
-
-          <StatCard
-            label="Difference found"
-            value={flagged.length}
-            note="Review figures below"
-            icon="!"
-          />
-        </div>
-
         <section className="trs-panel">
-          <div className="trs-panel-heading">
-            <div>
-              <h3>Reconciliation register</h3>
-              <p>
-                Difference = assessment figure minus return figure.
-                Negative: Less · Positive: Excess · Zero: Match.
-              </p>
-            </div>
-          </div>
-
           <div className="trs-table-wrap">
             <table className="trs-table">
               <thead>
@@ -2813,16 +2754,12 @@ function TaxReturnSummary() {
                     >
                       <td>
                         <b>
-                          {index === 0
-                            ? record.name || "—"
-                            : ""}
+                          {index === 0 ? record.name || "—" : ""}
                         </b>
                       </td>
 
                       <td>
-                        {index === 0
-                          ? record.financialYear || "—"
-                          : ""}
+                        {index === 0 ? record.financialYear || "—" : ""}
                       </td>
 
                       <td>{check.label}</td>
@@ -2858,10 +2795,7 @@ function TaxReturnSummary() {
 
                 {!rows.length && (
                   <tr>
-                    <td
-                      colSpan="7"
-                      className="trs-empty-cell"
-                    >
+                    <td colSpan="7" className="trs-empty-cell">
                       No records available for reconciliation.
                     </td>
                   </tr>
@@ -2871,9 +2805,9 @@ function TaxReturnSummary() {
           </div>
 
           <p className="trs-note">
-            Note: This is a preliminary comparison using the
-            fields currently stored in your database. It is not
-            an official tax assessment or 26AS/AIS verification.
+            Note: This is a preliminary comparison using the fields currently
+            stored in your database. It is not an official tax assessment or
+            26AS/AIS verification.
           </p>
         </section>
       </div>
@@ -3965,26 +3899,117 @@ function RecordsTable({ records, onEdit, showAssessmentDetails = false }) {
   return (
     <div className="trs-records-table-section">
       <style>{`
+        .trs-records-table-section {
+          width: 100%;
+          min-width: 0;
+        }
+        .trs-records-table-section .trs-table-wrap {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-x: contain;
+          border: 1px solid #c9c5bb;
+          border-radius: 8px;
+        }
         .trs-records-table-section .trs-table {
           width: 100%;
-          border-collapse: collapse;
-          border: 1px solid #c9c5bb;
+          min-width: 760px;
+          border-collapse: separate;
+          border-spacing: 0;
+          border: 0;
         }
         .trs-records-table-section .trs-table th,
         .trs-records-table-section .trs-table td {
-          border: 1px solid #c9c5bb;
+          border-right: 1px solid #c9c5bb;
+          border-bottom: 1px solid #c9c5bb;
           padding: 10px 12px;
           vertical-align: middle;
+          white-space: nowrap;
+        }
+        .trs-records-table-section .trs-table thead tr:first-child th:first-child,
+        .trs-records-table-section .trs-table tbody td:first-child {
+          position: sticky;
+          left: 0;
+          z-index: 1;
+          min-width: 190px;
+          max-width: 250px;
+          white-space: normal;
+          background: #fffdf8;
+          box-shadow: 2px 0 4px rgba(35, 30, 20, 0.06);
         }
         .trs-records-table-section .trs-table thead th {
-          border: 1px solid #b8b2a6;
+          border-top: 0;
+          border-bottom: 1px solid #b8b2a6;
+          background: #f7f4ec;
+          color: #61718b;
+          font-size: 12px;
+          font-weight: 700;
+          text-align: left;
         }
-        .trs-records-table-section .trs-assessment-total-row td {
-          border: 1px solid #b8b2a6;
+        .trs-records-table-section .trs-table thead th:first-child {
+          z-index: 3;
           background: #f7f4ec;
         }
+        .trs-records-table-section .trs-table tbody tr:last-child td {
+          border-bottom: 0;
+        }
+        .trs-records-table-section .trs-table th:last-child,
+        .trs-records-table-section .trs-table td:last-child {
+          border-right: 0;
+        }
+        .trs-records-table-section .trs-table td:first-child b {
+          overflow-wrap: anywhere;
+        }
+        .trs-records-table-section .trs-assessment-total-row td {
+          border-bottom: 1px solid #b8b2a6;
+          background: #f7f4ec;
+        }
+        .trs-records-table-section .trs-assessment-total-row td:first-child {
+          background: #f7f4ec;
+        }
+        .trs-records-table-section .trs-row-action {
+          white-space: nowrap;
+        }
+        .trs-records-table-section .trs-table-wrap-detailed .trs-table {
+          min-width: 1580px;
+        }
+        @media (max-width: 768px) {
+          .trs-records-table-section .trs-table {
+            min-width: 760px;
+            font-size: 12px;
+          }
+          .trs-records-table-section .trs-table th,
+          .trs-records-table-section .trs-table td {
+            padding: 9px 10px;
+          }
+          .trs-records-table-section .trs-table thead tr:first-child th:first-child,
+          .trs-records-table-section .trs-table tbody td:first-child {
+            min-width: 160px;
+            max-width: 190px;
+          }
+          .trs-records-table-section .trs-report-ack {
+            display: block;
+            overflow-wrap: anywhere;
+          }
+        }
+        @media (max-width: 480px) {
+          .trs-records-table-section .trs-table {
+            min-width: 720px;
+          }
+          .trs-records-table-section .trs-table th,
+          .trs-records-table-section .trs-table td {
+            padding: 8px;
+          }
+        }
       `}</style>
-      <div className="trs-table-wrap">
+      <div
+        className={`trs-table-wrap ${showAssessmentDetails ? "trs-table-wrap-detailed" : "trs-table-wrap-basic"}`}
+        role="region"
+        aria-label="Taxpayer records table. Scroll horizontally to view all columns."
+        tabIndex={0}
+      >
         <table className="trs-table">
           {showAssessmentDetails ? (
             <thead>
