@@ -72,12 +72,12 @@ const num = value => {
 };
 
 // Status is determined strictly by the signed difference.
-// Negative = Less Paid, Positive = Excess, Zero = Match.
+// Negative = Less, Positive = Excess, Zero = Match.
 const getFinancialStatus = difference => {
   const value = Number(difference);
 
   if (!Number.isFinite(value)) return "Pending";
-  if (value < 0) return "Less Paid";
+  if (value < 0) return "Less";
   if (value > 0) return "Excess";
   return "Match";
 };
@@ -1246,7 +1246,7 @@ function TaxReturnSummary() {
         } else if (status === "Excess") {
           summary.excess.count += 1;
           summary.excess.amount += difference;
-        } else if (status === "Less Paid") {
+        } else if (status === "Less") {
           summary.less.count += 1;
           summary.less.amount += Math.abs(difference);
         }
@@ -2016,7 +2016,7 @@ function TaxReturnSummary() {
                   onClick={() => setPage("reconciliation")}
                   title="Open the reconciliation register"
                 >
-                  <span className="trs-tds-status-label">Less Paid</span>
+                  <span className="trs-tds-status-label">Less</span>
                   <strong>{tdsReconciliation.less.count.toLocaleString("en-IN")}</strong>
                   <b>{money(tdsReconciliation.less.amount)}</b>
                   <small>TDS credit shortfall</small>
@@ -2786,7 +2786,7 @@ function TaxReturnSummary() {
               <h3>Reconciliation register</h3>
               <p>
                 Difference = assessment figure minus return figure.
-                Negative: Less Paid · Positive: Excess · Zero: Match.
+                Negative: Less · Positive: Excess · Zero: Match.
               </p>
             </div>
           </div>
