@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "./TaxReturnSummary.css";
 
 const TAX_RETURN_API_URL = "/api/tax-return-summary";
@@ -2232,7 +2233,7 @@ function TaxReturnSummary() {
           <span className="trs-eyebrow">DATABASE</span>
           <h2>Taxpayer Records</h2>
           <p>
-            Select a financial year to review the ITR and assessment details.
+            Filter and open saved tax return records.
           </p>
         </div>
 
@@ -2255,12 +2256,12 @@ function TaxReturnSummary() {
 
       <TaxpayerRecordsExplorer
         records={filteredRecords}
-        search={search}
-        onSearch={setSearch}
+        allRecords={records}
         fyFilter={fyFilter}
         onFyFilter={setFyFilter}
         statusFilter={statusFilter}
         onStatusFilter={setStatusFilter}
+        onExportPdf={downloadRecordsPdf}
         onExportCsv={exportRecordsCsv}
         onEdit={editFromTable}
         onDownload={openRecordPdf}
@@ -3998,27 +3999,22 @@ function TaxReturnSummary() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Taxpayer Records: master list (left) + ITR vs assessment detail     */
+/* Taxpayer Records: ITR table + record detail popup                   */
 /* ------------------------------------------------------------------ */
 
-const RX_PAGE_SIZE = 10;
+const TR_PAGE_SIZE = 10;
 
-const rxFyStart = value => {
+const trFyStart = value => {
   const match = String(value || "").match(/\d{4}/);
   return match ? Number(match[0]) : -1;
 };
 
-const rxSigned = value =>
+const trSigned = value =>
   value < 0 ? `−${money(Math.abs(value))}` : money(value);
-
-const rxVarianceAmount = value => {
-  if (Math.round(value) === 0) return money(0);
-  return `${value > 0 ? "+" : "−"}${money(Math.abs(value))}`;
-};
 
 // Dates arrive as "2021-10-12" or a full ISO timestamp. Read the calendar
 // date directly so a time-zone shift can never move it to another day.
-const rxDate = value => {
+const trDate = value => {
   const text = String(value || "").trim();
   if (!text) return "—";
   const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -4031,7 +4027,16 @@ const rxDate = value => {
   return month ? `${Number(match[3])} ${month} ${match[1]}` : text;
 };
 
-const rxHasAssessment = record =>
+const trInitials = name =>
+  String(name || "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(word => word[0])
+    .join("")
+    .toUpperCase() || "–";
+
+const trHasAssessment = record =>
   [
     record.totalAssessedIncome,
     record.totalAssessedTaxPayable,
@@ -4043,8 +4048,8 @@ const rxHasAssessment = record =>
   Boolean(record.dateOfOrder);
 
 // Differs = assessed income or tax not equal to the ITR figure.
-const rxResult = record => {
-  if (!rxHasAssessment(record)) return "none";
+const trResult = record => {
+  if (!trHasAssessment(record)) return "none";
   const sameIncome =
     Math.round(num(record.totalAssessedIncome) - num(record.grossIncome)) === 0;
   const sameTax =
@@ -4052,250 +4057,217 @@ const rxResult = record => {
   return sameIncome && sameTax ? "matched" : "differs";
 };
 
-const RX_RESULT_LABEL = {
+const TR_RESULT_LABEL = {
   matched: "Matched",
   differs: "Differs",
-  none: "ITR only",
+  none: "No assessment",
 };
 
-const rxNetRefund = record =>
+const trNetRefund = record =>
   num(record.refundAmountBeforeInterest) + num(record.interest);
 
-// Amount shown on each list row: the net refund once an assessment exists,
-// otherwise the refund expected from the ITR.
-const rxListAmount = record =>
-  rxHasAssessment(record) ? rxNetRefund(record) : num(record.refundDue);
-
-const rxDelta = (itr, assessed) => {
+const trDelta = (itr, assessed) => {
   const diff = assessed - itr;
   const tone = Math.round(diff) === 0 ? "same" : diff > 0 ? "higher" : "lower";
-  const pct = itr !== 0 ? (diff / Math.abs(itr)) * 100 : null;
-  const pctText =
-    pct === null || tone === "same"
-      ? "—"
-      : `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%`;
-  return { diff, tone, pct, pctText };
+  const amount =
+    tone === "same"
+      ? "Matches ITR"
+      : `${diff > 0 ? "▲ +" : "▼ −"}${money(Math.abs(diff))}`;
+  return { tone, amount };
 };
 
-const RX_TONE_LABEL = { higher: "Higher", lower: "Lower", same: "Same" };
-const RX_TONE_ARROW = { higher: "▲", lower: "▼", same: "●" };
-
-const rxFilingTone = status => {
+const trFilingTone = status => {
   const value = String(status || "Draft").toLowerCase();
   if (value === "defective") return "red";
   if (value === "draft") return "grey";
   return "blue";
 };
 
-function RxKpi({ label, value, note, tone, dark }) {
+function TrField({ label, value, sub, tone, strong }) {
   return (
-    <article className={`trs-rx-kpi${dark ? " dark" : ""}`}>
-      <span className="trs-rx-kpi-label">{label}</span>
-      <strong>{value}</strong>
-      <small className={tone ? `tone-${tone}` : ""}>{note}</small>
-    </article>
-  );
-}
-
-function RxDetailRow({ label, value }) {
-  return (
-    <div className="trs-rx-detail-row">
+    <div className={`trs-tr-field${strong ? " strong" : ""}`}>
       <span>{label}</span>
       <b>{value || "—"}</b>
+      {sub && <small className={tone ? `tone-${tone}` : ""}>{sub}</small>}
     </div>
   );
 }
 
-function RxRecordDetail({ record, onEdit, onDownload }) {
-  const assessed = rxHasAssessment(record);
-  const result = rxResult(record);
-  const netRefund = rxNetRefund(record);
+function TrRecordDialog({ record, onClose, onEdit, onDownload }) {
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+  const assessed = trHasAssessment(record);
+  const result = trResult(record);
 
-  const income = rxDelta(num(record.grossIncome), num(record.totalAssessedIncome));
-  const tax = rxDelta(num(record.taxPayable), num(record.totalAssessedTaxPayable));
-  const refund = rxDelta(num(record.refundDue), num(record.refundAmountBeforeInterest));
+  // Keep focus inside the dialog, close on Escape, lock page scroll, and
+  // return focus to the button that opened it.
+  useEffect(() => {
+    const opener = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
 
-  const deltaNote = (itrValue, delta) =>
-    delta.tone === "same"
-      ? `ITR ${money(itrValue)}\u00A0\u00A0● Matches`
-      : `ITR ${money(itrValue)}\u00A0\u00A0${RX_TONE_ARROW[delta.tone]} ${delta.pctText}`;
+    const onKeyDown = event => {
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
 
-  const comparisonRows = [
-    { label: "Gross Income", itr: num(record.grossIncome), assessed: num(record.totalAssessedIncome), delta: income },
-    { label: "Tax Payable", itr: num(record.taxPayable), assessed: num(record.totalAssessedTaxPayable), delta: tax },
-    { label: "Refund (before interest)", itr: num(record.refundDue), assessed: num(record.refundAmountBeforeInterest), delta: refund },
-  ];
+      const focusable = dialogRef.current.querySelectorAll(
+        "button:not([disabled]), [href], select, input, [tabindex]:not([tabindex='-1'])"
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
 
-  return (
-    <section className="trs-rx-detail" aria-live="polite">
-      <header className="trs-rx-detail-head">
-        <div className="trs-rx-detail-title">
-          <div className="trs-rx-title-row">
-            <h3>FY {record.financialYear || "—"}</h3>
-            <span className={`trs-rx-pill ${rxFilingTone(record.filingStatus)}`}>
-              {record.filingStatus || "Draft"}
-            </span>
-            {assessed && (
-              <span className={`trs-rx-pill result-${result}`}>
-                {RX_RESULT_LABEL[result]}
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (opener && typeof opener.focus === "function") opener.focus();
+    };
+  }, [onClose]);
+
+  const income = trDelta(num(record.grossIncome), num(record.totalAssessedIncome));
+  const tax = trDelta(num(record.taxPayable), num(record.totalAssessedTaxPayable));
+
+  return createPortal(
+    <div
+      className="trs-tr-overlay"
+      onMouseDown={event => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="trs-tr-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="trs-tr-dialog-title"
+        ref={dialogRef}
+      >
+        <header className="trs-tr-dialog-head">
+          <div className="trs-tr-dialog-title">
+            <div className="trs-tr-title-row">
+              <h3 id="trs-tr-dialog-title">FY {record.financialYear || "—"}</h3>
+              <span className={`trs-tr-pill ${trFilingTone(record.filingStatus)}`}>
+                {record.filingStatus || "Draft"}
               </span>
-            )}
-          </div>
-          <p>Assessment Year {record.assessmentYear || "—"}</p>
-        </div>
-
-        <div className="trs-rx-detail-actions">
-          <button type="button" className="trs-rx-btn solid" onClick={() => onEdit(record)}>
-            View / Edit
-          </button>
-          <button type="button" className="trs-rx-btn outline" onClick={() => onDownload(record)}>
-            ↓ Download
-          </button>
-        </div>
-      </header>
-
-      {assessed ? (
-        <>
-          <div className="trs-rx-kpis">
-            <RxKpi
-              label="Gross income · assessed"
-              value={money(record.totalAssessedIncome)}
-              note={deltaNote(num(record.grossIncome), income)}
-              tone={income.tone}
-            />
-            <RxKpi
-              label="Tax payable · assessed"
-              value={money(record.totalAssessedTaxPayable)}
-              note={deltaNote(num(record.taxPayable), tax)}
-              tone={tax.tone}
-            />
-            <RxKpi
-              label="TDS credit"
-              value={money(record.tdsCredit)}
-              note="As per assessment order"
-            />
-            <RxKpi
-              dark
-              label="Net refund"
-              value={money(netRefund)}
-              note={`incl. ${money(record.interest)} interest`}
-            />
+              {assessed && (
+                <span className={`trs-tr-pill result-${result}`}>
+                  {TR_RESULT_LABEL[result]}
+                </span>
+              )}
+            </div>
+            <p>
+              {record.name || "Unnamed taxpayer"} · Assessment Year{" "}
+              {record.assessmentYear || "—"}
+            </p>
           </div>
 
-          <h4 className="trs-rx-section-title">ITR vs assessment</h4>
-          <div className="trs-rx-table-scroll" role="region" aria-label="ITR compared with assessment. Scroll horizontally to see all columns." tabIndex={0}>
-            <table className="trs-rx-table">
-              <thead>
-                <tr>
-                  <th>Particular</th>
-                  <th className="num">ITR</th>
-                  <th className="num">Assessment</th>
-                  <th className="num">Variance</th>
-                  <th className="num">%</th>
-                  <th>Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonRows.map(row => (
-                  <tr key={row.label}>
-                    <td>{row.label}</td>
-                    <td className="num">{money(row.itr)}</td>
-                    <td className="num">{money(row.assessed)}</td>
-                    <td className={`num variance tone-${row.delta.tone}`}>
-                      {rxVarianceAmount(row.delta.diff)}
-                    </td>
-                    <td className={`num pct tone-${row.delta.tone}`}>{row.delta.pctText}</td>
-                    <td>
-                      <span className={`trs-rx-result tone-${row.delta.tone}`}>
-                        {RX_TONE_LABEL[row.delta.tone]}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="trs-tr-dialog-actions">
+            <button type="button" className="trs-tr-btn outline" onClick={() => onEdit(record)}>
+              Edit
+            </button>
+            <button type="button" className="trs-tr-btn solid" onClick={() => onDownload(record)}>
+              ↓ Download
+            </button>
+            <button
+              type="button"
+              className="trs-tr-close"
+              onClick={onClose}
+              ref={closeRef}
+              aria-label="Close record details"
+            >
+              ×
+            </button>
           </div>
+        </header>
 
-          <div className="trs-rx-cards">
-            <section className="trs-rx-card">
-              <h4 className="trs-rx-section-title">Refund build-up</h4>
-              <div className="trs-rx-buildup">
-                <div><span>Refund before interest</span><b>{money(record.refundAmountBeforeInterest)}</b></div>
-                <div><span>+&nbsp; Interest</span><b>{money(record.interest)}</b></div>
-              </div>
-              <div className="trs-rx-buildup-total">
-                <span>Net refund</span>
-                <strong>{money(netRefund)}</strong>
-              </div>
-            </section>
+        <div className="trs-tr-dialog-body">
+          <section className="trs-tr-section">
+            <h4>Return details</h4>
+            <div className="trs-tr-grid">
+              <TrField label="Taxpayer" value={record.name} />
+              <TrField label="PAN" value={record.pan} />
+              <TrField label="Category" value={record.dataCategory} />
+              <TrField label="Financial year" value={record.financialYear} />
+              <TrField label="Assessment year" value={record.assessmentYear} />
+              <TrField label="ITR form" value={record.formType} />
+              <TrField label="Filing status" value={record.filingStatus || "Draft"} />
+              <TrField label="Filing date" value={trDate(record.itrFilingDate)} />
+              <TrField label="Acknowledgement no." value={record.acknowledgementNumber} />
+            </div>
+          </section>
 
-            <section className="trs-rx-card">
-              <h4 className="trs-rx-section-title">Assessment order</h4>
-              <RxDetailRow label="Order type" value={record.orderType} />
-              <RxDetailRow label="Date of order" value={rxDate(record.dateOfOrder)} />
-              <RxDetailRow label="Assessment year" value={record.assessmentYear} />
-              <RxDetailRow label="Return status" value={record.filingStatus || "Draft"} />
-            </section>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="trs-rx-kpis">
-            <RxKpi label="Gross income · ITR" value={money(record.grossIncome)} note="As filed" />
-            <RxKpi label="Tax payable · ITR" value={money(record.taxPayable)} note="As filed" />
-            <RxKpi label="TDS claimed" value={money(record.tdsClaim)} note="Claimed in ITR" />
-            <RxKpi
-              dark
-              label="Expected refund / (tax payable)"
-              value={rxSigned(num(record.refundDue))}
-              note="TDS claimed less tax payable"
-            />
-          </div>
+          <section className="trs-tr-section">
+            <h4>ITR figures</h4>
+            <div className="trs-tr-grid">
+              <TrField label="Gross income" value={money(record.grossIncome)} />
+              <TrField label="Tax payable" value={money(record.taxPayable)} />
+              <TrField label="TDS claimed" value={money(record.tdsClaim)} />
+              <TrField label="Expected refund / (tax payable)" value={trSigned(num(record.refundDue))} />
+              <TrField label="Refund process" value={record.refundProcess} />
+            </div>
+          </section>
 
-          <div className="trs-rx-cards">
-            <section className="trs-rx-card">
-              <h4 className="trs-rx-section-title">Return details</h4>
-              <RxDetailRow label="ITR form" value={record.formType} />
-              <RxDetailRow label="Filing status" value={record.filingStatus || "Draft"} />
-              <RxDetailRow label="Filing date" value={rxDate(record.itrFilingDate)} />
-              <RxDetailRow label="Acknowledgement no." value={record.acknowledgementNumber} />
-              <RxDetailRow label="Refund process" value={record.refundProcess} />
-            </section>
-
-            <section className="trs-rx-card">
-              <h4 className="trs-rx-section-title">Assessment order</h4>
-              <p className="trs-rx-empty-note">
+          <section className="trs-tr-section">
+            <h4>Assessment details</h4>
+            {assessed ? (
+              <>
+                <div className="trs-tr-grid">
+                  <TrField label="Order type" value={record.orderType} />
+                  <TrField label="Date of order" value={trDate(record.dateOfOrder)} />
+                  <TrField label="Assessed income" value={money(record.totalAssessedIncome)} sub={income.amount} tone={income.tone} />
+                  <TrField label="Assessed tax payable" value={money(record.totalAssessedTaxPayable)} sub={tax.amount} tone={tax.tone} />
+                  <TrField label="TDS credit" value={money(record.tdsCredit)} />
+                  <TrField label="Refund before interest" value={money(record.refundAmountBeforeInterest)} />
+                  <TrField label="Interest" value={money(record.interest)} />
+                </div>
+                <div className="trs-tr-net">
+                  <span>Net refund</span>
+                  <strong>{money(trNetRefund(record))}</strong>
+                </div>
+              </>
+            ) : (
+              <p className="trs-tr-note">
                 No assessment order has been recorded for this year. Choose
-                View / Edit to add the order details.
+                Edit to add the order details.
               </p>
-            </section>
-          </div>
-        </>
-      )}
-
-      <p className="trs-rx-legend">
-        Variance = Assessment − ITR. &nbsp;▲ assessed higher than filed &nbsp;▼ assessed
-        lower than filed. &nbsp;Differs = assessed income or tax not equal to the ITR figure.
-      </p>
-    </section>
+            )}
+          </section>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
 function TaxpayerRecordsExplorer({
   records,
-  search,
-  onSearch,
+  allRecords,
   fyFilter,
   onFyFilter,
   statusFilter,
   onStatusFilter,
+  onExportPdf,
   onExportCsv,
   onEdit,
   onDownload,
 }) {
   const [taxpayerSel, setTaxpayerSel] = useState("");
-  const [recordSel, setRecordSel] = useState("");
-  const [limit, setLimit] = useState(RX_PAGE_SIZE);
+  const [page, setPage] = useState(0);
+  const [viewing, setViewing] = useState(null);
+  const closeDialog = useCallback(() => setViewing(null), []);
 
   // One group per taxpayer, newest financial year first.
   const taxpayers = useMemo(() => {
@@ -4321,7 +4293,7 @@ function TaxpayerRecordsExplorer({
         ...group,
         entries: group.entries.sort(
           (a, b) =>
-            rxFyStart(b.record.financialYear) - rxFyStart(a.record.financialYear) ||
+            trFyStart(b.record.financialYear) - trFyStart(a.record.financialYear) ||
             stamp(b.record) - stamp(a.record)
         ),
       }))
@@ -4330,23 +4302,33 @@ function TaxpayerRecordsExplorer({
 
   const taxpayer = taxpayers.find(item => item.key === taxpayerSel) ?? taxpayers[0];
   const entries = taxpayer?.entries ?? [];
-  const selected = entries.find(entry => entry.key === recordSel) ?? entries[0];
-  const visible = entries.slice(0, limit);
+  const totalForTaxpayer = taxpayer
+    ? allRecords.filter(record => taxpayerKey(record) === taxpayer.key).length
+    : 0;
+
+  const pageCount = Math.max(1, Math.ceil(entries.length / TR_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const visible = entries.slice(safePage * TR_PAGE_SIZE, (safePage + 1) * TR_PAGE_SIZE);
+  const firstShown = entries.length ? safePage * TR_PAGE_SIZE + 1 : 0;
+  const lastShown = safePage * TR_PAGE_SIZE + visible.length;
 
   const chooseTaxpayer = event => {
     setTaxpayerSel(event.target.value);
-    setRecordSel("");
-    setLimit(RX_PAGE_SIZE);
+    setPage(0);
   };
 
   return (
-    <div className="trs-rx">
-      <aside className="trs-rx-list" aria-label="Taxpayer and financial years">
-        <div className="trs-rx-taxpayer">
-          <span className="trs-rx-taxpayer-label">Taxpayer</span>
+    <div className="trs-tr">
+      <section className="trs-tr-taxpayer" aria-label="Taxpayer">
+        <span className="trs-tr-avatar" aria-hidden="true">
+          {trInitials(taxpayer?.name)}
+        </span>
+
+        <div className="trs-tr-taxpayer-info">
+          <span className="trs-tr-label">Taxpayer</span>
 
           {taxpayers.length > 1 ? (
-            <div className="trs-rx-taxpayer-pick">
+            <div className="trs-tr-taxpayer-pick">
               <select
                 value={taxpayer?.key ?? ""}
                 onChange={chooseTaxpayer}
@@ -4360,130 +4342,195 @@ function TaxpayerRecordsExplorer({
               </select>
             </div>
           ) : (
-            <strong className="trs-rx-taxpayer-name">
-              {taxpayer?.name || "No taxpayer"}
+            <strong className="trs-tr-taxpayer-name">
+              {taxpayer?.name || "No matching taxpayer"}
             </strong>
           )}
 
-          <span className="trs-rx-taxpayer-meta">
-            {taxpayer
-              ? `PAN ${taxpayer.pan || "not available"}`
-              : "No records match the current filters"}
-          </span>
+          {taxpayer && (
+            <small className="trs-tr-pan">PAN {taxpayer.pan || "not available"}</small>
+          )}
         </div>
 
-        <input
-          className="trs-rx-search"
-          type="search"
-          value={search}
-          onChange={event => onSearch(event.target.value)}
-          placeholder="Search name, PAN, ack. no. or year…"
-          aria-label="Search records"
-        />
+        <div className="trs-tr-total">
+          <span className="trs-tr-label">Total records</span>
+          <strong>{totalForTaxpayer}</strong>
+        </div>
+      </section>
 
-        <div className="trs-rx-filter-row">
-          <select
-            value={fyFilter}
-            onChange={event => onFyFilter(event.target.value)}
-            aria-label="Financial year"
-          >
-            <option value="all">All Financial Years</option>
-            {FINANCIAL_YEARS.map(year => (
-              <option key={year.financialYear} value={year.financialYear}>
-                FY {year.financialYear}
-              </option>
-            ))}
-          </select>
+      <section className="trs-tr-filters" aria-label="Filters">
+        <select
+          value={fyFilter}
+          onChange={event => {
+            onFyFilter(event.target.value);
+            setPage(0);
+          }}
+          aria-label="Financial year"
+        >
+          <option value="all">All Financial Years</option>
+          {FINANCIAL_YEARS.map(year => (
+            <option key={year.financialYear} value={year.financialYear}>
+              FY {year.financialYear}
+            </option>
+          ))}
+        </select>
 
-          <select
-            value={statusFilter}
-            onChange={event => onStatusFilter(event.target.value)}
-            aria-label="Filing status"
-          >
-            <option value="all">All Statuses</option>
-            {FILING_STATUSES.map(status => (
-              <option key={status}>{status}</option>
-            ))}
-          </select>
+        <select
+          value={statusFilter}
+          onChange={event => {
+            onStatusFilter(event.target.value);
+            setPage(0);
+          }}
+          aria-label="Filing status"
+        >
+          <option value="all">All Statuses</option>
+          {FILING_STATUSES.map(status => (
+            <option key={status}>{status}</option>
+          ))}
+        </select>
 
+        <div className="trs-tr-exports">
           <button
             type="button"
-            className="trs-rx-btn solid"
+            className="trs-tr-btn outline"
             onClick={onExportCsv}
             disabled={!records.length}
           >
             ↓ CSV
           </button>
-        </div>
-
-        <div className="trs-rx-count">
-          <span>
-            {entries.length} {entries.length === 1 ? "record" : "records"}
-          </span>
-          <small>Showing {visible.length}</small>
-        </div>
-
-        {entries.length ? (
-          <ul className="trs-rx-items">
-            {visible.map(({ key, record }) => {
-              const result = rxResult(record);
-              const amount = rxListAmount(record);
-              const isActive = selected?.key === key;
-
-              return (
-                <li key={key}>
-                  <button
-                    type="button"
-                    className={`trs-rx-item${isActive ? " active" : ""}`}
-                    aria-current={isActive ? "true" : undefined}
-                    onClick={() => setRecordSel(key)}
-                  >
-                    <span className="trs-rx-item-main">
-                      <strong>{record.financialYear || "—"}</strong>
-                      <small>AY {record.assessmentYear || "—"}</small>
-                    </span>
-                    <span className="trs-rx-item-side">
-                      <strong>{rxSigned(amount)}</strong>
-                      <span className={`trs-rx-status result-${result}`}>
-                        {RX_RESULT_LABEL[result]}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <div className="trs-rx-empty">
-            No records found. Adjust the search or filters, or add a tax return.
-          </div>
-        )}
-
-        {entries.length > limit && (
           <button
             type="button"
-            className="trs-rx-more"
-            onClick={() => setLimit(current => current + RX_PAGE_SIZE)}
+            className="trs-tr-btn solid"
+            onClick={onExportPdf}
+            disabled={!records.length}
           >
-            Show {Math.min(RX_PAGE_SIZE, entries.length - limit)} more
+            ↓ Download PDF
           </button>
-        )}
-      </aside>
+        </div>
+      </section>
 
-      {selected ? (
-        <RxRecordDetail
-          key={selected.key}
-          record={selected.record}
+      <p className="trs-tr-showing">
+        Showing {visible.length} of {entries.length}{" "}
+        {entries.length === 1 ? "record" : "records"}
+      </p>
+
+      <div
+        className="trs-tr-scroll"
+        role="region"
+        aria-label="ITR records. Scroll horizontally to see all columns."
+        tabIndex={0}
+      >
+        <table className="trs-tr-table">
+          <thead>
+            <tr>
+              <th rowSpan={2} className="trs-tr-fy-col">Financial Year</th>
+              <th colSpan={4} className="trs-tr-group">ITR Records</th>
+              <th rowSpan={2} className="trs-tr-action-col">Action</th>
+            </tr>
+            <tr>
+              <th className="num">Gross Income</th>
+              <th className="num">Tax Payable</th>
+              <th className="num">Refund</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {visible.map(({ key, record }) => (
+              <tr key={key}>
+                <td className="trs-tr-fy-col">
+                  <strong>{record.financialYear || "—"}</strong>
+                  <small>AY {record.assessmentYear || "—"}</small>
+                </td>
+                <td className="num">{money(record.grossIncome)}</td>
+                <td className="num">{money(record.taxPayable)}</td>
+                <td className="num">{trSigned(num(record.refundDue))}</td>
+                <td>
+                  <span className={`trs-tr-pill ${trFilingTone(record.filingStatus)}`}>
+                    {record.filingStatus || "Draft"}
+                  </span>
+                </td>
+                <td className="trs-tr-action-col">
+                  <div className="trs-tr-row-actions">
+                    <button
+                      type="button"
+                      className="trs-tr-btn outline small"
+                      onClick={() => setViewing(record)}
+                      aria-label={`View FY ${record.financialYear} details`}
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      className="trs-tr-btn plain small"
+                      onClick={() => onEdit(record)}
+                      aria-label={`Edit FY ${record.financialYear}`}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+            {!visible.length && (
+              <tr>
+                <td colSpan={6} className="trs-tr-empty">
+                  No records found. Adjust the filters or add a tax return.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="trs-tr-footer">
+        <span>
+          {entries.length
+            ? `Showing ${firstShown}–${lastShown} of ${entries.length} records`
+            : "No records to show"}
+        </span>
+
+        {pageCount > 1 && (
+          <nav className="trs-tr-pager" aria-label="Records pagination">
+            <button
+              type="button"
+              onClick={() => setPage(Math.max(0, safePage - 1))}
+              disabled={safePage === 0}
+              aria-label="Previous page"
+            >
+              ‹
+            </button>
+            {Array.from({ length: pageCount }, (_, index) => (
+              <button
+                type="button"
+                key={index}
+                className={safePage === index ? "active" : ""}
+                aria-current={safePage === index ? "page" : undefined}
+                onClick={() => setPage(index)}
+              >
+                {index + 1}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+              disabled={safePage >= pageCount - 1}
+              aria-label="Next page"
+            >
+              ›
+            </button>
+          </nav>
+        )}
+      </div>
+
+      {viewing && (
+        <TrRecordDialog
+          record={viewing}
+          onClose={closeDialog}
           onEdit={onEdit}
           onDownload={onDownload}
         />
-      ) : (
-        <section className="trs-rx-detail trs-rx-detail-empty">
-          <h3>Select a financial year</h3>
-          <p>
-            Pick a record on the left to review its ITR and assessment details.
-          </p>
-        </section>
       )}
     </div>
   );
