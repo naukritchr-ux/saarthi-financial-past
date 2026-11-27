@@ -2691,44 +2691,266 @@ function TaxReturnSummary() {
   );
 
   const renderReconciliation = () => {
+    const isTalentCorner = category === "Talent Corner";
+    const hasStoredValue = value =>
+      value !== null && value !== undefined && String(value).trim() !== "";
+
     const rows = records.map(record => {
-      const checks = [
+      const definitions = [
         {
           label: "Income",
+          itrValue: record.grossIncome,
+          assessmentValue: record.totalAssessedIncome,
           itr: num(record.grossIncome),
           assessment: num(record.totalAssessedIncome),
         },
         {
           label: "Income Tax",
+          itrValue: record.taxPayable,
+          assessmentValue: record.totalAssessedTaxPayable,
           itr: num(record.taxPayable),
           assessment: num(record.totalAssessedTaxPayable),
         },
         {
           label: "TDS",
+          itrValue: record.tdsClaim,
+          assessmentValue: record.tdsCredit,
           itr: num(record.tdsClaim),
           assessment: num(record.tdsCredit),
         },
         {
           label: "Expected Refund / (Tax Payable)",
+          itrValue: record.refundDue,
+          assessmentValue: record.refundAmountBeforeInterest,
+          hasAssessmentInterest: hasStoredValue(record.interest),
           itr: num(record.refundDue),
           assessment:
             num(record.refundAmountBeforeInterest) + num(record.interest),
         },
       ];
 
-      return {
-        ...record,
-        checks: checks.map(item => {
+      const checks = definitions
+        .filter(item =>
+          !isTalentCorner ||
+          hasStoredValue(item.itrValue) ||
+          hasStoredValue(item.assessmentValue) ||
+          (item.label === "Expected Refund / (Tax Payable)" && item.hasAssessmentInterest)
+        )
+        .map(item => {
           const difference = item.assessment - item.itr;
-
           return {
             ...item,
             difference,
             status: getFinancialStatus(difference),
           };
-        }),
-      };
+        });
+
+      return { ...record, checks };
     });
+
+    if (isTalentCorner) {
+      const getYearSortValue = value => {
+        const match = String(value || "").match(/(\d{4})\s*[-/]\s*(\d{2,4})/);
+        if (match) return Number(match[1]);
+        const year = String(value || "").match(/\d{4}/);
+        return year ? Number(year[0]) : -1;
+      };
+
+      const yearGroups = [...rows.reduce((map, record) => {
+        const key = record.financialYear || "Unknown FY";
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(record);
+        return map;
+      }, new Map())]
+        .sort((a, b) => getYearSortValue(a[0]) - getYearSortValue(b[0]))
+        .map(([financialYear, yearRecords]) => {
+          const checks = yearRecords.flatMap(record =>
+            record.checks.map(check => ({ ...check, taxpayerName: record.name }))
+          );
+          const differenceCount = checks.filter(check => check.status !== "Match").length;
+          return { financialYear, yearRecords, checks, differenceCount };
+        });
+
+      const allChecks = yearGroups.flatMap(group => group.checks);
+      const refundChecks = yearGroups.flatMap(group =>
+        group.checks
+          .filter(check => check.label === "Expected Refund / (Tax Payable)")
+          .map(check => ({ ...check, financialYear: group.financialYear }))
+      );
+      const netRefundVariance = refundChecks.reduce((total, check) => total + check.difference, 0);
+      const refundYears = [...new Set(refundChecks.map(check => check.financialYear))];
+      const formatVariance = value =>
+        value > 0 ? `+${money(value)}` : value < 0 ? `−${money(Math.abs(value))}` : money(0);
+      const getStatusLabel = status =>
+        status === "Match" ? "Matched" : status === "Excess" ? "Assessed higher ▲" : "Assessed lower ▼";
+      const companyName = rows.find(record => record.name)?.name || "Talent Corner HR Services Pvt. Ltd.";
+
+      return (
+        <div className="trs-content trs-tc-reconciliation">
+          <style>{`
+            .trs-tc-reconciliation { min-width: 0; }
+            .trs-tc-recon-card {
+              background: #fffdf8;
+              border: 1px solid #e7ddc9;
+              border-radius: 18px;
+              padding: 24px 30px 28px;
+              color: #172342;
+              box-shadow: 0 2px 8px rgba(43, 34, 15, .035);
+            }
+            .trs-tc-recon-heading {
+              display: flex; justify-content: space-between; align-items: flex-start;
+              gap: 20px; margin-bottom: 16px;
+            }
+            .trs-tc-recon-heading h2 {
+              margin: 0; color: #172342; font-size: 28px; line-height: 1.25; font-weight: 750;
+            }
+            .trs-tc-recon-heading p { margin: 6px 0 0; color: #817c6d; font-size: 15px; }
+            .trs-tc-recon-legend {
+              color: #817c6d; font-size: 13px; text-align: right; line-height: 1.9; white-space: nowrap;
+            }
+            .trs-tc-recon-rule { width: 64px; height: 3px; background: #bd922d; margin: 0 0 16px; }
+            .trs-tc-recon-scroll {
+              width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+              overscroll-behavior-x: contain;
+            }
+            .trs-tc-recon-table {
+              width: 100%; min-width: 820px; border-collapse: collapse; table-layout: fixed;
+            }
+            .trs-tc-recon-table thead th {
+              padding: 17px 16px; background: #112044; color: #f3ca6e;
+              font-size: 12px; font-weight: 750; text-align: left; letter-spacing: .02em;
+              border: 0; white-space: nowrap;
+            }
+            .trs-tc-recon-table thead th:first-child { width: 30%; }
+            .trs-tc-recon-table thead th:nth-child(2) { width: 14%; text-align: right; }
+            .trs-tc-recon-table thead th:nth-child(3) { width: 17%; text-align: right; }
+            .trs-tc-recon-table thead th:nth-child(4) { width: 15%; text-align: right; }
+            .trs-tc-recon-table thead th:nth-child(5) { width: 20%; }
+            .trs-tc-recon-table tbody td {
+              padding: 13px 16px; border-bottom: 1px solid #e8dfce; color: #172342;
+              font-size: 14px; vertical-align: middle; white-space: nowrap;
+            }
+            .trs-tc-recon-table tbody tr:not(.trs-tc-year-row) td:first-child { padding-left: 25px; }
+            .trs-tc-recon-table .trs-tc-number { text-align: right; font-variant-numeric: tabular-nums; }
+            .trs-tc-year-row td {
+              background: #f3e9cc; border-bottom: 0 !important; border-left: 5px solid #bd922d;
+              padding: 13px 20px !important; color: #112044 !important; font-size: 15px !important;
+            }
+            .trs-tc-year-title { font-weight: 800; margin-right: 12px; }
+            .trs-tc-diff-count {
+              display: inline-block; border-radius: 20px; background: #fffdf8; color: #c63229;
+              padding: 4px 12px; font-size: 12px; font-weight: 750;
+            }
+            .trs-tc-year-note { float: right; color: #817c6d; font-size: 12px; font-weight: 400; }
+            .trs-tc-variance {
+              display: inline-block; min-width: 112px; text-align: right; border-radius: 9px;
+              padding: 5px 10px; font-weight: 800;
+            }
+            .trs-tc-variance.lower { color: #bd3029; background: #f8e0db; }
+            .trs-tc-variance.higher { color: #205da4; background: #dce7f7; }
+            .trs-tc-variance.match { color: #14734e; background: transparent; }
+            .trs-tc-status { display: inline-flex; align-items: center; gap: 9px; font-weight: 750; }
+            .trs-tc-status::before { content: ''; width: 11px; height: 11px; border-radius: 50%; display: inline-block; background: currentColor; }
+            .trs-tc-status.lower { color: #bd3029; }
+            .trs-tc-status.higher { color: #205da4; }
+            .trs-tc-status.match { color: #14734e; }
+            .trs-tc-recon-footer {
+              border-top: 2px solid #bd922d; margin-top: 0; padding-top: 18px;
+              color: #817c6d; font-size: 13px; line-height: 1.6;
+            }
+            .trs-tc-recon-empty { padding: 24px 12px !important; text-align: center; color: #817c6d !important; }
+            @media (max-width: 760px) {
+              .trs-tc-recon-card { padding: 18px 14px 20px; border-radius: 12px; }
+              .trs-tc-recon-heading { display: block; }
+              .trs-tc-recon-heading h2 { font-size: 21px; }
+              .trs-tc-recon-legend { text-align: left; margin-top: 8px; white-space: normal; }
+              .trs-tc-recon-table { min-width: 800px; }
+              .trs-tc-recon-table thead th, .trs-tc-recon-table tbody td { padding: 11px 12px; }
+              .trs-tc-year-note { float: none; display: block; margin-top: 5px; }
+            }
+          `}</style>
+
+          <section className="trs-tc-recon-card">
+            <div className="trs-tc-recon-heading">
+              <div>
+                <h2>{companyName}</h2>
+                <p>ITR vs Assessment comparison</p>
+              </div>
+              <div className="trs-tc-recon-legend">
+                <div>Variance = Assessment − ITR</div>
+                <div>▲ assessed higher &nbsp; ▼ assessed lower &nbsp; ● matched</div>
+              </div>
+            </div>
+            <div className="trs-tc-recon-rule" />
+
+            <div className="trs-tc-recon-scroll" role="region" aria-label="Talent Corner tax reconciliation table. Scroll horizontally to view all columns." tabIndex={0}>
+              <table className="trs-tc-recon-table">
+                <thead>
+                  <tr>
+                    <th>PARTICULAR</th>
+                    <th>ITR DATA</th>
+                    <th>ASSESSMENT DATA</th>
+                    <th>VARIANCE</th>
+                    <th>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearGroups.length ? yearGroups.map(group => (
+                    <React.Fragment key={group.financialYear}>
+                      <tr className="trs-tc-year-row">
+                        <td colSpan={5}>
+                          <span className="trs-tc-year-title">FY {group.financialYear}</span>
+                          <span className="trs-tc-diff-count">
+                            {group.differenceCount === 0
+                              ? `All ${group.checks.length} matched`
+                              : group.checks.length === 1
+                                ? "1 difference"
+                                : `${group.differenceCount} of ${group.checks.length} differ`}
+                          </span>
+                          {group.checks.length === 1 && group.checks[0].label === "Income" && (
+                            <span className="trs-tc-year-note">Only Income row available in source</span>
+                          )}
+                        </td>
+                      </tr>
+                      {group.checks.map((check, index) => {
+                        const tone = check.status === "Match" ? "match" : check.status === "Excess" ? "higher" : "lower";
+                        return (
+                          <tr key={`${group.financialYear}-${check.taxpayerName || "taxpayer"}-${check.label}-${index}`}>
+                            <td>{check.label}</td>
+                            <td className="trs-tc-number">{money(check.itr)}</td>
+                            <td className="trs-tc-number">{money(check.assessment)}</td>
+                            <td className="trs-tc-number">
+                              <span className={`trs-tc-variance ${tone}`}>{formatVariance(check.difference)}</span>
+                            </td>
+                            <td><span className={`trs-tc-status ${tone}`}>{getStatusLabel(check.status)}</span></td>
+                          </tr>
+                        );
+                      })}
+                    </React.Fragment>
+                  )) : (
+                    <tr><td colSpan={5} className="trs-tc-recon-empty">No records available for reconciliation.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="trs-tc-recon-footer">
+              {refundChecks.length ? (
+                <>
+                  Net refund variance ({refundYears.join(" + ")}): {formatVariance(netRefundVariance)} assessed {netRefundVariance > 0 ? "higher" : netRefundVariance < 0 ? "lower" : "matched"}
+                  &nbsp; · &nbsp; {allChecks.filter(check => check.status !== "Match").length} of {allChecks.length} checks differ
+                </>
+              ) : (
+                <>{allChecks.filter(check => check.status !== "Match").length} of {allChecks.length} checks differ</>
+              )}
+            </div>
+            <p className="trs-note">
+              Note: This is a preliminary comparison using the fields currently stored in your database. It is not an official tax assessment or 26AS/AIS verification.
+            </p>
+          </section>
+        </div>
+      );
+    }
 
     return (
       <div className="trs-content">
@@ -2746,69 +2968,32 @@ function TaxReturnSummary() {
                   <th>Status</th>
                 </tr>
               </thead>
-
               <tbody>
                 {rows.flatMap(record =>
                   record.checks.map((check, index) => (
-                    <tr
-                      key={`${record.id || record.name}-${record.financialYear}-${check.label}`}
-                    >
-                      <td>
-                        <b>
-                          {index === 0 ? record.name || "—" : ""}
-                        </b>
-                      </td>
-
-                      <td>
-                        {index === 0 ? record.financialYear || "—" : ""}
-                      </td>
-
+                    <tr key={`${record.id || record.name}-${record.financialYear}-${check.label}`}>
+                      <td><b>{index === 0 ? record.name || "—" : ""}</b></td>
+                      <td>{index === 0 ? record.financialYear || "—" : ""}</td>
                       <td>{check.label}</td>
                       <td>{money(check.itr)}</td>
                       <td>{money(check.assessment)}</td>
-
-                      <td
-                        className={
-                          check.status === "Match"
-                            ? "trs-amount-good"
-                            : "trs-amount-warning"
-                        }
-                      >
-                        {money(check.difference)}
-                      </td>
-
+                      <td className={check.status === "Match" ? "trs-amount-good" : "trs-amount-warning"}>{money(check.difference)}</td>
                       <td>
-                        <span
-                          className={`trs-badge ${
-                            check.status === "Match"
-                              ? "processed"
-                              : check.status === "Excess"
-                                ? "excess"
-                                : "defective"
-                          }`}
-                        >
+                        <span className={`trs-badge ${check.status === "Match" ? "processed" : check.status === "Excess" ? "excess" : "defective"}`}>
                           {check.status}
                         </span>
                       </td>
                     </tr>
                   ))
                 )}
-
                 {!rows.length && (
-                  <tr>
-                    <td colSpan="7" className="trs-empty-cell">
-                      No records available for reconciliation.
-                    </td>
-                  </tr>
+                  <tr><td colSpan="7" className="trs-empty-cell">No records available for reconciliation.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
-
           <p className="trs-note">
-            Note: This is a preliminary comparison using the fields currently
-            stored in your database. It is not an official tax assessment or
-            26AS/AIS verification.
+            Note: This is a preliminary comparison using the fields currently stored in your database. It is not an official tax assessment or 26AS/AIS verification.
           </p>
         </section>
       </div>
