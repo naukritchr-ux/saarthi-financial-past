@@ -2825,8 +2825,8 @@ function TaxReturnSummary() {
               width: 100%; min-width: 820px; border-collapse: collapse; table-layout: fixed;
             }
             .trs-tc-recon-table thead th {
-              padding: 17px 16px; background: #112044; color: #f3ca6e;
-              font-size: 12px; font-weight: 750; text-align: left; letter-spacing: .02em;
+              padding: 18px 16px; background: #112044; color: #f3ca6e;
+              font-size: 14px; font-weight: 750; text-align: left; letter-spacing: .02em;
               border: 0; white-space: nowrap;
             }
             .trs-tc-recon-table thead th:first-child { width: 30%; }
@@ -2835,29 +2835,29 @@ function TaxReturnSummary() {
             .trs-tc-recon-table thead th:nth-child(4) { width: 15%; text-align: right; }
             .trs-tc-recon-table thead th:nth-child(5) { width: 20%; }
             .trs-tc-recon-table tbody td {
-              padding: 13px 16px; border-bottom: 1px solid #e8dfce; color: #172342;
-              font-size: 14px; vertical-align: middle; white-space: nowrap;
+              padding: 17px 16px; border-bottom: 1px solid #e8dfce; color: #172342;
+              font-size: 16px; line-height: 1.45; vertical-align: middle; white-space: nowrap;
             }
             .trs-tc-recon-table tbody tr:not(.trs-tc-year-row) td:first-child { padding-left: 25px; }
             .trs-tc-recon-table .trs-tc-number { text-align: right; font-variant-numeric: tabular-nums; }
             .trs-tc-year-row td {
               background: #f3e9cc; border-bottom: 0 !important; border-left: 5px solid #bd922d;
-              padding: 13px 20px !important; color: #112044 !important; font-size: 15px !important;
+              padding: 15px 20px !important; color: #112044 !important; font-size: 17px !important;
             }
             .trs-tc-year-title { font-weight: 800; margin-right: 12px; }
             .trs-tc-diff-count {
               display: inline-block; border-radius: 20px; background: #fffdf8; color: #c63229;
-              padding: 4px 12px; font-size: 12px; font-weight: 750;
+              padding: 4px 12px; font-size: 13px; font-weight: 750;
             }
-            .trs-tc-year-note { float: right; color: #817c6d; font-size: 12px; font-weight: 400; }
+            .trs-tc-year-note { float: right; color: #817c6d; font-size: 13px; font-weight: 400; }
             .trs-tc-variance {
               display: inline-block; min-width: 112px; text-align: right; border-radius: 9px;
-              padding: 5px 10px; font-weight: 800;
+              padding: 5px 10px; font-size: 16px; font-weight: 800;
             }
             .trs-tc-variance.lower { color: #bd3029; background: #f8e0db; }
             .trs-tc-variance.higher { color: #205da4; background: #dce7f7; }
             .trs-tc-variance.match { color: #14734e; background: transparent; }
-            .trs-tc-status { display: inline-flex; align-items: center; gap: 9px; font-weight: 750; }
+            .trs-tc-status { display: inline-flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 750; }
             .trs-tc-status::before { content: ''; width: 11px; height: 11px; border-radius: 50%; display: inline-block; background: currentColor; }
             .trs-tc-status.lower { color: #bd3029; }
             .trs-tc-status.higher { color: #205da4; }
