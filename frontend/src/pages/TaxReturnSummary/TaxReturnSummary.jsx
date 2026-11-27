@@ -2941,52 +2941,7 @@ function TaxReturnSummary() {
       );
     }
 
-    return (
-      <div className="trs-content">
-        <section className="trs-panel">
-          <div className="trs-table-wrap">
-            <table className="trs-table">
-              <thead>
-                <tr>
-                  <th>Taxpayer</th>
-                  <th>FY</th>
-                  <th>Particular</th>
-                  <th>ITR Data</th>
-                  <th>Assessment Data</th>
-                  <th>Difference</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.flatMap(record =>
-                  record.checks.map((check, index) => (
-                    <tr key={`${record.id || record.name}-${record.financialYear}-${check.label}`}>
-                      <td><b>{index === 0 ? record.name || "—" : ""}</b></td>
-                      <td>{index === 0 ? record.financialYear || "—" : ""}</td>
-                      <td>{check.label}</td>
-                      <td>{money(check.itr)}</td>
-                      <td>{money(check.assessment)}</td>
-                      <td className={check.status === "Match" ? "trs-amount-good" : "trs-amount-warning"}>{money(check.difference)}</td>
-                      <td>
-                        <span className={`trs-badge ${check.status === "Match" ? "processed" : check.status === "Excess" ? "excess" : "defective"}`}>
-                          {check.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-                {!rows.length && (
-                  <tr><td colSpan="7" className="trs-empty-cell">No records available for reconciliation.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <p className="trs-note">
-            Note: This is a preliminary comparison using the fields currently stored in your database. It is not an official tax assessment or 26AS/AIS verification.
-          </p>
-        </section>
-      </div>
-    );
+    return <DoshiReconciliation rows={rows} />;
   };
 
   const renderYearAnalysis = () => {
@@ -4551,6 +4506,317 @@ function TaxpayerRecordsExplorer({
           onDownload={onDownload}
         />
       )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Doshi Family Tax Reconciliation: taxpayer cards -> reconciliation   */
+/* ------------------------------------------------------------------ */
+
+const DR_PAGE_SIZE = 6;
+
+const drVariance = value =>
+  value > 0
+    ? `+${money(value)}`
+    : value < 0
+      ? `−${money(Math.abs(value))}`
+      : money(0);
+
+const drTone = status =>
+  status === "Match" ? "match" : status === "Excess" ? "higher" : "lower";
+
+const drStatusLabel = status =>
+  status === "Match"
+    ? "Matched"
+    : status === "Excess"
+      ? "Assessed higher ▲"
+      : "Assessed lower ▼";
+
+function DoshiReconciliation({ rows }) {
+  const [selectedKey, setSelectedKey] = useState(null);
+  const [page, setPage] = useState(0);
+
+  // One group per unique taxpayer (PAN first, exact name otherwise).
+  const taxpayers = useMemo(() => {
+    const groups = new Map();
+
+    rows.forEach(record => {
+      const key = taxpayerKey(record);
+      const group = groups.get(key) || { key, name: "", pan: "", records: [] };
+      if (!group.name && record.name) group.name = record.name;
+      if (!group.pan && record.pan) group.pan = record.pan;
+      group.records.push(record);
+      groups.set(key, group);
+    });
+
+    return [...groups.values()]
+      .map(group => {
+        const records = [...group.records].sort(
+          (a, b) => trFyStart(b.financialYear) - trFyStart(a.financialYear)
+        );
+        const checks = records.flatMap(record => record.checks);
+        const years = records
+          .map(record => trFyStart(record.financialYear))
+          .filter(year => year > 0);
+        const first = years.length ? Math.min(...years) : null;
+        const last = years.length ? Math.max(...years) : null;
+        return {
+          ...group,
+          records,
+          totalChecks: checks.length,
+          differing: checks.filter(check => check.status !== "Match").length,
+          yearSpan:
+            first === null ? "—" : first === last ? `FY ${first}` : `FY ${first} – ${last}`,
+        };
+      })
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [rows]);
+
+  const selected = taxpayers.find(item => item.key === selectedKey) || null;
+  const pageCount = selected ? Math.max(1, Math.ceil(selected.records.length / DR_PAGE_SIZE)) : 1;
+  const safePage = Math.min(page, pageCount - 1);
+  const visible = selected
+    ? selected.records.slice(safePage * DR_PAGE_SIZE, (safePage + 1) * DR_PAGE_SIZE)
+    : [];
+
+  const duplicateYears = useMemo(() => {
+    if (!selected) return new Set();
+    const seen = new Set();
+    const dupes = new Set();
+    selected.records.forEach(record => {
+      if (seen.has(record.financialYear)) dupes.add(record.financialYear);
+      seen.add(record.financialYear);
+    });
+    return dupes;
+  }, [selected]);
+
+  const open = key => {
+    setPage(0);
+    setSelectedKey(key);
+  };
+
+  return (
+    <div className="trs-content trs-dr">
+      <style>{`
+        .trs-dr { min-width: 0; }
+        .trs-dr .trs-dr-card { background: #fffdf8; border: 1px solid #e7ddc9; border-radius: 18px; padding: 24px 28px 26px; color: #172342; box-shadow: 0 2px 8px rgba(43, 34, 15, .035); }
+        .trs-dr .trs-dr-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 14px; }
+        .trs-dr .trs-dr-heading h2 { margin: 0; color: #172342; font-size: 24px; font-weight: 750; line-height: 1.25; }
+        .trs-dr .trs-dr-heading p { margin: 6px 0 0; color: #817c6d; font-size: 14px; }
+        .trs-dr .trs-dr-legend { color: #817c6d; font-size: 12px; line-height: 1.8; text-align: right; }
+        .trs-dr .trs-dr-rule { width: 64px; height: 3px; margin: 0 0 18px; background: #bd922d; }
+
+        .trs-dr .trs-dr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+        .trs-dr .trs-dr-tcard { display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 16px; border: 1px solid #eadfc9; border-radius: 12px; background: #fffdf8; color: #172342; text-align: left; font: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+        .trs-dr .trs-dr-tcard:hover { background: #fffdf8; background-image: none; border: 1px solid #bd922d; box-shadow: 0 6px 18px rgba(35, 30, 20, .09); transform: translateY(-1px); }
+        .trs-dr .trs-dr-tcard:focus-visible { outline: 2px solid #142448; outline-offset: 2px; }
+        .trs-dr .trs-dr-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .trs-dr .trs-dr-avatar { flex: none; display: grid; place-items: center; box-sizing: border-box; width: 44px; height: 44px; margin: 0; padding: 0; border-radius: 50%; background: #142448; color: #e8c978; font-size: 14px; font-weight: 800; line-height: 1; text-transform: uppercase; }
+        .trs-dr .trs-dr-who { min-width: 0; }
+        .trs-dr .trs-dr-name { display: block; color: #142448; font-size: 15px; font-weight: 800; overflow-wrap: anywhere; }
+        .trs-dr .trs-dr-pan { display: block; margin-top: 2px; color: #817c6d; font-size: 11px; }
+        .trs-dr .trs-dr-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 11px; border-top: 1px solid #eee4d2; color: #817c6d; font-size: 11px; }
+        .trs-dr .trs-dr-foot b { color: #142448; font-size: 13px; }
+        .trs-dr .trs-dr-chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 750; white-space: nowrap; }
+        .trs-dr .trs-dr-chip.differ { background: #f8e0db; color: #bd3029; }
+        .trs-dr .trs-dr-chip.ok { background: #dff1e8; color: #14734e; }
+
+        .trs-dr .trs-dr-head { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 16px; }
+        .trs-dr .trs-dr-back { height: 36px; padding: 0 14px; border: 1px solid #142448; border-radius: 8px; background: #fff; color: #142448; font-size: 12px; font-weight: 750; cursor: pointer; }
+        .trs-dr .trs-dr-back:hover { background: #f7f1df; background-image: none; border: 1px solid #142448; }
+        .trs-dr .trs-dr-head-info { flex: 1 1 auto; min-width: 0; }
+        .trs-dr .trs-dr-head-info h3 { margin: 0; color: #142448; font-size: 20px; font-weight: 800; }
+        .trs-dr .trs-dr-head-info span { display: block; margin-top: 2px; color: #817c6d; font-size: 12px; }
+
+        .trs-dr .trs-dr-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+        .trs-dr .trs-dr-table { width: 100%; min-width: 820px; border-collapse: collapse; table-layout: fixed; }
+        .trs-dr .trs-dr-table thead th { padding: 16px; background: #112044; color: #f3ca6e; font-size: 12px; font-weight: 750; letter-spacing: .03em; text-align: left; white-space: nowrap; border: 0; }
+        .trs-dr .trs-dr-table thead th:first-child { width: 30%; }
+        .trs-dr .trs-dr-table thead th:nth-child(2) { width: 14%; text-align: right; }
+        .trs-dr .trs-dr-table thead th:nth-child(3) { width: 17%; text-align: right; }
+        .trs-dr .trs-dr-table thead th:nth-child(4) { width: 17%; text-align: right; }
+        .trs-dr .trs-dr-table thead th:nth-child(5) { width: 22%; }
+        .trs-dr .trs-dr-table tbody td { padding: 15px 16px; border-bottom: 1px solid #e8dfce; color: #172342; font-size: 13px; vertical-align: middle; white-space: nowrap; }
+        .trs-dr .trs-dr-table tbody tr:not(.trs-dr-year) td:first-child { padding-left: 25px; }
+        .trs-dr .trs-dr-table .trs-dr-num { text-align: right; font-variant-numeric: tabular-nums; }
+        .trs-dr .trs-dr-year td { padding: 12px 20px; border-bottom: 0; border-left: 5px solid #bd922d; background: #f3e9cc; color: #112044; font-size: 14px; }
+        .trs-dr .trs-dr-year-title { margin-right: 12px; font-weight: 800; }
+        .trs-dr .trs-dr-year-tag { margin-right: 10px; color: #817c6d; font-size: 11px; font-weight: 600; }
+        .trs-dr .trs-dr-count { display: inline-block; padding: 3px 11px; border-radius: 20px; background: #fffdf8; font-size: 12px; font-weight: 750; }
+        .trs-dr .trs-dr-count.differ { color: #c63229; }
+        .trs-dr .trs-dr-count.ok { color: #14734e; }
+        .trs-dr .trs-dr-var { display: inline-block; min-width: 108px; padding: 4px 9px; border-radius: 9px; text-align: right; font-size: 13px; font-weight: 800; }
+        .trs-dr .trs-dr-var.lower { background: #f8e0db; color: #bd3029; }
+        .trs-dr .trs-dr-var.higher { background: #dce7f7; color: #205da4; }
+        .trs-dr .trs-dr-var.match { background: transparent; color: #14734e; }
+        .trs-dr .trs-dr-status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 750; }
+        .trs-dr .trs-dr-status::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+        .trs-dr .trs-dr-status.lower { color: #bd3029; }
+        .trs-dr .trs-dr-status.higher { color: #205da4; }
+        .trs-dr .trs-dr-status.match { color: #14734e; }
+        .trs-dr .trs-dr-pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 2px 4px; border-top: 2px solid #bd922d; color: #817c6d; font-size: 12px; }
+        .trs-dr .trs-dr-pager-actions { display: flex; align-items: center; gap: 10px; }
+        .trs-dr .trs-dr-pager button { padding: 6px 12px; border: 1px solid #d8c9a8; border-radius: 7px; background: #fffdf8; color: #172342; font-weight: 650; cursor: pointer; }
+        .trs-dr .trs-dr-pager button:hover:not(:disabled) { background: #f7f1df; background-image: none; border: 1px solid #d8c9a8; }
+        .trs-dr .trs-dr-pager button:disabled { opacity: .45; cursor: not-allowed; }
+        .trs-dr .trs-dr-empty { padding: 28px; border: 1px dashed #eadfc9; border-radius: 12px; color: #817c6d; text-align: center; font-size: 13px; }
+        @media (max-width: 760px) {
+          .trs-dr .trs-dr-card { padding: 18px 14px 20px; border-radius: 12px; }
+          .trs-dr .trs-dr-heading { display: block; }
+          .trs-dr .trs-dr-legend { margin-top: 8px; text-align: left; }
+          .trs-dr .trs-dr-pager { flex-direction: column; align-items: flex-start; }
+        }
+      `}</style>
+
+      <section className="trs-dr-card">
+        {selected ? (
+          <>
+            <div className="trs-dr-head">
+              <button type="button" className="trs-dr-back" onClick={() => open(null)}>
+                ← All taxpayers
+              </button>
+              <span className="trs-dr-avatar" aria-hidden="true">{trInitials(selected.name)}</span>
+              <div className="trs-dr-head-info">
+                <h3>{selected.name || "Unnamed taxpayer"}</h3>
+                <span>
+                  PAN: {selected.pan || "Not available"} · ITR vs Assessment comparison
+                </span>
+              </div>
+              <div className="trs-dr-legend">
+                <div>Difference = Assessment − ITR</div>
+                <div>▲ assessed higher &nbsp; ▼ assessed lower &nbsp; ● matched</div>
+              </div>
+            </div>
+            <div className="trs-dr-rule" />
+
+            <div
+              className="trs-dr-scroll"
+              role="region"
+              aria-label="Tax reconciliation table. Scroll horizontally to view all columns."
+              tabIndex={0}
+            >
+              <table className="trs-dr-table">
+                <thead>
+                  <tr>
+                    <th>PARTICULAR</th>
+                    <th>ITR DATA</th>
+                    <th>ASSESSMENT DATA</th>
+                    <th>DIFFERENCE</th>
+                    <th>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((record, recordIndex) => {
+                    const differing = record.checks.filter(check => check.status !== "Match").length;
+                    return (
+                      <React.Fragment key={record.id ?? `${record.financialYear}-${safePage}-${recordIndex}`}>
+                        <tr className="trs-dr-year">
+                          <td colSpan={5}>
+                            <span className="trs-dr-year-title">FY {record.financialYear || "—"}</span>
+                            {duplicateYears.has(record.financialYear) && (
+                              <span className="trs-dr-year-tag">{record.filingStatus || "Draft"}</span>
+                            )}
+                            <span className={`trs-dr-count ${differing ? "differ" : "ok"}`}>
+                              {differing === 0
+                                ? `All ${record.checks.length} matched`
+                                : `${differing} of ${record.checks.length} differ`}
+                            </span>
+                          </td>
+                        </tr>
+                        {record.checks.map(check => {
+                          const tone = drTone(check.status);
+                          return (
+                            <tr key={`${record.id ?? record.financialYear}-${check.label}`}>
+                              <td>{check.label}</td>
+                              <td className="trs-dr-num">{money(check.itr)}</td>
+                              <td className="trs-dr-num">{money(check.assessment)}</td>
+                              <td className="trs-dr-num">
+                                <span className={`trs-dr-var ${tone}`}>{drVariance(check.difference)}</span>
+                              </td>
+                              <td>
+                                <span className={`trs-dr-status ${tone}`}>{drStatusLabel(check.status)}</span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="trs-dr-pager">
+              <span>
+                Showing {selected.records.length ? safePage * DR_PAGE_SIZE + 1 : 0}–
+                {safePage * DR_PAGE_SIZE + visible.length} of {selected.records.length} financial years
+              </span>
+              {pageCount > 1 && (
+                <div className="trs-dr-pager-actions">
+                  <button type="button" onClick={() => setPage(Math.max(0, safePage - 1))} disabled={safePage === 0}>Previous</button>
+                  <span>Page {safePage + 1} of {pageCount}</span>
+                  <button type="button" onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))} disabled={safePage >= pageCount - 1}>Next</button>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="trs-dr-heading">
+              <div>
+                <h2>Doshi Family</h2>
+                <p>
+                  {taxpayers.length} unique {taxpayers.length === 1 ? "taxpayer" : "taxpayers"} · select a card to view ITR vs Assessment
+                </p>
+              </div>
+              <div className="trs-dr-legend">
+                <div>Difference = Assessment − ITR</div>
+                <div>▲ assessed higher &nbsp; ▼ assessed lower &nbsp; ● matched</div>
+              </div>
+            </div>
+            <div className="trs-dr-rule" />
+
+            {taxpayers.length ? (
+              <div className="trs-dr-grid">
+                {taxpayers.map(item => (
+                  <button
+                    type="button"
+                    key={item.key}
+                    className="trs-dr-tcard"
+                    onClick={() => open(item.key)}
+                    aria-label={`Open reconciliation for ${item.name || "unnamed taxpayer"}`}
+                  >
+                    <span className="trs-dr-top">
+                      <span className="trs-dr-avatar" aria-hidden="true">{trInitials(item.name)}</span>
+                      <span className="trs-dr-who">
+                        <strong className="trs-dr-name">{item.name || "Unnamed taxpayer"}</strong>
+                        <small className="trs-dr-pan">PAN: {item.pan || "Not available"}</small>
+                      </span>
+                    </span>
+                    <span className="trs-dr-foot">
+                      <span>
+                        <b>{item.records.length}</b> {item.records.length === 1 ? "year" : "years"}
+                        <br />
+                        {item.yearSpan}
+                      </span>
+                      <span className={`trs-dr-chip ${item.differing ? "differ" : "ok"}`}>
+                        {item.differing ? `${item.differing} of ${item.totalChecks} differ` : "All matched"}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="trs-dr-empty">No records available for reconciliation.</div>
+            )}
+          </>
+        )}
+
+        <p className="trs-note">
+          Note: This is a preliminary comparison using the fields currently stored in your database. It is not an official tax assessment or 26AS/AIS verification.
+        </p>
+      </section>
     </div>
   );
 }
