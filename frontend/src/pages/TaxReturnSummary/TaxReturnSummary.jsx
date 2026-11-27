@@ -4647,10 +4647,12 @@ function DoshiTaxpayerCards({
         .trs-dtc-count strong { color: #142448; }
         .trs-dtc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
         .trs-dtc-card { display: flex; flex-direction: column; gap: 12px; width: 100%; padding: 16px; border: 1px solid #eadfc9; border-radius: 12px; background: #fffdf8; color: #172342; text-align: left; font: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
-        .trs-dtc-card:hover { border-color: #bd922d; box-shadow: 0 6px 18px rgba(35, 30, 20, .09); transform: translateY(-1px); }
+        .trs-dtc-card:hover { background: #fffdf8; background-image: none; border: 1px solid #bd922d; box-shadow: 0 6px 18px rgba(35, 30, 20, .09); transform: translateY(-1px); }
+        .trs-dtc-btn:hover { background-image: none; border: 1px solid #142448; background-color: #f7f1df; }
+        .trs-dtc-btn.solid:hover { background-color: #1d3266; color: #fff; }
         .trs-dtc-card:focus-visible { outline: 2px solid #142448; outline-offset: 2px; }
         .trs-dtc-card-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
-        .trs-dtc-avatar { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #f7f1df; color: #a27413; font-size: 14px; font-weight: 800; }
+        .trs-dtc .trs-dtc-avatar { flex: none; display: grid; place-items: center; box-sizing: border-box; width: 44px; height: 44px; margin: 0; padding: 0; border-radius: 50%; background: #142448; color: #e8c978; font-size: 14px; font-weight: 800; line-height: 1; letter-spacing: .02em; text-transform: uppercase; }
         .trs-dtc-name { display: block; color: #142448; font-size: 15px; font-weight: 800; overflow-wrap: anywhere; }
         .trs-dtc-pan { display: block; margin-top: 2px; color: #817c6d; font-size: 11px; letter-spacing: .02em; }
         .trs-dtc-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid #eee4d2; color: #817c6d; font-size: 11px; }
@@ -4658,8 +4660,8 @@ function DoshiTaxpayerCards({
         .trs-dtc-open { color: #a27413; font-weight: 750; }
         .trs-dtc-head { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid #eadfc9; border-radius: 12px; background: #f7f1df; }
         .trs-dtc-head h3 { margin: 0; color: #142448; font-size: 17px; font-weight: 800; }
-        .trs-dtc-head span { display: block; margin-top: 2px; color: #817c6d; font-size: 11px; }
-        .trs-dtc-head .trs-dtc-avatar { background: #fffdf8; }
+        .trs-dtc-head-info { min-width: 0; }
+        .trs-dtc-head-info span { display: block; margin-top: 2px; color: #817c6d; font-size: 11px; }
         .trs-dtc-empty { padding: 28px; border: 1px dashed #eadfc9; border-radius: 12px; color: #817c6d; text-align: center; font-size: 13px; }
       `}</style>
 
@@ -4705,7 +4707,7 @@ function DoshiTaxpayerCards({
               ← All taxpayers
             </button>
             <span className="trs-dtc-avatar" aria-hidden="true">{trInitials(selected.name)}</span>
-            <div>
+            <div className="trs-dtc-head-info">
               <h3>{selected.name || "Unnamed taxpayer"}</h3>
               <span>
                 PAN: {selected.pan || "Not available"} · {selectedRecords.length}{" "}
