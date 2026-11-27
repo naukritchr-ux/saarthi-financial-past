@@ -2967,16 +2967,6 @@ function TaxReturnSummary() {
               </div>
             )}
 
-            <div className="trs-tc-recon-footer">
-              {refundChecks.length ? (
-                <>
-                  Net refund difference ({refundYears.join(" + ")}): {formatVariance(netRefundVariance)} assessed {netRefundVariance > 0 ? "higher" : netRefundVariance < 0 ? "lower" : "matched"}
-                  &nbsp; · &nbsp; {allChecks.filter(check => check.status !== "Match").length} of {allChecks.length} checks differ
-                </>
-              ) : (
-                <>{allChecks.filter(check => check.status !== "Match").length} of {allChecks.length} checks differ</>
-              )}
-            </div>
             <p className="trs-note">
               Note: This is a preliminary comparison using the fields currently stored in your database. It is not an official tax assessment or 26AS/AIS verification.
             </p>
