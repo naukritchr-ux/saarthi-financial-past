@@ -3813,7 +3813,7 @@
 .trs-tr button,
 .trs-tr select,
 .trs-tr-overlay button {
-  font: inherit;
+  font-family: inherit;
 }
 
 .trs-tr :focus-visible,
@@ -3824,7 +3824,7 @@
 
 .trs-tr-label {
   color: var(--tr-gold-text);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: .6px;
   text-transform: uppercase;
@@ -3836,9 +3836,9 @@
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 16px 24px;
+  padding: 14px 20px;
   border: 1px solid var(--tr-line);
-  border-radius: 18px;
+  border-radius: 11px;
   background: var(--tr-paper);
 }
 
@@ -3846,12 +3846,12 @@
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--tr-navy);
   color: #e8c978;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -3865,7 +3865,7 @@
 .trs-tr-taxpayer-name,
 .trs-tr-taxpayer-pick select {
   color: var(--tr-navy);
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: -.3px;
@@ -3901,7 +3901,7 @@
 
 .trs-tr-pan {
   color: var(--tr-muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .trs-tr-total {
@@ -3913,7 +3913,7 @@
 }
 
 .trs-tr-total strong {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1.2;
 }
@@ -3925,21 +3925,21 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 14px;
-  padding: 16px 24px;
+  padding: 14px 20px;
   border: 1px solid var(--tr-line);
-  border-radius: 18px;
+  border-radius: 11px;
   background: var(--tr-paper);
 }
 
 .trs-tr-filters select {
-  height: 44px;
-  min-width: 220px;
+  height: 38px;
+  min-width: 190px;
   padding: 0 14px;
   border: 1px solid var(--tr-line);
-  border-radius: 14px;
+  border-radius: 7px;
   background: var(--tr-paper);
   color: var(--tr-navy);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -3950,10 +3950,10 @@
 }
 
 .trs-tr-btn {
-  min-height: 44px;
-  padding: 0 20px;
-  border-radius: 12px;
-  font-size: 13px;
+  min-height: 39px;
+  padding: 0 15px;
+  border-radius: 7px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -3992,9 +3992,9 @@
 }
 
 .trs-tr-btn.small {
-  min-height: 36px;
-  padding: 0 16px;
-  font-size: 12px;
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 11px;
 }
 
 .trs-tr-btn:disabled {
@@ -4005,7 +4005,7 @@
 .trs-tr-showing {
   margin: 4px 0 -4px 6px;
   color: var(--tr-muted);
-  font-size: 13px;
+  font-size: 11px;
 }
 
 /* ---------- table ---------- */
@@ -4013,24 +4013,24 @@
 .trs-tr-scroll {
   width: 100%;
   overflow-x: auto;
-  border-radius: 18px;
+  border-radius: 11px;
   -webkit-overflow-scrolling: touch;
 }
 
 .trs-tr-table {
   width: 100%;
-  min-width: 780px;
+  min-width: 720px;
   border-collapse: separate;
   border-spacing: 0;
   background: var(--tr-paper);
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .trs-tr-table thead th {
-  padding: 12px 18px;
+  padding: 10px 14px;
   background: #f5edd3;
   color: var(--tr-navy);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: .5px;
   text-align: left;
@@ -4046,6 +4046,8 @@
   border-bottom: 2px solid var(--tr-gold);
   color: var(--tr-gold-text);
   vertical-align: middle;
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
 }
 
 .trs-tr-table thead tr:nth-child(2) th {
@@ -4055,7 +4057,7 @@
 .trs-tr-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .trs-tr-table tbody td {
-  padding: 18px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--tr-line);
   white-space: nowrap;
 }
@@ -4069,21 +4071,21 @@
 }
 
 .trs-tr-fy-col {
-  min-width: 150px;
+  min-width: 120px;
   border-right: 1px solid var(--tr-line);
 }
 
 .trs-tr-table td.trs-tr-fy-col strong {
   display: block;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 800;
 }
 
 .trs-tr-table td.trs-tr-fy-col small {
   display: block;
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--tr-muted);
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .trs-tr-action-col {
@@ -4094,7 +4096,7 @@
 .trs-tr-row-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .trs-tr-empty {
@@ -4105,10 +4107,11 @@
 
 .trs-tr-pill {
   display: inline-block;
-  padding: 6px 16px;
+  white-space: nowrap;
+  padding: 4px 12px;
   border: 1px solid transparent;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -4126,7 +4129,7 @@
   gap: 12px;
   padding: 0 6px;
   color: var(--tr-muted);
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .trs-tr-pager {
@@ -4135,14 +4138,15 @@
 }
 
 .trs-tr-pager button {
-  min-width: 40px;
-  height: 40px;
+  min-width: 32px;
+  height: 32px;
   border: 1px solid var(--tr-line);
-  border-radius: 10px;
+  border-radius: 7px;
   background: var(--tr-paper);
   color: var(--tr-navy);
   font-weight: 700;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .trs-tr-pager button.active {
@@ -4172,10 +4176,10 @@
 .trs-tr-dialog {
   display: flex;
   flex-direction: column;
-  width: min(900px, 100%);
+  width: min(780px, 100%);
   max-height: calc(100vh - 48px);
   border: 1px solid var(--tr-line);
-  border-radius: 20px;
+  border-radius: 14px;
   background: var(--tr-paper);
   box-shadow: 0 24px 60px rgba(17, 32, 68, .28);
   overflow: hidden;
@@ -4186,7 +4190,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  padding: 24px 28px 18px;
+  padding: 20px 24px 16px;
   border-bottom: 1px solid var(--tr-line);
 }
 
@@ -4199,7 +4203,7 @@
 
 .trs-tr-title-row h3 {
   margin: 0;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -.4px;
 }
@@ -4207,7 +4211,7 @@
 .trs-tr-dialog-title p {
   margin: 6px 0 0;
   color: var(--tr-muted);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .trs-tr-dialog-actions {
@@ -4217,13 +4221,13 @@
 }
 
 .trs-tr-close {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border: 1px solid var(--tr-line);
   border-radius: 50%;
   background: var(--tr-paper);
   color: var(--tr-navy);
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1;
   cursor: pointer;
 }
@@ -4235,8 +4239,8 @@
 
 .trs-tr-dialog-body {
   display: grid;
-  gap: 26px;
-  padding: 22px 28px 28px;
+  gap: 22px;
+  padding: 18px 24px 24px;
   overflow-y: auto;
 }
 
@@ -4245,7 +4249,7 @@
   padding-bottom: 8px;
   border-bottom: 1.5px solid var(--tr-gold);
   color: var(--tr-gold-text);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: .6px;
   text-transform: uppercase;
@@ -4254,7 +4258,7 @@
 .trs-tr-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px 24px;
+  gap: 14px 22px;
 }
 
 .trs-tr-field {
@@ -4266,18 +4270,18 @@
 
 .trs-tr-field span {
   color: var(--tr-muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .trs-tr-field b {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 
 .trs-tr-field small {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -4291,20 +4295,20 @@
   align-items: center;
   gap: 16px;
   margin-top: 20px;
-  padding: 16px 22px;
-  border-radius: 14px;
+  padding: 13px 20px;
+  border-radius: 11px;
   background: var(--tr-navy);
   color: #fffdf8;
 }
 
 .trs-tr-net span {
   color: #e6cb85;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .trs-tr-net strong {
-  font-size: 26px;
+  font-size: 21px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -4312,14 +4316,14 @@
 .trs-tr-note {
   margin: 0;
   color: var(--tr-muted);
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.55;
 }
 
 @media (max-width: 900px) {
   .trs-tr-taxpayer { padding: 14px 16px; }
   .trs-tr-taxpayer-name,
-  .trs-tr-taxpayer-pick select { font-size: 19px; }
+  .trs-tr-taxpayer-pick select { font-size: 16px; }
 }
 
 @media (max-width: 640px) {
