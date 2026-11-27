@@ -577,6 +577,10 @@ function TaxReturnSummary() {
   const [reportStatus, setReportStatus] = useState("all");
   const [reportType, setReportType] = useState("all");
   const [reconciliationPage, setReconciliationPage] = useState(0);
+  // Tax Reconciliation filters (Talent Corner page).
+  const [reconFy, setReconFy] = useState("all");
+  const [reconParticular, setReconParticular] = useState("all");
+  const [reconStatus, setReconStatus] = useState("all");
 
   // Every page below reads `records`, which now follows the selected category.
   const records = useMemo(
@@ -790,6 +794,10 @@ function TaxReturnSummary() {
 
     setCategory(nextCategory);
     setDoshiTaxpayerKey(null);
+    setReconFy("all");
+    setReconParticular("all");
+    setReconStatus("all");
+    setReconciliationPage(0);
     resetForm();
     setFyFilter("all");
     setStatusFilter("all");
@@ -2723,7 +2731,7 @@ function TaxReturnSummary() {
         return year ? Number(year[0]) : -1;
       };
 
-      const yearGroups = [...rows.reduce((map, record) => {
+      const allYearGroups = [...rows.reduce((map, record) => {
         const key = record.financialYear || "Unknown FY";
         if (!map.has(key)) map.set(key, []);
         map.get(key).push(record);
@@ -2737,6 +2745,29 @@ function TaxReturnSummary() {
           const differenceCount = checks.filter(check => check.status !== "Match").length;
           return { financialYear, yearRecords, checks, differenceCount };
         });
+
+      // Apply the Financial Year / Particular / Status filters.
+      const reconFiltersActive =
+        reconFy !== "all" || reconParticular !== "all" || reconStatus !== "all";
+      const yearGroups = allYearGroups
+        .filter(group => reconFy === "all" || group.financialYear === reconFy)
+        .map(group => {
+          const checks = filterReconChecks(group.checks, reconParticular, reconStatus);
+          return {
+            ...group,
+            checks,
+            differenceCount: checks.filter(check => check.status !== "Match").length,
+          };
+        })
+        .filter(group => group.checks.length);
+      const reconTotalYears = allYearGroups.length;
+      const reconFyOptions = allYearGroups.map(group => group.financialYear);
+      const resetReconFilters = () => {
+        setReconFy("all");
+        setReconParticular("all");
+        setReconStatus("all");
+        setReconciliationPage(0);
+      };
 
       const allChecks = yearGroups.flatMap(group => group.checks);
       const reconciliationPageSize = 6;
@@ -2871,6 +2902,19 @@ function TaxReturnSummary() {
             </div>
             <div className="trs-tc-recon-rule" />
 
+            <ReconFilters
+              fyOptions={reconFyOptions}
+              fy={reconFy}
+              onFy={value => { setReconFy(value); setReconciliationPage(0); }}
+              particular={reconParticular}
+              onParticular={value => { setReconParticular(value); setReconciliationPage(0); }}
+              status={reconStatus}
+              onStatus={value => { setReconStatus(value); setReconciliationPage(0); }}
+              onReset={resetReconFilters}
+              shown={yearGroups.length}
+              total={reconTotalYears}
+            />
+
             <div className="trs-tc-recon-scroll" role="region" aria-label="Talent Corner tax reconciliation table. Scroll horizontally to view all columns." tabIndex={0}>
               <table className="trs-tc-recon-table">
                 <thead>
@@ -2895,7 +2939,7 @@ function TaxReturnSummary() {
                                 ? "1 difference"
                                 : `${group.differenceCount} of ${group.checks.length} differ`}
                           </span>
-                          {group.checks.length === 1 && group.checks[0].label === "Income" && (
+                          {!reconFiltersActive && group.checks.length === 1 && group.checks[0].label === "Income" && (
                             <span className="trs-tc-year-note">Only Income row available in source</span>
                           )}
                         </td>
@@ -2916,7 +2960,7 @@ function TaxReturnSummary() {
                       })}
                     </React.Fragment>
                   )) : (
-                    <tr><td colSpan={5} className="trs-tc-recon-empty">No records available for reconciliation.</td></tr>
+                    <tr><td colSpan={5} className="trs-tc-recon-empty">{reconFiltersActive ? "No records match the selected filters." : "No records available for reconciliation."}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -4511,6 +4555,109 @@ function TaxpayerRecordsExplorer({
 }
 
 /* ------------------------------------------------------------------ */
+/* Tax Reconciliation filters (shared by Talent Corner and Doshi)       */
+/* ------------------------------------------------------------------ */
+
+const RECON_PARTICULARS = [
+  "Income",
+  "Income Tax",
+  "TDS",
+  "Expected Refund / (Tax Payable)",
+];
+
+const RECON_STATUS_OPTIONS = [
+  ["all", "All Statuses"],
+  ["differs", "Any difference"],
+  ["Less", "Assessed lower ▼"],
+  ["Excess", "Assessed higher ▲"],
+  ["Match", "Matched"],
+];
+
+const filterReconChecks = (checks, particular, status) =>
+  checks.filter(check => {
+    if (particular !== "all" && check.label !== particular) return false;
+    if (status === "all") return true;
+    if (status === "differs") return check.status !== "Match";
+    return check.status === status;
+  });
+
+function ReconFilters({
+  fyOptions,
+  fy,
+  onFy,
+  particular,
+  onParticular,
+  status,
+  onStatus,
+  onReset,
+  shown,
+  total,
+}) {
+  const active = fy !== "all" || particular !== "all" || status !== "all";
+  const years = [...new Set(fyOptions)].sort(
+    (a, b) => trFyStart(b) - trFyStart(a)
+  );
+
+  return (
+    <div className="trs-rf" role="group" aria-label="Reconciliation filters">
+      <style>{`
+        .trs-rf { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 0 0 18px; padding: 12px 14px; border: 1px solid #eadfc9; border-radius: 12px; background: #f7f1df; }
+        .trs-rf label { display: grid; gap: 4px; color: #817c6d; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+        .trs-rf select { min-width: 150px; height: 36px; padding: 0 10px; border: 1px solid #d8c9a8; border-radius: 8px; background: #fffdf8; color: #142448; font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+        .trs-rf select:focus-visible { outline: 2px solid #142448; outline-offset: 1px; }
+        .trs-rf .trs-rf-spacer { flex: 1 1 auto; }
+        .trs-rf .trs-rf-count { color: #817c6d; font-size: 12px; align-self: center; }
+        .trs-rf .trs-rf-count strong { color: #142448; }
+        .trs-rf .trs-rf-reset { height: 36px; padding: 0 14px; border: 1px solid #142448; border-radius: 8px; background: #fff; color: #142448; font-size: 12px; font-weight: 750; cursor: pointer; }
+        .trs-rf .trs-rf-reset:hover:not(:disabled) { background: #fffdf8; background-image: none; border: 1px solid #142448; }
+        .trs-rf .trs-rf-reset:disabled { opacity: .45; cursor: not-allowed; }
+        @media (max-width: 640px) {
+          .trs-rf label, .trs-rf select { width: 100%; }
+          .trs-rf .trs-rf-spacer { display: none; }
+        }
+      `}</style>
+
+      <label>
+        Financial Year
+        <select value={fy} onChange={event => onFy(event.target.value)}>
+          <option value="all">All Financial Years</option>
+          {years.map(year => (
+            <option key={year} value={year}>FY {year}</option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Particular
+        <select value={particular} onChange={event => onParticular(event.target.value)}>
+          <option value="all">All Particulars</option>
+          {RECON_PARTICULARS.map(item => (
+            <option key={item} value={item}>{item}</option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Status
+        <select value={status} onChange={event => onStatus(event.target.value)}>
+          {RECON_STATUS_OPTIONS.map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </label>
+
+      <span className="trs-rf-spacer" />
+      <span className="trs-rf-count">
+        Showing <strong>{shown}</strong> of {total} financial {total === 1 ? "year" : "years"}
+      </span>
+      <button type="button" className="trs-rf-reset" onClick={onReset} disabled={!active}>
+        Reset filters
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Doshi Family Tax Reconciliation: taxpayer cards -> reconciliation   */
 /* ------------------------------------------------------------------ */
 
@@ -4536,6 +4683,9 @@ const drStatusLabel = status =>
 function DoshiReconciliation({ rows }) {
   const [selectedKey, setSelectedKey] = useState(null);
   const [page, setPage] = useState(0);
+  const [fy, setFy] = useState("all");
+  const [particular, setParticular] = useState("all");
+  const [status, setStatus] = useState("all");
 
   // One group per unique taxpayer (PAN first, exact name otherwise).
   const taxpayers = useMemo(() => {
@@ -4574,11 +4724,33 @@ function DoshiReconciliation({ rows }) {
   }, [rows]);
 
   const selected = taxpayers.find(item => item.key === selectedKey) || null;
-  const pageCount = selected ? Math.max(1, Math.ceil(selected.records.length / DR_PAGE_SIZE)) : 1;
+
+  // Apply the filters to the selected taxpayer's records.
+  const filtersActive = fy !== "all" || particular !== "all" || status !== "all";
+  const filteredRecords = useMemo(() => {
+    if (!selected) return [];
+    return selected.records
+      .filter(record => fy === "all" || record.financialYear === fy)
+      .map(record => ({
+        ...record,
+        checks: filterReconChecks(record.checks, particular, status),
+      }))
+      .filter(record => record.checks.length);
+  }, [selected, fy, particular, status]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredRecords.length / DR_PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
-  const visible = selected
-    ? selected.records.slice(safePage * DR_PAGE_SIZE, (safePage + 1) * DR_PAGE_SIZE)
-    : [];
+  const visible = filteredRecords.slice(
+    safePage * DR_PAGE_SIZE,
+    (safePage + 1) * DR_PAGE_SIZE
+  );
+
+  const resetFilters = () => {
+    setFy("all");
+    setParticular("all");
+    setStatus("all");
+    setPage(0);
+  };
 
   const duplicateYears = useMemo(() => {
     if (!selected) return new Set();
@@ -4592,7 +4764,7 @@ function DoshiReconciliation({ rows }) {
   }, [selected]);
 
   const open = key => {
-    setPage(0);
+    resetFilters();
     setSelectedKey(key);
   };
 
@@ -4660,6 +4832,7 @@ function DoshiReconciliation({ rows }) {
         .trs-dr .trs-dr-pager button { padding: 6px 12px; border: 1px solid #d8c9a8; border-radius: 7px; background: #fffdf8; color: #172342; font-weight: 650; cursor: pointer; }
         .trs-dr .trs-dr-pager button:hover:not(:disabled) { background: #f7f1df; background-image: none; border: 1px solid #d8c9a8; }
         .trs-dr .trs-dr-pager button:disabled { opacity: .45; cursor: not-allowed; }
+        .trs-dr .trs-dr-table td.trs-dr-none { padding: 28px; color: #817c6d; text-align: center; white-space: normal; }
         .trs-dr .trs-dr-empty { padding: 28px; border: 1px dashed #eadfc9; border-radius: 12px; color: #817c6d; text-align: center; font-size: 13px; }
         @media (max-width: 760px) {
           .trs-dr .trs-dr-card { padding: 18px 14px 20px; border-radius: 12px; }
@@ -4689,6 +4862,19 @@ function DoshiReconciliation({ rows }) {
               </div>
             </div>
             <div className="trs-dr-rule" />
+
+            <ReconFilters
+              fyOptions={selected.records.map(record => record.financialYear)}
+              fy={fy}
+              onFy={value => { setFy(value); setPage(0); }}
+              particular={particular}
+              onParticular={value => { setParticular(value); setPage(0); }}
+              status={status}
+              onStatus={value => { setStatus(value); setPage(0); }}
+              onReset={resetFilters}
+              shown={filteredRecords.length}
+              total={selected.records.length}
+            />
 
             <div
               className="trs-dr-scroll"
@@ -4743,14 +4929,23 @@ function DoshiReconciliation({ rows }) {
                       </React.Fragment>
                     );
                   })}
+                  {!visible.length && (
+                    <tr>
+                      <td colSpan={5} className="trs-dr-none">
+                        {filtersActive
+                          ? "No records match the selected filters."
+                          : "No records available for reconciliation."}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
 
             <div className="trs-dr-pager">
               <span>
-                Showing {selected.records.length ? safePage * DR_PAGE_SIZE + 1 : 0}–
-                {safePage * DR_PAGE_SIZE + visible.length} of {selected.records.length} financial years
+                Showing {filteredRecords.length ? safePage * DR_PAGE_SIZE + 1 : 0}–
+                {safePage * DR_PAGE_SIZE + visible.length} of {filteredRecords.length} financial years
               </span>
               {pageCount > 1 && (
                 <div className="trs-dr-pager-actions">
