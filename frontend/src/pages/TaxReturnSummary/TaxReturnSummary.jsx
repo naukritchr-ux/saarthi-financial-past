@@ -5104,6 +5104,12 @@ function DoshiTaxpayerCards({
         .trs-dtc-btn { height: 36px; padding: 0 14px; border: 1px solid #142448; border-radius: 8px; background: #fff; color: #142448; font-size: 12px; font-weight: 750; cursor: pointer; }
         .trs-dtc-btn.solid { background: #142448; color: #fff; }
         .trs-dtc-btn:disabled { opacity: .45; cursor: not-allowed; }
+        .trs-dtc-box { padding: 24px 28px 28px; border: 1px solid #e7ddc9; border-radius: 18px; background: #fffdf8; box-shadow: 0 2px 8px rgba(43, 34, 15, .035); }
+        .trs-dtc-box-heading h2 { margin: 0; color: #172342; font-size: 24px; font-weight: 750; line-height: 1.25; }
+        .trs-dtc-box-heading .trs-dtc-count { margin-top: 6px; font-size: 14px; }
+        .trs-dtc-rule { width: 64px; height: 3px; margin: 14px 0 18px; background: #bd922d; }
+        .trs-dtc-box .trs-dtc-card { background: #fffdf8; }
+        @media (max-width: 760px) { .trs-dtc-box { padding: 18px 14px 20px; border-radius: 12px; } }
         .trs-dtc-count { margin: 0; color: #817c6d; font-size: 12px; }
         .trs-dtc-count strong { color: #142448; }
         .trs-dtc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
@@ -5278,12 +5284,16 @@ function DoshiTaxpayerCards({
           </div>
         </>
       ) : (
-        <>
-          <p className="trs-dtc-count">
+        <section className="trs-dtc-box">
+          <div className="trs-dtc-box-heading">
+            <h2>Doshi Family</h2>
+            <p className="trs-dtc-count">
             <strong>{taxpayers.length}</strong> unique{" "}
             {taxpayers.length === 1 ? "taxpayer" : "taxpayers"} ·{" "}
             <strong>{records.length}</strong> {records.length === 1 ? "record" : "records"}. Select a card to view records.
-          </p>
+            </p>
+          </div>
+          <div className="trs-dtc-rule" />
 
           {taxpayers.length ? (
             <div className="trs-dtc-grid">
@@ -5318,7 +5328,7 @@ function DoshiTaxpayerCards({
               No records found. Adjust the filters or add a tax return.
             </div>
           )}
-        </>
+        </section>
       )}
     </div>
   );
