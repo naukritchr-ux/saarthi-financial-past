@@ -559,6 +559,8 @@ function TaxReturnSummary() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [allRecords, setAllRecords] = useState([]);
   const [category, setCategory] = useState(DATA_CATEGORIES[0]);
+  // Doshi Family: which taxpayer card is open on the Taxpayer Records page.
+  const [doshiTaxpayerKey, setDoshiTaxpayerKey] = useState(null);
   const [showHome, setShowHome] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -787,6 +789,7 @@ function TaxReturnSummary() {
     if (nextCategory === category) return;
 
     setCategory(nextCategory);
+    setDoshiTaxpayerKey(null);
     resetForm();
     setFyFilter("all");
     setStatusFilter("all");
@@ -2254,18 +2257,33 @@ function TaxReturnSummary() {
         </div>
       )}
 
-      <TaxpayerRecordsExplorer
-        records={filteredRecords}
-        allRecords={records}
-        fyFilter={fyFilter}
-        onFyFilter={setFyFilter}
-        statusFilter={statusFilter}
-        onStatusFilter={setStatusFilter}
-        onExportPdf={downloadRecordsPdf}
-        onExportCsv={exportRecordsCsv}
-        onEdit={editFromTable}
-        onDownload={openRecordPdf}
-      />
+      {category === "Doshi Family" ? (
+        <DoshiTaxpayerCards
+          records={filteredRecords}
+          fyFilter={fyFilter}
+          onFyFilter={setFyFilter}
+          statusFilter={statusFilter}
+          onStatusFilter={setStatusFilter}
+          selectedKey={doshiTaxpayerKey}
+          onSelect={setDoshiTaxpayerKey}
+          onExportPdf={downloadRecordsPdf}
+          onExportCsv={exportRecordsCsv}
+          onEdit={editFromTable}
+        />
+      ) : (
+        <TaxpayerRecordsExplorer
+          records={filteredRecords}
+          allRecords={records}
+          fyFilter={fyFilter}
+          onFyFilter={setFyFilter}
+          statusFilter={statusFilter}
+          onStatusFilter={setStatusFilter}
+          onExportPdf={downloadRecordsPdf}
+          onExportCsv={exportRecordsCsv}
+          onEdit={editFromTable}
+          onDownload={openRecordPdf}
+        />
+      )}
     </div>
   );
 
@@ -4531,6 +4549,203 @@ function TaxpayerRecordsExplorer({
           onEdit={onEdit}
           onDownload={onDownload}
         />
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Doshi Family: one clickable card per unique taxpayer                */
+/* Clicking a card opens that taxpayer's records in the same table      */
+/* format that Talent Corner uses.                                      */
+/* ------------------------------------------------------------------ */
+
+function DoshiTaxpayerCards({
+  records,
+  fyFilter,
+  onFyFilter,
+  statusFilter,
+  onStatusFilter,
+  selectedKey,
+  onSelect,
+  onExportPdf,
+  onExportCsv,
+  onEdit,
+}) {
+  // One group per unique taxpayer (PAN first, exact name otherwise).
+  const taxpayers = useMemo(() => {
+    const groups = new Map();
+
+    records.forEach(record => {
+      const key = taxpayerKey(record);
+      const group = groups.get(key) || { key, name: "", pan: "", records: [] };
+      if (!group.name && record.name) group.name = record.name;
+      if (!group.pan && record.pan) group.pan = record.pan;
+      group.records.push(record);
+      groups.set(key, group);
+    });
+
+    return [...groups.values()]
+      .map(group => {
+        const years = group.records
+          .map(record => trFyStart(record.financialYear))
+          .filter(year => year > 0);
+        const first = years.length ? Math.min(...years) : null;
+        const last = years.length ? Math.max(...years) : null;
+        return {
+          ...group,
+          yearSpan:
+            first === null
+              ? "—"
+              : first === last
+                ? `FY ${first}`
+                : `FY ${first} – ${last}`,
+          assessed: group.records.filter(trHasAssessment).length,
+        };
+      })
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [records]);
+
+  const selected = taxpayers.find(item => item.key === selectedKey) || null;
+
+  // Newest financial year first, then by name — same order Talent Corner uses.
+  const selectedRecords = useMemo(
+    () =>
+      selected
+        ? [...selected.records].sort(
+            (a, b) =>
+              trFyStart(b.financialYear) - trFyStart(a.financialYear) ||
+              String(a.name || "").localeCompare(String(b.name || ""))
+          )
+        : [],
+    [selected]
+  );
+
+  return (
+    <div className="trs-dtc">
+      <style>{`
+        .trs-dtc { display: grid; gap: 16px; min-width: 0; }
+        .trs-dtc-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .trs-dtc-toolbar select { height: 36px; padding: 0 12px; border: 1px solid #eadfc9; border-radius: 8px; background: #fffdf8; color: #142448; font-size: 13px; }
+        .trs-dtc-toolbar .trs-dtc-spacer { flex: 1 1 auto; }
+        .trs-dtc-btn { height: 36px; padding: 0 14px; border: 1px solid #142448; border-radius: 8px; background: #fff; color: #142448; font-size: 12px; font-weight: 750; cursor: pointer; }
+        .trs-dtc-btn.solid { background: #142448; color: #fff; }
+        .trs-dtc-btn:disabled { opacity: .45; cursor: not-allowed; }
+        .trs-dtc-count { margin: 0; color: #817c6d; font-size: 12px; }
+        .trs-dtc-count strong { color: #142448; }
+        .trs-dtc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+        .trs-dtc-card { display: flex; flex-direction: column; gap: 12px; width: 100%; padding: 16px; border: 1px solid #eadfc9; border-radius: 12px; background: #fffdf8; color: #172342; text-align: left; font: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+        .trs-dtc-card:hover { border-color: #bd922d; box-shadow: 0 6px 18px rgba(35, 30, 20, .09); transform: translateY(-1px); }
+        .trs-dtc-card:focus-visible { outline: 2px solid #142448; outline-offset: 2px; }
+        .trs-dtc-card-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .trs-dtc-avatar { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #f7f1df; color: #a27413; font-size: 14px; font-weight: 800; }
+        .trs-dtc-name { display: block; color: #142448; font-size: 15px; font-weight: 800; overflow-wrap: anywhere; }
+        .trs-dtc-pan { display: block; margin-top: 2px; color: #817c6d; font-size: 11px; letter-spacing: .02em; }
+        .trs-dtc-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid #eee4d2; color: #817c6d; font-size: 11px; }
+        .trs-dtc-meta b { color: #142448; font-size: 13px; }
+        .trs-dtc-open { color: #a27413; font-weight: 750; }
+        .trs-dtc-head { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid #eadfc9; border-radius: 12px; background: #f7f1df; }
+        .trs-dtc-head h3 { margin: 0; color: #142448; font-size: 17px; font-weight: 800; }
+        .trs-dtc-head span { display: block; margin-top: 2px; color: #817c6d; font-size: 11px; }
+        .trs-dtc-head .trs-dtc-avatar { background: #fffdf8; }
+        .trs-dtc-empty { padding: 28px; border: 1px dashed #eadfc9; border-radius: 12px; color: #817c6d; text-align: center; font-size: 13px; }
+      `}</style>
+
+      <div className="trs-dtc-toolbar">
+        <select
+          value={fyFilter}
+          onChange={event => onFyFilter(event.target.value)}
+          aria-label="Financial year"
+        >
+          <option value="all">All Financial Years</option>
+          {FINANCIAL_YEARS.map(year => (
+            <option key={year.financialYear} value={year.financialYear}>
+              FY {year.financialYear}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={statusFilter}
+          onChange={event => onStatusFilter(event.target.value)}
+          aria-label="Filing status"
+        >
+          <option value="all">All Statuses</option>
+          {FILING_STATUSES.map(status => (
+            <option key={status}>{status}</option>
+          ))}
+        </select>
+
+        <span className="trs-dtc-spacer" />
+
+        <button type="button" className="trs-dtc-btn" onClick={onExportCsv} disabled={!records.length}>
+          ↓ CSV
+        </button>
+        <button type="button" className="trs-dtc-btn solid" onClick={onExportPdf} disabled={!records.length}>
+          ↓ Download PDF
+        </button>
+      </div>
+
+      {selected ? (
+        <>
+          <div className="trs-dtc-head">
+            <button type="button" className="trs-dtc-btn" onClick={() => onSelect(null)}>
+              ← All taxpayers
+            </button>
+            <span className="trs-dtc-avatar" aria-hidden="true">{trInitials(selected.name)}</span>
+            <div>
+              <h3>{selected.name || "Unnamed taxpayer"}</h3>
+              <span>
+                PAN: {selected.pan || "Not available"} · {selectedRecords.length}{" "}
+                {selectedRecords.length === 1 ? "record" : "records"}
+              </span>
+            </div>
+          </div>
+
+          <TalentCornerRecordsTable records={selectedRecords} onEdit={onEdit} />
+        </>
+      ) : (
+        <>
+          <p className="trs-dtc-count">
+            <strong>{taxpayers.length}</strong> unique{" "}
+            {taxpayers.length === 1 ? "taxpayer" : "taxpayers"} ·{" "}
+            <strong>{records.length}</strong> {records.length === 1 ? "record" : "records"}. Select a card to view records.
+          </p>
+
+          {taxpayers.length ? (
+            <div className="trs-dtc-grid">
+              {taxpayers.map(item => (
+                <button
+                  type="button"
+                  key={item.key}
+                  className="trs-dtc-card"
+                  onClick={() => onSelect(item.key)}
+                  aria-label={`Open records for ${item.name || "unnamed taxpayer"}`}
+                >
+                  <span className="trs-dtc-card-top">
+                    <span className="trs-dtc-avatar" aria-hidden="true">{trInitials(item.name)}</span>
+                    <span>
+                      <strong className="trs-dtc-name">{item.name || "Unnamed taxpayer"}</strong>
+                      <small className="trs-dtc-pan">PAN: {item.pan || "Not available"}</small>
+                    </span>
+                  </span>
+                  <span className="trs-dtc-meta">
+                    <span>
+                      <b>{item.records.length}</b> {item.records.length === 1 ? "record" : "records"}
+                      <br />
+                      {item.yearSpan}
+                    </span>
+                    <span className="trs-dtc-open">View records →</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="trs-dtc-empty">
+              No records found. Adjust the filters or add a tax return.
+            </div>
+          )}
+        </>
       )}
     </div>
   );
