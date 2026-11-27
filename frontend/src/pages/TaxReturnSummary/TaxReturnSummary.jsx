@@ -2269,6 +2269,7 @@ function TaxReturnSummary() {
           onExportPdf={downloadRecordsPdf}
           onExportCsv={exportRecordsCsv}
           onEdit={editFromTable}
+          onDownload={openRecordPdf}
         />
       ) : (
         <TaxpayerRecordsExplorer
@@ -4571,7 +4572,12 @@ function DoshiTaxpayerCards({
   onExportPdf,
   onExportCsv,
   onEdit,
+  onDownload,
 }) {
+  const [page, setPage] = useState(0);
+  const [viewing, setViewing] = useState(null);
+  const closeDialog = useCallback(() => setViewing(null), []);
+
   // One group per unique taxpayer (PAN first, exact name otherwise).
   const taxpayers = useMemo(() => {
     const groups = new Map();
@@ -4620,6 +4626,12 @@ function DoshiTaxpayerCards({
         : [],
     [selected]
   );
+
+  const pageCount = Math.max(1, Math.ceil(selectedRecords.length / TR_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const visible = selectedRecords.slice(safePage * TR_PAGE_SIZE, (safePage + 1) * TR_PAGE_SIZE);
+  const firstShown = selectedRecords.length ? safePage * TR_PAGE_SIZE + 1 : 0;
+  const lastShown = safePage * TR_PAGE_SIZE + visible.length;
 
   return (
     <div className="trs-dtc">
@@ -4689,7 +4701,7 @@ function DoshiTaxpayerCards({
       {selected ? (
         <>
           <div className="trs-dtc-head">
-            <button type="button" className="trs-dtc-btn" onClick={() => onSelect(null)}>
+            <button type="button" className="trs-dtc-btn" onClick={() => { setPage(0); onSelect(null); }}>
               ← All taxpayers
             </button>
             <span className="trs-dtc-avatar" aria-hidden="true">{trInitials(selected.name)}</span>
@@ -4702,7 +4714,105 @@ function DoshiTaxpayerCards({
             </div>
           </div>
 
-          <TalentCornerRecordsTable records={selectedRecords} onEdit={onEdit} />
+          <div className="trs-tr">
+            <p className="trs-tr-showing">
+              Showing {visible.length} of {selectedRecords.length}{" "}
+              {selectedRecords.length === 1 ? "record" : "records"}
+            </p>
+
+            <div
+              className="trs-tr-scroll"
+              role="region"
+              aria-label="ITR records. Scroll horizontally to see all columns."
+              tabIndex={0}
+            >
+              <table className="trs-tr-table">
+                <thead>
+                  <tr>
+                    <th rowSpan={2} className="trs-tr-fy-col">Financial Year</th>
+                    <th colSpan={4} className="trs-tr-group">ITR Records</th>
+                    <th rowSpan={2} className="trs-tr-action-col">Action</th>
+                  </tr>
+                  <tr>
+                    <th className="num">Gross Income</th>
+                    <th className="num">Tax Payable</th>
+                    <th className="num">Refund</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((record, index) => (
+                    <tr key={record.id ?? `${record.financialYear}-${safePage}-${index}`}>
+                      <td className="trs-tr-fy-col">
+                        <strong>{record.financialYear || "—"}</strong>
+                        <small>AY {record.assessmentYear || "—"}</small>
+                      </td>
+                      <td className="num">{money(record.grossIncome)}</td>
+                      <td className="num">{money(record.taxPayable)}</td>
+                      <td className="num">{trSigned(num(record.refundDue))}</td>
+                      <td>
+                        <span className={`trs-tr-pill ${trFilingTone(record.filingStatus)}`}>
+                          {record.filingStatus || "Draft"}
+                        </span>
+                      </td>
+                      <td className="trs-tr-action-col">
+                        <div className="trs-tr-row-actions">
+                          <button
+                            type="button"
+                            className="trs-tr-btn outline small"
+                            onClick={() => setViewing(record)}
+                            aria-label={`View FY ${record.financialYear} details`}
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            className="trs-tr-btn plain small"
+                            onClick={() => onEdit(record)}
+                            aria-label={`Edit FY ${record.financialYear}`}
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="trs-tr-footer">
+              <span>
+                Showing {firstShown}–{lastShown} of {selectedRecords.length} records
+              </span>
+              {pageCount > 1 && (
+                <nav className="trs-tr-pager" aria-label="Records pagination">
+                  <button type="button" onClick={() => setPage(Math.max(0, safePage - 1))} disabled={safePage === 0} aria-label="Previous page">‹</button>
+                  {Array.from({ length: pageCount }, (_, index) => (
+                    <button
+                      type="button"
+                      key={index}
+                      className={safePage === index ? "active" : ""}
+                      aria-current={safePage === index ? "page" : undefined}
+                      onClick={() => setPage(index)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  <button type="button" onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))} disabled={safePage >= pageCount - 1} aria-label="Next page">›</button>
+                </nav>
+              )}
+            </div>
+
+            {viewing && (
+              <TrRecordDialog
+                record={viewing}
+                onClose={closeDialog}
+                onEdit={onEdit}
+                onDownload={onDownload}
+              />
+            )}
+          </div>
         </>
       ) : (
         <>
@@ -4719,7 +4829,7 @@ function DoshiTaxpayerCards({
                   type="button"
                   key={item.key}
                   className="trs-dtc-card"
-                  onClick={() => onSelect(item.key)}
+                  onClick={() => { setPage(0); onSelect(item.key); }}
                   aria-label={`Open records for ${item.name || "unnamed taxpayer"}`}
                 >
                   <span className="trs-dtc-card-top">
