@@ -4080,6 +4080,12 @@ function RecordsTable({
     return String(a.name || "").localeCompare(String(b.name || ""));
   });
 
+  // Talent Corner uses a compact, expandable taxpayer-wise layout.
+  // Doshi Family continues to use the existing records table below.
+  if (showAssessmentDetails) {
+    return <TalentCornerRecordsTable records={sortedRecords} onEdit={onEdit} />;
+  }
+
   const totals = sortedRecords.reduce(
     (sum, record) => {
       const itrRefund = num(record.refundDue);
@@ -4337,6 +4343,191 @@ function RecordsTable({
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function TalentCornerRecordsTable({ records, onEdit }) {
+  const [expandedRecords, setExpandedRecords] = useState(() => new Set());
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 10;
+  const pageCount = Math.max(1, Math.ceil(records.length / pageSize));
+  const safePage = Math.min(currentPage, pageCount - 1);
+  const pageRecords = records.slice(safePage * pageSize, (safePage + 1) * pageSize);
+
+  const taxpayerGroups = pageRecords.reduce((groups, record) => {
+    const key = `${record.name || "Unknown taxpayer"}::${record.pan || ""}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(record);
+    return groups;
+  }, new Map());
+
+  const toggleRecord = recordKey => {
+    setExpandedRecords(current => {
+      const next = new Set(current);
+      if (next.has(recordKey)) next.delete(recordKey);
+      else next.add(recordKey);
+      return next;
+    });
+  };
+
+  const getNetRefund = record =>
+    num(record.refundAmountBeforeInterest) + num(record.interest);
+  const getDifferenceStatus = record => {
+    const checks = [
+      Math.round(num(record.totalAssessedIncome) - num(record.grossIncome)),
+      Math.round(num(record.totalAssessedTaxPayable) - num(record.taxPayable)),
+      Math.round(num(record.refundAmountBeforeInterest) - num(record.refundDue)),
+    ];
+    return checks.every(value => value === 0) ? "Matched" : "Differs";
+  };
+  const formatDifference = value => {
+    const rounded = Math.round(num(value));
+    if (!rounded) return "—";
+    return `${rounded > 0 ? "▲ +" : "▼ −"}${money(Math.abs(rounded))}`;
+  };
+
+  return (
+    <div className="trs-tc-records">
+      <style>{`
+        .trs-tc-records { width: 100%; min-width: 0; display: grid; gap: 14px; }
+        .trs-tc-taxpayer-card { border: 1px solid #eadfc9; border-radius: 12px; background: #fffdf8; overflow: hidden; }
+        .trs-tc-taxpayer-heading { padding: 13px 18px 10px; background: #f7f1df; border-bottom: 1px solid #eadfc9; }
+        .trs-tc-taxpayer-heading h3 { margin: 0; color: #142448; font-size: 16px; font-weight: 800; }
+        .trs-tc-taxpayer-heading span { display: block; margin-top: 3px; color: #817c6d; font-size: 11px; }
+        .trs-tc-record-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .trs-tc-record-table { width: 100%; min-width: 1020px; border-collapse: separate; border-spacing: 0 6px; padding: 0 10px 8px; }
+        .trs-tc-record-table th { padding: 10px 9px 8px; color: #a27413; font-size: 10px; font-weight: 800; text-align: left; text-transform: uppercase; white-space: nowrap; }
+        .trs-tc-record-table td { padding: 10px 9px; color: #172342; font-size: 12px; vertical-align: middle; background: #fffdf8; border-top: 1px solid #eee4d2; border-bottom: 1px solid #eee4d2; white-space: nowrap; }
+        .trs-tc-record-table tbody tr:not(.trs-tc-expanded-row) td:first-child { border-left: 1px solid #eee4d2; border-radius: 9px 0 0 9px; }
+        .trs-tc-record-table tbody tr:not(.trs-tc-expanded-row) td:last-child { border-right: 1px solid #eee4d2; border-radius: 0 9px 9px 0; }
+        .trs-tc-record-year { display: block; color: #142448; font-size: 13px; font-weight: 800; }
+        .trs-tc-record-ay { display: block; margin-top: 3px; color: #817c6d; font-size: 10px; }
+        .trs-tc-record-refund strong { display: block; color: #142448; font-size: 13px; font-weight: 850; }
+        .trs-tc-record-refund i { display: block; width: 100%; height: 5px; margin-top: 5px; overflow: hidden; border-radius: 10px; background: #eee6d1; }
+        .trs-tc-record-refund i::after { content: ''; display: block; width: var(--refund-width, 50%); height: 100%; border-radius: inherit; background: #bd922d; }
+        .trs-tc-record-order { display: block; font-size: 11px; }
+        .trs-tc-record-order small { display: block; margin-top: 4px; color: #817c6d; font-size: 10px; }
+        .trs-tc-record-status { display: inline-flex; align-items: center; gap: 6px; color: #a27413; font-size: 10px; font-weight: 750; }
+        .trs-tc-record-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .trs-tc-record-status.matched { color: #14734e; }
+        .trs-tc-record-status.differs { color: #a27413; }
+        .trs-tc-expand-btn { width: 27px; height: 27px; border: 1px solid #eadfc9; border-radius: 50%; background: #fff; color: #142448; cursor: pointer; font-size: 13px; }
+        .trs-tc-expand-btn[aria-expanded="true"] { background: #142448; border-color: #142448; color: white; }
+        .trs-tc-expanded-row td { padding: 4px 5px 10px; background: transparent; border: 0; white-space: normal; }
+        .trs-tc-expanded-panel { display: grid; grid-template-columns: 1.25fr 1fr 1.2fr; gap: 16px; padding: 13px 16px; border-radius: 9px; background: #f7f0dc; }
+        .trs-tc-expanded-panel h4 { margin: 0 0 9px; color: #a27413; font-size: 10px; font-weight: 850; text-transform: uppercase; }
+        .trs-tc-detail-line { display: grid; grid-template-columns: minmax(100px, 1fr) auto auto; gap: 9px; padding: 4px 0; color: #172342; font-size: 10px; }
+        .trs-tc-detail-line b { font-weight: 700; }
+        .trs-tc-detail-diff { min-width: 84px; text-align: right; font-weight: 800; }
+        .trs-tc-detail-diff.higher { color: #205da4; }
+        .trs-tc-detail-diff.lower { color: #bd3029; }
+        .trs-tc-refund-total { display: flex; justify-content: space-between; gap: 10px; padding-top: 8px; margin-top: 7px; border-top: 1px solid #d7c79f; color: #142448; font-size: 11px; font-weight: 850; }
+        .trs-tc-order-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .trs-tc-order-actions button { border: 1px solid #bd922d; border-radius: 7px; padding: 6px 13px; background: white; color: #142448; font-size: 10px; font-weight: 750; cursor: pointer; }
+        .trs-tc-order-actions button:first-child { border-color: #142448; background: #142448; color: white; }
+        .trs-tc-record-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 3px 0; color: #817c6d; font-size: 10px; }
+        .trs-tc-record-pagination-actions { display: flex; align-items: center; gap: 6px; }
+        .trs-tc-record-pagination button { min-width: 26px; height: 25px; border: 1px solid #eadfc9; border-radius: 7px; background: #fffdf8; color: #142448; cursor: pointer; font-size: 11px; }
+        .trs-tc-record-pagination button.active { background: #142448; border-color: #142448; color: white; }
+        .trs-tc-record-pagination button:disabled { opacity: .4; cursor: not-allowed; }
+        @media (max-width: 760px) {
+          .trs-tc-expanded-panel { grid-template-columns: 1fr; gap: 13px; }
+          .trs-tc-taxpayer-heading { padding: 12px 14px; }
+        }
+      `}</style>
+
+      {[...taxpayerGroups.entries()].map(([taxpayerKey, taxpayerRecords]) => {
+        const firstRecord = taxpayerRecords[0];
+        const maxRefund = Math.max(1, ...taxpayerRecords.map(getNetRefund));
+        return (
+          <section className="trs-tc-taxpayer-card" key={taxpayerKey}>
+            <header className="trs-tc-taxpayer-heading">
+              <h3>{firstRecord.name || "Unknown taxpayer"}</h3>
+              <span>PAN: {firstRecord.pan || "Not available"}</span>
+            </header>
+            <div className="trs-tc-record-scroll" role="region" aria-label={`Financial-year records for ${firstRecord.name || "taxpayer"}`} tabIndex={0}>
+              <table className="trs-tc-record-table">
+                <thead>
+                  <tr>
+                    <th>Financial Year</th>
+                    <th>Gross Income</th>
+                    <th>Tax Payable</th>
+                    <th>TDS Credit</th>
+                    <th>Net Refund</th>
+                    <th>Assessment Order</th>
+                    <th>Status</th>
+                    <th aria-label="Expand details"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {taxpayerRecords.map((record, index) => {
+                    const recordKey = `${taxpayerKey}::${record.financialYear}::${record.id ?? index}`;
+                    const isExpanded = expandedRecords.has(recordKey);
+                    const status = getDifferenceStatus(record);
+                    const netRefund = getNetRefund(record);
+                    const incomeDifference = num(record.totalAssessedIncome) - num(record.grossIncome);
+                    const taxDifference = num(record.totalAssessedTaxPayable) - num(record.taxPayable);
+                    const refundDifference = num(record.refundAmountBeforeInterest) - num(record.refundDue);
+                    return (
+                      <React.Fragment key={recordKey}>
+                        <tr>
+                          <td><strong className="trs-tc-record-year">{record.financialYear || "—"}</strong><span className="trs-tc-record-ay">AY {record.assessmentYear || "—"}</span></td>
+                          <td>{money(record.grossIncome)}</td>
+                          <td>{money(record.taxPayable)}</td>
+                          <td>{money(record.tdsCredit)}</td>
+                          <td><span className="trs-tc-record-refund"><strong>{money(netRefund)}</strong><i style={{ "--refund-width": `${Math.max(0, Math.min(100, (netRefund / maxRefund) * 100))}%` }} /></span></td>
+                          <td><span className="trs-tc-record-order">{record.orderType || "—"}<small>{record.dateOfOrder || "Date not available"}</small></span></td>
+                          <td><span className={`trs-tc-record-status ${status === "Matched" ? "matched" : "differs"}`}>{status}</span></td>
+                          <td><button type="button" className="trs-tc-expand-btn" aria-expanded={isExpanded} aria-label={`${isExpanded ? "Collapse" : "Expand"} ${record.financialYear} details`} onClick={() => toggleRecord(recordKey)}>{isExpanded ? "⌃" : "⌄"}</button></td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="trs-tc-expanded-row">
+                            <td colSpan={8}>
+                              <div className="trs-tc-expanded-panel">
+                                <section>
+                                  <h4>ITR vs Assessment</h4>
+                                  <div className="trs-tc-detail-line"><span>Particular</span><b>ITR</b><b>Assessed</b></div>
+                                  <div className="trs-tc-detail-line"><span>Gross Income</span><b>{money(record.grossIncome)}</b><b>{money(record.totalAssessedIncome)}</b><span className={`trs-tc-detail-diff ${incomeDifference > 0 ? "higher" : incomeDifference < 0 ? "lower" : ""}`}>{formatDifference(incomeDifference)}</span></div>
+                                  <div className="trs-tc-detail-line"><span>Tax Payable</span><b>{money(record.taxPayable)}</b><b>{money(record.totalAssessedTaxPayable)}</b><span className={`trs-tc-detail-diff ${taxDifference > 0 ? "higher" : taxDifference < 0 ? "lower" : ""}`}>{formatDifference(taxDifference)}</span></div>
+                                  <div className="trs-tc-detail-line"><span>Refund (before interest)</span><b>{money(record.refundDue)}</b><b>{money(record.refundAmountBeforeInterest)}</b><span className={`trs-tc-detail-diff ${refundDifference > 0 ? "higher" : refundDifference < 0 ? "lower" : ""}`}>{formatDifference(refundDifference)}</span></div>
+                                </section>
+                                <section>
+                                  <h4>Refund Build-up</h4>
+                                  <div className="trs-tc-detail-line"><span>Refund before interest</span><b>{money(record.refundAmountBeforeInterest)}</b></div>
+                                  <div className="trs-tc-detail-line"><span>+ Interest</span><b>{money(record.interest)}</b></div>
+                                  <div className="trs-tc-refund-total"><span>Net refund</span><strong>{money(netRefund)}</strong></div>
+                                </section>
+                                <section>
+                                  <h4>Assessment Order</h4>
+                                  <div className="trs-tc-detail-line"><span>{record.orderType || "Order type not available"}</span><b>{record.dateOfOrder || "—"}</b></div>
+                                  <div className="trs-tc-order-actions"><button type="button" onClick={() => onEdit(record)}>View / Edit</button></div>
+                                </section>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        );
+      })}
+      {records.length > pageSize && (
+        <div className="trs-tc-record-pagination">
+          <span>Showing {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, records.length)} of {records.length} records</span>
+          <div className="trs-tc-record-pagination-actions">
+            <button type="button" onClick={() => setCurrentPage(page => Math.max(0, page - 1))} disabled={safePage === 0} aria-label="Previous page">‹</button>
+            {Array.from({ length: pageCount }, (_, index) => (
+              <button type="button" key={index} className={safePage === index ? "active" : ""} aria-current={safePage === index ? "page" : undefined} onClick={() => setCurrentPage(index)}>{index + 1}</button>
+            ))}
+            <button type="button" onClick={() => setCurrentPage(page => Math.min(pageCount - 1, page + 1))} disabled={safePage >= pageCount - 1} aria-label="Next page">›</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
