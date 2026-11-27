@@ -573,6 +573,7 @@ function TaxReturnSummary() {
   const [reportFY, setReportFY] = useState("all");
   const [reportStatus, setReportStatus] = useState("all");
   const [reportType, setReportType] = useState("all");
+  const [reconciliationPage, setReconciliationPage] = useState(0);
 
   // Every page below reads `records`, which now follows the selected category.
   const records = useMemo(
@@ -2762,7 +2763,7 @@ function TaxReturnSummary() {
         map.get(key).push(record);
         return map;
       }, new Map())]
-        .sort((a, b) => getYearSortValue(a[0]) - getYearSortValue(b[0]))
+        .sort((a, b) => getYearSortValue(b[0]) - getYearSortValue(a[0]))
         .map(([financialYear, yearRecords]) => {
           const checks = yearRecords.flatMap(record =>
             record.checks.map(check => ({ ...check, taxpayerName: record.name }))
@@ -2772,6 +2773,13 @@ function TaxReturnSummary() {
         });
 
       const allChecks = yearGroups.flatMap(group => group.checks);
+      const reconciliationPageSize = 6;
+      const reconciliationPageCount = Math.ceil(yearGroups.length / reconciliationPageSize);
+      const safeReconciliationPage = Math.min(reconciliationPage, Math.max(0, reconciliationPageCount - 1));
+      const visibleYearGroups = yearGroups.slice(
+        safeReconciliationPage * reconciliationPageSize,
+        (safeReconciliationPage + 1) * reconciliationPageSize
+      );
       const refundChecks = yearGroups.flatMap(group =>
         group.checks
           .filter(check => check.label === "Expected Refund / (Tax Payable)")
@@ -2858,6 +2866,20 @@ function TaxReturnSummary() {
               border-top: 2px solid #bd922d; margin-top: 0; padding-top: 18px;
               color: #817c6d; font-size: 13px; line-height: 1.6;
             }
+            .trs-tc-pagination {
+              display: flex; justify-content: space-between; align-items: center; gap: 12px;
+              padding: 14px 2px; color: #817c6d; font-size: 13px;
+            }
+            .trs-tc-pagination-actions { display: flex; align-items: center; gap: 10px; }
+            .trs-tc-pagination-actions button {
+              border: 1px solid #d8c9a8; border-radius: 7px; background: #fffdf8;
+              color: #172342; padding: 7px 12px; font-weight: 650; cursor: pointer;
+            }
+            .trs-tc-pagination-actions button:disabled { opacity: .45; cursor: not-allowed; }
+            @media (max-width: 600px) {
+              .trs-tc-pagination { align-items: flex-start; flex-direction: column; }
+              .trs-tc-pagination-actions { width: 100%; justify-content: space-between; }
+            }
             .trs-tc-recon-empty { padding: 24px 12px !important; text-align: center; color: #817c6d !important; }
             @media (max-width: 760px) {
               .trs-tc-recon-card { padding: 18px 14px 20px; border-radius: 12px; }
@@ -2877,7 +2899,7 @@ function TaxReturnSummary() {
                 <p>ITR vs Assessment comparison</p>
               </div>
               <div className="trs-tc-recon-legend">
-                <div>Variance = Assessment − ITR</div>
+                <div>Difference = Assessment − ITR</div>
                 <div>▲ assessed higher &nbsp; ▼ assessed lower &nbsp; ● matched</div>
               </div>
             </div>
@@ -2890,12 +2912,12 @@ function TaxReturnSummary() {
                     <th>PARTICULAR</th>
                     <th>ITR DATA</th>
                     <th>ASSESSMENT DATA</th>
-                    <th>VARIANCE</th>
+                    <th>DIFFERENCE</th>
                     <th>STATUS</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {yearGroups.length ? yearGroups.map(group => (
+                  {visibleYearGroups.length ? visibleYearGroups.map(group => (
                     <React.Fragment key={group.financialYear}>
                       <tr className="trs-tc-year-row">
                         <td colSpan={5}>
@@ -2934,10 +2956,21 @@ function TaxReturnSummary() {
               </table>
             </div>
 
+            {reconciliationPageCount > 1 && (
+              <div className="trs-tc-pagination" aria-label="Tax reconciliation pagination">
+                <span>Showing {safeReconciliationPage * reconciliationPageSize + 1}–{Math.min((safeReconciliationPage + 1) * reconciliationPageSize, yearGroups.length)} of {yearGroups.length} financial years</span>
+                <div className="trs-tc-pagination-actions">
+                  <button type="button" onClick={() => setReconciliationPage(current => Math.max(0, current - 1))} disabled={safeReconciliationPage === 0}>Previous</button>
+                  <span>Page {safeReconciliationPage + 1} of {reconciliationPageCount}</span>
+                  <button type="button" onClick={() => setReconciliationPage(current => Math.min(reconciliationPageCount - 1, current + 1))} disabled={safeReconciliationPage >= reconciliationPageCount - 1}>Next</button>
+                </div>
+              </div>
+            )}
+
             <div className="trs-tc-recon-footer">
               {refundChecks.length ? (
                 <>
-                  Net refund variance ({refundYears.join(" + ")}): {formatVariance(netRefundVariance)} assessed {netRefundVariance > 0 ? "higher" : netRefundVariance < 0 ? "lower" : "matched"}
+                  Net refund difference ({refundYears.join(" + ")}): {formatVariance(netRefundVariance)} assessed {netRefundVariance > 0 ? "higher" : netRefundVariance < 0 ? "lower" : "matched"}
                   &nbsp; · &nbsp; {allChecks.filter(check => check.status !== "Match").length} of {allChecks.length} checks differ
                 </>
               ) : (
